@@ -23,17 +23,27 @@
   var frameIdx = parseInt(params.get('frame'), 10);
   var cardIdx  = parseInt(params.get('card'), 10);
 
+  /* ?fluid=1 — mobile review mode. The screens are authored at a fixed
+     390x844; on a real handset that either clips (narrow) or letterboxes
+     (wide). Fluid mode lets them fill the actual viewport instead. */
+  var fluid = params.has('fluid');
+  var W = fluid ? '100%'  : '390px';
+  var H = fluid ? '100dvh' : '844px';
+
   var style = d.createElement('style');
   style.textContent = [
     'html.valeo-embed,html.valeo-embed body{margin:0!important;padding:0!important;',
-      'display:block!important;width:390px;height:844px;overflow:hidden;',
+      'display:block!important;width:' + W + ';height:' + H + ';overflow:hidden;',
       'background:var(--surface-app,#FFFDF5)!important;}',
     'html.valeo-embed .frame-label,html.valeo-embed .caption,html.valeo-embed .caption-strip,',
       'html.valeo-embed .page-title,html.valeo-embed .page-sub{display:none!important;}',
     'html.valeo-embed .frame-col{display:block!important;align-items:initial!important;}',
     'html.valeo-embed .device,html.valeo-embed .lockscreen{',
       'border-radius:0!important;box-shadow:none!important;',
-      'width:390px!important;height:844px!important;}',
+      'width:' + W + '!important;height:' + H + '!important;}',
+    fluid ? 'html.valeo-embed .device__notch{display:none!important}' : '',
+    fluid ? 'html.valeo-embed .screen{width:100%!important;max-width:none!important}' : '',
+    fluid ? 'html.valeo-embed .home-indicator{display:none!important}' : '',
     /* P6 single-card mode */
     'html.valeo-embed.single-card body{padding:22px 18px!important;height:844px;}',
     'html.valeo-embed.single-card .grid{display:block!important;max-width:none!important;}',

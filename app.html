@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valeo · The Loop — App</title>
+<script>
+/* ?m=1 → device-native review mode. Runs before paint; inert without the param. */
+if (new URLSearchParams(location.search).has('m')) {
+  document.querySelector('meta[name=viewport]').setAttribute('content',
+    'width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no');
+  document.write('<meta name="apple-mobile-web-app-capable" content="yes">'
+    + '<meta name="mobile-web-app-capable" content="yes">'
+    + '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'
+    + '<meta name="theme-color" content="#FFFDF5">');
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="design-system/tokens.css">
@@ -74,6 +85,54 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
   transform-origin:top center;background:#FFFDF5;
   box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 0 9px #060D16,0 0 0 10px #2B3F56}
 .phone iframe{width:390px;height:844px;border:0;display:block}
+
+/* ═══════════ MOBILE MODE (?m=1) — device-native, zero prototype chrome ═══════════
+   Everything here is scoped under body.mob, so the desktop shell above is
+   completely unaffected. The screen becomes the viewport: no bezel, no scale
+   transform, no rail/panel/toolbar. One unobtrusive control remains so the
+   flow is still navigable during review. */
+body.mob{overflow:hidden;background:#000;overscroll-behavior:none}
+body.mob #root{height:100dvh}
+body.mob .mstage{width:100vw;height:100dvh;position:relative;overflow:hidden;
+  background:var(--surface-app)}
+body.mob .phone{width:100%;height:100%;border-radius:0;box-shadow:none;
+  transform:none!important;transform-origin:top left}
+body.mob .phone iframe{width:100%;height:100%}
+body.mob .pscreen{width:100%;height:100%}
+body.mob .meta{width:100%;height:100%;border-radius:0}
+
+/* Nav affordance — docked to the right edge as a slim tab rather than a
+   floating circle, because most screens end in a full-width sticky CTA and
+   a bottom-right FAB lands right on top of it. */
+.mfab{position:fixed;right:0;top:50%;transform:translateY(-50%);
+  width:17px;height:52px;border-radius:9px 0 0 9px;z-index:900;
+  background:rgba(27,57,91,.55);color:rgba(255,255,255,.85);backdrop-filter:blur(6px);
+  font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center;
+  box-shadow:-3px 0 12px -3px rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.16);border-right:none}
+.mfab:active{background:var(--yellow);color:#14283F}
+.msheet{position:fixed;inset:0;z-index:1000;background:rgba(6,13,22,.62);
+  backdrop-filter:blur(3px);display:flex;flex-direction:column;justify-content:flex-end}
+.msheet__in{background:#122A45;border-radius:20px 20px 0 0;max-height:82dvh;
+  display:flex;flex-direction:column;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+  box-shadow:0 -12px 40px rgba(0,0,0,.5)}
+.msheet__g{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.22);
+  margin:9px auto 4px;flex-shrink:0}
+.msheet__act{display:flex;gap:8px;padding:8px 14px 12px;flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.09)}
+.msheet__act button{flex:1;padding:11px;border-radius:11px;font-size:12.5px;font-weight:700;
+  background:rgba(255,255,255,.09);color:#E6EDF5}
+.msheet__act button:disabled{opacity:.35}
+.msheet__act button.pri{background:var(--yellow);color:#14283F}
+.msheet__l{overflow-y:auto;padding:6px 10px 10px;-webkit-overflow-scrolling:touch}
+.msheet__s{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:#6D86A3;padding:12px 8px 5px}
+.msheet__n{display:flex;align-items:center;gap:9px;padding:10px 10px;border-radius:10px;
+  font-size:13px;color:#C7D6E6}
+.msheet__n.on{background:var(--yellow);color:#14283F;font-weight:700}
+.msheet__n i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.28);flex-shrink:0}
+.msheet__n.on i{background:#14283F}
+.msheet__n.vis i{background:#6FD69B}
 .pscreen{width:390px;height:844px;display:flex;flex-direction:column;background:var(--surface-app);
   position:relative;overflow:hidden}
 .pbody{flex:1;overflow-y:auto}
@@ -1445,7 +1504,9 @@ function IframeScreen({file, onMsg}){
     const h = e => { const m=e.data; if(m && m.source==='valeo-screen') onMsg(m); };
     window.addEventListener('message',h); return ()=>window.removeEventListener('message',h);
   },[onMsg]);
-  return <iframe src={'screens/'+file} title={file}/>;
+  const src = 'screens/' + file
+    + (MOBILE ? (file.indexOf('?') > -1 ? '&' : '?') + 'fluid=1' : '');
+  return <iframe src={src} title={file}/>;
 }
 
 /* ── meta cards ── */
@@ -1467,7 +1528,9 @@ function MetaCard({node, go, dispatch}){
             <span style={{flex:1}}><span className="opt__l">{o.label}</span>
               <span className="opt__s">{o.sub}</span></span></button>))}
         <div className="grow"></div>
-        <div className="mfoot">Every branch is reversible — use Back, the rail, or Map to explore the others.</div>
+        <div className="mfoot">Every branch is reversible — {MOBILE
+          ? 'tap ☰ to go back or jump anywhere.'
+          : 'use Back, the rail, or Map to explore the others.'}</div>
       </> : <>
         {node.detail && <div className="meta__q" dangerouslySetInnerHTML={{__html:node.detail}}/>}
         {t==='skip' && <div className="skb"><i></i></div>}
@@ -1475,7 +1538,9 @@ function MetaCard({node, go, dispatch}){
           <div className="dl" key={i}><span>{d[0]}</span><b>{d[1]}</b></div>))}</div>}
         <div className="grow"></div>
         {node.to ? <button className="mcta" onClick={()=>go(node.to)}>Continue →</button>
-                 : <div className="mfoot">End of this path. Pick another branch from the rail or the Map.</div>}
+                 : <div className="mfoot">End of this path. {MOBILE
+                     ? 'Tap ☰ to pick another branch.'
+                     : 'Pick another branch from the rail or the Map.'}</div>}
       </>}
     </div>
   );
@@ -1491,6 +1556,55 @@ function exitsOf(id){
   ['to','primary','secondary','back'].forEach(k=>{ if(n[k]) out.push({to:n[k],k:k==='back'?'back':'flow'}); });
   if(n.exits) n.exits.forEach(e=>out.push({to:e,k:'flow'}));
   const seen={}; return out.filter(e=>FLOW[e.to] && !seen[e.to] && (seen[e.to]=1));
+}
+
+/* Mobile mode is opt-in via ?m=1 and touches nothing on the default path. */
+const MOBILE = new URLSearchParams(location.search).has('m');
+if (MOBILE) document.body.classList.add('mob');
+
+function MobileShell({st, node, go, dispatch, isMeta, Comp, onIframeMsg}){
+  const [open, setOpen] = React.useState(false);
+  const jump = id => { setOpen(false); go(id); };
+  return (
+    <div className="mstage">
+      <div className="phone">
+        {isMeta ? <MetaCard node={node} go={go} dispatch={dispatch}/>
+         : Comp ? <Comp st={st} go={go} dispatch={dispatch}/>
+         : <IframeScreen key={st.node} file={node.file} onMsg={onIframeMsg}/>}
+      </div>
+
+      <button className="mfab" onClick={()=>setOpen(true)} aria-label="Flow navigator">☰</button>
+
+      {open && (
+        <div className="msheet" onClick={()=>setOpen(false)}>
+          <div className="msheet__in" onClick={e=>e.stopPropagation()}>
+            <div className="msheet__g"></div>
+            <div className="msheet__act">
+              <button disabled={!st.history.length} onClick={()=>{setOpen(false);dispatch({type:'BACK'});}}>‹ Back</button>
+              <button onClick={()=>{setOpen(false);dispatch({type:'RESET'});}}>Reset</button>
+              <button className="pri" onClick={()=>setOpen(false)}>Close</button>
+            </div>
+            <div className="msheet__l">
+              {STAGES.map(sg=>{
+                const ids = Object.keys(FLOW).filter(k=>FLOW[k].stage===sg);
+                if(!ids.length) return null;
+                return (
+                  <div key={sg}>
+                    <div className="msheet__s">{sg}</div>
+                    {ids.map(id=>(
+                      <div key={id}
+                           className={'msheet__n'+(id===st.node?' on':'')+(st.visited[id]?' vis':'')}
+                           onClick={()=>jump(id)}>
+                        <i></i><span>{FLOW[id].title}</span>
+                      </div>))}
+                  </div>);
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function App(){
@@ -1527,6 +1641,9 @@ function App(){
 
   const isMeta = !!node.type;
   const Comp = node.comp ? COMPS[node.comp] : null;
+
+  if (MOBILE) return <MobileShell st={st} node={node} go={go} dispatch={dispatch}
+                                  isMeta={isMeta} Comp={Comp} onIframeMsg={onIframeMsg}/>;
 
   return (
     <div className="app">
