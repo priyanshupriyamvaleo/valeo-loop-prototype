@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valeo · The Loop — App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-system/tokens.css">
+<link rel="stylesheet" href="design-system/components.css">
+<link rel="stylesheet" href="design-system/loop.css">
+<script src="vendor/react.js"></script>
+<script src="vendor/react-dom.js"></script>
+<script src="vendor/babel.js"></script>
+<style>
+/* ═══════════ SHELL ═══════════ */
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--font-ui);background:#0E1D2E;color:#E6EDF5;overflow:hidden}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+#root{height:100vh}
+:root{--mono:ui-monospace,'SF Mono',Menlo,'Roboto Mono',monospace}
+.app{display:flex;flex-direction:column;height:100vh}
+
+.topbar{height:56px;flex-shrink:0;display:flex;align-items:center;gap:16px;padding:0 20px;
+  background:#14283F;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px}
+.brand__m{width:26px;height:26px;border-radius:7px;background:var(--yellow);color:#14283F;
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:15px}
+.brand__s{color:#7E93AC;font-weight:500;font-size:12px}
+.msw{display:flex;background:rgba(0,0,0,.28);border-radius:9px;padding:3px}
+.msw button{padding:6px 15px;border-radius:6px;font-size:12px;font-weight:600;color:#8DA2BB}
+.msw button.on{background:var(--yellow);color:#14283F}
+.chips{display:flex;gap:8px;margin-left:auto;align-items:center}
+.chipx{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);border-radius:999px;
+  padding:5px 12px;font-size:11.5px;font-weight:600}
+.chipx b{color:var(--yellow);font-weight:800;font-variant-numeric:tabular-nums}
+.tbtn{font-size:11.5px;font-weight:600;color:#8DA2BB;padding:6px 12px;border-radius:7px;
+  border:1px solid rgba(255,255,255,.12)}
+.tbtn:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+
+.main{flex:1;display:flex;min-height:0}
+.rail{width:246px;flex-shrink:0;overflow-y:auto;background:#122234;
+  border-right:1px solid rgba(255,255,255,.07);padding:12px 0 40px}
+.rail::-webkit-scrollbar{width:6px}.rail::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:3px}
+.rhint{font-size:10.5px;color:#5E7391;padding:0 16px 10px;line-height:1.5}
+.sname{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#5E7391;
+  padding:12px 16px 6px;display:flex;align-items:center;gap:7px}
+.sname::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
+.nd{display:flex;align-items:center;gap:9px;padding:7px 16px;font-size:12.3px;color:#A9BCD1;
+  cursor:pointer;border-left:2px solid transparent;line-height:1.3}
+.nd:hover{background:rgba(255,255,255,.05);color:#fff}
+.nd.on{background:rgba(255,185,0,.12);border-left-color:var(--yellow);color:#fff;font-weight:600}
+.nd__d{width:6px;height:6px;border-radius:50%;background:#33475E;flex-shrink:0}
+.nd.vis .nd__d{background:#5B7A99}
+.nd.on .nd__d{background:var(--yellow);box-shadow:0 0 0 3px rgba(255,185,0,.2)}
+.nd__l{flex:1;overflow:hidden;text-overflow:ellipsis}
+.bdg{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:800;flex-shrink:0}
+.b-fork{background:rgba(255,185,0,.18);color:var(--yellow)}
+.b-time{background:rgba(127,216,164,.15);color:#7FD8A4}
+.b-loop{background:rgba(159,184,255,.16);color:#9FB8FF}
+.b-app{background:rgba(255,255,255,.14);color:#fff}
+
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:0;padding:18px;position:relative;
+  background:radial-gradient(70% 55% at 50% 0%,rgba(255,185,0,.06),transparent 70%),#0E1D2E}
+.ktag{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:9px;padding:4px 11px;border-radius:5px}
+.ktag--n{background:rgba(111,214,155,.16);color:#7FD8A4}
+.ktag--d{background:rgba(255,255,255,.08);color:#93A9C2}
+.ktag--m{background:var(--yellow);color:#14283F}
+.phonewrap{position:relative}
+.phone{width:390px;height:844px;border-radius:44px;overflow:hidden;position:relative;
+  transform-origin:top center;background:#FFFDF5;
+  box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 0 9px #060D16,0 0 0 10px #2B3F56}
+.phone iframe{width:390px;height:844px;border:0;display:block}
+.pscreen{width:390px;height:844px;display:flex;flex-direction:column;background:var(--surface-app);
+  position:relative;overflow:hidden}
+.pbody{flex:1;overflow-y:auto}
+.pbody::-webkit-scrollbar{display:none}
+
+.why{width:306px;flex-shrink:0;overflow-y:auto;background:#122234;
+  border-left:1px solid rgba(255,255,255,.07);padding:20px 20px 40px}
+.why::-webkit-scrollbar{width:6px}.why::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:3px}
+.why__id{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--yellow);margin-bottom:5px}
+.why__t{font-family:var(--font-display);font-size:21px;font-weight:600;color:#fff;line-height:1.25;margin-bottom:14px}
+.why__k{font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#5E7391;margin:20px 0 7px}
+.why__b{font-size:12.5px;line-height:1.68;color:#AFC2D6}
+.why__b b{color:#fff;font-weight:600}
+.exit{display:flex;align-items:center;gap:8px;width:100%;text-align:left;font-size:11.5px;
+  padding:8px 11px;border-radius:8px;background:rgba(255,255,255,.05);color:#A9BCD1;margin-bottom:6px}
+.exit:hover{background:rgba(255,185,0,.14);color:#fff}
+.exit i{color:#5E7391;font-style:normal;font-size:10px}
+
+.bottom{height:52px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 18px;
+  background:#14283F;border-top:1px solid rgba(255,255,255,.08)}
+.nbtn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#A9BCD1;
+  padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.13)}
+.nbtn:hover:not(:disabled){color:#fff;border-color:var(--yellow)}
+.nbtn:disabled{opacity:.3;cursor:default}
+.trail{flex:1;display:flex;align-items:center;gap:5px;overflow:hidden}
+.cr{font-size:10.5px;padding:3px 9px;border-radius:5px;white-space:nowrap;
+  background:rgba(255,255,255,.06);color:#8DA2BB;flex-shrink:0;cursor:pointer}
+.cr.now{background:var(--yellow);color:#14283F;font-weight:700}
+
+/* meta cards */
+.meta{width:390px;height:844px;overflow-y:auto;padding:34px 26px;display:flex;flex-direction:column;
+  background:linear-gradient(165deg,#16293F,#0D1B2B);border:2px dashed rgba(255,185,0,.42);border-radius:44px}
+.meta::-webkit-scrollbar{display:none}
+.meta__e{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px}
+.meta__i{font-size:38px;margin-bottom:14px}
+.meta__t{font-family:var(--font-display);font-size:27px;font-weight:600;color:#fff;line-height:1.2;margin-bottom:10px}
+.meta__q{font-size:13.5px;color:#B9CCE1;line-height:1.6}
+.meta__w{font-size:11.5px;color:#7E93AC;line-height:1.6;border-left:2px solid rgba(255,185,0,.35);
+  padding-left:11px;margin:14px 0 22px}
+.opt{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+  background:rgba(255,255,255,.055);border:1.5px solid rgba(255,255,255,.11);border-radius:15px;
+  padding:15px 16px;margin-bottom:11px;transition:.14s}
+.opt:hover{background:rgba(255,255,255,.11);border-color:var(--yellow);transform:translateX(3px)}
+.opt__k{width:24px;height:24px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:800;background:rgba(255,255,255,.1);color:#93A9C2}
+.opt:hover .opt__k{background:var(--yellow);color:#14283F}
+.opt__l{display:block;font-size:14px;font-weight:600;color:#fff;line-height:1.35}
+.opt__s{display:block;font-size:11.5px;color:#8DA2BB;margin-top:4px;line-height:1.45}
+.opt--go .opt__l{color:#8CE0AE}.opt--warn .opt__l{color:#F2C46B}
+.opt--null .opt__l{color:#B8C6D8}.opt--grey .opt__l{color:#8DA2BB}.opt--stop .opt__l{color:#F09A96}
+.skb{height:5px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden;margin:20px 0 8px}
+.skb i{display:block;height:100%;background:var(--yellow);animation:fill 1.1s ease-out forwards}
+@keyframes fill{from{width:0}to{width:100%}}
+.dl{display:flex;justify-content:space-between;font-size:12px;padding:9px 13px;border-radius:9px;
+  background:rgba(255,255,255,.05);margin-bottom:8px}
+.dl span{color:#8DA2BB}.dl b{color:#fff;font-variant-numeric:tabular-nums}
+.mcta{width:100%;background:var(--yellow);color:#14283F;border-radius:13px;padding:15px;font-size:14px;font-weight:700}
+.mfoot{font-size:10.5px;color:#66798F;text-align:center;margin-top:12px;line-height:1.5}
+.grow{flex:1;min-height:10px}
+
+/* map */
+.map{flex:1;overflow:auto;padding:30px 38px 80px}
+.mapin{position:relative;display:flex;gap:42px;min-width:max-content}
+.mcol{width:212px;flex-shrink:0}
+.mch{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);
+  margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid rgba(255,185,0,.25)}
+.mn{background:#17293C;border:1.5px solid rgba(255,255,255,.1);border-radius:11px;padding:10px 12px;
+  margin-bottom:11px;cursor:pointer;transition:.13s}
+.mn:hover{border-color:var(--yellow);transform:translateY(-2px)}
+.mn.on{border-color:var(--yellow);background:#22374F;box-shadow:0 0 0 3px rgba(255,185,0,.16)}
+.mn__i{font-size:9px;font-weight:800;color:#5E7391}
+.mn__l{font-size:12px;font-weight:600;color:#DCE7F2;line-height:1.3;margin-top:3px}
+.mn__s{font-size:10px;color:#7E93AC;margin-top:3px;line-height:1.4}
+.mn--fork{background:#2B2515;border-color:rgba(255,185,0,.34)}
+.mn--time{background:#14291F;border-color:rgba(127,216,164,.3)}
+.mn--loop{background:#1B2039;border-color:rgba(159,184,255,.32)}
+.mlg{display:flex;gap:18px;margin-bottom:20px;font-size:11px;color:#7E93AC;align-items:center;flex-wrap:wrap}
+.mlg i{width:22px;height:3px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:middle}
+
+/* ═══════════ HUD — Ultrahuman's *structure*, Valeo's palette ═══════════
+   Borrowed: mono tabular numerals, wide-tracked micro-labels, hairline
+   rules, discrete segmented bars, live indicator. NOT borrowed: their
+   near-black + mint. This sits on Valeo deep navy with the brand yellow,
+   and the accent semantics match the Loop Ring — yellow = in progress,
+   green = closed. */
+.hud{position:relative;overflow:hidden;border-radius:26px;padding:18px 18px 16px;
+  background:linear-gradient(168deg,#1B395B 0%,#16304C 58%,#122A45 100%);
+  border:1px solid rgba(255,255,255,.10);width:100%;text-align:left;display:block;
+  box-shadow:0 18px 40px -16px rgba(18,42,69,.62), inset 0 1px 0 rgba(255,255,255,.07);}
+.hud::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background:repeating-linear-gradient(0deg,transparent 0 23px,rgba(255,255,255,.035) 23px 24px),
+             repeating-linear-gradient(90deg,transparent 0 23px,rgba(255,255,255,.022) 23px 24px);}
+.hud::after{content:'';position:absolute;right:-64px;top:-72px;width:210px;height:210px;
+  border-radius:50%;background:radial-gradient(circle,rgba(255,185,0,.17),transparent 68%);pointer-events:none;}
+.hud__bar{display:flex;align-items:center;gap:7px;position:relative;z-index:1;margin-bottom:16px;}
+.hud__lbl{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--yellow);}
+.hud__live{margin-left:auto;display:flex;align-items:center;gap:5px;font-family:var(--mono);
+  font-size:8.5px;letter-spacing:.16em;color:rgba(255,255,255,.4);}
+.hud__dot{width:5px;height:5px;border-radius:50%;background:var(--yellow);animation:hp 1.8s ease-in-out infinite;}
+@keyframes hp{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,185,0,.5)}50%{opacity:.4;box-shadow:0 0 0 4px rgba(255,185,0,0)}}
+.hud__stats{display:flex;position:relative;z-index:1;}
+.hud__s{flex:1;}
+.hud__s + .hud__s{border-left:1px solid rgba(255,255,255,.11);padding-left:16px;}
+.hud__n{font-family:var(--mono);font-size:40px;font-weight:700;line-height:.95;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.hud__k{font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:7px;}
+.hud__rule{height:1px;background:linear-gradient(90deg,rgba(255,185,0,.34),rgba(255,255,255,.06));
+  margin:16px 0 13px;position:relative;z-index:1;}
+.hud__row{display:flex;align-items:center;gap:9px;position:relative;z-index:1;padding:5px 0;}
+.hud__ic{font-size:12px;width:15px;flex-shrink:0;}
+.hud__nm{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:rgba(255,255,255,.8);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hud__d{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:rgba(255,255,255,.45);
+  font-variant-numeric:tabular-nums;flex-shrink:0;}
+.hud__seg{display:flex;gap:2px;width:62px;flex-shrink:0;}
+.hud__seg i{flex:1;height:7px;border-radius:1px;display:block;}
+.hud__foot{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:13px;
+  border-top:1px solid rgba(255,255,255,.1);position:relative;z-index:1;}
+.hud__due{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.52);flex:1;}
+.hud__due b{color:var(--yellow);}
+.hud__cta{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--deep);background:var(--yellow);padding:8px 14px;border-radius:9px;}
+
+/* ═══════════ APP SCREEN STYLES ═══════════ */
+.kick{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(27,57,91,.38)}
+.lede{font-family:var(--font-display);font-size:29px;font-weight:600;color:var(--deep);
+  line-height:1.16;letter-spacing:-.02em;margin:9px 0 0}
+.lede em{font-style:normal;color:var(--yellow-deep)}
+.searchbar{display:flex;align-items:center;gap:9px;background:var(--surface-card);border-radius:14px;
+  padding:12px 14px;font-size:13.5px;color:#9AA8B8;box-shadow:0 1px 2px rgba(27,57,91,.05)}
+.hi{font-size:20px;font-weight:600;color:var(--deep);margin:18px 0 14px;letter-spacing:-.01em}
+.entry{background:linear-gradient(158deg,#1B395B,#20456B 55%,#254A73);border-radius:26px;padding:20px;
+  color:#fff;position:relative;overflow:hidden;box-shadow:0 16px 38px -14px rgba(18,42,69,.6);cursor:pointer;
+  text-align:left;width:100%;display:block}
+.entry::after{content:'';position:absolute;right:-70px;top:-70px;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,185,0,.18),transparent 68%)}
+.entry__top{display:flex;align-items:flex-start;gap:16px;position:relative;z-index:1}
+.entry__tag{font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--yellow)}
+.entry__title{font-family:var(--font-display);font-size:20px;font-weight:600;margin:5px 0 3px;line-height:1.2}
+.entry__sub{font-size:12px;color:rgba(255,255,255,.68);line-height:1.45}
+.entry__foot{display:flex;align-items:center;gap:10px;margin-top:18px;padding-top:15px;
+  border-top:1px solid rgba(255,255,255,.13);position:relative;z-index:1}
+.entry__due{flex:1;font-size:12px;color:rgba(255,255,255,.8)}
+.entry__cta{background:var(--yellow);color:var(--deep);font-size:12.5px;font-weight:700;padding:9px 16px;border-radius:11px}
+.sect{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(27,57,91,.38);margin:26px 0 12px}
+.svcg{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.svc{text-align:center;font-size:10.5px;font-weight:600;color:var(--deep);line-height:1.3}
+.svc__g{width:100%;aspect-ratio:1;border-radius:17px;background:var(--surface-card);display:flex;
+  align-items:center;justify-content:center;font-size:22px;margin-bottom:6px;box-shadow:0 1px 2px rgba(27,57,91,.05)}
+.appnav{height:var(--tab-bar-height);flex-shrink:0;display:flex;padding-bottom:var(--safe-bottom);
+  background:rgba(255,253,245,.94);border-top:1px solid var(--border-hairline)}
+.appnav__i{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  color:#9AA8B8;font-size:9.5px;font-weight:600}
+.appnav__i.on{color:var(--deep)}
+
+.pk{background:linear-gradient(168deg,#1B395B,#14293F);border-radius:24px;padding:18px 18px 10px;
+  color:#fff;margin-top:20px;box-shadow:0 16px 34px -16px rgba(18,42,69,.6)}
+.pk__t{display:flex;align-items:center;justify-content:space-between}
+.pk__d{font-size:13.5px;font-weight:700}
+.pk__p{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  background:rgba(255,185,0,.16);color:var(--yellow);padding:3px 9px;border-radius:20px}
+.pk__m{font-size:11.5px;color:rgba(255,255,255,.55)}
+.pk__days{display:flex;justify-content:space-between;font-size:9.5px;color:rgba(255,255,255,.4);
+  font-weight:600;padding-bottom:8px}
+.pk__days b{color:var(--yellow)}
+.act{display:flex;align-items:center;gap:14px;background:var(--surface-card);border-radius:20px;
+  padding:16px 18px;margin-top:14px;width:100%;text-align:left;
+  box-shadow:0 1px 2px rgba(27,57,91,.05),0 10px 26px -14px rgba(27,57,91,.22)}
+.act:hover{transform:translateY(-1px)}
+.act__i{width:44px;height:44px;border-radius:14px;background:var(--mint);display:flex;
+  align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.act__t{font-size:15.5px;font-weight:700;color:var(--deep)}
+.act__s{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+.act__g{margin-left:auto;width:32px;height:32px;border-radius:50%;background:var(--deep);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.proto__i{display:flex;align-items:center;gap:13px;padding:12px 0;width:100%;text-align:left}
+.proto__i+.proto__i{border-top:1px solid rgba(27,57,91,.06)}
+.proto__b{width:21px;height:21px;border-radius:7px;flex-shrink:0;border:2px solid rgba(27,57,91,.18);
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff}
+.proto__i.done .proto__b{background:var(--green);border-color:var(--green)}
+.proto__i.now .proto__b{border-color:var(--yellow-deep);background:var(--yellow);color:var(--deep)}
+.proto__t{flex:1;font-size:13.5px;color:var(--text-primary)}
+.proto__i.done .proto__t{color:var(--ink-2);text-decoration:line-through}
+.proto__i.now .proto__t{font-weight:700;font-size:16px;color:var(--deep)}
+.proto__w{font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.qmini{display:flex;gap:3px}
+.qmini i{width:13px;height:5px;border-radius:3px;background:rgba(27,57,91,.13);display:block}
+.qmini i.on{background:var(--green)}
+.insight{display:flex;gap:11px;background:linear-gradient(150deg,#FDF1CC,#FBEBBC);border-radius:18px;
+  padding:14px 15px;margin-top:22px;font-size:12.5px;color:var(--deep);line-height:1.55}
+.cband{font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:20px;background:var(--green-soft);color:var(--green)}
+
+.loopbg{background:linear-gradient(180deg,#16304C,#1B395B 42%,#20456B)}
+.lhero{text-align:center;padding:14px 0 6px}
+.lring{position:relative;display:inline-flex}
+.lcore{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.lday{font-family:var(--font-display);font-size:52px;font-weight:600;color:#fff;line-height:1;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.lof{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);margin-top:5px;letter-spacing:.05em}
+.lph{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.plg{display:flex;margin-top:20px;padding:0 4px}
+.plg__i{flex:1;text-align:center}
+.plg__d{width:7px;height:7px;border-radius:50%;margin:0 auto 7px;background:rgba(255,255,255,.16)}
+.plg__i.done .plg__d{background:#6FD69B}
+.plg__i.now .plg__d{background:var(--yellow);box-shadow:0 0 0 4px rgba(255,185,0,.24)}
+.plg__t{font-size:8.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.plg__i.done .plg__t{color:#6FD69B}.plg__i.now .plg__t{color:#fff}
+.ctr{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;
+  padding:16px 17px;margin-top:24px}
+.ctr__l{font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.ctr__q{font-family:var(--font-display);font-size:17px;font-weight:500;color:#fff;line-height:1.38;margin-top:10px}
+.ctr__q em{font-style:normal;color:var(--yellow)}
+.ctr__b{display:flex;gap:16px;margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.1)}
+.ctr__s b{display:block;font-size:14px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+.ctr__s span{display:block;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:rgba(255,255,255,.42);margin-top:2px}
+.kickw{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.42)}
+.wrow{display:flex;align-items:center;gap:13px;padding:13px 0}
+.wrow+.wrow{border-top:1px solid rgba(255,255,255,.08)}
+.wrow__d{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.wrow__t{font-size:13.5px;font-weight:600;color:#fff}
+.wrow__s{font-size:11px;color:rgba(255,255,255,.48);margin-top:2px}
+.wrow__r{font-size:11.5px;font-weight:700;color:rgba(255,255,255,.65);font-variant-numeric:tabular-nums}
+.rec{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border-radius:18px;
+  padding:14px 15px;margin-bottom:10px}
+.rec__t{font-size:13.5px;font-weight:700;color:#fff}
+.rec__s{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.rec__v{margin-left:auto;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+  padding:4px 9px;border-radius:16px;background:rgba(111,214,155,.16);color:#6FD69B}
+.rec--e{border:1px dashed rgba(255,255,255,.16);background:transparent;justify-content:center;
+  font-size:11.5px;color:rgba(255,255,255,.4);padding:18px}
+
+.evid{display:flex;gap:9px;margin-top:20px}
+.evid__c{flex:1;background:var(--surface-card);border-radius:17px;padding:13px 12px;box-shadow:0 1px 2px rgba(27,57,91,.05)}
+.evid__n{font-family:var(--font-display);font-size:25px;font-weight:600;color:var(--deep);line-height:1;font-variant-numeric:tabular-nums}
+.evid__l{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);margin-top:5px;line-height:1.3}
+.sys{display:flex;align-items:center;gap:13px;padding:14px 0;width:100%;text-align:left}
+.sys+.sys{border-top:1px solid rgba(27,57,91,.06)}
+.sys__i{width:36px;height:36px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sys__t{font-size:14px;font-weight:600;color:var(--text-primary)}
+.sys__s{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+.sys__n{font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.sys__d{font-size:10px;font-weight:700;margin-top:1px}
+.claim{background:var(--surface-card);border-radius:19px;padding:15px 16px;box-shadow:0 1px 2px rgba(27,57,91,.05)}
+.claim__t{font-size:13.5px;color:var(--text-primary);line-height:1.55}
+.claim__n{display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:10px;
+  border-top:1px solid rgba(27,57,91,.06);font-size:10.5px;color:var(--ink-2)}
+.claim__p{font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;
+  border-radius:14px;background:var(--teal-soft);color:var(--teal)}
+.gt{background:var(--surface-sunken);border:1.5px dashed rgba(27,57,91,.14);border-radius:19px;padding:15px 16px}
+.gt__t{font-size:13.5px;font-weight:600;color:var(--ink-2);line-height:1.5}
+.gt__b{display:flex;gap:5px;margin:12px 0 7px}
+.gt__b i{flex:1;height:6px;border-radius:3px;background:rgba(27,57,91,.1);display:block}
+.gt__b i.on{background:var(--fog)}
+.gt__s{font-size:11px;color:var(--fog);line-height:1.5}
+
+/* modal sheet */
+.scrim{position:absolute;inset:0;background:rgba(18,34,52,.42);z-index:40;animation:fadein .2s}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface-app);
+  border-radius:28px 28px 0 0;z-index:41;padding:10px 20px calc(var(--safe-bottom) + 16px);
+  box-shadow:0 -8px 30px rgba(0,0,0,.18);animation:slideup .28s cubic-bezier(.2,.8,.2,1);max-height:82%;overflow-y:auto}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet::-webkit-scrollbar{display:none}
+.sheet__h{width:36px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 16px}
+.sheet__t{font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--deep);line-height:1.25}
+.sheet__s{font-size:13px;color:var(--ink-2);line-height:1.55;margin-top:6px}
+</style>
+</head>
+<body>
+<div id="root" style="display:flex;align-items:center;justify-content:center;color:#7E93AC;font:14px system-ui">
+  Loading React…
+</div>
+
+<script type="text/babel">
+const {useReducer, useEffect, useRef, useCallback} = React;
+
+/* ══════════════════════════════════════════════════════════════
+   1 · FLOW GRAPH — single source of truth for routing.
+   comp:'X'  → native React component (shares app chrome)
+   file:'x'  → self-contained document, rendered in an iframe
+   ══════════════════════════════════════════════════════════════ */
+const STAGES = ['Start','Valeo app','Onboard','Activate','Commit','Journey','Prove','Renew'];
+
+const FLOW = {
+'B-start': {type:'branch', stage:'Start', title:'Which journey?', icon:'🎬',
+  q:'Two ways in. Both are fully walkable.',
+  why:'A returning member and a first-time member see genuinely different products — loop_index changes the whole experience. Pick one; the rail and Map reach every node either way.',
+  options:[
+    {label:'First-time member', sub:'Walk the full loop from signup → Commit → Prove', to:'T3-1', tone:'go'},
+    {label:'Returning member', sub:'Day 28 of loop 1 — straight into the live app', to:'V0', tone:'alt'}
+  ]},
+
+'V0': {stage:'Valeo app', comp:'V0', title:'Valeo app home', hero:true, phase:'Act',
+  note:'The protocol lives <b>inside the existing Valeo app</b>. The entry card carries a live Loop Ring, so you can see how far through the loop you are without opening anything.<br><br>This screen keeps the app\'s own 5-tab bar. Tapping the card swaps to the protocol\'s 3-tab bar with a <code>‹ Valeo</code> escape — two nested apps, two tab bars.',
+  primary:'T2-P', exits:['T2-P','T3-1']},
+
+/* ── ONBOARD ── */
+'T3-1':{stage:'Onboard', file:'T3-1-goal-picker.html', title:'Goal picker', phase:'Measure',
+  note:'Single-select, no auto-advance. The five unbuilt goals render like WHOOP\'s grey Recovery score — real UI, visibly disabled, dated. Never animated-closed.', primary:'T3-2', back:'B-start'},
+'T3-2':{stage:'Onboard', file:'T3-2-intake.html', title:'Intake', phase:'Measure',
+  note:'Every question must visibly move the sealed prediction. If an answer wouldn\'t change C4, it isn\'t asked.', primary:'B-elig', back:'T3-1'},
+'B-elig':{type:'branch', stage:'Onboard', title:'Eligibility fork', icon:'⚖️',
+  q:'Does this user clear the clinical threshold?',
+  why:'Screening as branching, not a wall. The decline path is a designed surface, not an error state — and it is where a health company either earns trust or becomes a store.',
+  options:[{label:'Clears the threshold', sub:'→ baseline', to:'B-blood', tone:'go'},
+           {label:'Below the threshold', sub:'BMI 26.1 — the honest-decline path', to:'C7', tone:'stop'}]},
+
+/* ── ACTIVATE ── */
+'B-blood':{type:'branch', stage:'Activate', title:'Already have bloodwork?', icon:'📄',
+  q:'Plenty of KSA users already have recent bloods — Al Borg, a hospital, an employer screening.',
+  why:'Forcing a fresh draw is cost and friction, and for some users it is genuinely unnecessary. But an outside report cannot silently become the baseline: the retest must run on a matched assay or the verdict is fiction. So this fork has real consequences — one path skips the draw entirely.',
+  options:[{label:'Yes — I have a recent report', sub:'Upload it; we read it free either way', to:'T3-3b', tone:'go'},
+           {label:'No — book me a draw', sub:'Standard path', to:'T3-3', tone:'alt'}]},
+
+'T3-3b':{stage:'Activate', file:'T3-3b-upload-bloodwork.html?frame=1', title:'Upload bloodwork', phase:'Measure',
+  note:'“We’ll read it free, whether or not you go ahead” is real value delivered <b>before</b> any payment — the strongest version of selling-as-sequencing.<br><br>Recognised KSA labs are listed explicitly so the user can tell at a glance whether this will work for them.',
+  primary:'B-usable', back:'B-blood'},
+
+'B-usable':{type:'branch', stage:'Activate', title:'Can we use it as the baseline?', icon:'🔬',
+  q:'The report has been read. Two things decide whether it can serve as the sealed prediction’s baseline.',
+  why:'This is assay_version surfaced as a user-facing decision. Two HbA1c results from different methods are not comparable, and a verdict computed across them would be fiction. Refusing a free shortcut — and saying exactly why — is a stronger trust signal than accepting it.',
+  options:[{label:'Matched lab, 18 days old', sub:'Accepted as baseline — the draw is skipped entirely', to:'T3-3c', tone:'go'},
+           {label:'Different assay, 5 months old', sub:'Read free, but we draw our own', to:'T3-3d', tone:'warn'}]},
+
+'T3-3c':{stage:'Activate', file:'T3-3b-upload-bloodwork.html?frame=2', title:'Accepted — draw skipped', phase:'Read',
+  note:'A branch with real consequences: <b>this path removes the draw entirely</b> — days and cost gone. Most products treat “upload” as a formality; here it genuinely changes what happens next.<br><br>The schema field that makes the whole verification thesis work becomes the visible reason the shortcut is allowed — rigor as a feature, not fine print.',
+  primary:'C2', back:'B-usable'},
+
+'T3-3d':{stage:'Activate', file:'T3-3b-upload-bloodwork.html?frame=3', title:'Read free — draw needed', phase:'Measure',
+  note:'The constraint becomes the pitch: <i>“Most products would just accept this and call it a baseline. That’s how you get a confident verdict that means nothing.”</i><br><br>And the upload is never wasted — it shaped the recommended panel and removed six intake questions. A declined path that returns nothing is a dead end; this one isn’t.',
+  primary:'T3-4', back:'B-usable'},
+
+'T3-3':{stage:'Activate', file:'T3-3-eligibility.html', title:'Baseline recommended', phase:'Measure',
+  note:'<b>No drug name appears pre-login</b> — SFDA prohibits DTC advertising of prescription medicines. The acquisition surface sells the programme, never the molecule.', primary:'T3-4', back:'T3-2'},
+'T3-4':{stage:'Activate', file:'T3-4-phlebotomy-booking.html', title:'Book at-home draw', phase:'Measure',
+  note:'Gender-of-provider defaulted female-for-female with the slot trade-off shown <b>inline</b>. No mahram field — sending a female nurse dissolves the khalwah concern entirely.', primary:'SK-draw', back:'T3-3'},
+'SK-draw':{type:'skip', stage:'Activate', title:'The draw happens', icon:'🩸', headline:'Tuesday, 10:12 AM',
+  detail:'Four tubes. Fasted 8h. <b>assay_version recorded</b> — the field the entire week-12 comparison depends on.',
+  deltas:[['Sample','Collected'],['Fasting','8h confirmed'],['Assay','QUEST-A1C-4.2']], to:'T3-5'},
+'T3-5':{stage:'Activate', file:'T3-5-sample-processing.html', title:'Sample processing', phase:'Measure',
+  note:'Status as a first-class object with a published ETA. The dead interval between draw and result is addressable inventory.', primary:'SK-lab', back:'T3-4'},
+'SK-lab':{type:'skip', stage:'Activate', title:'48 hours in the lab', icon:'⏱', headline:'48 hours pass',
+  detail:'Panel resulted and interpretation written. <b>Both ship together</b> — never a bare number first. Function\'s 28-day gap is the failure mode avoided.',
+  deltas:[['Elapsed','+2 days'],['Markers','40 resulted'],['Out of range','3']], adv:{day:2}, to:'C1'},
+
+/* ── COMMIT ── */
+'C1':{stage:'Commit', file:'C1-results-ready.html?frame=1', title:'Results ready — push', phase:'Read',
+  note:'The push names <b>the finding, not the event</b>. The screen is opened by someone who already knows the shape of the answer.', primary:'B-entry'},
+'B-entry':{type:'branch', stage:'Commit', title:'Entry fork', icon:'📲',
+  q:'Where does this user open their results?',
+  why:'Native app was chosen for push — but that puts an install step upstream of the exact leak we\'re fixing. The web twin removes the gate: value lands first, install is asked for after.',
+  options:[{label:'Taps the push → in app', sub:'The happy path', to:'C2', tone:'go'},
+           {label:'Opens the emailed link', sub:'No install — the web twin', to:'C1w', tone:'alt'}]},
+'C1w':{stage:'Commit', file:'C1-results-ready.html?frame=2', title:'Web / email twin', phase:'Read',
+  note:'The results moment must not be gated behind an install. The app is offered afterwards — "to run the protocol" — never before.', primary:'C2', back:'B-entry'},
+'C2':{stage:'Commit', file:'C2-the-one-thing.html', title:'The one thing that matters', phase:'Read',
+  note:'One verdict sentence, one hero marker. The highlighted number is the count of <b>actions</b>, never problems.<br><br>Falsifier: 5-second test. Fewer than 4 of 5 naming the right marker = fail.', primary:'B-depth', back:'C1'},
+'B-depth':{type:'branch', stage:'Commit', title:'How deep does this user go?', icon:'🔍',
+  q:'Do they read the full panel before committing?',
+  why:'C3 is optional depth, and the metric is uncomfortable: does expanding it LOWER attach rate? If so it is a leak wearing a feature\'s clothes.',
+  options:[{label:'Straight to the plan', sub:'Most users', to:'C4', tone:'go'},
+           {label:'Reads all 40 markers', sub:'The auditor', to:'C3', tone:'alt'}]},
+'C3':{stage:'Commit', file:'C3-full-panel.html', title:'Full panel, ranked', phase:'Read',
+  note:'Ranked by <b>impact score</b> (deviation × evidence). Normals collapse. Never alphabetical — Function sorts 148 markers A–Z on a triage screen.', primary:'C4', back:'C2'},
+'C4':{stage:'Commit', file:'C4-sealed-prediction.html', title:'The sealed prediction', hero:true, phase:'Commit',
+  note:'<b>The frame this project is judged on.</b> Metric: protocol attach rate.<br><br><b>Drafted, not yet sealed</b> — a licensed clinician signs it at C5b before any charge, which is what makes the seal an event the user witnesses rather than a claim. The adherence floor is visible from this moment — Calibrate hid theirs in legal, so members failed on day 40 and learned on day 400.', primary:'C5', back:'C2'},
+'C5':{stage:'Commit', file:'C5-protocol.html', title:'The protocol', phase:'Commit',
+  note:'<b>Rebuilt — this was a checkout.</b> It had line items, a price total and “continue to consent”: it answered <i>what’s in the box</i> when the user was asking <i>what happens to me</i>. Price is now gone entirely and lives on C6.<br><br>“Protocol” has two meanings and I had built the wrong one. This is the <b>scientific</b> sense — a method, a mission briefing. The ring appears here for the first time (Measure ✓ Read ✓ Commit ●) so the loop is <i>invoked</i> rather than described.<br><br>The 12-week arc names the hard part out loud — “nausea peaks day 2… the stretch most people quit in” — because naming it in advance is what makes it survivable. Who-does-what turns a purchase into a partnership, and one unmissable card carries the immediate next action.', primary:'RVW', back:'C4'},
+'RVW':{stage:'Commit', file:'C5b-clinician-review.html?frame=1', title:'Clinician review', phase:'Commit',
+  note:'<b>The gap this closes:</b> C4 claimed “Sealed by Dr. Sara Al-Amri” but no screen ever showed her looking at it — the clinician was asserted, never witnessed. The prediction is now <i>drafted</i> at C4 and <i>sealed here</i>.<br><br>Clinically this isn’t optional: tirzepatide is prescription-only under SFDA, so a licensed human must approve before anything ships.<br><br><b>Superhuman’s inversion</b> — review before payment makes this read as being <i>accepted</i>, not buying. Named, licensed clinician (Marek / LetsGetChecked), a checklist citing the user’s real numbers, a printed SLA (Superpower) and a prominent live-call escalation (Form Health).',
+  primary:'SK-rvw', back:'C5'},
+
+'SK-rvw':{type:'skip', stage:'Commit', title:'Review turnaround', icon:'⏱', headline:'3 hours pass',
+  detail:'Async review, not a scheduled call — that is what keeps it from being Superhuman-expensive while keeping the human real. <b>No card has been touched.</b>',
+  deltas:[['Reviewed by','Dr. Sara Al-Amri'],['Turnaround','3h 12m'],['Charged so far','SAR 0']], to:'B-rvw'},
+
+'B-rvw':{type:'branch', stage:'Commit', title:'What did the clinician say?', icon:'🩺',
+  q:'A licensed clinician has read the panel, the intake and the proposed prediction.',
+  why:'This fork has to be able to return something other than “approved”. If every review came back clean, users would correctly conclude it is a rubber stamp — and the whole verification premise dies with it. “Approved with changes” is the default path on purpose.',
+  options:[{label:'Approved, with changes', sub:'Slower start + one extra marker — the doctor is real', to:'RVW-c', tone:'go'},
+           {label:'Approved as proposed', sub:'Straight through to consent', to:'C6', tone:'alt'},
+           {label:'Wants to talk first', sub:'Books a free 15-minute call before signing', to:'T3-6', tone:'warn'},
+           {label:'Not appropriate for this route', sub:'Declined — nothing charged, alternative offered', to:'C7', tone:'stop'}]},
+
+'RVW-c':{stage:'Commit', file:'C5b-clinician-review.html?frame=2', title:'Approved, with changes', phase:'Commit',
+  note:'<b>Why “with changes” is the default outcome:</b> a review that always approves is a checkbox, not a clinician. Showing a real, reasoned change is the entire point.<br><br>Both changes come straight from the GLP-1 research: slower titration because low ferritin plus early nausea is the documented week-three quit pattern, and adding TSH so a null result doesn’t send the user back to the start.<br><br>The seal is now an <b>event</b> — signed, licensed, timestamped, with the amendment rule stated up front rather than discovered later. And it stays reversible: “disagree? reply before you confirm — still nothing charged.”',
+  primary:'C6', back:'B-rvw'},
+
+'C6':{stage:'Commit', file:'C6-consent-commit.html', title:'Consent & commit', phase:'Commit',
+  note:'Retest pre-booked at <b>100%</b> — it reserves a matched assay_version, without which the week-12 comparison is fiction.<br><br>Two promises: inconclusive never costs extra, results stay yours forever.', primary:'C6b', back:'C5'},
+'C6b':{stage:'Commit', file:'C6b-order-confirmed.html', title:'Order confirmed', phase:'Act',
+  note:'<b>The missing beat.</b> Payment used to drop the user straight onto the home screen with no acknowledgement of what they had bought or when anything happens. The reminder — named nurse, date, time, address — is the point of the screen, so it is the brightest object on it.<br><br><b>The ring advances here:</b> three arcs close and Act opens at 0%. Commit → Act is the most meaningful transition in the loop and it now has a visible moment instead of happening silently between screens.<br><br>“Nothing for you to do until Thursday” is deliberate — the gap between paying and starting is where anxious users invent work and disengaged users forget entirely.',
+  primary:'V0', set:{day:1, adherence:100, phase:'Act', dayState:'day1', focus:'L1'}, back:'C6'},
+
+'C7':{stage:'Commit', file:'C7-not-eligible.html', title:'Not eligible', phase:'Read',
+  note:'BMI shown <b>once</b>, as a number, no colour band, no figure, no "obese" label. Never a dead end.', primary:'B-decl', back:'B-elig'},
+'B-decl':{type:'branch', stage:'Commit', title:'After the honest decline', icon:'🚪',
+  q:'What does a declined user actually do?',
+  why:'Forces the duty-of-care-vs-monetisable decision to be explicit. Deciding it accidentally is how a health company becomes a store.',
+  options:[{label:'Takes the alternative protocol', sub:'A real finding, not a consolation', to:'C4', tone:'go'},
+           {label:'Talks to a clinician first', sub:'Free — duty of care', to:'T3-6', tone:'alt'},
+           {label:'Leaves, checks back in 6 months', sub:'No retention modal', to:'END', tone:'stop'}]},
+'END':{type:'end', stage:'Commit', title:'Honest exit', icon:'🕊', headline:'They leave — and that is fine',
+  detail:'No dark pattern, no save-offer modal. We remind them in six months, free. <b>The trust is the asset</b>, and this is the cheapest place to buy it.',
+  deltas:[['Outcome','No sale'],['Trust','Intact'],['Reminder','6 months, free']]},
+'T3-6':{stage:'Commit', file:'T3-6-consult-scheduling.html', title:'Consult scheduled', phase:'Commit',
+  note:'The human call is the highest-leverage retention intervention available (Superhuman: ~65% full migration, ~2× self-serve), treated as the intervention, not logistics.', primary:'T3-7', back:'B-rvw'},
+'T3-7':{stage:'Commit', file:'T3-7-consult-summary.html', title:'Consult summary', phase:'Commit',
+  note:'The goal captured at intake is <b>quoted back by name</b> at the moment of highest credibility.', primary:'C6', back:'T3-6'},
+/* ── JOURNEY (native) ── */
+'T2-1':{stage:'Journey', comp:'Today', title:'Today', hero:true, phase:'Act',
+  note:'One sentence owns the screen. The dose-cycle card answers "where am I in the week" — which matters more than weight on a day with no shot and no draw. Then <b>one</b> action, then quiet numbers.<br><br>The Loop Ring sits top-right on every protocol screen. <b>The day-state is real state</b>, not a URL parameter — switch it from the fork and this same component re-renders.',
+  secondary:'B-day', back:'T2-P', exits:['B-day','T2-9','T2-7','T2-P']},
+'B-day':{type:'branch', stage:'Journey', title:'Which day is it?', icon:'📅',
+  q:'The daily hero renders five ways. Pick a day — it sets app state, not a URL.',
+  why:'D4 — the daily surface is a state machine, not a to-do list. A six-item checklist on a day with one real action manufactures failure; Noom\'s own data shows successful users weighed in once a week, not daily.',
+  options:[{label:'Day 1 — protocol starts', sub:'Nurse arriving, nothing logged yet', to:'T2-1', set:{dayState:'day1', day:1}},
+           {label:'Ordinary day (6 of 7)', sub:'Dose-cycle curve + one action', to:'T2-1', set:{dayState:'ordinary', day:28}},
+           {label:'Shot day (1 of 7)', sub:'Hero becomes a 5-item timed protocol', to:'T2-1', set:{dayState:'shot'}},
+           {label:'Day 2 post-shot', sub:'Hero becomes the symptom window', to:'T2-1', set:{dayState:'post'}},
+           {label:'Titration review week', sub:'The dose decision, evidence-first', to:'T2-1', set:{dayState:'titration'}},
+           {label:'Week 12 — retest due', sub:'Ring nearly closed → into Prove', to:'T2-1', set:{dayState:'retest', day:82}}]},
+'T2-P':{stage:'Journey', comp:'Protocols', title:'Protocols (portfolio)', hero:true, phase:'Act',
+  note:'<b>The protocols home.</b> Multiple loops are now allowed — but not arbitrarily.<br><br>The old rule was “one loop at a time”, which was blunt. The real constraint is <b>one loop per marker, no overlapping mechanisms</b>: two experiments that could move the same number cannot run together, or neither result is attributable. That is checkable by the system, which is why it can be enforced rather than merely stated.<br><br>Layout follows Duolingo’s course switcher (per-course progress retained, one focused), Peloton’s program browse, and Function’s history layer. Questionnaire at the top, browse below, then Running · Verified · Available · History.',
+  back:'V0', exits:['T2-1','T2-7','T3-2','B-conflict','T3-1','T3-9']},
+
+'B-conflict':{type:'branch', stage:'Journey', title:'That protocol would collide', icon:'🔬',
+  q:'Longevity scores <b>HbA1c</b>. Metabolic Reset is already testing HbA1c, and metformin moves it.',
+  why:'This is the multi-loop rule doing real work. Running both would leave you unable to attribute any change to either intervention — you would have paid for two protocols and bought zero answers. Refusing, and saying exactly why, is the same move as the assay-mismatch refusal: rigor as a feature rather than fine print.',
+  options:[{label:'Queue it for after 7 Feb', sub:'Starts the day Metabolic Reset closes — nothing lost', to:'T2-P', tone:'go'},
+           {label:'Run the non-colliding arm only', sub:'ApoB arm now, HbA1c arm later — a real experiment either way', to:'T3-1', tone:'alt'},
+           {label:'Stop Metabolic Reset and switch', sub:'Loop 1 closes as inconclusive — the honest cost, stated', to:'P6d', tone:'warn'}]},
+
+'T2-9':{stage:'Journey', comp:'Loop', title:'Loop detail (focused)', hero:true, phase:'Act',
+  note:'<b>The tab that was missing.</b> The whole thesis is a closed loop and there wasn\'t a pixel of it anywhere.<br><br>Five arcs — Measure · Read · Commit · Act · Prove. Apple\'s rings work because closing one feels good, but 500 calories is arbitrary. <b>This ring closes when a sealed prediction actually gets a verdict.</b><br><br>Completed loops stack inward as tree rings — a record that cannot be bought, faked or reset.<br><br>This tab also <b>absorbs the old Timeline screen</b>: phase strip, Ramadan band and dose ladder live here, because "where am I in the arc" and "where am I in the loop" are the same question and deserved one answer, not two mediocre tabs.',
+  back:'T2-P', exits:['T2-1','T2-7','P1','T2-P']},
+'T2-7':{stage:'Journey', comp:'Twin', title:'The Twin', phase:'Act',
+  note:'Personal causal claims gated on <b>variance, not volume</b> — 5 yes / 5 no over 90 days. Population claims ship immediately and stay visually distinct.<br><br>No silhouette, no avatar, no BMI figure — 50.2% of Saudi women report weight stigma and a silhouette has no clinical job.',
+  back:'T2-P', exits:['T2-1','T2-9','T2-P']},
+'T2-5':{stage:'Journey', file:'T2-5-coach-chat.html', title:'Coach chat', phase:'Act',
+  note:'Every message implying a loggable event renders a <b>separate editable card</b>. AI first, human escalation with the SLA printed.', primary:'T2-1', back:'T2-1'},
+'T2-6':{stage:'Journey', file:'T2-6-adherence-at-risk.html', title:'Adherence at risk', phase:'Act',
+  note:'All three P2 guardrails at once: the number is defensible, the exit is in the same sentence, and every remedy is free.', primary:'B-rec', back:'T2-1'},
+'B-adh':{type:'branch', stage:'Journey', title:'Adherence fork', icon:'📊',
+  q:'Is this user holding the 80% floor?',
+  why:'The second hypothesised leak, and P2 in full: loss aversion on <i>the answer</i>, not a streak. Nobody in consumer health ships consequence-based loss aversion — unproven, not disproven.',
+  options:[{label:'Holding — 86%', sub:'The loop runs clean', to:'SK-weeks', tone:'go'},
+           {label:'Slipping — 62%', sub:'The intervention fires', to:'T2-6', set:{adherence:62}, tone:'warn'},
+           {label:'Something came up', sub:'Travel, illness, Ramadan → Pause', to:'PAUSE', tone:'alt'}]},
+'B-rec':{type:'branch', stage:'Journey', title:'Does the intervention work?', icon:'🔧',
+  q:'What does the user do with the warning?',
+  why:'The failure mode of consequence-based loss aversion is a one-way ratchet to despair — "inconclusive" is terminal for the cycle. So the exit must exist before it is needed.',
+  options:[{label:'Logs the missed days', sub:'Back above floor — repair is free', to:'SK-weeks', set:{adherence:84}, tone:'go'},
+           {label:'Pauses the protocol', sub:'Honest window extension', to:'PAUSE', tone:'alt'},
+           {label:'Ignores it entirely', sub:'→ arrives at week 12 below floor', to:'SK-low', tone:'warn'}]},
+'PAUSE':{type:'skip', stage:'Journey', title:'Protocol paused', icon:'⏸', headline:'Paused 29 days — Ramadan',
+  detail:'A <b>ConfounderEvent</b> is written — the Pause UI and the confounder capture are the same object. Dose frozen, reminders shifted to after Iftar, retest window extended by 29 days, demands ramp back proportionally on exit.',
+  deltas:[['Confounder','ramadan_fasting'],['Dose','Frozen'],['Window','+29 days'],['Goal','Hold, don\'t lose']], adv:{day:29}, to:'T2-9'},
+'SK-weeks':{type:'skip', stage:'Journey', title:'The protocol runs', icon:'⏱', headline:'8 weeks pass',
+  detail:'The engagement loop does its only job: protecting the outcome loop. Nothing dramatic happens, which is the point.',
+  deltas:[['Doses','48 of 56 logged'],['Adherence','86% — above floor'],['Confounders','None disqualifying']],
+  set:{day:82, adherence:86, phase:'Prove'}, to:'P1'},
+'SK-low':{type:'skip', stage:'Journey', title:'The protocol runs (poorly)', icon:'⏱', headline:'8 weeks pass',
+  detail:'The warning was ignored. Note what the product does <b>not</b> do: no escalating guilt, no streak-break, no charge. It simply arrives unable to answer honestly.',
+  deltas:[['Doses','30 of 56 logged'],['Adherence','54% — below floor'],['Verdict risk','Inconclusive']],
+  set:{day:82, adherence:54, phase:'Prove'}, to:'P1'},
+
+/* ── PROVE ── */
+'P1':{stage:'Prove', file:'P1-retest-due.html?frame=1', title:'Retest due — push', phase:'Prove',
+  note:'The return trigger, and the strongest argument for native. Copy names <b>the sealed prediction</b>, not the appointment.', primary:'P1b'},
+'P1b':{stage:'Prove', file:'P1-retest-due.html?frame=2', title:'Retest due — in app', phase:'Prove',
+  note:'The empty socket from C4 reappears, now glowing. This screen confirms or reschedules — it never re-sells the retest, which was pre-paid at C6.', primary:'SK-retest', back:'P1'},
+'SK-retest':{type:'skip', stage:'Prove', title:'The retest draw', icon:'🩸', headline:'Thursday, 9:12 AM',
+  detail:'Same nurse, same assay, same fasting protocol. <b>Comparability is the whole point</b> — this is what the reservation at C6 bought.',
+  deltas:[['Assay match','Confirmed'],['Fasting','8h'],['Quality','Good']], to:'P2'},
+'P2':{stage:'Prove', file:'P2-verdict-pending.html', title:'Verdict pending', phase:'Prove',
+  note:'The 48-hour wait, filled with <b>the evidence the verdict will be computed from</b>. Function had four weeks of narrative beats here and sent one email.', primary:'B-verd'},
+'B-verd':{type:'branch', stage:'Prove', title:'THE VERDICT', icon:'⚖️',
+  q:'The sealed prediction was: <b>HbA1c below 5.7% by 7 Dec</b>. What actually happened?',
+  why:'Not one product in consumer health makes a falsifiable prediction and later scores itself against it. Calibrate priced a 10% guarantee and never built the instrument that measures it. All four outcomes are designed with equal care — that IS the differentiation.',
+  options:[{label:'Confirmed — 5.6%', sub:'Target met', to:'P3', tone:'go'},
+           {label:'Partial — 5.8%', sub:'Right direction, short · likely the MODAL outcome', to:'P4b', tone:'warn'},
+           {label:'Refuted — 5.9%', sub:'Didn\'t move. A clean null — valid and valuable', to:'P5', tone:'null'},
+           {label:'Inconclusive', sub:'Can\'t call it fairly — four reasons', to:'B-inc', tone:'grey'}]},
+'P3':{stage:'Prove', file:'P3-the-reveal.html', title:'The reveal — confirmed', hero:true, phase:'Prove',
+  note:'<b>The screen that does not exist anywhere in the category.</b> Metric: loop-2 start rate.<br><br>Vertical band (sidesteps RTL — the axis is value, not time), dose-timeline overlay, anchored to the user\'s own baseline rather than a cohort average.', primary:'LOOP-2'},
+'P4b':{stage:'Prove', file:'P4b-verdict-partial.html', title:'Verdict — partial', phase:'Prove',
+  note:'<b>Graded, not binary.</b> Voy prorates; Manifold ships PARTIAL. Two unrelated categories converged because a binary win/lose feels arbitrary at exactly the boundary where most users land.', primary:'SK-ext'},
+'SK-ext':{type:'skip', stage:'Prove', title:'Extended four weeks', icon:'⏩', headline:'The prediction is amended',
+  detail:'Dose raised, window extended, same scored marker. The amendment is a <b>visible event with a reason</b> — never a silent revision. Noom quietly improves its date 21 screens later.',
+  deltas:[['Dose','5mg → 7.5mg'],['Window','+4 weeks'],['Prediction','Re-sealed'],['Causal quality','Degraded, logged']], adv:{day:28}, to:'P1'},
+'P5':{stage:'Prove', file:'P5-verdict-refuted.html', title:'Verdict — refuted', phase:'Prove',
+  note:'<b>A success state for the business.</b> A clean null is what a future B2B customer pays for, and the proof to this user we weren\'t just selling.<br><br>Slate, never coral — a null is a serious finding, not an alarm.', primary:'LOOP-h'},
+'LOOP-h':{type:'loop', stage:'Prove', title:'A different question', icon:'🔁', headline:'New hypothesis, not a bigger dose',
+  detail:'The drug didn\'t move it → test absorption and adherence quality directly. <b>A different, cheaper test than another eight weeks of guessing.</b> This is what a verification company does with a null that a supplement company cannot.',
+  deltas:[['Loop verdict','Refuted — recorded'],['Corpus','+1 causal row'],['Next','New sealed prediction']], to:'C4'},
+'B-inc':{type:'branch', stage:'Prove', title:'Inconclusive — which reason?', icon:'🌫',
+  q:'Four reasons, four screens. Different owner of the failure → different tone and remedy.',
+  why:'A generic "we couldn\'t determine a result" would destroy precisely the trust the honest verdict was meant to buy. Per Metaculus, an inconclusive is EXCLUDED from the track record — never scored as a loss, or everyone learns to avoid the honest state.',
+  options:[{label:'Assay mismatch', sub:'OUR fault → free re-draw', to:'P6a', tone:'alt'},
+           {label:'Retest outside window', sub:'Scheduling → reschedule', to:'P6b', tone:'grey'},
+           {label:'Ramadan pause', sub:'Nobody\'s fault → extend', to:'P6c', tone:'warn'},
+           {label:'Below the adherence floor', sub:'Theirs, said kindly', to:'P6d', tone:'null'}]},
+'P6a':{stage:'Prove', file:'P6-verdict-inconclusive.html?card=1', title:'Inconclusive — assay', phase:'Prove',
+  note:'Owner: <b>us</b>. Apology specific, remedy immediate and free. An honest product that occasionally says "we can\'t tell you yet, on us" is more trustworthy than one that always has an answer.', primary:'SK-redraw', back:'B-inc'},
+'P6b':{stage:'Prove', file:'P6-verdict-inconclusive.html?card=2', title:'Inconclusive — window', phase:'Prove',
+  note:'Owner: <b>shared</b>. Neutral and practical. The comparability cost is stated plainly.', primary:'P1', back:'B-inc'},
+'P6c':{stage:'Prove', file:'P6-verdict-inconclusive.html?card=3', title:'Inconclusive — Ramadan', phase:'Prove',
+  note:'Owner: <b>nobody</b>. The Pause declared weeks earlier makes this matter-of-fact instead of a surprise. Ramadan as a first-class state.', primary:'SK-weeks', back:'B-inc'},
+'P6d':{stage:'Prove', file:'P6-verdict-inconclusive.html?card=4', title:'Inconclusive — below floor', phase:'Prove',
+  note:'Owner: <b>theirs</b>, said kindly. The adherence record is <b>methodology, not punishment</b>. And this never routes to a charge — the retest is already owned.', primary:'SK-weeks', back:'B-inc'},
+'SK-redraw':{type:'skip', stage:'Prove', title:'Free re-draw', icon:'🔄', headline:'Matched assay, no charge',
+  detail:'The retest was already paid for at Commit. <b>Inconclusive never routes to a charge</b> — if it ever appeared to drive a paid re-draw, the mechanic dies the day someone posts that theory.',
+  deltas:[['Cost','SAR 0'],['Assay','Matched'],['History','Not counted as a loss']], to:'P2'},
+
+/* ── RENEW ── */
+'LOOP-2':{type:'loop', stage:'Renew', title:'The loop closes and reopens', icon:'🔁', headline:'Loop 1 complete',
+  detail:'HbA1c 5.9 → 5.6, confirmed against a prediction sealed twelve weeks earlier.<br><br>This is the thesis in one transition: <b>not a subscription that renews, but a question that got answered and a next one worth asking.</b>',
+  deltas:[['Loop 1','Confirmed'],['Corpus','+1 verified row'],['loop_index','2'],['Goals unlocked','+1']],
+  set:{loop:2, phase:'Measure', day:1}, to:'T3-8'},
+'T3-8':{stage:'Renew', file:'T3-8-renew-loop2.html', title:'Renew / loop 2', phase:'Measure',
+  note:'Never the acquisition page minus a discount — ZOE\'s reactivation renders the same hero and plans as new-user acquisition with the trial removed.<br><br><b>loop_index changes the whole screen.</b>', primary:'RECUR', back:'P3'},
+'RECUR':{type:'loop', stage:'Renew', title:'Loop 2 begins', icon:'↻', headline:'Back to the top — with memory',
+  detail:'New goal, new intake, new sealed prediction. Same machinery, sharper twin. The intake is shorter because the system already knows things — Stage 2 of the moat, rendered as a UI decision.',
+  deltas:[['Returning to','Intake'],['Carried over','Full history + corpus'],['Loop','2']], to:'T3-2'},
+'T3-9':{stage:'Renew', file:'T3-9-plan-management.html', title:'Plan management', phase:'Act',
+  note:'Cancel is one tap, self-serve, <b>no chatbot gate</b> — the direct answer to Noom\'s $62M settlement, which was about friction asymmetry between joining and leaving.', primary:'T2-1', back:'T2-1'}
+};
+
+const PHASES = ['Measure','Read','Commit','Act','Prove'];
+
+/* ══════════════════════════════════════════════════════════════
+   2 · STATE
+   ══════════════════════════════════════════════════════════════ */
+/* ── PORTFOLIO ──────────────────────────────────────────────
+   Multiple loops are allowed, but not arbitrarily. The rule is
+   ONE LOOP PER MARKER, NO OVERLAPPING MECHANISMS — two experiments
+   that could move the same number cannot run at the same time,
+   or neither result means anything. `blocks` encodes that. */
+const LOOPS = [
+  {id:'L1', t:'Metabolic Reset', ic:'⚖️', st:'active', day:28, total:84, phase:'Act',
+   adh:86, marker:'HbA1c', from:'5.9%', target:'below 5.7%', due:'7 Feb',
+   next:'Log tonight’s dose', drug:'Tirzepatide 5 mg'},
+  {id:'L2', t:'Hair Density', ic:'💇', st:'active', day:9, total:112, phase:'Act',
+   adh:94, marker:'Terminal hair count', from:'118/cm²', target:'above 135/cm²', due:'2 May',
+   next:'Apply topical, evening', drug:'Topical minoxidil 5%'},
+  {id:'L0', t:'Iron Correction', ic:'🧲', st:'done', verdict:'refuted',
+   marker:'Ferritin', from:'18 ng/mL', to:'21 ng/mL', when:'Closed 4 Sep',
+   note:'Oral iron didn’t move it — absorption issue found and now being treated'}
+];
+const AVAILABLE = [
+  {id:'A1', t:'Longevity', ic:'🧬', marker:'HbA1c + ApoB', why:'Metformin arm',
+   blocks:'L1', reason:'Metformin moves HbA1c — the exact marker Metabolic Reset is testing. Running both would make neither result attributable.'},
+  {id:'A2', t:'Sleep & Recovery', ic:'😴', marker:'HRV, sleep latency', why:'Magnesium + light protocol', blocks:null},
+  {id:'A3', t:'Fertility', ic:'👪', marker:'AMH, testosterone', why:'Hormone panel + protocol', blocks:null},
+  {id:'A4', t:'Gut', ic:'🦠', marker:'Microbiome diversity', why:'Fibre + strain protocol', blocks:null}
+];
+
+const INIT = {node:'B-start', focus:'L1', history:[], visited:{'B-start':1},
+  day:28, adherence:86, loop:1, phase:'Act', dayState:'ordinary', sheet:null, mode:'walk'};
+
+function reducer(s, a){
+  switch(a.type){
+    case 'GO': {
+      if(!FLOW[a.to]) return s;
+      const n = FLOW[a.to];
+      let ns = {...s, node:a.to, sheet:null,
+        history:(a.to!==s.node ? [...s.history, s.node] : s.history),
+        visited:{...s.visited,[a.to]:1}};
+      if(a.set) ns = {...ns, ...a.set};
+      if(n.set) ns = {...ns, ...n.set};
+      if(n.adv && n.adv.day) ns.day = ns.day + n.adv.day;
+      if(n.phase) ns.phase = n.phase;
+      return ns;
+    }
+    case 'BACK': {
+      if(!s.history.length) return s;
+      const h=[...s.history], prev=h.pop();
+      return {...s, node:prev, history:h, sheet:null};
+    }
+    case 'SHEET': return {...s, sheet:a.sheet};
+    case 'SET':   return {...s, ...a.patch};
+    case 'MODE':  return {...s, mode:a.mode};
+    case 'RESET': return {...INIT};
+    default: return s;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3 · PRIMITIVES
+   ══════════════════════════════════════════════════════════════ */
+function LoopRing({size=30, phase='Act', fill=.6, loops=0, sw=15, dark=true}){
+  const idx = PHASES.indexOf(phase);
+  const ARC=101.58, GAP=451.34, C=552.92;
+  const cls = i => i<idx ? 'ring__arc--done' : i===idx ? 'ring__arc--now' : 'ring__arc--todo';
+  const trees=[]; for(let i=0;i<loops;i++) trees.push(70-i*13);
+  return (
+    <svg className={'ring'+(dark?' ring--on-dark':'')} width={size} height={size} viewBox="0 0 200 200">
+      <g transform="translate(100,100)">
+        {trees.map((r,i)=>(<circle key={i} className="ring__tree" r={r} strokeWidth="4" fill="none" opacity={.45-i*.12}/>))}
+        {PHASES.map((p,i)=>(
+          <circle key={p} className={cls(i)} r="88" strokeWidth={sw} fill="none"
+                  strokeDasharray={ARC+' '+GAP} transform={'rotate('+(i*72-90)+')'}/>
+        ))}
+        {idx>=0 && <circle className="ring__fill" r="88" strokeWidth={sw} fill="none"
+                  strokeDasharray={(ARC*Math.max(0,Math.min(1,fill)))+' '+C} transform={'rotate('+(idx*72-90)+')'}/>}
+      </g>
+    </svg>
+  );
+}
+
+function AppBar({st, go, dark}){
+  const fill = st.phase==='Act' ? Math.min(1, st.day/84*1.5) : .55;
+  return (
+    <div className="appbar" style={dark?{color:'#fff',background:'#16304C'}:{}}>
+      <button className="appbar__back" onClick={()=>go('V0')}
+              style={dark?{color:'rgba(255,255,255,.75)'}:{}}>‹ Valeo</button>
+      <span className="appbar__spacer"></span>
+      <button className="appbar__ring" onClick={()=>go('T2-9')}>
+        <span className="appbar__ringlabel" style={dark?{color:'#fff'}:{}}>
+          <b style={dark?{color:'#fff'}:{}}>Loop {st.loop} · {st.phase}</b>
+          <span style={dark?{color:'rgba(255,255,255,.55)'}:{}}>Day {st.day} of 84</span>
+        </span>
+        <LoopRing size={30} phase={st.phase} fill={fill} loops={st.loop-1} dark={dark}/>
+      </button>
+      <button className="appbar__avatar" onClick={()=>go('T3-9')}
+              style={dark?{background:'rgba(255,255,255,.16)'}:{}}>FA</button>
+    </div>
+  );
+}
+
+function TabBar({active, go}){
+  const T=[['today','◉','Today','T2-1'],['loop','◍','Loop','T2-9'],['protocols','▤','Protocols','T2-P'],['twin','◎','Twin','T2-7']];
+  return (
+    <div className="tabs3">
+      {T.map(([k,ic,lb,node])=>(
+        <button key={k} className={'tabs3__i'+(active===k?' on':'')} onClick={()=>go(node)}>
+          <span className="tabs3__ico">{ic}</span><span className="tabs3__lbl">{lb}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function StatusBar({dark}){
+  return <div className="status-bar" style={dark?{color:'#fff',background:'#16304C'}:{}}>
+    <span>9:41</span><span>●●● 5G 87%</span></div>;
+}
+
+function Sheet({title, sub, children, onClose, cta, onCta}){
+  return (<>
+    <div className="scrim" onClick={onClose}></div>
+    <div className="sheet">
+      <div className="sheet__h"></div>
+      <div className="sheet__t">{title}</div>
+      {sub && <div className="sheet__s">{sub}</div>}
+      <div style={{marginTop:18}}>{children}</div>
+      <button className="btn btn--primary" style={{marginTop:18}} onClick={onCta||onClose}>{cta||'Done'}</button>
+    </div>
+  </>);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4 · NATIVE SCREENS
+   ══════════════════════════════════════════════════════════════ */
+function V0Home({st, go}){
+  const fill = Math.min(1, st.day/84*1.5);
+  const svcs=[['🧪','Lab Tests'],['⚖️','Weight Loss'],['💧','IV Therapy'],['💊','Supplements'],['🩺','Doctor on Call'],['💇','Hair Growth']];
+  return (
+    <div className="pscreen">
+      <StatusBar/>
+      <div className="pbody">
+        <div style={{padding:'8px 20px 24px'}}>
+          <div className="searchbar">🔍 Search "Blood tests"</div>
+          <div className="hi">Hi <b>Faisal</b>, welcome back</div>
+          <button className="hud" onClick={()=>go('T2-P')}>
+            <div className="hud__bar">
+              <span className="hud__lbl">◈ Protocol Status</span>
+              <span className="hud__live"><span className="hud__dot"></span>LIVE</span>
+            </div>
+
+            <div className="hud__stats">
+              <div className="hud__s">
+                <div className="hud__n" style={{color:'var(--yellow)'}}>
+                  {String(LOOPS.filter(l=>l.st==='active').length).padStart(2,'0')}</div>
+                <div className="hud__k">Loops ongoing</div>
+              </div>
+              <div className="hud__s">
+                <div className="hud__n" style={{color:'#6FD69B'}}>
+                  {String(LOOPS.filter(l=>l.st==='done').length).padStart(2,'0')}</div>
+                <div className="hud__k">Loops completed</div>
+              </div>
+              <div className="hud__s">
+                <div className="hud__n" style={{color:'rgba(255,255,255,.9)'}}>
+                  {String(LOOPS.filter(l=>l.st==='active')
+                    .reduce((n,l)=>n+Math.max(0,l.total-l.day),0)).padStart(3,'0')}</div>
+                <div className="hud__k">Days to verdict</div>
+              </div>
+            </div>
+
+            <div className="hud__rule"></div>
+
+            {LOOPS.filter(l=>l.st==='active').map(l=>{
+              const filled = Math.round(l.day/l.total*10);
+              return (
+                <div className="hud__row" key={l.id}>
+                  <span className="hud__ic">{l.ic}</span>
+                  <span className="hud__nm">{l.t}</span>
+                  <span className="hud__seg">
+                    {Array.from({length:10}).map((_,i)=>(
+                      <i key={i} style={{background:i<filled?'var(--yellow)':'rgba(255,255,255,.13)'}}/>))}
+                  </span>
+                  <span className="hud__d">D{String(l.day).padStart(2,'0')}/{l.total}</span>
+                </div>);
+            })}
+
+            <div className="hud__foot">
+              <span className="hud__due"><b>02</b> tasks due today</span>
+              <span className="hud__cta">Open →</span>
+            </div>
+          </button>
+
+          <div className="sect">Healthcare at your doorstep</div>
+          <div className="svcg">{svcs.map(([i,l])=>(
+            <div className="svc" key={l}><div className="svc__g">{i}</div>{l}</div>))}</div>
+          <button className="btn btn--secondary" style={{marginTop:22}} onClick={()=>go('T2-P')}>
+            Start a new protocol →</button>
+        </div>
+      </div>
+      <div className="appnav">
+        {[['🧪','Services'],['💊','Supplements'],['◆','Home'],['📈','Results'],['🛒','Cart']].map(([i,l],k)=>(
+          <div key={l} className={'appnav__i'+(k===2?' on':'')}><span style={{fontSize:20}}>{i}</span>{l}</div>))}
+      </div>
+      <div className="home-indicator"></div>
+    </div>
+  );
+}
+
+function Today({st, go, dispatch}){
+  const ds = st.dayState;
+  const fill = Math.min(1, st.day/84*1.5);
+  const setSheet = s => dispatch({type:'SHEET', sheet:s});
+
+  const HEAD = {
+    ordinary:  ['Tuesday · 12 November', <>Your next dose is <em>in 3 days</em>.</>],
+    shot:      ['Saturday · shot day',   <>Tonight at <em>8:15</em>.<br/>Five things, in order.</>],
+    post:      ['Monday · day 2 after your shot', <>This is usually the <em>rough one</em>.</>],
+    titration: ['Thursday · titration review', <>Time to decide the <em>next dose</em>.</>],
+    retest:    ['Friday · week 12',      <>Your retest is <em>ready to book</em>.</>],
+    day1:      ['Day 1 · Thursday 14 November', <>This is where it <em>starts</em>.</>]
+  }[ds];
+
+  return (
+    <div className="pscreen">
+      <StatusBar/>
+      <AppBar st={st} go={go}/>
+      <div className="pbody">
+        <div style={{padding:'6px 20px 26px'}}>
+          <div className="kick" style={ds==='shot'?{color:'var(--yellow-deep)'}:{}}>{HEAD[0]}</div>
+          <h1 className="lede">{HEAD[1]}</h1>
+
+          {ds==='ordinary' && <>
+            <div className="pk">
+              <div className="pk__t"><span className="pk__d">Tirzepatide 5 mg</span>
+                <span className="pk__p">Level falling</span></div>
+              <div className="pk__m">Weekly · injected Saturday 8:15 pm</div>
+              <div style={{height:74,marginTop:6}}>
+                <svg viewBox="0 0 320 74" preserveAspectRatio="none" style={{width:'100%',height:'100%'}}>
+                  <defs><linearGradient id="pkg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#FFB900" stopOpacity=".34"/>
+                    <stop offset="100%" stopColor="#FFB900" stopOpacity="0"/></linearGradient></defs>
+                  <path d="M0,58 C22,54 34,10 62,8 C104,6 130,30 168,42 C210,55 250,62 320,66 L320,74 L0,74 Z" fill="url(#pkg)"/>
+                  <path d="M0,58 C22,54 34,10 62,8 C104,6 130,30 168,42 C210,55 250,62 320,66"
+                        fill="none" stroke="#FFB900" strokeWidth="2.4" strokeLinecap="round"/>
+                  <circle cx="168" cy="42" r="5" fill="#14293F" stroke="#FFB900" strokeWidth="3"/>
+                </svg>
+              </div>
+              <div className="pk__days"><span>Sat</span><span>Sun</span><span>Mon</span>
+                <b>Tue · today</b><span>Wed</span><span>Thu</span><span>Fri</span></div>
+            </div>
+            <button className="act" onClick={()=>setSheet('weight')}>
+              <div className="act__i">⚖️</div>
+              <div><div className="act__t">Log today's weight</div>
+                <div className="act__s">Withings synced — just confirm</div></div>
+              <div className="act__g">→</div>
+            </button>
+          </>}
+
+          {ds==='shot' && <>
+            <div style={{marginTop:14}}>
+              {[['done','High-protein meal','7:15 pm'],['done','Water + electrolytes','7:15 pm'],
+                ['done','Pen out of the fridge','7:45 pm'],['now','Inject — 5 mg','now'],
+                ['','Second protein serving','9:15 pm']].map(([s,t,w],i)=>(
+                <button key={i} className={'proto__i '+s} onClick={()=>s==='now'&&setSheet('dose')}>
+                  <span className="proto__b">{s==='done'?'✓':s==='now'?'→':''}</span>
+                  <span className="proto__t">{t}</span><span className="proto__w">{w}</span></button>))}
+            </div>
+            <button className="act" style={{background:'linear-gradient(160deg,#1B395B,#14293F)'}}
+                    onClick={()=>setSheet('dose')}>
+              <div className="act__i" style={{background:'rgba(255,185,0,.18)'}}>💉</div>
+              <div><div className="act__t" style={{color:'#fff'}}>Log your dose</div>
+                <div className="act__s" style={{color:'rgba(255,255,255,.6)'}}>Left thigh — rotated for you</div></div>
+              <div className="act__g" style={{background:'var(--yellow)',color:'var(--deep)'}}>→</div>
+            </button>
+          </>}
+
+          {ds==='post' && <>
+            <p style={{fontSize:13.5,color:'var(--ink-2)',lineHeight:1.6,margin:'11px 0 0'}}>
+              Your last three cycles all peaked today and cleared by Wednesday. Tell us how it's going —
+              it's what your clinician uses to decide the next dose.</p>
+            <button className="act" style={{marginTop:18}} onClick={()=>setSheet('symptom')}>
+              <div className="act__i">🩹</div>
+              <div><div className="act__t">Log how you feel</div>
+                <div className="act__s">4 taps · goes straight to your clinician</div></div>
+              <div className="act__g">→</div>
+            </button>
+            <div className="surface" style={{marginTop:18,padding:16}}>
+              <div className="kick" style={{marginBottom:10}}>Your pattern, three cycles</div>
+              <svg viewBox="0 0 300 62" style={{width:'100%',height:62}}>
+                <path d="M6,50 C30,50 40,10 66,10 C92,10 104,44 130,50 C160,56 176,54 200,52 C240,50 268,50 294,50"
+                      fill="none" stroke="var(--amber)" strokeWidth="2.4" strokeLinecap="round"/>
+                <circle cx="66" cy="10" r="4.5" fill="var(--amber)"/></svg>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'var(--ink-2)',fontWeight:600}}>
+                <span>Shot</span><span>D2</span><span>D4</span><span>D6</span></div>
+            </div>
+          </>}
+
+          {ds==='titration' && <>
+            <div className="surface" style={{marginTop:18}}>
+              <div className="kick" style={{marginBottom:10}}>The evidence for this decision</div>
+              <div className="qrow"><div className="qrow__b"><div className="qrow__t">Adherence</div>
+                <div className="qrow__s">Above the 80% floor</div></div><div className="qrow__r">{st.adherence}%</div></div>
+              <div className="qrow"><div className="qrow__b"><div className="qrow__t">Nausea, last 4 weeks</div>
+                <div className="qrow__s">Peaks day 2, clears day 4 — stable</div></div><div className="qrow__r">Moderate</div></div>
+              <div className="qrow"><div className="qrow__b"><div className="qrow__t">Trend weight</div>
+                <div className="qrow__s">Steady decline</div></div><div className="qrow__r">−3.6 kg</div></div>
+            </div>
+            <button className="act" onClick={()=>go('T2-9')}>
+              <div className="act__i">🩺</div>
+              <div><div className="act__t">Review the dose ladder</div>
+                <div className="act__s">5 mg → 7.5 mg, pending clinician sign-off</div></div>
+              <div className="act__g">→</div>
+            </button>
+          </>}
+
+          {ds==='day1' && <>
+            <p style={{fontSize:13.5,color:'var(--ink-2)',lineHeight:1.6,margin:'11px 0 0'}}>
+              Nurse Huda arrives this evening with your first pen. Everything before that is just waiting —
+              and the 84 days only start counting when the dose goes in.</p>
+
+            <div className="act" style={{marginTop:18,background:'linear-gradient(160deg,#1B395B,#14293F)'}}
+                 onClick={()=>go('T2-9')}>
+              <div className="act__i" style={{background:'rgba(255,185,0,.18)'}}>👩‍⚕️</div>
+              <div><div className="act__t" style={{color:'#fff'}}>Huda arrives at 6:00 PM</div>
+                <div className="act__s" style={{color:'rgba(255,255,255,.6)'}}>Al Olaya · we'll text 20 min before</div></div>
+              <div className="act__g" style={{background:'var(--yellow)',color:'var(--deep)'}}>→</div>
+            </div>
+
+            <div className="surface" style={{marginTop:16}}>
+              <div className="kick" style={{marginBottom:10}}>What we're testing</div>
+              <div style={{fontFamily:'var(--font-display)',fontSize:16,fontWeight:500,
+                color:'var(--deep)',lineHeight:1.4}}>
+                Tirzepatide moves your HbA1c from 5.9% to <span style={{color:'var(--yellow-deep)'}}>below
+                5.7%</span> by <span style={{color:'var(--yellow-deep)'}}>7 February</span>.</div>
+              <div style={{fontSize:11.5,color:'var(--ink-2)',marginTop:9,paddingTop:9,
+                borderTop:'1px solid rgba(27,57,91,.07)'}}>
+                🔒 Sealed by Dr. Sara Al-Amri · locked until retest</div>
+            </div>
+
+            <div style={{marginTop:22}}>
+              <div className="kick" style={{marginBottom:4}}>This week</div>
+              <div className="qrow"><div className="qrow__ico">💉</div><div className="qrow__b">
+                <div className="qrow__t">Tonight — first dose, 2.5 mg</div>
+                <div className="qrow__s">Huda does it with you and shows you the pen</div></div></div>
+              <div className="qrow"><div className="qrow__ico">🧲</div><div className="qrow__b">
+                <div className="qrow__t">Tomorrow AM — start iron</div>
+                <div className="qrow__s">With vitamin C, away from coffee</div></div></div>
+              <div className="qrow"><div className="qrow__ico">⚖️</div><div className="qrow__b">
+                <div className="qrow__t">Saturday — first weigh-in</div>
+                <div className="qrow__s">Your quota starts then, not today</div></div></div>
+            </div>
+          </>}
+
+          {ds==='retest' && <>
+            <p style={{fontSize:13.5,color:'var(--ink-2)',lineHeight:1.6,margin:'11px 0 0'}}>
+              Twelve weeks ago we sealed a prediction. The draw is already booked and paid for —
+              this is the part the whole loop was built for.</p>
+            <button className="act" style={{marginTop:18,background:'linear-gradient(160deg,#1B395B,#14293F)'}}
+                    onClick={()=>go('P1')}>
+              <div className="act__i" style={{background:'rgba(255,185,0,.18)'}}>🧪</div>
+              <div><div className="act__t" style={{color:'#fff'}}>Open your retest</div>
+                <div className="act__s" style={{color:'rgba(255,255,255,.6)'}}>We said below 5.7%. Let's find out.</div></div>
+              <div className="act__g" style={{background:'var(--yellow)',color:'var(--deep)'}}>→</div>
+            </button>
+          </>}
+
+          <div style={{marginTop:26, display: ds==='day1' ? 'none' : 'block'}}>
+            <div className="kick" style={{marginBottom:4}}>Today's numbers</div>
+            <div className="qrow">
+              <div className="qrow__b"><div className="qrow__t">Trend weight</div>
+                <div className="qrow__s">▼ 0.6 kg per week</div></div>
+              <svg className="spark" viewBox="0 0 64 24"><path d="M2,5 C14,7 24,11 38,15 C48,18 56,20 62,21" stroke="var(--green)"/></svg>
+              <div className="qrow__r">78.4 kg</div>
+            </div>
+            <div className="qrow">
+              <div className="qrow__b"><div className="qrow__t">Weigh-in quota</div>
+                <div className="qrow__s">3 of 4 this week</div></div>
+              <div className="qmini"><i className="on"></i><i className="on"></i><i className="on"></i><i></i></div>
+            </div>
+            <div className="qrow">
+              <div className="qrow__b"><div className="qrow__t">Verdict confidence</div>
+                <div className="qrow__s">Adherence {st.adherence}% · floor is 80%</div></div>
+              <span className="cband" style={st.adherence<80?{background:'var(--amber-soft)',color:'var(--amber)'}:{}}>
+                {st.adherence>=80?'Strong':'At risk'}</span>
+            </div>
+          </div>
+
+          {st.adherence<80
+            ? <button className="insight" style={{background:'var(--amber-soft)',width:'100%',textAlign:'left'}}
+                      onClick={()=>go('T2-6')}>
+                <span>⚠️</span><span>You're below the floor this prediction needs. <b>Tap to see your options</b> — all of them free.</span>
+              </button>
+            : <div className="insight"><span>💡</span>
+                <span>Your nausea peaks on <b>day 2</b> after each shot and clears by day 4 — you're past it today.</span></div>}
+
+          <button className="btn btn--ghost" style={{marginTop:14}} onClick={()=>go('B-day')}>
+            Switch day-state ↻</button>
+        </div>
+      </div>
+      <TabBar active="today" go={go}/>
+      <div className="home-indicator"></div>
+
+      {st.sheet==='weight' && <Sheet title="Today's weight" sub="Withings synced automatically — nothing to type."
+        onClose={()=>setSheet(null)} cta="Confirm 78.4 kg">
+        <div style={{textAlign:'center',padding:'10px 0 4px'}}>
+          <div style={{fontFamily:'var(--font-display)',fontSize:52,fontWeight:600,color:'var(--deep)',lineHeight:1}}>78.4</div>
+          <div style={{fontSize:13,color:'var(--ink-2)',marginTop:6}}>kg · auto-logged via HealthKit</div>
+        </div>
+      </Sheet>}
+      {st.sheet==='dose' && <Sheet title="Log your dose" sub="Left thigh — outer. Rotated for you."
+        onClose={()=>setSheet(null)} cta="Log as taken">
+        <div className="qrow"><div className="qrow__ico">💉</div><div className="qrow__b">
+          <div className="qrow__t">Tirzepatide 5 mg</div><div className="qrow__s">Scan the box to capture batch</div></div></div>
+        <div style={{display:'flex',gap:10,marginTop:8}}>
+          <button className="btn btn--secondary btn--sm" style={{flex:1}} onClick={()=>setSheet(null)}>Skip</button>
+          <button className="btn btn--secondary btn--sm" style={{flex:1}} onClick={()=>setSheet(null)}>Later</button>
+        </div>
+      </Sheet>}
+      {st.sheet==='symptom' && <Sheet title="How are you feeling?" sub="Day 2 after your shot."
+        onClose={()=>setSheet(null)} cta="Log it">
+        <div className="chip-grid">
+          {['🤢 Nausea','😴 Fatigue','💩 Constipation','🤕 Headache','📍 Injection site','✓ Nothing'].map((c,i)=>(
+            <div key={c} className={'chip'+(i===0?' is-selected':'')}>{c}</div>))}
+        </div>
+        <div className="kick" style={{margin:'16px 0 8px'}}>How strong — nausea</div>
+        <div className="severity-scale">
+          {['None','Mild','Moderate','Severe'].map((s,i)=>(
+            <div key={s} className={'severity-scale__seg'+(i===2?' is-selected':'')}>{s}</div>))}
+        </div>
+      </Sheet>}
+    </div>
+  );
+}
+
+function LoopTab({st, go, dispatch}){
+  const L = LOOPS.find(l=>l.id===st.focus && l.st==='active') || LOOPS[0];
+  const fill = Math.min(1, L.day/L.total*1.5);
+  const idx = PHASES.indexOf(L.phase);
+  const done = LOOPS.some(l=>l.st==='done');
+  const others = LOOPS.filter(l=>l.st==='active' && l.id!==L.id);
+  return (
+    <div className="pscreen loopbg">
+      <StatusBar dark/>
+      <AppBar st={st} go={go} dark/>
+      <div className="pbody">
+        <div style={{padding:'2px 20px 28px'}}>
+          {/* focused-loop switcher — Duolingo's course-switch pattern */}
+          <div style={{display:'flex',gap:8,justifyContent:'center',marginTop:4,flexWrap:'wrap'}}>
+            <button style={{display:'flex',alignItems:'center',gap:7,background:'rgba(255,255,255,.10)',
+              border:'1px solid rgba(255,255,255,.18)',borderRadius:999,padding:'6px 13px',
+              fontSize:12,fontWeight:700,color:'#fff'}} onClick={()=>go('T2-P')}>
+              <span>{L.ic}</span>{L.t}<span style={{opacity:.5,fontWeight:600}}>▾</span></button>
+            {others.map(o=>(
+              <button key={o.id} style={{display:'flex',alignItems:'center',gap:6,
+                background:'transparent',border:'1px solid rgba(255,255,255,.14)',borderRadius:999,
+                padding:'6px 12px',fontSize:12,fontWeight:600,color:'rgba(255,255,255,.5)'}}
+                onClick={()=>dispatch({type:'SET',patch:{focus:o.id}})}>
+                <span>{o.ic}</span>{o.t}</button>))}
+          </div>
+
+          <div className="lhero">
+            <div className="lph">{L.t} · {L.phase}</div>
+            <div className="lring">
+              <LoopRing size={216} sw={9} phase={L.phase} fill={fill} loops={LOOPS.filter(l=>l.st==='done').length}/>
+              <div className="lcore"><div className="lday">{L.day}</div>
+                <div className="lof">DAY OF {L.total}</div></div>
+            </div>
+            <div className="plg">
+              {PHASES.map((p,i)=>(
+                <div key={p} className={'plg__i'+(i<idx?' done':i===idx?' now':'')}>
+                  <div className="plg__d"></div><div className="plg__t">{p}</div></div>))}
+            </div>
+          </div>
+
+          <div className="ctr">
+            <div style={{display:'flex',alignItems:'center',gap:7}}>
+              <span>🔒</span><span className="ctr__l">Sealed 12 Oct · cannot be edited</span></div>
+            <div className="ctr__q">{L.drug} will move your {L.marker} from {L.from} to <em>{L.target}</em> by <em>{L.due}</em>.</div>
+            <div className="ctr__b">
+              <div className="ctr__s"><b>{L.adh}%</b><span>Adherence</span></div>
+              <div className="ctr__s"><b>80%</b><span>Floor</span></div>
+              <div className="ctr__s"><b>{Math.max(0,L.total-L.day)}</b><span>Days left</span></div>
+            </div>
+          </div>
+
+          <div style={{marginTop:28}}>
+            <div className="kickw" style={{marginBottom:4}}>This loop</div>
+            <div className="wrow"><span className="wrow__d" style={{background:'#6FD69B'}}></span>
+              <div style={{flex:1}}><div className="wrow__t">Baseline drawn</div>
+                <div className="wrow__s">40 markers · 12 Oct</div></div><span className="wrow__r">HbA1c 5.9%</span></div>
+            <div className="wrow"><span className="wrow__d" style={{background:'#6FD69B'}}></span>
+              <div style={{flex:1}}><div className="wrow__t">Protocol started</div>
+                <div className="wrow__s">Tirzepatide 2.5 → 5 mg · iron · vitamin C</div></div></div>
+            <div className="wrow"><span className="wrow__d" style={{background:'var(--yellow)'}}></span>
+              <div style={{flex:1}}><div className="wrow__t">Running now</div>
+                <div className="wrow__s">Day {L.day} of {L.total} · adherence {L.adh}%</div></div>
+                <span className="wrow__r">{L.marker}</span></div>
+            <button className="wrow" style={{opacity:.6,width:'100%',textAlign:'left'}} onClick={()=>go('P1')}>
+              <span className="wrow__d" style={{background:'rgba(255,255,255,.28)'}}></span>
+              <div style={{flex:1}}><div className="wrow__t">Retest</div>
+                <div className="wrow__s">7 Dec · booked, matched assay</div></div><span className="wrow__r">?</span></button>
+          </div>
+
+          {/* ── TIMELINE: phases, Ramadan band, dose ladder ── */}
+          <div style={{marginTop:30}}>
+            <div className="kickw" style={{marginBottom:12}}>Protocol timeline · week {Math.ceil(st.day/7)} of 12</div>
+            <div style={{position:'relative',height:6,borderRadius:3,background:'rgba(255,255,255,.12)'}}>
+              <div style={{position:'absolute',left:'38%',width:'28%',top:-9,bottom:-9,
+                background:'repeating-linear-gradient(45deg,rgba(255,185,0,.20),rgba(255,185,0,.20) 4px,rgba(255,185,0,.06) 4px,rgba(255,185,0,.06) 8px)',
+                borderLeft:'1.5px dashed var(--yellow)',borderRight:'1.5px dashed var(--yellow)'}}></div>
+              <div style={{position:'absolute',left:0,width:'33%',top:0,bottom:0,borderRadius:3,background:'#4F9BB0'}}></div>
+              <div style={{position:'absolute',left:'33%',width:'34%',top:0,bottom:0,borderRadius:3,background:'#6FD69B'}}></div>
+              <div style={{position:'absolute',left:Math.min(97,(st.day/84)*100)+'%',top:'50%',width:14,height:14,
+                borderRadius:'50%',background:'#fff',border:'3px solid #16304C',transform:'translate(-50%,-50%)',
+                boxShadow:'0 0 0 3px rgba(255,185,0,.45)'}}></div>
+            </div>
+            <div style={{display:'flex',marginTop:9}}>
+              {['Titration','Maintenance','Pre-retest'].map(p=>(
+                <div key={p} style={{flex:1,textAlign:'center',fontSize:9.5,fontWeight:700,
+                  letterSpacing:'.05em',textTransform:'uppercase',color:'rgba(255,255,255,.42)'}}>{p}</div>))}
+            </div>
+
+            <div style={{display:'flex',gap:10,background:'rgba(255,185,0,.10)',
+              border:'1px dashed rgba(255,185,0,.42)',borderRadius:16,padding:'13px 14px',marginTop:16}}>
+              <span>🌙</span>
+              <span style={{fontSize:11.5,color:'rgba(255,255,255,.82)',lineHeight:1.55}}>
+                <b style={{color:'#fff'}}>Weeks 6–10 cross Ramadan.</b> Dose frozen at 5 mg, reminders shifted to
+                after Iftar, retest window extended. This month's goal: <b style={{color:'var(--yellow)'}}>hold,
+                don't lose</b> — the chart shades it rather than reading it as a slip.
+              </span>
+            </div>
+
+            <div style={{marginTop:18}}>
+              <div className="kickw" style={{marginBottom:8}}>Dose ladder</div>
+              <svg viewBox="0 0 320 66" style={{width:'100%',height:66,overflow:'visible'}}>
+                <path d="M0,54 L58,54 L58,38 L132,38 L132,22 L214,22 L214,22 L320,22"
+                      fill="none" stroke="#6FD69B" strokeWidth="2.6" strokeLinejoin="round"/>
+                <line x1="150" y1="0" x2="150" y2="66" stroke="var(--yellow)" strokeWidth="1.4" strokeDasharray="3 4" opacity=".8"/>
+                <circle cx="58" cy="54" r="3.6" fill="#6FD69B"/>
+                <circle cx="132" cy="38" r="3.6" fill="#6FD69B"/>
+                <circle cx="214" cy="22" r="4.6" fill="#fff" stroke="#6FD69B" strokeWidth="3"/>
+              </svg>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:9.5,
+                color:'rgba(255,255,255,.45)',fontWeight:600,marginTop:-4}}>
+                <span>2.5 mg</span><span style={{color:'var(--yellow)'}}>held · Ramadan</span>
+                <span>5 mg — now</span><span>Week 12</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{marginTop:28}}>
+            <div className="kickw" style={{marginBottom:9}}>Your record · {LOOPS.filter(l=>l.st==='done').length} verified answer</div>
+            {done ? <div className="rec">
+                <svg width="34" height="34" viewBox="0 0 200 200"><g transform="translate(100,100)">
+                  <circle r="80" stroke="#8DA2BB" strokeWidth="16" fill="none" opacity=".8"/></g></svg>
+                <div><div className="rec__t">Iron → Ferritin</div>
+                  <div className="rec__s">18 → 21 ng/mL · absorption issue found</div></div>
+                <span className="rec__v" style={{background:'rgba(141,162,187,.18)',color:'#B8C6D8'}}>Refuted</span></div>
+              : <div className="rec rec--e">Close this loop and it becomes your first verified answer.</div>}
+            <button className="rec" style={{width:'100%',textAlign:'left',background:'transparent',
+              border:'1px solid rgba(255,255,255,.14)'}} onClick={()=>go('T2-P')}>
+              <span style={{fontSize:16}}>▤</span>
+              <div><div className="rec__t">All protocols</div>
+                <div className="rec__s">{LOOPS.filter(l=>l.st==='active').length} running · start a new one</div></div>
+              <span style={{marginLeft:'auto',color:'rgba(255,255,255,.4)'}}>›</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <TabBar active="loop" go={go}/>
+      <div className="home-indicator"></div>
+    </div>
+  );
+}
+
+function BodyMap({systems, sel, onSel}){
+  /* Androgynous, abstract, shape-invariant anatomical index.
+     It is NOT the patient's body: it never changes with weight, has no
+     gendered anatomy, and exists to answer "where in my body is this?".
+     That distinction is what keeps it clear of KSA MOH Art.20 / stigma concerns. */
+  return (
+    <svg viewBox="0 0 200 430" style={{width:190,height:'auto',display:'block',margin:'0 auto'}}>
+      <defs>
+        <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF"/><stop offset="55%" stopColor="#F6F1E4"/>
+          <stop offset="100%" stopColor="#EBE3D2"/>
+        </linearGradient>
+        <filter id="soft" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="7"/>
+        </filter>
+      </defs>
+
+      {/* limbs first, so the torso overlaps them cleanly */}
+      <g stroke="url(#skin)" strokeLinecap="round" fill="none">
+        <path d="M72,92 C58,104 52,130 49,158 L45,196" strokeWidth="17"/>
+        <path d="M128,92 C142,104 148,130 151,158 L155,196" strokeWidth="17"/>
+        <path d="M88,206 C86,258 84,320 83,392" strokeWidth="22"/>
+        <path d="M112,206 C114,258 116,320 117,392" strokeWidth="22"/>
+      </g>
+      <ellipse cx="100" cy="40" rx="20" ry="24" fill="url(#skin)"/>
+      <rect x="91" y="58" width="18" height="18" rx="8" fill="url(#skin)"/>
+      <path d="M69,80 C67,75 73,71 80,71 L120,71 C127,71 133,75 131,80
+               L127,142 C126,168 121,190 117,206 L83,206 C79,190 74,168 73,142 Z"
+            fill="url(#skin)"/>
+
+      {/* findings — glow + node, dimmed unless selected */}
+      {systems.map(s=>{
+        const on = !sel || sel===s.id;
+        return (
+          <g key={s.id} onClick={()=>onSel(sel===s.id?null:s.id)} style={{cursor:'pointer'}}
+             opacity={on?1:.22}>
+            <circle cx={s.x} cy={s.y} r="19" fill={s.c} opacity={sel===s.id?.5:.3} filter="url(#soft)"/>
+            <circle cx={s.x} cy={s.y} r={sel===s.id?7:5.5} fill={s.c}/>
+            <circle cx={s.x} cy={s.y} r={sel===s.id?7:5.5} fill="none"
+                    stroke="#fff" strokeWidth="2" opacity=".9"/>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function Twin({st, go}){
+  const [sel, setSel] = React.useState(null);
+  const SYS=[
+    {id:'met', ic:'🩸', t:'Metabolic',       s:'HbA1c, insulin, glucose', v:'5.9%',    c:'var(--amber)', bg:'var(--amber-soft)', d:'▼ improving',
+     x:100, y:190, path:'M2,8 C16,9 30,12 44,15 C52,17 58,18 62,19', note:'Your scored marker. 5.9% today, target below 5.7% by 7 Feb.'},
+    {id:'iron', ic:'🧲', t:'Iron status',    s:'Ferritin, transferrin',   v:'18',      c:'var(--coral)', bg:'var(--coral-soft)', d:'▲ rising',
+     x:100, y:132, path:'M2,18 C16,17 30,15 44,13 C52,12 58,11 62,10', note:'Low, and being corrected alongside — iron-deficiency fatigue is the most common reason people stop a GLP-1.'},
+    {id:'cardio', ic:'❤️', t:'Cardiovascular', s:'Lipids, blood pressure', v:'Optimal', c:'var(--green)', bg:'var(--green-soft)', d:'stable',
+     x:89, y:126, path:'M2,12 C16,12 30,11 44,11 C52,11 58,11 62,11', note:'Nothing to act on. Re-checked at every draw so a drift gets caught early.'},
+    {id:'organ', ic:'🫀', t:'Liver & kidney',  s:'ALT, AST, eGFR',        v:'Optimal', c:'var(--green)', bg:'var(--green-soft)', d:'stable',
+     x:79, y:172, path:'M2,13 C16,13 30,12 44,12 C52,12 58,12 62,12', note:'Watched deliberately on a GLP-1 — these are the markers that would flag a problem first.'},
+    {id:'thy', ic:'🦋', t:'Thyroid',          s:'TSH',                    v:'Not yet', c:'var(--fog)',   bg:'var(--fog-soft)',   d:'added at retest',
+     x:100, y:74,  path:'M2,12 L62,12', note:'Dr. Sara added TSH to your retest panel — so if the protocol returns a null, thyroid is already ruled out.'}
+  ];
+  const cur = SYS.find(x=>x.id===sel);
+  return (
+    <div className="pscreen">
+      <StatusBar/>
+      <AppBar st={st} go={go}/>
+      <div className="pbody">
+        <div style={{padding:'6px 20px 26px'}}>
+          <div className="kick">Your twin</div>
+          <h1 className="lede">Everything Valeo knows about your body.</h1>
+
+          <div style={{margin:'14px -4px 0',padding:'10px 0 4px',
+            background:'radial-gradient(60% 46% at 50% 42%,rgba(255,185,0,.10),transparent 70%)'}}>
+            <BodyMap systems={SYS} sel={sel} onSel={setSel}/>
+          </div>
+
+          <div style={{textAlign:'center',fontSize:11.5,color:'var(--ink-2)',
+            marginTop:2,minHeight:34,lineHeight:1.5,padding:'0 6px'}}>
+            {cur ? <><b style={{color:'var(--deep)'}}>{cur.t}</b> — {cur.note}</>
+                 : 'Tap a system to see where it sits and what it means.'}
+          </div>
+
+          <div className="evid" style={{marginTop:14}}>
+            {[[40,'Markers measured'],[142,'Events logged'],[st.day,'Days of history']].map(([n,l])=>(
+              <div className="evid__c" key={l}><div className="evid__n">{n}</div><div className="evid__l">{l}</div></div>))}
+          </div>
+
+          <div style={{marginTop:26}}>
+            <div className="kick" style={{marginBottom:4}}>Systems</div>
+            {SYS.map(s=>(
+              <button className="sys" key={s.id} onClick={()=>setSel(sel===s.id?null:s.id)}
+                      style={{opacity: !sel||sel===s.id ? 1 : .4,
+                              background: sel===s.id ? 'rgba(255,185,0,.09)' : 'transparent',
+                              borderRadius: sel===s.id ? 14 : 0,
+                              paddingLeft: sel===s.id ? 8 : 0, paddingRight: sel===s.id ? 8 : 0}}>
+                <div className="sys__i" style={{background:s.bg}}>{s.ic}</div>
+                <div style={{flex:1,minWidth:0}}><div className="sys__t">{s.t}</div><div className="sys__s">{s.s}</div></div>
+                <svg className="spark" viewBox="0 0 64 24"><path d={s.path} stroke={s.c}/></svg>
+                <div style={{textAlign:'right'}}><div className="sys__n" style={{color:s.c}}>{s.v}</div>
+                  <div className="sys__d" style={{color:s.d==='stable'?'var(--ink-2)':s.c==='var(--fog)'?'var(--fog)':'var(--green)'}}>{s.d}</div></div>
+              </button>))}
+          </div>
+
+          <div style={{marginTop:28}}>
+            <div className="kick" style={{marginBottom:10}}>What people like you show</div>
+            <div className="claim">
+              <div className="claim__t">Members taking iron <b>with vitamin C</b> reach target ferritin about <b>2.3 weeks sooner</b>.</div>
+              <div className="claim__n"><span className="claim__p">Population</span>
+                <span>n = 340 · associated with, not proven to cause</span></div>
+            </div>
+          </div>
+
+          <div style={{marginTop:26}}>
+            <div className="kick" style={{marginBottom:10}}>What's true for <u>you</u></div>
+            <div className="gt">
+              <div className="gt__t">Does coffee near your dose actually slow your iron down?</div>
+              <div className="gt__b"><i className="on"></i><i className="on"></i><i className="on"></i><i></i><i></i></div>
+              <div className="gt__s">3 of 5 days logged without coffee near your dose. We need real variation on both
+                sides before we'll claim anything about you specifically.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <TabBar active="twin" go={go}/>
+      <div className="home-indicator"></div>
+    </div>
+  );
+}
+function Protocols({st, go, dispatch}){
+  const active = LOOPS.filter(l=>l.st==='active');
+  const done   = LOOPS.filter(l=>l.st==='done');
+  const open   = (id)=>{ dispatch({type:'SET', patch:{focus:id}}); go('T2-1'); };
+  return (
+    <div className="pscreen">
+      <StatusBar/>
+      <div className="appbar">
+        <button className="appbar__back" onClick={()=>go('V0')}>‹ Valeo</button>
+        <span className="appbar__spacer"></span>
+        <button className="appbar__avatar" onClick={()=>go('T3-9')}>FA</button>
+      </div>
+      <div className="pbody">
+        <div style={{padding:'6px 20px 26px'}}>
+          {/* ── the questionnaire entry ── */}
+          <button className="surface surface--dark" style={{marginTop:4,width:'100%',textAlign:'left',
+            padding:18,borderRadius:22}} onClick={()=>go('T3-2')}>
+            <div style={{fontSize:9.5,fontWeight:800,letterSpacing:'.13em',textTransform:'uppercase',
+              color:'var(--yellow)',marginBottom:7}}>Not sure what to run next?</div>
+            <div style={{fontFamily:'var(--font-display)',fontSize:19,fontWeight:600,lineHeight:1.25}}>
+              Six questions, and we'll tell you which number is worth moving.</div>
+            <div style={{fontSize:12,color:'rgba(255,255,255,.6)',marginTop:7,lineHeight:1.5}}>
+              We look at what you've already measured, what's still unexplained, and what wouldn't
+              collide with a loop you're already running.</div>
+            <div style={{display:'inline-block',background:'var(--yellow)',color:'var(--deep)',
+              fontSize:12.5,fontWeight:700,padding:'9px 16px',borderRadius:11,marginTop:14}}>
+              Find my protocol →</div>
+          </button>
+          <div style={{textAlign:'center',fontSize:11.5,color:'var(--ink-2)',margin:'14px 0 0'}}>
+            …or pick one yourself, below</div>
+
+          {/* ── RUNNING ── */}
+          <div className="kick" style={{margin:'26px 0 10px'}}>Running · {active.length}</div>
+          {active.map(l=>(
+            <button key={l.id} className="surface" style={{width:'100%',textAlign:'left',
+              marginBottom:11,padding:16,border:st.focus===l.id?'1.5px solid var(--yellow)':'1.5px solid transparent'}}
+              onClick={()=>open(l.id)}>
+              <div style={{display:'flex',alignItems:'center',gap:13}}>
+                <div style={{position:'relative',flexShrink:0}}>
+                  <LoopRing size={46} sw={14} phase={l.phase} fill={Math.min(1,l.day/l.total*1.5)}
+                            loops={0} dark={false}/>
+                  <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',
+                    justifyContent:'center',fontSize:15}}>{l.ic}</div>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:15,fontWeight:700,color:'var(--deep)'}}>{l.t}</div>
+                  <div style={{fontSize:11.5,color:'var(--ink-2)',marginTop:2}}>
+                    Day {l.day} of {l.total} · {l.phase} · {l.adh}% adherence</div>
+                </div>
+                {st.focus===l.id && <span style={{fontSize:9,fontWeight:800,letterSpacing:'.05em',
+                  textTransform:'uppercase',background:'var(--yellow)',color:'var(--deep)',
+                  padding:'3px 7px',borderRadius:5}}>Focused</span>}
+              </div>
+              <div style={{marginTop:12,paddingTop:11,borderTop:'1px solid rgba(27,57,91,.07)',
+                fontSize:12.5,color:'var(--text-primary)',lineHeight:1.5}}>
+                🔒 <b>{l.marker}</b> {l.from} → <b style={{color:'var(--yellow-deep)'}}>{l.target}</b> by {l.due}</div>
+              <div style={{fontSize:11.5,color:'var(--teal)',marginTop:7,fontWeight:600}}>
+                Next · {l.next}</div>
+            </button>))}
+
+          {/* ── VERIFIED ── */}
+          <div className="kick" style={{margin:'26px 0 10px'}}>Verified · {done.length}</div>
+          {done.map(l=>(
+            <div key={l.id} className="surface" style={{padding:16,marginBottom:11,
+              background:'var(--slate-soft)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:13}}>
+                <svg width="40" height="40" viewBox="0 0 200 200" style={{flexShrink:0}}>
+                  <g transform="translate(100,100)"><circle r="80" stroke="var(--slate)"
+                    strokeWidth="17" fill="none" opacity=".8"/></g></svg>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14.5,fontWeight:700,color:'var(--deep)'}}>{l.t}</div>
+                  <div style={{fontSize:11.5,color:'var(--ink-2)',marginTop:2}}>
+                    {l.marker} {l.from} → {l.to} · {l.when}</div>
+                </div>
+                <span style={{fontSize:9.5,fontWeight:800,letterSpacing:'.05em',textTransform:'uppercase',
+                  background:'rgba(74,90,114,.16)',color:'var(--slate)',padding:'4px 9px',
+                  borderRadius:14}}>Refuted</span>
+              </div>
+              <div style={{fontSize:12,color:'var(--ink-2)',marginTop:11,paddingTop:10,
+                borderTop:'1px solid rgba(27,57,91,.08)',lineHeight:1.5}}>{l.note}</div>
+            </div>))}
+
+          {/* ── AVAILABLE ── */}
+          <div className="kick" style={{margin:'26px 0 10px'}}>Available · {AVAILABLE.length}</div>
+          {AVAILABLE.map(a=>{
+            const blocked = a.blocks && LOOPS.some(l=>l.id===a.blocks && l.st==='active');
+            return (
+              <button key={a.id} className="qrow" style={{width:'100%',textAlign:'left',
+                opacity:blocked?.62:1}}
+                onClick={()=> blocked ? go('B-conflict') : go('T3-1')}>
+                <div className="qrow__ico" style={{background:blocked?'var(--amber-soft)':'var(--surface-sunken)'}}>{a.ic}</div>
+                <div className="qrow__b">
+                  <div className="qrow__t">{a.t}</div>
+                  <div className="qrow__s">Scores {a.marker} · {a.why}</div>
+                </div>
+                {blocked
+                  ? <span style={{fontSize:9,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase',
+                      background:'var(--amber-soft)',color:'var(--amber)',padding:'4px 8px',
+                      borderRadius:12,whiteSpace:'nowrap'}}>Would collide</span>
+                  : <span className="qrow__chev">›</span>}
+              </button>);
+          })}
+
+          <div style={{display:'flex',gap:10,background:'var(--surface-sunken)',borderRadius:16,
+            padding:'13px 14px',marginTop:16}}>
+            <span>🔬</span>
+            <span style={{fontSize:11.5,color:'var(--ink-2)',lineHeight:1.55}}>
+              <b style={{color:'var(--deep)'}}>One loop per marker.</b> Protocols can run side by side —
+              but never two that could move the same number, or neither answer would mean anything.</span>
+          </div>
+
+          <button className="qrow" style={{width:'100%',textAlign:'left',marginTop:16,
+            borderTop:'1px solid rgba(27,57,91,.08)'}} onClick={()=>go('T2-7')}>
+            <div className="qrow__ico">🗂</div>
+            <div className="qrow__b"><div className="qrow__t">All data &amp; history</div>
+              <div className="qrow__s">Every marker, every draw, every verdict — exportable</div></div>
+            <span className="qrow__chev">›</span>
+          </button>
+        </div>
+      </div>
+      <TabBar active="protocols" go={go}/>
+      <div className="home-indicator"></div>
+    </div>
+  );
+}
+
+const COMPS = {V0:V0Home, Today, Loop:LoopTab, Twin, Protocols};
+
+/* ── iframe fallback for self-contained linear documents ── */
+function IframeScreen({file, onMsg}){
+  useEffect(()=>{
+    const h = e => { const m=e.data; if(m && m.source==='valeo-screen') onMsg(m); };
+    window.addEventListener('message',h); return ()=>window.removeEventListener('message',h);
+  },[onMsg]);
+  return <iframe src={'screens/'+file} title={file}/>;
+}
+
+/* ── meta cards ── */
+function MetaCard({node, go, dispatch}){
+  const t=node.type;
+  const eyebrow={branch:'Branch point',skip:'Time skip',loop:'Recursion',end:'Terminal state'}[t];
+  return (
+    <div className="meta">
+      <div className="meta__e">◆ {eyebrow}</div>
+      {node.icon && <div className="meta__i">{node.icon}</div>}
+      <div className="meta__t">{node.headline||node.title}</div>
+      {t==='branch' ? <>
+        <div className="meta__q" dangerouslySetInnerHTML={{__html:node.q}}/>
+        {node.why && <div className="meta__w">{node.why}</div>}
+        {node.options.map((o,i)=>(
+          <button key={i} className={'opt opt--'+(o.tone||'alt')}
+                  onClick={()=>go(o.to, o.set)}>
+            <span className="opt__k">{i+1}</span>
+            <span style={{flex:1}}><span className="opt__l">{o.label}</span>
+              <span className="opt__s">{o.sub}</span></span></button>))}
+        <div className="grow"></div>
+        <div className="mfoot">Every branch is reversible — use Back, the rail, or Map to explore the others.</div>
+      </> : <>
+        {node.detail && <div className="meta__q" dangerouslySetInnerHTML={{__html:node.detail}}/>}
+        {t==='skip' && <div className="skb"><i></i></div>}
+        {node.deltas && <div style={{marginTop:18}}>{node.deltas.map((d,i)=>(
+          <div className="dl" key={i}><span>{d[0]}</span><b>{d[1]}</b></div>))}</div>}
+        <div className="grow"></div>
+        {node.to ? <button className="mcta" onClick={()=>go(node.to)}>Continue →</button>
+                 : <div className="mfoot">End of this path. Pick another branch from the rail or the Map.</div>}
+      </>}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   5 · SHELL
+   ══════════════════════════════════════════════════════════════ */
+function exitsOf(id){
+  const n=FLOW[id]; if(!n) return [];
+  const out=[];
+  if(n.options) n.options.forEach(o=>out.push({to:o.to,k:'branch'}));
+  ['to','primary','secondary','back'].forEach(k=>{ if(n[k]) out.push({to:n[k],k:k==='back'?'back':'flow'}); });
+  if(n.exits) n.exits.forEach(e=>out.push({to:e,k:'flow'}));
+  const seen={}; return out.filter(e=>FLOW[e.to] && !seen[e.to] && (seen[e.to]=1));
+}
+
+function App(){
+  const [st, dispatch] = useReducer(reducer, INIT);
+  const node = FLOW[st.node];
+  const go = useCallback((to,set)=>dispatch({type:'GO',to,set}),[]);
+  const phoneRef = useRef(null), wrapRef = useRef(null);
+
+  const fit = useCallback(()=>{
+    const avail = window.innerHeight-56-52-80;
+    const k = Math.min(1, Math.max(.5, avail/844));
+    if(phoneRef.current){ phoneRef.current.style.transform='scale('+k+')'; }
+    if(wrapRef.current){ wrapRef.current.style.height=(844*k)+'px'; wrapRef.current.style.width=(390*k)+'px'; }
+  },[]);
+  useEffect(()=>{ fit(); window.addEventListener('resize',fit); return ()=>window.removeEventListener('resize',fit); },[fit,st.node,st.mode]);
+
+  useEffect(()=>{
+    const h=e=>{
+      if(e.key==='ArrowLeft')  dispatch({type:'BACK'});
+      if(e.key==='ArrowRight'){ const n=FLOW[st.node]; const f=n.to||n.primary; if(f) go(f); }
+      if(e.key==='m'||e.key==='M') dispatch({type:'MODE',mode:st.mode==='walk'?'map':'walk'});
+      if(node.options && /^[1-9]$/.test(e.key)){ const o=node.options[+e.key-1]; if(o) go(o.to,o.set); }
+    };
+    window.addEventListener('keydown',h); return ()=>window.removeEventListener('keydown',h);
+  },[st.node,st.mode,node,go]);
+
+  const onIframeMsg = useCallback(m=>{
+    const n=FLOW[st.node]; if(!n||m.type==='ready') return;
+    if(m.type==='nav' && FLOW[m.to]) return go(m.to);
+    if(m.type==='back') return n.back?go(n.back):dispatch({type:'BACK'});
+    if(m.type==='secondary' && n.secondary) return go(n.secondary);
+    if(n.primary) return go(n.primary);
+  },[st.node,go]);
+
+  const isMeta = !!node.type;
+  const Comp = node.comp ? COMPS[node.comp] : null;
+
+  return (
+    <div className="app">
+      <div className="topbar">
+        <div className="brand"><div className="brand__m">V</div>
+          <div>The Loop <span className="brand__s">· React prototype</span></div></div>
+        <div className="msw">
+          <button className={st.mode==='walk'?'on':''} onClick={()=>dispatch({type:'MODE',mode:'walk'})}>Walk</button>
+          <button className={st.mode==='map'?'on':''} onClick={()=>dispatch({type:'MODE',mode:'map'})}>Map</button>
+        </div>
+        <div className="chips">
+          <span className="chipx">Day <b>{st.day}</b></span>
+          <span className="chipx">Adherence <b>{st.adherence}%</b></span>
+          <span className="chipx">Loop <b>{st.loop}</b></span>
+          <span className="chipx">Phase <b>{st.phase}</b></span>
+          <button className="tbtn" onClick={()=>dispatch({type:'RESET'})}>Reset</button>
+        </div>
+      </div>
+
+      <div className="main">
+        {st.mode==='walk' && <Rail st={st} go={go}/>}
+
+        {st.mode==='walk' ? (
+          <div className="stage">
+            <div className={'ktag '+(isMeta?'ktag--m':Comp?'ktag--n':'ktag--d')}>
+              {isMeta?'Demo control':Comp?'Native React · '+st.node:'Document · '+st.node}
+            </div>
+            <div className="phonewrap" ref={wrapRef}>
+              <div className="phone" ref={phoneRef}>
+                {isMeta ? <MetaCard node={node} go={go} dispatch={dispatch}/>
+                 : Comp ? <Comp st={st} go={go} dispatch={dispatch}/>
+                 : <IframeScreen key={st.node} file={node.file} onMsg={onIframeMsg}/>}
+              </div>
+            </div>
+          </div>
+        ) : <MapView st={st} go={go} dispatch={dispatch}/>}
+
+        {st.mode==='walk' && <WhyPanel st={st} node={node} go={go}/>}
+      </div>
+
+      <div className="bottom">
+        <button className="nbtn" disabled={!st.history.length} onClick={()=>dispatch({type:'BACK'})}>‹ Back</button>
+        <div className="trail">
+          {[...st.history.slice(-7), st.node].map((id,i,arr)=>(
+            <React.Fragment key={i}>
+              {i>0 && <span style={{color:'#3D5470',fontSize:9}}>›</span>}
+              <span className={'cr'+(i===arr.length-1?' now':'')} onClick={()=>go(id)}>{FLOW[id].title}</span>
+            </React.Fragment>))}
+        </div>
+        <button className="nbtn" disabled={!(node.to||node.primary)}
+                onClick={()=>go(node.to||node.primary)}>Continue ›</button>
+      </div>
+    </div>
+  );
+}
+
+function Rail({st, go}){
+  return (
+    <div className="rail">
+      <div className="rhint">Every node is directly clickable. No flow is ever gated behind another.</div>
+      {STAGES.map(sg=>{
+        const ids=Object.keys(FLOW).filter(k=>FLOW[k].stage===sg);
+        if(!ids.length) return null;
+        return <div key={sg}>
+          <div className="sname">{sg}</div>
+          {ids.map(id=>{ const n=FLOW[id];
+            const b = n.type==='branch'?['b-fork','FORK']:n.type==='skip'?['b-time','TIME']
+                    :(n.type==='loop'||n.type==='end')?['b-loop','LOOP']:n.comp?['b-app','APP']:null;
+            return <div key={id} className={'nd'+(id===st.node?' on':'')+(st.visited[id]?' vis':'')}
+                        onClick={()=>go(id)}>
+              <span className="nd__d"></span><span className="nd__l">{n.title}</span>
+              {b && <span className={'bdg '+b[0]}>{b[1]}</span>}</div>;})}
+        </div>;
+      })}
+    </div>
+  );
+}
+
+function WhyPanel({st, node, go}){
+  const ex = exitsOf(st.node);
+  return (
+    <div className="why">
+      <div className="why__id">{st.node} · {node.stage}</div>
+      <div className="why__t">{node.title}</div>
+      {node.note && <><div className="why__k">Why this screen looks like this</div>
+        <div className="why__b" dangerouslySetInnerHTML={{__html:node.note}}/></>}
+      {!node.note && node.why && <><div className="why__k">Why this fork exists</div>
+        <div className="why__b">{node.why}</div></>}
+      {!node.note && !node.why && node.detail && <><div className="why__k">What just happened</div>
+        <div className="why__b" dangerouslySetInnerHTML={{__html:node.detail}}/></>}
+      {ex.length>0 && <><div className="why__k">Where this goes ({ex.length})</div>
+        {ex.map((e,i)=>(<button key={i} className="exit" onClick={()=>go(e.to)}>
+          <i>{e.k==='back'?'↩':'→'}</i><span>{FLOW[e.to].title}</span></button>))}</>}
+      <div className="why__k">Render</div>
+      <div className="why__b" style={{fontSize:11,color:'#7E93AC'}}>
+        {node.comp ? 'Native React component <'+node.comp+'/> — shares AppBar, LoopRing and TabBar with app state.'
+         : node.file ? 'screens/'+node.file+' — self-contained document in an iframe.'
+         : 'Shell-rendered demo control.'}
+      </div>
+    </div>
+  );
+}
+
+function MapView({st, go, dispatch}){
+  const svgRef=useRef(null), innerRef=useRef(null);
+  useEffect(()=>{
+    const draw=()=>{
+      const svg=svgRef.current, inner=innerRef.current; if(!svg||!inner) return;
+      const box=inner.getBoundingClientRect();
+      svg.setAttribute('width',inner.scrollWidth); svg.setAttribute('height',inner.scrollHeight);
+      const si=id=>STAGES.indexOf(FLOW[id].stage);
+      let p='';
+      Object.keys(FLOW).forEach(from=>{
+        const a=document.getElementById('m_'+from.replace(/[^\w]/g,'_')); if(!a) return;
+        const ra=a.getBoundingClientRect();
+        exitsOf(from).forEach(e=>{
+          const b=document.getElementById('m_'+e.to.replace(/[^\w]/g,'_')); if(!b) return;
+          const rb=b.getBoundingClientRect();
+          const L1=ra.left-box.left,R1=ra.right-box.left,T1=ra.top-box.top,B1=ra.bottom-box.top;
+          const M1=T1+ra.height/2,CX1=L1+ra.width/2;
+          const L2=rb.left-box.left,R2=rb.right-box.left,T2=rb.top-box.top,B2=rb.bottom-box.top;
+          const M2=T2+rb.height/2,CX2=L2+rb.width/2;
+          const s=si(from),t=si(e.to);
+          let d,stroke='#4E6E92',dash='',w=1.4,op=.42;
+          if(e.k==='branch'){stroke='#FFB900';op=.58;w=1.6;}
+          if(t===s){
+            const down=T2>B1;
+            if(down&&(T2-B1)<26) d='M'+CX1+','+B1+' L'+CX2+','+T2;
+            else{const g=R1+16; d='M'+R1+','+M1+' C'+g+','+M1+' '+g+','+M2+' '+R2+','+M2;}
+            if(!down){dash='5 5';stroke='#9FB8FF';op=.48;}
+          } else if(t<s){
+            const lift=30+((s*7+t*13)%26);
+            d='M'+L1+','+M1+' C'+(L1-90)+','+(M1-lift)+' '+(R2+90)+','+(M2-lift)+' '+R2+','+M2;
+            stroke='#9FB8FF';dash='5 5';op=.48;
+          } else { const mx=(R1+L2)/2; d='M'+R1+','+M1+' C'+mx+','+M1+' '+mx+','+M2+' '+L2+','+M2; }
+          p+='<path d="'+d+'" fill="none" stroke="'+stroke+'" stroke-width="'+w+'" stroke-dasharray="'+dash+'" opacity="'+op+'" stroke-linecap="round"/>';
+        });
+      });
+      svg.innerHTML=p;
+    };
+    const id=requestAnimationFrame(draw);
+    window.addEventListener('resize',draw);
+    return ()=>{cancelAnimationFrame(id);window.removeEventListener('resize',draw);};
+  },[st.node]);
+
+  return (
+    <div className="map">
+      <div className="mlg">
+        <span><i style={{background:'#4E6E92'}}></i>forward</span>
+        <span><i style={{background:'#FFB900'}}></i>branch outcome</span>
+        <span><i style={{background:'#9FB8FF'}}></i>recursion / back-edge</span>
+        <span style={{marginLeft:'auto',color:'#5E7391'}}>Every node is clickable — no flow is gated.</span>
+      </div>
+      <div className="mapin" ref={innerRef}>
+        <svg ref={svgRef} style={{position:'absolute',inset:0,pointerEvents:'none',overflow:'visible'}}/>
+        {STAGES.map(sg=>{
+          const ids=Object.keys(FLOW).filter(k=>FLOW[k].stage===sg);
+          if(!ids.length) return null;
+          return <div className="mcol" key={sg}>
+            <div className="mch">{sg}</div>
+            {ids.map(id=>{const n=FLOW[id];
+              const c=n.type==='branch'?' mn--fork':n.type==='skip'?' mn--time':(n.type==='loop'||n.type==='end')?' mn--loop':'';
+              const sub=n.type==='branch'?n.options.length+' outcomes':n.headline||(n.comp?'Native component':'');
+              return <div key={id} id={'m_'+id.replace(/[^\w]/g,'_')}
+                          className={'mn'+c+(id===st.node?' on':'')}
+                          onClick={()=>{dispatch({type:'MODE',mode:'walk'});go(id);}}>
+                <div className="mn__i">{id}</div><div className="mn__l">{n.title}</div>
+                {sub && <div className="mn__s">{sub}</div>}</div>;})}
+          </div>;
+        })}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

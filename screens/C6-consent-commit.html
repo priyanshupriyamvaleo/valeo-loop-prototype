@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C6 · Consent and commit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .locked-row { display:flex; align-items:center; gap:12px; background:var(--mint); border-radius:var(--radius-md); padding:14px; margin-bottom:12px; }
+  .locked-row__icon { font-size:20px; }
+  .locked-row__title { font-size:13.5px; font-weight:700; color:var(--deep); }
+  .locked-row__meta { font-size:11.5px; color:var(--ink-2); margin-top:2px; }
+
+  .promise { display:flex; gap:10px; align-items:flex-start; padding:10px 0; }
+  .promise__icon { width:22px; height:22px; border-radius:50%; background:var(--green-soft); color:var(--green); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; margin-top:1px; }
+  .promise__text { font-size:12.5px; line-height:1.5; color:var(--text-primary); }
+  .promise__text b { font-weight:700; }
+
+  .consent-check { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-top:1px solid var(--line); }
+  .consent-check__box { width:20px; height:20px; border-radius:6px; border:2px solid var(--deep); background:var(--deep); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; margin-top:1px; }
+  .consent-check__text { font-size:12px; color:var(--ink-2); line-height:1.5; }
+  .consent-check__text a { color: var(--deep-2); font-weight:600; text-decoration:underline; }
+
+  .pay-row { display:flex; align-items:center; gap:10px; background:var(--surface-card); border:1.5px solid var(--deep); border-radius:var(--radius-md); padding:12px 14px; margin-top:14px; }
+  .pay-row__logo { font-size:13px; font-weight:700; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">C6 — Consent and commit</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar">
+      <div class="nav-bar__back">←</div>
+      <div class="nav-bar__title">Confirm &amp; Commit</div>
+      <div class="nav-bar__action"></div>
+    </div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:16px;">
+
+        <div class="locked-row">
+          <div class="locked-row__icon">🩸</div>
+          <div>
+            <div class="locked-row__title">Your retest is already booked</div>
+            <div class="locked-row__meta">7 Dec · at-home draw · same assay as today, so the numbers are actually comparable</div>
+          </div>
+        </div>
+
+        <div class="locked-row">
+          <div class="locked-row__icon">📊</div>
+          <div>
+            <div class="locked-row__title">Adherence floor: 80%</div>
+            <div class="locked-row__meta">Below this, your retest becomes "inconclusive" — not a bad result, an honest one. See what that means →</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); margin-bottom:6px;">Two promises</div>
+          <div class="promise">
+            <div class="promise__icon">✓</div>
+            <div class="promise__text">If your result comes back <b>inconclusive</b>, it never costs you extra. Your retest is already paid for — we extend, we don't re-bill.</div>
+          </div>
+          <div class="promise">
+            <div class="promise__icon">✓</div>
+            <div class="promise__text">Your results are <b>yours, forever</b>. If you cancel, you keep every number and every report — exportable to any doctor, any time.</div>
+          </div>
+        </div>
+
+        <div class="consent-check">
+          <div class="consent-check__box">✓</div>
+          <div class="consent-check__text">I consent to Valeo storing my health data per the <a>Privacy Policy</a> (PDPL-compliant, data held in KSA).</div>
+        </div>
+        <div class="consent-check">
+          <div class="consent-check__box">✓</div>
+          <div class="consent-check__text">I understand this protocol includes an iron supplement and have no known contraindications, confirmed with Dr. Sara Al-Amri.</div>
+        </div>
+
+        <div class="pay-row">
+          <div class="pay-row__logo">💳 mada · Apple Pay</div>
+          <div style="flex:1; text-align:right; font-size:11px; color:var(--teal); font-weight:600;">or 4x with Tabby</div>
+        </div>
+
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding: 12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--primary">Confirm &amp; pay SAR 249 →</button>
+        <div style="text-align:center; font-size:11px; color:var(--ink-2); margin-top:10px;">Cancel anytime, in-app, in under a minute.</div>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="row"><span class="tag">C6</span> Leak: <i>"I bought the medication and never thought about the retest again."</i> Metric: <b>% of purchases with retest pre-booked — target 100%, not an option.</b></div>
+    <div class="row"><span class="tag">Why pre-book</span> Per the schema, this isn't scheduling — it <b>reserves a matched assay_version</b>, without which the week-12 comparison is fiction. Function defines membership as twice-yearly testing for the same reason.</div>
+    <div class="row"><span class="tag">Two competitive weapons</span> (1) Inconclusive never routes to a charge (P2/G3) — the retest is already owned. (2) Results never expire on cancellation — direct rebuttal to ZOE's Terms, which delete test results the moment membership lapses. "A fact about your own body is not a subscription feature."</div>
+    <div class="row"><span class="tag">Noom's $62M lesson</span> The 100-screen funnel wasn't the violation — the cancellation architecture was. Sequencing is legitimate; friction asymmetry between joining and leaving is not. Cancellation here must be at least as easy as this purchase flow.</div>
+    <div class="row"><span class="tag">KSA</span> mada + Apple Pay as primary rails; Tabby BNPL surfaced as a real option — expected for health purchases in this market.</div>
+  </div>
+</div>
+</body>
+</html>

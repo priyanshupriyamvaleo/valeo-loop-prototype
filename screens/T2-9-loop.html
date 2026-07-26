@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-9 · The Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<link rel="stylesheet" href="../design-system/loop.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:34px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:700; color:var(--deep); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .caption .r{margin-bottom:7px;} .caption .r:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .loopscreen { background:linear-gradient(180deg,#16304C 0%,#1B395B 42%,#20456B 100%); }
+  .kickw { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+           color:rgba(255,255,255,.42); }
+
+  .hero { text-align:center; padding:14px 0 6px; }
+  .hero__ring { position:relative; display:inline-flex; }
+  .hero__core { position:absolute; inset:0; display:flex; flex-direction:column;
+                align-items:center; justify-content:center; }
+  .hero__day { font-family:var(--font-display); font-size:52px; font-weight:600; color:#fff;
+               line-height:1; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+  .hero__of  { font-size:11px; font-weight:700; color:rgba(255,255,255,.5); margin-top:5px;
+               letter-spacing:.05em; }
+  .hero__phase { font-size:9.5px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+                 color:var(--yellow); margin-bottom:6px; }
+
+  .plegend { display:flex; margin-top:20px; padding:0 4px; }
+  .plegend__i { flex:1; text-align:center; }
+  .plegend__d { width:7px; height:7px; border-radius:50%; margin:0 auto 7px;
+                background:rgba(255,255,255,.16); }
+  .plegend__i.done .plegend__d { background:#6FD69B; }
+  .plegend__i.now  .plegend__d { background:var(--yellow); box-shadow:0 0 0 4px rgba(255,185,0,.24); }
+  .plegend__t { font-size:8.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+                color:rgba(255,255,255,.3); }
+  .plegend__i.done .plegend__t { color:#6FD69B; }
+  .plegend__i.now  .plegend__t { color:#fff; }
+
+  /* the contract at the centre of the loop */
+  .contract { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+    border-radius:20px; padding:16px 17px; margin-top:24px; }
+  .contract__top { display:flex; align-items:center; gap:7px; margin-bottom:10px; }
+  .contract__lock { font-size:11px; }
+  .contract__lbl { font-size:9.5px; font-weight:800; letter-spacing:.11em; text-transform:uppercase;
+    color:rgba(255,255,255,.5); }
+  .contract__q { font-family:var(--font-display); font-size:17px; font-weight:500; color:#fff;
+    line-height:1.38; }
+  .contract__q em { font-style:normal; color:var(--yellow); }
+  .contract__bar { display:flex; gap:16px; margin-top:14px; padding-top:13px;
+    border-top:1px solid rgba(255,255,255,.1); }
+  .contract__s b { display:block; font-size:14px; font-weight:700; color:#fff;
+    font-variant-numeric:tabular-nums; }
+  .contract__s span { display:block; font-size:9px; font-weight:700; letter-spacing:.07em;
+    text-transform:uppercase; color:rgba(255,255,255,.42); margin-top:2px; }
+
+  .wsec { padding:0 20px; margin-top:28px; }
+  .wrow { display:flex; align-items:center; gap:13px; padding:13px 0; }
+  .wrow + .wrow { border-top:1px solid rgba(255,255,255,.08); }
+  .wrow__d { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .wrow__b { flex:1; }
+  .wrow__t { font-size:13.5px; font-weight:600; color:#fff; }
+  .wrow__s { font-size:11px; color:rgba(255,255,255,.48); margin-top:2px; }
+  .wrow__r { font-size:11.5px; font-weight:700; color:rgba(255,255,255,.65);
+             font-variant-numeric:tabular-nums; }
+
+  /* the record — completed loops */
+  .rec { display:flex; align-items:center; gap:14px; background:rgba(255,255,255,.06);
+    border-radius:18px; padding:14px 15px; margin-bottom:10px; }
+  .rec__ring { flex-shrink:0; }
+  .rec__t { font-size:13.5px; font-weight:700; color:#fff; }
+  .rec__s { font-size:11px; color:rgba(255,255,255,.5); margin-top:2px; }
+  .rec__v { margin-left:auto; font-size:10px; font-weight:800; letter-spacing:.05em;
+    text-transform:uppercase; padding:4px 9px; border-radius:16px;
+    background:rgba(111,214,155,.16); color:#6FD69B; }
+  .rec--empty { border:1px dashed rgba(255,255,255,.16); background:transparent;
+    justify-content:center; font-size:11.5px; color:rgba(255,255,255,.4); padding:18px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+
+<!-- ══════════ LOOP 1, IN PROGRESS ══════════ -->
+<div class="frame-col">
+  <div class="frame-label">T2-9 · The Loop — loop 1 in progress</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar status-bar--on-dark" style="color:#fff;background:#16304C"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="appbar" style="color:#fff;background:#16304C">
+      <span class="appbar__back" style="color:rgba(255,255,255,.75)">‹ Valeo</span>
+      <span class="appbar__spacer"></span>
+      <span class="appbar__avatar" style="background:rgba(255,255,255,.16)">FA</span>
+    </div>
+
+    <div class="screen loopscreen">
+      <div style="padding:2px 20px 28px;">
+
+        <div class="hero">
+          <div class="hero__phase">Loop 1 · Act</div>
+          <div class="hero__ring">
+            <svg class="ring ring--on-dark" width="216" height="216" viewBox="0 0 200 200">
+              <g transform="translate(100,100)">
+                <circle class="ring__arc--done" r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-90)"/>
+                <circle class="ring__arc--done" r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-18)"/>
+                <circle class="ring__arc--done" r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(54)"/>
+                <circle class="ring__arc--now"  r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(126)"/>
+                <circle class="ring__fill"      r="88" stroke-width="9" fill="none" stroke-dasharray="68 484.92" transform="rotate(126)"/>
+                <circle class="ring__arc--todo" r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(198)"/>
+              </g>
+            </svg>
+            <div class="hero__core">
+              <div class="hero__day">28</div>
+              <div class="hero__of">DAY OF 84</div>
+            </div>
+          </div>
+
+          <div class="plegend">
+            <div class="plegend__i done"><div class="plegend__d"></div><div class="plegend__t">Measure</div></div>
+            <div class="plegend__i done"><div class="plegend__d"></div><div class="plegend__t">Read</div></div>
+            <div class="plegend__i done"><div class="plegend__d"></div><div class="plegend__t">Commit</div></div>
+            <div class="plegend__i now"><div class="plegend__d"></div><div class="plegend__t">Act</div></div>
+            <div class="plegend__i"><div class="plegend__d"></div><div class="plegend__t">Prove</div></div>
+          </div>
+        </div>
+
+        <div class="contract">
+          <div class="contract__top"><span class="contract__lock">🔒</span><span class="contract__lbl">Sealed 12 Oct · cannot be edited</span></div>
+          <div class="contract__q">Tirzepatide will move your HbA1c from 5.9% to <em>below 5.7%</em> by <em>7 December</em>.</div>
+          <div class="contract__bar">
+            <div class="contract__s"><b>86%</b><span>Adherence</span></div>
+            <div class="contract__s"><b>80%</b><span>Floor</span></div>
+            <div class="contract__s"><b>28</b><span>Days left</span></div>
+          </div>
+        </div>
+
+        <div class="wsec" style="padding:0;">
+          <div class="kickw" style="margin-bottom:4px;">This loop</div>
+          <div class="wrow">
+            <span class="wrow__d" style="background:#6FD69B"></span>
+            <div class="wrow__b"><div class="wrow__t">Baseline drawn</div><div class="wrow__s">40 markers · 12 Oct</div></div>
+            <span class="wrow__r">HbA1c 5.9%</span>
+          </div>
+          <div class="wrow">
+            <span class="wrow__d" style="background:#6FD69B"></span>
+            <div class="wrow__b"><div class="wrow__t">Protocol started</div><div class="wrow__s">Tirzepatide 2.5 → 5 mg · iron · vitamin C</div></div>
+          </div>
+          <div class="wrow">
+            <span class="wrow__d" style="background:var(--yellow)"></span>
+            <div class="wrow__b"><div class="wrow__t">Running now</div><div class="wrow__s">Week 4 of 12 · 24 of 28 doses logged</div></div>
+            <span class="wrow__r">−3.6 kg</span>
+          </div>
+          <div class="wrow" style="opacity:.5">
+            <span class="wrow__d" style="background:rgba(255,255,255,.28)"></span>
+            <div class="wrow__b"><div class="wrow__t">Retest</div><div class="wrow__s">7 Dec · booked, matched assay</div></div>
+            <span class="wrow__r">?</span>
+          </div>
+        </div>
+
+        <div class="wsec" style="padding:0;">
+          <div class="kickw" style="margin-bottom:9px;">Your record</div>
+          <div class="rec rec--empty">Close this loop and it becomes your first verified answer.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="tabs3">
+      <div class="tabs3__i"><span class="tabs3__ico">◉</span><span class="tabs3__lbl">Today</span></div>
+      <div class="tabs3__i on"><span class="tabs3__ico">◍</span><span class="tabs3__lbl">Loop</span></div>
+      <div class="tabs3__i"><span class="tabs3__ico">◎</span><span class="tabs3__lbl">Twin</span></div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="r"><span class="tag">The missing tab</span> The whole thesis is a closed loop and there wasn't a pixel of it anywhere. This is it: five arcs — <b>Measure · Read · Commit · Act · Prove</b> — three closed, the fourth filling.</div>
+    <div class="r"><span class="tag">Honest, not arbitrary</span> Apple's rings work because closing one feels good, but 500 calories is a made-up number. <b>This ring closes when a sealed prediction actually gets a verdict.</b> The mechanic and the truth are the same thing.</div>
+    <div class="r"><span class="tag">The contract, always</span> The sealed prediction sits at the centre of the loop, with adherence measured against the floor it must clear. No streaks, no badges, no confetti — Oura and Apple Medications both ship zero game mechanics, and the research was explicit about why.</div>
+  </div>
+</div>
+
+<!-- ══════════ LOOP 3 — THE RECORD COMPOUNDS ══════════ -->
+<div class="frame-col">
+  <div class="frame-label">T2-9 · The Loop — loop 3 · <b>tree rings</b></div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar status-bar--on-dark" style="color:#fff;background:#16304C"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="appbar" style="color:#fff;background:#16304C">
+      <span class="appbar__back" style="color:rgba(255,255,255,.75)">‹ Valeo</span>
+      <span class="appbar__spacer"></span>
+      <span class="appbar__avatar" style="background:rgba(255,255,255,.16)">FA</span>
+    </div>
+
+    <div class="screen loopscreen">
+      <div style="padding:2px 20px 28px;">
+
+        <div class="hero">
+          <div class="hero__phase">Loop 3 · Measure</div>
+          <div class="hero__ring">
+            <svg class="ring ring--on-dark" width="216" height="216" viewBox="0 0 200 200">
+              <g transform="translate(100,100)">
+                <!-- two completed loops, laid inward as tree rings -->
+                <circle class="ring__tree" r="70" stroke-width="4" fill="none"/>
+                <circle class="ring__tree" r="57" stroke-width="4" fill="none" opacity=".32"/>
+                <!-- current loop -->
+                <circle class="ring__arc--now"  r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-90)"/>
+                <circle class="ring__fill"      r="88" stroke-width="9" fill="none" stroke-dasharray="42 484.92" transform="rotate(-90)"/>
+                <circle class="ring__arc--todo" r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-18)"/>
+                <circle class="ring__arc--todo" r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(54)"/>
+                <circle class="ring__arc--todo" r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(126)"/>
+                <circle class="ring__arc--todo" r="88" stroke-width="9" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(198)"/>
+              </g>
+            </svg>
+            <div class="hero__core">
+              <div class="hero__day">3</div>
+              <div class="hero__of">DAY OF 84</div>
+            </div>
+          </div>
+
+          <div class="plegend">
+            <div class="plegend__i now"><div class="plegend__d"></div><div class="plegend__t">Measure</div></div>
+            <div class="plegend__i"><div class="plegend__d"></div><div class="plegend__t">Read</div></div>
+            <div class="plegend__i"><div class="plegend__d"></div><div class="plegend__t">Commit</div></div>
+            <div class="plegend__i"><div class="plegend__d"></div><div class="plegend__t">Act</div></div>
+            <div class="plegend__i"><div class="plegend__d"></div><div class="plegend__t">Prove</div></div>
+          </div>
+        </div>
+
+        <div class="wsec" style="padding:0; margin-top:26px;">
+          <div class="kickw" style="margin-bottom:9px;">Your record · 2 verified answers</div>
+
+          <div class="rec">
+            <svg class="rec__ring" width="34" height="34" viewBox="0 0 200 200"><g transform="translate(100,100)">
+              <circle r="80" stroke="#6FD69B" stroke-width="16" fill="none" opacity=".9"/>
+            </g></svg>
+            <div>
+              <div class="rec__t">Tirzepatide → HbA1c</div>
+              <div class="rec__s">5.9% → 5.6% · 12 weeks · 91% adherence</div>
+            </div>
+            <span class="rec__v">Confirmed</span>
+          </div>
+
+          <div class="rec">
+            <svg class="rec__ring" width="34" height="34" viewBox="0 0 200 200"><g transform="translate(100,100)">
+              <circle r="80" stroke="#8DA2BB" stroke-width="16" fill="none" opacity=".75"/>
+            </g></svg>
+            <div>
+              <div class="rec__t">Oral iron → ferritin</div>
+              <div class="rec__s">18 → 21 ng/mL · didn't move · absorption issue found</div>
+            </div>
+            <span class="rec__v" style="background:rgba(141,162,187,.18); color:#B8C6D8">Refuted</span>
+          </div>
+        </div>
+
+        <div class="contract" style="margin-top:22px;">
+          <div class="contract__top"><span class="contract__lock">🔒</span><span class="contract__lbl">Loop 3 · sealed 4 Mar</span></div>
+          <div class="contract__q">IV iron will move your ferritin above <em>40 ng/mL</em> by <em>28 May</em>.</div>
+          <div class="contract__bar">
+            <div class="contract__s"><b>2</b><span>Prior answers</span></div>
+            <div class="contract__s"><b>1</b><span>Null recorded</span></div>
+            <div class="contract__s"><b>81</b><span>Days left</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="tabs3">
+      <div class="tabs3__i"><span class="tabs3__ico">◉</span><span class="tabs3__lbl">Today</span></div>
+      <div class="tabs3__i on"><span class="tabs3__ico">◍</span><span class="tabs3__lbl">Loop</span></div>
+      <div class="tabs3__i"><span class="tabs3__ico">◎</span><span class="tabs3__lbl">Twin</span></div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="r"><span class="tag">Tree rings</span> Each closed loop is laid <b>inward</b> as a permanent ring. Your history becomes a physical object that grows — and it cannot be bought, faked, or reset, because every ring is a verified fact about your own body.</div>
+    <div class="r"><span class="tag">The refuted ring counts</span> Loop 2 came back <b>refuted</b> and it is still a ring — slate, not green, but permanent and listed with equal weight. That is the whole differentiation made visual: a null is an answer, and answers are what you collect here.</div>
+    <div class="r"><span class="tag">Compounding, literally</span> Loop 3's contract cites the prior two. This is Stage 2 of the moat — memory — rendered as a screen instead of asserted in a deck.</div>
+  </div>
+</div>
+
+</body>
+</html>

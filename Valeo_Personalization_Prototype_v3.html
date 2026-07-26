@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valeo · Goal-based personalization prototype v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#1B395B; --deep-2:#254A73; --yellow:#FFB900; --yellow-deep:#E0A400; --green:#27995B; --green-soft:#E3F3E9;
+  --teal:#408FA4; --teal-soft:#E2F0F4;
+  --mint:#FDF1CC; --cream:#FFFDF5; --ink:#22354C; --ink-2:#5E6E82;
+  --coral:#E94F5F; --coral-soft:#FBE3E6; --card:#FFFFFF; --line:#F0E7D0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',system-ui,sans-serif;background:#F6EFDC;color:var(--ink);display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:28px 16px}
+.stage-note{font-size:13px;color:#6B5E3D;margin-bottom:14px;max-width:440px;text-align:center;line-height:1.5}
+.phone{width:390px;max-width:100%;height:820px;background:var(--cream);border-radius:38px;border:1px solid #E8DDBF;box-shadow:0 24px 60px rgba(96,74,17,.18);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.notch{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:12px;font-weight:600;color:var(--deep);flex-shrink:0}
+.screen{flex:1;overflow-y:auto;padding:6px 20px 90px;display:none}
+.screen.on{display:block}
+#s-coach.on{display:flex;flex-direction:column;padding-bottom:78px}
+.screen::-webkit-scrollbar{width:0}
+
+.brand{display:flex;align-items:center;gap:8px;margin:6px 0 16px}
+.brand .mark{width:38px;height:38px;border-radius:11px;object-fit:cover;display:block}
+.brand span{font-weight:700;font-size:17px;letter-spacing:2px;color:var(--deep);line-height:1.1}
+.brand em{display:block;font-size:8px;letter-spacing:3px;color:var(--ink-2);font-style:normal;font-weight:600;margin-top:2px}
+.dots{display:flex;gap:5px;margin:2px 0 14px}
+.dot{width:22px;height:5px;border-radius:99px;background:#EBDFC0}
+.dot.on{background:var(--yellow)}
+h1{font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.25;color:var(--deep)}
+.sub{font-size:13px;color:var(--ink-2);margin:6px 0 14px;line-height:1.5}
+
+.goal{display:flex;align-items:center;gap:13px;width:100%;padding:14px 15px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;margin-bottom:9px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;color:var(--ink);text-align:left;transition:all .15s}
+.goal .gi{width:42px;height:42px;border-radius:13px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:21px;color:var(--deep);flex-shrink:0}
+.goal small{display:block;font-weight:500;font-size:11.5px;color:var(--ink-2);margin-top:2px}
+.goal.on{border-color:var(--yellow);background:var(--mint)}
+.goal.on .gi{background:var(--deep);color:#fff}
+
+.q{font-size:13px;font-weight:600;color:var(--deep);margin:15px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:8px 13px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font-family:inherit;font-size:12px;font-weight:500;color:var(--ink);cursor:pointer}
+.chip.on{background:var(--deep);border-color:var(--deep);color:#fff}
+
+.cta{display:block;width:100%;padding:15px;border:none;border-radius:99px;background:var(--yellow);color:var(--deep);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:18px;transition:transform .1s}
+.cta:active{transform:scale(.98)}
+.cta.ghost{background:transparent;color:var(--ink-2);font-weight:500;font-size:12.5px;padding:10px;margin-top:6px}
+
+.pstep{display:flex;gap:12px;margin-bottom:13px}
+.pnum{width:26px;height:26px;border-radius:50%;background:var(--mint);color:var(--deep);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.pstep b{font-size:13.5px;font-weight:600;display:block}
+.pstep span{font-size:12px;color:var(--ink-2)}
+
+.member-bar{display:flex;align-items:center;justify-content:space-between;margin-top:8px;position:relative}
+.member-btn{display:flex;align-items:center;gap:9px;background:none;border:none;font-family:inherit;cursor:pointer;text-align:left;padding:0}
+.member-btn .mav{width:42px;height:42px;border-radius:50%;background:var(--deep);color:var(--yellow);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center}
+.member-btn small{font-size:11.5px;color:var(--ink-2);font-weight:500;display:block}
+.member-btn b{font-size:18px;font-weight:700;color:var(--deep);display:flex;align-items:center;gap:5px}
+.member-btn b i{font-size:16px;color:var(--ink-2)}
+.member-menu{position:absolute;top:52px;left:0;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 30px rgba(27,57,91,.14);padding:6px;z-index:20;display:none;min-width:230px}
+.member-menu.open{display:block}
+.member-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;border-radius:11px;text-align:left}
+.member-menu button:hover{background:var(--mint)}
+.member-menu .mav{width:32px;height:32px;border-radius:50%;background:var(--mint);color:var(--deep);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.member-menu small{display:block;font-weight:500;font-size:10.5px;color:var(--ink-2)}
+.member-menu button.sel{background:var(--mint)}
+
+.hero{background:var(--yellow);border-radius:22px;padding:18px;color:var(--deep);margin:14px 0 16px;position:relative;overflow:hidden;cursor:pointer}
+.hero::after{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:var(--yellow-deep)}
+.hero .tag{font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(27,57,91,.6);position:relative;z-index:1}
+.hero h3{font-size:18px;font-weight:700;margin:4px 0 2px;position:relative;z-index:1}
+.hero p{font-size:12px;color:rgba(27,57,91,.75);position:relative;z-index:1}
+.bar{height:7px;border-radius:99px;background:rgba(27,57,91,.16);margin-top:12px;position:relative;z-index:1}
+.bar i{display:block;height:7px;border-radius:99px;background:var(--deep);transition:width .6s ease}
+.hero .wk{display:flex;justify-content:space-between;font-size:11px;color:rgba(27,57,91,.75);margin-top:6px;position:relative;z-index:1}
+.hero .view{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;margin-top:12px;position:relative;z-index:1}
+
+.sect{font-size:11.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-2);margin:16px 0 9px;display:flex;justify-content:space-between;align-items:center}
+.sect small{font-weight:600;font-size:10.5px;text-transform:none;letter-spacing:0;color:var(--teal)}
+.task{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-bottom:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.task .tick{width:24px;height:24px;border-radius:50%;border:2px solid #D9CFAF;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;flex-shrink:0;transition:all .2s}
+.task small{display:block;font-weight:500;font-size:11px;color:var(--ink-2)}
+.task .ti{font-size:18px;color:var(--teal);margin-left:auto}
+.task.done{opacity:.55}
+.task.done .tick{background:var(--teal);border-color:var(--teal)}
+.task.done .tt{text-decoration:line-through}
+.logrow{display:none;background:var(--mint);border-radius:12px;padding:10px;margin:-4px 0 10px;gap:6px;flex-wrap:wrap}
+.logrow.open{display:flex}
+.logrow button{padding:7px 11px;border-radius:99px;border:1px solid #E4D5A8;background:#fff;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--deep);cursor:pointer}
+
+.mod{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-bottom:8px;cursor:pointer}
+.mod b{font-size:13px;font-weight:600;flex:1}
+.mod .chev{color:#C8BD9C;font-size:16px}
+.pill{font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:99px;flex-shrink:0}
+.pill.done{background:var(--teal-soft);color:#20586A}
+.pill.active{background:var(--mint);color:#8A6510}
+.pill.up{background:#F2F0EA;color:#777161}
+.mod.new{border:1.5px solid var(--coral);flex-direction:column;align-items:flex-start;gap:5px;animation:pop .4s ease}
+.mod.new .nh{display:flex;align-items:center;gap:8px;width:100%}
+.mod.new .nh i{color:var(--coral);font-size:17px}
+.mod.new .pill.new{background:var(--coral-soft);color:#B02A3C;margin-left:auto}
+.mod.new p{font-size:11.5px;color:var(--ink-2)}
+@keyframes pop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.explore-link{font-size:12px;color:var(--ink-2);text-align:center;margin:14px 0 4px}
+.explore-link b{color:var(--deep);font-weight:600}
+
+.back{display:flex;align-items:center;gap:6px;background:none;border:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--deep);cursor:pointer;padding:10px 0 4px}
+.tl{position:relative;margin:14px 0 0 6px;padding-left:26px;border-left:2.5px solid #EBDFC0}
+.ph{position:relative;padding-bottom:22px}
+.ph .pdot{position:absolute;left:-39px;top:0;width:24px;height:24px;border-radius:50%;background:#EBDFC0;border:3px solid var(--cream);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px}
+.ph.done .pdot{background:var(--teal)}
+.ph.cur .pdot{background:var(--yellow);box-shadow:0 0 0 4px rgba(245,188,65,.3)}
+.ph .pw{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-2)}
+.ph h4{font-size:15px;font-weight:700;color:var(--deep);margin:2px 0 4px}
+.ph.cur h4{color:#8A6510}
+.ph .ach{font-size:12.5px;color:var(--ink-2);line-height:1.5;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:6px}
+.ph .ach b{color:var(--deep);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+.ph.cur .ach{border-color:var(--yellow);background:#FFFAEA}
+.ph ul{margin:7px 0 0 0;list-style:none}
+.ph li{font-size:12px;color:var(--ink-2);display:flex;gap:7px;margin-bottom:4px;align-items:flex-start}
+.ph li i{font-size:14px;margin-top:2px;color:#C8BD9C}
+.ph.done li i,.ph li.did i{color:var(--green)}
+.youare{display:inline-flex;align-items:center;gap:5px;background:var(--deep);color:#fff;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:99px;margin-bottom:6px}
+
+.md-hero{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:8px}
+.md-hero .gi{width:46px;height:46px;border-radius:14px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:23px;color:var(--deep);margin-bottom:10px}
+.md-hero h3{font-size:18px;font-weight:700;color:var(--deep)}
+.md-hero p{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:6px}
+.inc{margin-top:14px}
+.inc div{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;margin-bottom:8px;color:var(--ink)}
+.inc i{color:var(--teal);font-size:15px;margin-top:2px}
+
+.chat-head{display:flex;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px solid var(--line);margin-bottom:10px;flex-shrink:0}
+.ava{width:38px;height:38px;border-radius:50%;background:var(--deep);display:flex;align-items:center;justify-content:center;color:var(--yellow);font-size:18px}
+.chat-head b{font-size:14px;display:block}
+.chat-head small{font-size:11px;color:var(--teal);font-weight:600}
+#chat{flex:1;overflow-y:auto;padding-bottom:6px}
+#chat::-webkit-scrollbar{width:0}
+.bub{max-width:84%;padding:11px 14px;border-radius:18px;font-size:12.5px;line-height:1.55;margin-bottom:8px;white-space:pre-wrap}
+.bub.coach{background:var(--card);border:1px solid var(--line);border-bottom-left-radius:6px}
+.bub.me{background:var(--deep);color:#fff;margin-left:auto;border-bottom-right-radius:6px}
+.typing{display:inline-flex;gap:4px;padding:13px 15px}
+.typing span{width:6px;height:6px;border-radius:50%;background:#C8BD9C;animation:blink 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+.qchips{display:flex;gap:6px;overflow-x:auto;padding:8px 0;flex-shrink:0}
+.qchips::-webkit-scrollbar{height:0}
+.qchips .chip{flex-shrink:0}
+.inrow{display:flex;gap:8px;flex-shrink:0;padding-top:4px}
+.inrow input{flex:1;border:1.5px solid var(--line);border-radius:99px;padding:12px 16px;font-family:inherit;font-size:13px;background:#fff;outline:none;color:var(--ink)}
+.inrow input:focus{border-color:var(--yellow)}
+.inrow button{width:46px;height:46px;border-radius:50%;border:none;background:var(--yellow);color:var(--deep);font-size:19px;cursor:pointer;flex-shrink:0}
+
+.exp-head{font-size:11.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-2);margin:16px 0 9px}
+.exp{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin-bottom:7px;font-size:13px;font-weight:600}
+.exp .gi{width:34px;height:34px;border-radius:10px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--deep);flex-shrink:0}
+.exp small{display:block;font-weight:500;font-size:11px;color:var(--ink-2)}
+.exp .why{margin-left:auto;font-size:10px;font-weight:700;color:#20586A;background:var(--teal-soft);padding:3px 8px;border-radius:99px;flex-shrink:0}
+
+.nav{position:absolute;bottom:0;left:0;right:0;height:72px;background:#fff;border-top:1px solid var(--line);display:flex;padding:8px 6px 16px;z-index:15}
+.nav button{flex:1;border:none;background:none;font-family:inherit;font-size:10px;font-weight:600;color:#9AA3B2;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.nav button i{font-size:21px}
+.nav button.on{color:var(--deep)}
+.nav .bdg{position:relative}
+.nav .bdg::after{content:'';position:absolute;top:-1px;right:26%;width:8px;height:8px;border-radius:50%;background:var(--coral);opacity:0;transition:opacity .3s}
+.nav .bdg.show::after{opacity:1}
+
+.toast{position:absolute;left:16px;right:16px;bottom:84px;background:var(--deep);color:#fff;border-radius:14px;padding:12px 14px;font-size:12.5px;font-weight:500;display:flex;gap:9px;align-items:center;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:30}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast i{color:var(--yellow);font-size:17px}
+.controls{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.controls button{padding:8px 14px;border-radius:99px;border:1px solid #DACFAE;background:#fff;font-family:inherit;font-size:12px;font-weight:600;color:var(--deep);cursor:pointer}
+.apphead{background:linear-gradient(#FFF5D9,var(--cream));margin:-6px -20px 0;padding:12px 20px 2px}
+.searchbar{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #EDE3C8;border-radius:99px;padding:12px 16px;color:#9AA3B2;font-size:13.5px;margin:2px 0 16px}
+.hi{font-size:19px;color:var(--deep);margin:2px 0 14px;font-weight:400}
+.hi b{font-weight:700}
+.entry{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:0 8px 22px rgba(27,57,91,.07);cursor:pointer}
+.entry .etag{font-size:9.5px;font-weight:700;letter-spacing:1px;color:var(--yellow-deep)}
+.entry h3{font-size:16.5px;font-weight:700;color:var(--deep);margin:3px 0 2px}
+.entry p{font-size:11.5px;color:var(--ink-2)}
+.entry .bar{background:#F1E9D2;margin-top:11px}
+.entry .bar i{background:var(--yellow)}
+.erow{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.ecta{border:none;background:var(--yellow);color:var(--deep);font-family:inherit;font-weight:700;font-size:13px;padding:10px 18px;border-radius:99px;cursor:pointer}
+.estat{font-size:11.5px;font-weight:700;color:var(--deep)}
+.svcgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.svc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 6px;text-align:center;font-size:10.5px;font-weight:600;color:var(--deep);cursor:pointer}
+.svc .gi{width:36px;height:36px;border-radius:11px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--deep);margin:0 auto 7px}
+.navlogo{width:26px;height:26px;border-radius:8px;display:block}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px;position:relative;z-index:1}
+.stats div{background:rgba(255,255,255,.55);border-radius:12px;padding:7px 8px}
+.stats small{display:block;font-size:8.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:rgba(27,57,91,.6)}
+.stats b{font-size:12.5px;font-weight:700;color:var(--deep)}
+.delta{display:inline-flex;align-items:center;gap:5px;background:rgba(27,57,91,.12);border-radius:99px;padding:4px 11px;font-size:10px;font-weight:700;color:var(--deep);margin-top:10px;position:relative;z-index:1}
+.ph h4 .st{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:99px;margin-left:8px;vertical-align:2px}
+.ph .st.c{background:var(--green-soft);color:var(--green)}
+.ph .st.k{background:var(--mint);color:#8A6510}
+.ph .st.u{background:#F2F0EA;color:#777161}
+.ph li em{font-style:normal;font-size:10px;color:#A79F87;font-weight:600}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<p class="stage-note"><strong>Valeo &middot; personalization prototype v3.</strong> Starts on your current app home &mdash; the protocol card is the new entry point. Tap in for the timeline, task logging, modules, family switching, and health coach chat.</p>
+
+<div class="phone">
+  <div class="notch"><span>9:41</span><span>Valeo</span><span>&#9679;&#9679;&#9679;</span></div>
+
+  <!-- APP HOME (current app, entry point) -->
+  <div class="screen" id="s-apphome"></div>
+
+  <!-- ONBOARDING 1 -->
+  <div class="screen on" id="s-ob1">
+    <div class="brand"><img class="mark" src="data:image/jpeg;base64,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" alt="Valeo Health"><span>VALEO<em>&middot; HEALTH &middot;</em></span></div>
+    <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+    <h1>What brings you to Valeo?</h1>
+    <p class="sub">We'll build your personal protocol around this — tests, experts and programs, in the right order.</p>
+    <div id="goal-list"></div>
+    <button class="cta" onclick="go('s-ob2')">Continue</button>
+    <button class="cta ghost" onclick="skipBrowse()">I'll decide later — just browsing</button>
+  </div>
+
+  <!-- ONBOARDING 2 -->
+  <div class="screen" id="s-ob2">
+    <div class="brand"><img class="mark" src="data:image/jpeg;base64,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" alt="Valeo Health"><span>VALEO<em>&middot; HEALTH &middot;</em></span></div>
+    <div class="dots"><span class="dot on"></span><span class="dot on"></span><span class="dot"></span></div>
+    <h1>A few quick things</h1>
+    <p class="sub">45 seconds — this helps your health coach start with real context.</p>
+
+    <p class="q">Anything health-wise we should know?</p>
+    <div class="chips" data-multi="1">
+      <button class="chip">On regular medication</button><button class="chip">Managing a condition</button>
+      <button class="chip">Pregnant</button><button class="chip">New parent</button>
+      <button class="chip">Recovering from injury</button><button class="chip">None of these</button>
+    </div>
+
+    <p class="q">Had any of these in the last 6 months?</p>
+    <div class="chips" data-multi="1">
+      <button class="chip">Blood test</button><button class="chip">Full body checkup</button>
+      <button class="chip">Doctor consult</button><button class="chip">None yet</button>
+    </div>
+
+    <p class="q">Which have you tried before?</p>
+    <div class="chips" data-multi="1">
+      <button class="chip">GLP-1 / weight loss meds</button><button class="chip">IV therapy</button>
+      <button class="chip">Peptides</button><button class="chip">Supplements</button>
+      <button class="chip">Physiotherapy</button><button class="chip">None yet</button>
+    </div>
+
+    <p class="q">Who is this plan for?</p>
+    <div class="chips" id="who-chips">
+      <button class="chip on" onclick="setFamily(false,this)">Just me</button>
+      <button class="chip" onclick="setFamily(true,this)">Me + my family</button>
+    </div>
+
+    <p class="q">How do you prefer your care?</p>
+    <div class="chips"><button class="chip on">At-home visits</button><button class="chip">Tele-consults</button><button class="chip">Mix of both</button></div>
+
+    <p class="q">How hands-on should your health coach be?</p>
+    <div class="chips"><button class="chip on">Check in weekly</button><button class="chip">Only when I ask</button></div>
+
+    <button class="cta" onclick="go('s-ob3');renderPreview()">Continue</button>
+  </div>
+
+  <!-- ONBOARDING 3 -->
+  <div class="screen" id="s-ob3">
+    <div class="brand"><img class="mark" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFBQUGBgYHCQ4JCQgICRINDQoOFRIWFhUSFBQXGiEcFxgfGRQUHScdHyIjJSUlFhwpLCgkKyEkJST/2wBDAQYGBgkICREJCREkGBQYJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCT/wAARCABgAGADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD0yiiiv50P0MKKKKACiiigAooqSG3luG2xIXPtVRjKT5Yq7E2krsjorf07wjPdZM8ywjGcDk9v8arX3hy7tCTHiZOoK8HH0r055JjoUlWlTdvx+7c5o42i5cilqZNFKysjFWBBHUGkry2raM6QpVVnYKoLE9gKSus8MaZGtmt3IuWkJP0UE/4E16OV5dPH1/Yxdurfkc+KxCoQ52ZVp4W1O8t2mSJEA6K7YZvp/wDXrMntprZts0TRn3Fen2reW3lnGDx+IH9Rz+dZd5YxX0LQyqPTPocdf0r7HG8H0FRi8PJ8+u+zf6HkUc3m5v2i0OAop0sbQyvG33kYqfqDim1+eyTTsz3076gBnoMmu50vS47C3RCAXxlj6tXF2gzdwDGcyL/MV6DI/JwCevAGa+y4Sw9N+0rSWqsl+p4+a1JLlgtmTR7SGJUfKer/AHVH9fpRMm4HcCcgn5hgn1OO3QAU8ZCruIBQAc8hPYDu3+fquCDgDDfewTk+xc9gPSv0Pk92z/r+v67Hz99b/wBf1/Xmcr4o0tUh+1oAGRtr47jOP5/zrma7rxIUTRbjPcKFz1OWXH6KT+NcLX5dxVhoUcauT7STfrdr9D6fK6kp0fe6MK7XwpdrPpaxBgJLdtp9sklT9MkiuKq9o2pHS75JjkxN8kq/3kPX/GuTIMwWCxanP4Xo/R9fk/wNcfh3WpOK3WqO/wCMd1GP++Rn/wBlP6GoLpjFIJCMBzgj0buP61Op3YZWD5wQ3Zsjg/Rhx9abJEk8TROTscAZ7j+6fqDwfwr9YqRc42jv0PlYuz1PPtVQx6ldKf8Anqx/AnI/nVWuk1vw/eSOJYVE+1eTkBsDqCO5HqO1ZJ0LVATmwuBjqSnH51+TZhlWKp4iaVOVm7rR9T6uhiqUqa95feGiQedqcPHyxnzG+g5/niu5s8nM2QOqqT29W/CsPRfD11CrC4IgLkAhSCx74z0AA5NdEAoChF+UABV9v4R+PU+1fb8M5fUw1C9WNm3fXf8Az0+/XseLmWIjUnaLuOBx6rjp3K5/mxpcYBGFAXkqT8q+7Huf8+9RyTJBE00kmyNFLNIew7t9SeBXEa1r8+qMYkzDaKfkiB6+7epr0s1zmjl1NOesnsu/+S/pLtzYXBzxErR0S6/1/X62PE+tJfyrbWzl4I2LNJ/z0f1+g6CsKiivynHY2pjK8q9Xd/h5H1NCjGjBQjsgooorjNjrvCepi4tmsZSS8IJT1aPuPqDyK6Dk9QGPOQP4jjkf8CHP1Feb2V3LY3UVzCcPG24e/t+Neh21xFd20dxESIpF3D1UZ/mp/Sv07hfM/rOH9hN+9D8V0+7b7urPmszw3s6nPHZ/mS8nBBBPHJ7n+E/iODTsuYkUDKZ+XJ+96Kfp3+lNPfcvrkD/AMeA/wDQhQduCGLbud2OmPUe5/qa+qT3/r+v66Hlhxt7sCPxYZ/mx/Sg99xz1yR/48R/6CKDnJJIU5OSP4Tjk/8AARx9TVXU79dMspLlgAy4CIe74+VfwHJrKrVjSg6k3ZLf5f1/kVCLnJRjuzA8XamWcafGQApDzY6buy/QCuap0kjSu0jsWdiWYnqSabX43mePljcRKvLrt5Lov66n2GGoKjTUEFFFFcBuFFFFABXR+EdTMcxsJGGJDvhJ6B+4+hFc5So7IwdGKspyCOoNd2W46eCxEa8Om/muqMMRQVam4M9NHGNpx0wT29D+B4PtShjgIGA2nIQjlD7+w/wqlpOorqlklz8oc/LID0D9wfZhzWgVcrtKzED+F2G38T1Ir9mw9WNamqlN3TV1/X/Dnx1SLhJxluiMc42jPTAPf+6D/wChGuJ8TamL698mJ90FvlVP99v4m/Ouh8Rap/Z9gdj5nnykZ74P3n/oK4aviOLszslgqb85fov1+49vKcN/y+l8v6/AKKKK+CPdCiiigAooooAKKKKAL2lavc6RMZICrK4w8bcq4rcbxpD5fyaYN/YNLlAfpiuVor1cHneNwlP2VGdo9mk7el07HLWwVGrLmnHUs6hqFxqdy1xcvuc8ADgKPQD0qtRRXnVas6s3UqO7e7OiMVFKMVZBRRRWZQUUUUAf/9k=" alt="Valeo Health"><span>VALEO<em>&middot; HEALTH &middot;</em></span></div>
+    <div class="dots"><span class="dot on"></span><span class="dot on"></span><span class="dot on"></span></div>
+    <div id="preview"></div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="s-home"></div>
+
+  <!-- TIMELINE -->
+  <div class="screen" id="s-timeline"></div>
+
+  <!-- MODULE DETAIL -->
+  <div class="screen" id="s-module"></div>
+
+  <!-- HEALTH COACH -->
+  <div class="screen" id="s-coach">
+    <div class="chat-head"><div class="ava"><i class="ti ti-sparkles"></i></div><div><b>Health coach</b><small id="coach-status">Knows your protocol &amp; results</small></div></div>
+    <div id="chat"></div>
+    <div class="qchips" id="qchips"></div>
+    <div class="inrow">
+      <input id="msg" type="text" placeholder="Ask about your health, plan, results..." onkeydown="if(event.key==='Enter')send()">
+      <button onclick="send()" aria-label="Send"><i class="ti ti-arrow-up"></i></button>
+    </div>
+  </div>
+
+  <!-- EXPLORE -->
+  <div class="screen" id="s-explore"></div>
+
+  <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-txt"></span></div>
+
+  <nav class="nav" id="nav" style="display:none">
+    <button class="on" onclick="tab('s-home',this)"><i class="ti ti-home"></i>Home</button>
+    <button onclick="tab('s-timeline',this);renderTimeline()"><i class="ti ti-route"></i>My plan</button>
+    <button onclick="tab('s-coach',this)"><i class="ti ti-message-circle"></i>Health coach</button>
+    <button class="bdg" id="explore-btn" onclick="tab('s-explore',this)"><i class="ti ti-layout-grid"></i>Explore</button>
+  </nav>
+
+  <nav class="nav" id="nav-app" style="display:none">
+    <button onclick="toast('Services - existing marketplace flow')"><i class="ti ti-flask"></i>Services</button>
+    <button onclick="toast('Supplements - existing flow')"><i class="ti ti-bottle"></i>Supplements</button>
+    <button class="on"><img class="navlogo" src="data:image/jpeg;base64,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" alt="">Home</button>
+    <button onclick="toast('Results - existing flow')"><i class="ti ti-chart"></i>Results</button>
+    <button onclick="toast('Cart - existing flow')"><i class="ti ti-cart"></i>Cart</button>
+  </nav>
+</div>
+
+<div class="controls">
+  <button onclick="restart()">&#8635; Restart onboarding</button>
+  <button onclick="demoFamily()">Demo: family mode</button>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const GOALS={
+  weight:{label:"Lose weight",hint:"Doctor-led GLP-1 & nutrition",icon:"ti-scale",title:"Weight loss protocol",len:"16 weeks · doctor-led",pct:19,week:"Week 3 of 16",cur:1,pos:"Week 3",curDone:2,stats:[["Start","82.0 kg"],["Current","78.4 kg"],["Goal","72.0 kg"]],delta:"\u22123.6 kg since baseline",
+    steps:[["Baseline weight loss blood test","Free home collection, this week"],["Doctor consult","GLP-1 eligibility + plan"],["Nutrition plan + coach","Weekly check-ins"],["Month-3 monitoring test","Measure what changed"]],
+    today:[{i:"ti-vaccine",t:"GLP-1 dose",s:"Nurse visit Thursday, 6pm",log:0},{i:"ti-salad",t:"Log lunch",s:"Protein target 40g",log:1,opts:["Chicken salad","Grilled fish","Lentil bowl","Something else"]},{i:"ti-scale",t:"Log weight",s:"Weekly weigh-in due",log:1,opts:["78.4 kg","78.0 kg","77.6 kg","Enter manually"]},{i:"ti-video",t:"Coach check-in",s:"Friday with May",log:0}],
+    mods:[["Baseline blood panel","done"],["GLP-1 therapy","active"],["Nutrition plan","active"],["Weekly coach check-ins","active"],["Month-3 monitoring test","up"]],
+    phases:[
+      {w:"Weeks 1–2",t:"Foundation",a:"Your starting point is mapped: 45+ biomarkers, body composition, and a doctor-approved GLP-1 plan.",m:["Baseline blood panel","Doctor consult & eligibility","First dose administered"]},
+      {w:"Weeks 3–6",t:"Adaptation",a:"Appetite regulation kicks in. Expect 2–4% body-weight loss while your coach manages side effects and protein intake.",m:["Weekly dose titration","Nutrition plan live","2–4% weight loss"]},
+      {w:"Weeks 7–12",t:"Momentum",a:"The biggest visible change: 5–8% total loss, stable energy, and habits that no longer need willpower.",m:["5–8% total weight loss","Strength routine added","Mid-point coach review"]},
+      {w:"Weeks 13–16",t:"Consolidate & retest",a:"Month-3 blood panel proves what changed — metabolic markers, lipids, HbA1c — and your doctor builds the maintenance plan.",m:["Month-3 monitoring panel","Doctor results review","Maintenance plan agreed"]}]},
+  longevity:{label:"Live longer",hint:"Biomarkers, peptides & retests",icon:"ti-heartbeat",title:"Longevity protocol",len:"12 months · quarterly cycles",pct:12,week:"Quarter 1 of 4",cur:0,pos:"Month 2 of Q1",curDone:1,stats:[["Longevity score","72/100"],["Bio age","34.2 yrs"],["Actual age","38 yrs"]],delta:"3.8 yrs younger \u00b7 score +4 this quarter",
+    steps:[["Advanced biomarker panel","60+ markers, home draw"],["Doctor review","Your personal risk map"],["Supplement + peptide plan","Built from your results"],["Quarterly retests","Track your trend lines"]],
+    today:[{i:"ti-droplet",t:"Fasting blood draw",s:"Saturday 8am, at home",log:0},{i:"ti-pill",t:"AM supplement stack",s:"NAD+, Omega, D3",log:1,opts:["Taken","Skipped today"]},{i:"ti-stethoscope",t:"Peptide consult",s:"Free — book this week",log:0}],
+    mods:[["Advanced biomarker panel","active"],["Supplement stack","active"],["Peptide consultation","up"],["Quarterly retest cadence","active"]],
+    phases:[
+      {w:"Q1 · Months 1–3",t:"Baseline & foundations",a:"A 60+ marker panel plus GlycanAge builds your personal risk map. Doctor prioritizes your top 3 focus areas and starts your supplement stack.",m:["Advanced biomarker panel","Biological age measured","Personal risk map & stack"]},
+      {w:"Q2 · Months 4–6",t:"Optimization",a:"Targeted interventions go live — peptide plan if eligible, VO2 max baseline, and sleep & stress protocols. First retest shows early trend lines.",m:["Peptide consult & plan","VO2 max test","Q2 retest — first trends"]},
+      {w:"Q3 · Months 7–9",t:"Compounding",a:"Markers that move slowly start to shift: inflammation down, lipid ratios improving. Stack is refined based on what your body responds to.",m:["Q3 retest","Stack v2 refinement","Inflammation markers down"]},
+      {w:"Q4 · Months 10–12",t:"Proof & plan ahead",a:"Year-end panel vs. baseline: biological age, metabolic and cardiac risk trends. Your doctor designs year-2 based on 12 months of your own data.",m:["Full year-end panel","Biological age re-measured","Year-2 protocol designed"]}]},
+  hair:{label:"Hair & skin",hint:"Derm-led growth program",icon:"ti-wand",title:"Hair growth program",len:"24 weeks · derm-led",pct:21,week:"Week 5 of 24",cur:1,pos:"Week 5",curDone:1,stats:[["Shedding","\u221222%"],["Density","6.8/10"],["Photos","2 of 6"]],delta:"Shedding down since week 1",
+    steps:[["Hair loss blood test","Find the root cause"],["Dermatologist consult","Treatment plan"],["Treatment + Hair+ supplement","Delivered monthly"],["Progress photo reviews","Every 4 weeks"]],
+    today:[{i:"ti-camera",t:"Progress photo",s:"Monthly photo due today",log:1,opts:["Photo taken","Remind me tonight"]},{i:"ti-pill",t:"Evening routine",s:"Topical + Valeo Hair+",log:1,opts:["Done","Skipped"]},{i:"ti-video",t:"Derm review",s:"Next Tuesday, 5pm",log:0}],
+    mods:[["Hormone & nutrient panel","done"],["Hair growth treatment","active"],["Valeo Hair+ supplement","active"],["Dermatologist reviews","active"]],
+    phases:[
+      {w:"Weeks 1–4",t:"Root cause",a:"Blood work rules in/out hormonal, thyroid and nutrient causes. Your dermatologist builds a treatment plan for your specific type of loss.",m:["Hair loss blood panel","Derm diagnosis","Treatment plan started"]},
+      {w:"Weeks 5–12",t:"Stabilization",a:"Shedding slows first — that's the win in this phase. Photos every 4 weeks track density objectively.",m:["Shedding reduction","Monthly photo reviews","Routine locked in"]},
+      {w:"Weeks 13–20",t:"Regrowth",a:"New growth becomes visible at the hairline and crown. Derm adjusts treatment strength based on response.",m:["Visible regrowth","Treatment adjusted","Nutrient retest"]},
+      {w:"Weeks 21–24",t:"Results & maintain",a:"Side-by-side photo comparison vs. week 1, and a maintenance plan that protects the gains.",m:["Before/after review","Maintenance plan","Optional PRP consult"]}]},
+  energy:{label:"Energy & fitness",hint:"Performance testing & coaching",icon:"ti-bolt",title:"Performance protocol",len:"12 weeks · coach-led",pct:25,week:"Week 3 of 12",cur:1,pos:"Week 3",curDone:1,stats:[["Resting HR","58 bpm"],["VO2 est.","44"],["Strength","+12%"]],delta:"RHR \u22124 since baseline",
+    steps:[["Fitness profile blood test","Home collection"],["Coach onboarding","Training + recovery plan"],["Nutrition + supplements","Matched to your markers"],["Week-12 retest","Prove the gains"]],
+    today:[{i:"ti-droplet",t:"IV energy boost",s:"Booked Wednesday 7pm",log:0},{i:"ti-barbell",t:"Log training",s:"Today: lower body + zone 2",log:1,opts:["Completed","Partial","Rest day"]},{i:"ti-video",t:"Coach check-in",s:"Thursday with Jamie",log:0}],
+    mods:[["Fitness profile panel","done"],["Training + recovery plan","active"],["Creatine + Omega stack","active"],["Week-12 retest","up"]],
+    phases:[
+      {w:"Weeks 1–2",t:"Profile",a:"Fitness blood panel (testosterone, cortisol, ferritin, D3) plus movement assessment gives your coach a real starting point.",m:["Fitness blood panel","Movement assessment","Plan built"]},
+      {w:"Weeks 3–6",t:"Build",a:"Training load ramps progressively. Supplements target your actual deficiencies, not generic stacks.",m:["Progressive overload","Deficiencies corrected","Recovery tracked"]},
+      {w:"Weeks 7–10",t:"Perform",a:"Measurable jumps: strength benchmarks, zone-2 capacity, resting heart rate trending down.",m:["Strength benchmarks","Zone-2 gains","RHR trending down"]},
+      {w:"Weeks 11–12",t:"Retest & prove",a:"Week-12 panel vs. baseline — the numbers, not the mirror, tell you what changed.",m:["Week-12 blood retest","Coach results review","Next block designed"]}]},
+  family:{label:"Care for my family",hint:"Doctors, nurses & care at home",icon:"ti-users",title:"Family care plan",len:"Ongoing · household",pct:30,week:"Month 2",cur:1,pos:"Month 2",curDone:2,stats:[["Members","4"],["Screenings","85%"],["Due now","2"]],delta:"2 screenings due this month",
+    steps:[["Family health profiles","Parents, kids, elders"],["Doctor on call","24/7 home visits"],["Preventive test calendar","Age-appropriate screening"],["Care support","Babysitting + elderly care"]],
+    today:[{i:"ti-stethoscope",t:"Dad's checkup",s:"Doctor at home, Saturday",log:0},{i:"ti-vaccine",t:"Flu vaccines",s:"Book for the kids",log:0},{i:"ti-calendar",t:"Screening calendar",s:"2 tests due this month",log:0}],
+    mods:[["Family health profiles","done"],["Doctor on call","active"],["Preventive test calendar","active"],["Elderly care plan","active"]],
+    phases:[
+      {w:"Month 1",t:"Profiles & baselines",a:"Every family member gets a health profile and an age-appropriate screening baseline.",m:["Profiles created","Baseline tests booked","Vaccination records synced"]},
+      {w:"Months 2–3",t:"Preventive rhythm",a:"The screening calendar goes live — the app tells you what's due for whom, before it's overdue.",m:["Screening calendar live","First home visits done","Doctor on call activated"]},
+      {w:"Months 4–6",t:"Care in place",a:"Ongoing support settles in: elderly care visits, pediatric checkups, nurse support when needed.",m:["Elderly care cadence","Pediatric checkups","Family dashboard review"]},
+      {w:"Ongoing",t:"Peace of mind",a:"One place for the whole household's health — nothing preventable gets missed.",m:["Quarterly family review","Calendar auto-updates","24/7 doctor access"]}]},
+  kids:{label:"Child health plan",hint:"Pediatric care & growth",icon:"ti-mood-kid",title:"Child health plan",len:"Ongoing · pediatric",pct:40,week:"Up to date",cur:1,pos:"This quarter",curDone:1,stats:[["Vaccines","On track"],["Height","60th %ile"],["Weight","55th %ile"]],delta:"Next: flu vaccine this month",
+    steps:[["Pediatric profile","Growth & vaccination history"],["Vaccination calendar","Never miss a due date"],["Pediatric doctor at home","Checkups & sick visits"],["Growth tracking","Percentiles over time"]],
+    today:[{i:"ti-vaccine",t:"Flu vaccine",s:"Due this month — book at home",log:0},{i:"ti-ruler",t:"Growth check",s:"Height & weight this week",log:1,opts:["Logged","Remind me"]},{i:"ti-stethoscope",t:"Pediatric checkup",s:"Quarterly — book anytime",log:0}],
+    mods:[["Pediatric profile","done"],["Vaccination calendar","active"],["Pediatric doctor at home","active"],["Growth tracking","active"]],
+    phases:[
+      {w:"This quarter",t:"Stay on schedule",a:"Vaccinations and quarterly checkup on time, growth logged monthly.",m:["Flu vaccine","Quarterly checkup","Growth percentiles updated"]},
+      {w:"Next quarter",t:"Development review",a:"Pediatrician reviews growth curve and development milestones.",m:["Milestone review","Nutrition guidance","Next vaccines scheduled"]},
+      {w:"Year ahead",t:"Healthy defaults",a:"A complete pediatric record in one place — every school form, one tap away.",m:["Full vaccination record","Annual review","Records exportable"]}]}
+};
+const ONBOARD_GOALS=["weight","longevity","hair","energy","family"];
+
+const MOD_DETAILS={
+  "Baseline blood panel":{icon:"ti-test-pipe",d:"45+ biomarkers collected at home before your program starts — metabolic, thyroid, lipids, HbA1c, vitamins. This is the 'before' photo for your blood.",inc:["Free home sample collection","Results in 24–48h in-app","Doctor-reviewed summary","Sets your protocol targets"],cta:"View my results"},
+  "GLP-1 therapy":{icon:"ti-vaccine",d:"Doctor-prescribed GLP-1 program with weekly nurse-administered doses at home and continuous side-effect monitoring.",inc:["Weekly at-home nurse visit","Doctor-managed titration","Side-effect support in chat","Dose history & reminders"],cta:"See dose schedule"},
+  "Nutrition plan":{icon:"ti-salad",d:"A protein-first plan built for GLP-1 users — smaller appetite, so every meal has to count. Adjusted weekly by your coach.",inc:["Personalized macro targets","Simple meal templates","Weekly adjustments","Log meals in Today"],cta:"View this week's plan"},
+  "Weekly coach check-ins":{icon:"ti-video",d:"A 20-minute video check-in with your health coach every week — progress, blockers, side effects, and next week's focus.",inc:["Every Friday with May","Reschedule anytime","Notes saved to your record","Escalates to doctor if needed"],cta:"Join Friday's check-in"},
+  "Month-3 monitoring test":{icon:"ti-report-analytics",d:"The retest that proves what changed: same panel as your baseline so results are directly comparable, plus GLP-1 safety markers.",inc:["Same 45+ markers as baseline","Side-by-side comparison view","Doctor results consult","Unlocks at week 12"],cta:"Notify me when due"},
+  "Advanced biomarker panel":{icon:"ti-dna",d:"60+ markers covering metabolic, cardiac, hormonal, inflammatory and nutrient status — the foundation of your longevity protocol.",inc:["Home draw, fasting","GlycanAge biological age add-on","Doctor risk-map review","Quarterly comparison view"],cta:"Book my draw"},
+  "Supplement stack":{icon:"ti-pill",d:"Built from your results, not trends — only what your markers say you need, delivered monthly.",inc:["Personalized to your panel","Monthly home delivery","Adjusted after each retest","Log intake in Today"],cta:"View my stack"},
+  "Peptide consultation":{icon:"ti-stethoscope",d:"A free consult with a licensed doctor to review whether peptide therapy fits your goals and results.",inc:["Free 1:1 doctor consult","Eligibility review","Prescription if appropriate","Fully doctor-supervised"],cta:"Book free consult"},
+  "Quarterly retest cadence":{icon:"ti-calendar-stats",d:"Your panel repeats every quarter so the protocol runs on trend lines, not one-off snapshots.",inc:["Auto-scheduled each quarter","Trend charts per marker","Doctor review of movers","Stack updated accordingly"],cta:"See my trend lines"},
+  "Hormone & nutrient panel":{icon:"ti-test-pipe",d:"The blood work that finds the root cause of hair loss — thyroid, iron, hormones, vitamins.",inc:["Home collection","Derm-reviewed results","Root-cause summary","Guides your treatment"],cta:"View my results"},
+  "Hair growth treatment":{icon:"ti-wand",d:"Your dermatologist-prescribed treatment, delivered monthly with usage tracking.",inc:["Derm-prescribed formula","Monthly delivery","Usage reminders","Adjusted at reviews"],cta:"Track my delivery"},
+  "Valeo Hair+ supplement":{icon:"ti-pill",d:"Daily supplement supporting your treatment — biotin, zinc, and marine collagen.",inc:["Monthly delivery","Log in Today section","Works with treatment","Derm-approved"],cta:"Manage subscription"},
+  "Dermatologist reviews":{icon:"ti-video",d:"Progress reviews with your dermatologist every 4 weeks using your photo timeline.",inc:["Every 4 weeks","Photo comparison","Treatment adjustments","Chat between reviews"],cta:"Book next review"},
+  "Fitness profile panel":{icon:"ti-test-pipe",d:"Performance-focused blood work: testosterone, cortisol, ferritin, D3, thyroid and more.",inc:["Home collection","Coach + doctor review","Deficiency flags","Sets training targets"],cta:"View my results"},
+  "Training + recovery plan":{icon:"ti-barbell",d:"A progressive plan built by your coach from your assessment and blood work.",inc:["Weekly programming","Recovery tracking","Adjusted to your data","Log sessions in Today"],cta:"View this week"},
+  "Creatine + Omega stack":{icon:"ti-pill",d:"Evidence-backed performance stack matched to your panel.",inc:["Monthly delivery","Dosing guidance","Adjusted at retest","Log intake in Today"],cta:"View my stack"},
+  "Week-12 retest":{icon:"ti-report-analytics",d:"Baseline vs. week-12 comparison — the objective proof of your 12 weeks.",inc:["Same panel as baseline","Comparison view","Coach + doctor review","Unlocks at week 10"],cta:"Notify me when due"},
+  "Family health profiles":{icon:"ti-users",d:"A health profile for every member of your household — history, vaccinations, screenings, all in one place.",inc:["Unlimited members","Vaccination records","Screening baselines","Shareable with doctors"],cta:"Add a family member"},
+  "Doctor on call":{icon:"ti-stethoscope",d:"DHA-licensed doctors at your door or on video, 24/7 — for anyone in your family plan.",inc:["24/7 availability","Home visits in 60 min","Video consults","Prescriptions delivered"],cta:"Call a doctor"},
+  "Preventive test calendar":{icon:"ti-calendar",d:"Age-appropriate screening for each family member, scheduled before it's overdue.",inc:["Auto-generated per member","Reminders before due dates","One-tap booking","Doctor-recommended intervals"],cta:"View calendar"},
+  "Elderly care plan":{icon:"ti-heart-handshake",d:"Regular nurse visits, medication management and companionship for elderly family members.",inc:["Scheduled nurse visits","Medication management","Vitals monitoring","Family updates after visits"],cta:"View care schedule"},
+  "Pediatric profile":{icon:"ti-mood-kid",d:"Growth history, vaccination record and pediatric notes in one place.",inc:["Growth percentile charts","Full vaccination record","Pediatrician notes","School-form export"],cta:"View profile"},
+  "Vaccination calendar":{icon:"ti-vaccine",d:"Every due vaccine, scheduled and administered at home.",inc:["Auto-scheduled by age","At-home administration","Digital record","Reminders to parents"],cta:"View schedule"},
+  "Pediatric doctor at home":{icon:"ti-stethoscope",d:"Pediatric checkups and sick visits at home — no waiting rooms with a sick child.",inc:["Home visits","Video consults","Prescriptions delivered","Linked to growth record"],cta:"Book a visit"},
+  "Growth tracking":{icon:"ti-ruler",d:"Height, weight and milestones tracked against WHO percentiles.",inc:["Monthly logging","Percentile curves","Pediatrician review","Milestone checklist"],cta:"Log a measurement"}
+};
+
+const EVENTS={
+  baby:{chip:"My baby just arrived",reply:"Congratulations! I've added a new parent module to your plan — at-home pediatric visits, vetted newborn care, and a postpartum recovery blood test. I've also gently adjusted your protocol pace for the next 6 weeks, and your coach has been looped in.",
+    unlock:{title:"New parent care",items:"Pediatric doctor at home · Newborn care & babysitting · Postpartum recovery test",icon:"ti-baby-carriage"},toast:"New parent care added to your plan",kw:/baby|newborn|born|delivered|infant/i},
+  travel:{chip:"Travelling for 2 weeks",reply:"Noted! I've shifted your reminders to your travel timezone and swapped this week's home visit for a tele-consult. Everything stays on track while you're away.",
+    unlock:{title:"Travel mode",items:"Reminders on local time · Tele-consult replaces home visit",icon:"ti-plane"},toast:"Travel mode is on",kw:/travel|trip|flying|abroad|vacation|holiday/i},
+  sleep:{chip:"Sleeping badly lately",reply:"Poor sleep can genuinely stall your progress — it affects appetite hormones and recovery. I'd suggest a sleep & recovery add-on: a cortisol and thyroid check plus a wind-down plan I'll review with you. Want me to schedule the home draw?",
+    unlock:{title:"Sleep & recovery add-on",items:"Cortisol + thyroid panel · Coach-reviewed sleep plan",icon:"ti-moon"},toast:"Suggested: sleep & recovery add-on",kw:/sleep|insomnia|can'?t sleep|tired at night/i}
+};
+
+/* ---------------- STATE ---------------- */
+let state={forFamily:false,obGoal:"weight",members:[],active:0,started:false};
+const activeM=()=>state.members[state.active];
+
+/* ---------------- HELPERS ---------------- */
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function tab(id,btn){go(id);document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');if(id==='s-explore')document.getElementById('explore-btn').classList.remove('show');}
+function toast(t){const el=document.getElementById('toast');document.getElementById('toast-txt').textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+/* ---------------- ONBOARDING ---------------- */
+function renderGoals(){
+  document.getElementById('goal-list').innerHTML=ONBOARD_GOALS.map(k=>{const g=GOALS[k];
+    return `<button class="goal ${k===state.obGoal?'on':''}" onclick="pickGoal('${k}')"><div class="gi"><i class="ti ${g.icon}"></i></div><div>${g.label}<small>${g.hint}</small></div></button>`;}).join('');
+}
+function pickGoal(k){state.obGoal=k;renderGoals();}
+function setFamily(v,btn){state.forFamily=v;document.querySelectorAll('#who-chips .chip').forEach(c=>c.classList.remove('on'));btn.classList.add('on');}
+function renderPreview(){
+  const g=GOALS[state.obGoal];
+  document.getElementById('preview').innerHTML=`
+    <h1>Your ${g.title.toLowerCase()}</h1><p class="sub">${g.len} · Reviewed by DHA-licensed doctors${state.forFamily?' · Family profiles included':''}</p>
+    ${g.steps.map((s,i)=>`<div class="pstep"><div class="pnum">${i+1}</div><div><b>${s[0]}</b><span>${s[1]}</span></div></div>`).join('')}
+    ${state.forFamily?'<div class="pstep"><div class="pnum"><i class="ti ti-users" style="font-size:13px"></i></div><div><b>Family member profiles</b><span>Add your family after setup — each gets their own plan</span></div></div>':''}
+    <p class="sub" style="margin-top:4px">You can change your goal anytime — just tell your health coach.</p>
+    <button class="cta" onclick="finishOb()">Book my baseline test</button>`;
+}
+function seedMembers(){
+  state.members=[{name:"Ayesha",rel:"You",goal:state.obGoal,unlocked:[],done:{},chat:[]}];
+  if(state.forFamily){
+    state.members.push(
+      {name:"Ahmed",rel:"Husband",goal:"energy",unlocked:[],done:{},chat:[]},
+      {name:"Ayaan",rel:"Son · 6",goal:"kids",unlocked:[],done:{},chat:[]},
+      {name:"Nadia",rel:"Mother",goal:"longevity",unlocked:[],done:{},chat:[]});
+  }
+  state.active=0;
+}
+function finishOb(){seedMembers();boot();go('s-apphome');toast('This card on your home is the new entry point');}
+function skipBrowse(){seedMembers();boot();go('s-apphome');toast('Browsing mode - your home stays as-is');}
+function demoFamily(){state.forFamily=true;state.obGoal="weight";seedMembers();boot();enterProtocol();toast("Family mode: tap your name to switch members");}
+function restart(){state={forFamily:false,obGoal:"weight",members:[],active:0,started:false};document.getElementById('nav').style.display='none';renderGoals();go('s-ob1');}
+function boot(){state.started=true;renderAppHome();renderHome();renderExplore();seedChat();document.getElementById('nav-app').style.display='flex';document.getElementById('nav').style.display='none';}
+function enterProtocol(){renderHome();renderExplore();document.getElementById('nav-app').style.display='none';document.getElementById('nav').style.display='flex';go('s-home');navSel(0);}
+function exitProtocol(){renderAppHome();document.getElementById('nav').style.display='none';document.getElementById('nav-app').style.display='flex';go('s-apphome');}
+function renderAppHome(){
+  const m=state.members[0],g=GOALS[m.goal];
+  const done=Object.keys(m.done).length,total=g.today.length,due=total-done;
+  document.getElementById('s-apphome').innerHTML=`
+    <div class="apphead">
+      <div class="searchbar"><i class="ti ti-search"></i>Search "Blood tests"<i class="ti ti-filter" style="margin-left:auto;color:var(--deep)"></i></div>
+      <p class="hi">Hi <b>${m.name},</b> Welcome back</p>
+    </div>
+    <div class="entry" onclick="enterProtocol()">
+      <span class="etag">YOUR PROTOCOL</span>
+      <h3>${g.title}</h3>
+      <p>${g.week} \u00b7 ${due} task${due===1?'':'s'} due today${state.members.length>1?' \u00b7 '+state.members.length+' family plans':''}</p>
+      <div class="bar"><i style="width:${g.pct}%"></i></div>
+      <div class="erow"><button class="ecta">View my plan</button><span class="estat">${g.stats[1][1]} \u2192 ${g.stats[2][1]}</span></div>
+    </div>
+    <p class="sect" style="margin-top:18px">Healthcare services at your doorstep</p>
+    <div class="svcgrid">
+      ${[["ti-test-pipe","Lab Tests"],["ti-scale","Weight Loss"],["ti-droplet","IV Therapy"],["ti-vaccine","Peptide Therapy"],["ti-pill","Supplements"],["ti-wand","Hair Growth"],["ti-baby-carriage","Newborn Care"],["ti-stethoscope","Doctor on Call"],["ti-users","Elderly Care"]].map(s=>`<div class="svc" onclick="toast('${s[1]} - existing marketplace flow')"><div class="gi"><i class="ti ${s[0]}"></i></div>${s[1]}</div>`).join('')}
+    </div>`;
+}
+function navSel(i){document.querySelectorAll('.nav button').forEach((b,j)=>b.classList.toggle('on',j===i));}
+
+/* ---------------- HOME ---------------- */
+function renderHome(){
+  const m=activeM(),g=GOALS[m.goal];
+  const fam=state.members.length>1;
+  document.getElementById('s-home').innerHTML=`
+    <button class="back" style="padding:8px 0 2px" onclick="exitProtocol()"><i class="ti ti-arrow-left"></i> Valeo home</button>
+    <div class="member-bar">
+      <button class="member-btn" onclick="toggleMenu(event)">
+        <div class="mav">${m.name[0]}</div>
+        <div><small>Good morning${fam?' · '+m.rel:''}</small><b>${m.name} ${fam?'<i class="ti ti-chevron-down"></i>':''}</b></div>
+      </button>
+      <div class="member-menu" id="mmenu">${state.members.map((mm,i)=>`<button class="${i===state.active?'sel':''}" onclick="switchMember(${i})"><div class="mav">${mm.name[0]}</div><div>${mm.name}<small>${mm.rel} · ${GOALS[mm.goal].title}</small></div></button>`).join('')}
+        <button onclick="toast('Add member — hook to profile flow')"><div class="mav"><i class="ti ti-plus" style="font-size:14px"></i></div><div>Add family member<small>Kids, parents, partner</small></div></button>
+      </div>
+    </div>
+    <div class="hero" onclick="openTimeline()"><span class="tag">${fam?m.name+"'s protocol":"Your protocol"}</span><h3>${g.title}</h3><p>${g.len}</p>
+      <div class="stats">${g.stats.map(s=>`<div><small>${s[0]}</small><b>${s[1]}</b></div>`).join('')}</div>
+      <span class="delta"><i class="ti ti-trending-up"></i>${g.delta}</span>
+      <div class="bar"><i style="width:${g.pct}%"></i></div><div class="wk"><span>${g.week}</span><span>${g.pct}% complete</span></div>
+      <div class="view">View full plan <i class="ti ti-chevron-right"></i></div></div>
+    <p class="sect">Today <small id="today-count"></small></p>
+    <div id="today"></div>
+    <p class="sect">Protocol modules</p>
+    ${g.mods.map(mm=>{const p=mm[1]==='done'?'<span class="pill done">Done</span>':mm[1]==='active'?'<span class="pill active">Active</span>':'<span class="pill up">Upcoming</span>';return `<div class="mod" onclick="openModule('${mm[0].replace(/'/g,"\\'")}','${mm[1]}')"><b>${mm[0]}</b>${p}<i class="ti ti-chevron-right chev"></i></div>`;}).join('')}
+    ${m.unlocked.map(u=>`<div class="mod new"><div class="nh"><i class="ti ${u.icon}"></i><b>${u.title}</b><span class="pill new">New</span></div><p>${u.items}</p></div>`).join('')}
+    <p class="explore-link" onclick="tab('s-explore');navSel(3)">Need something else? <b>Explore all services &rsaquo;</b></p>`;
+  renderToday();
+}
+function toggleMenu(ev){ev.stopPropagation();document.getElementById('mmenu').classList.toggle('open');}
+document.addEventListener('click',()=>{const m=document.getElementById('mmenu');if(m)m.classList.remove('open');});
+function switchMember(i){state.active=i;renderHome();renderExplore();seedChat();toast("Viewing "+activeM().name+"'s plan");}
+
+function renderToday(){
+  const m=activeM(),g=GOALS[m.goal];
+  document.getElementById('today').innerHTML=g.today.map((t,i)=>{
+    const done=m.done[i];
+    return `<div class="task ${done?'done':''}" onclick="taskTap(${i})">
+      <div class="tick">${done?'<i class="ti ti-check"></i>':''}</div>
+      <div><span class="tt">${t.t}</span><small>${done?done:'  '+t.s}</small></div>
+      <i class="ti ${t.i} ti"></i></div>
+    ${t.log?`<div class="logrow" id="log-${i}">${t.opts.map(o=>`<button onclick="event.stopPropagation();logOpt(${i},'${o.replace(/'/g,"\\'")}')">${o}</button>`).join('')}</div>`:''}`;
+  }).join('');
+  const total=g.today.length, done=Object.keys(m.done).length;
+  document.getElementById('today-count').textContent=done+" of "+total+" done";
+}
+function taskTap(i){
+  const m=activeM(),t=GOALS[m.goal].today[i];
+  if(m.done[i]){delete m.done[i];renderToday();return;}
+  if(t.log){const row=document.getElementById('log-'+i);row.classList.toggle('open');return;}
+  m.done[i]="Done · "+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  renderToday();toast(t.t+" — marked done");
+}
+function logOpt(i,opt){
+  const m=activeM(),t=GOALS[m.goal].today[i];
+  m.done[i]="Logged: "+opt;renderToday();toast(t.t+" logged — "+opt);
+}
+
+/* ---------------- TIMELINE ---------------- */
+function openTimeline(){renderTimeline();go('s-timeline');navSel(1);}
+function renderTimeline(){
+  const m=activeM(),g=GOALS[m.goal];
+  let doneMs=0,totalMs=0;
+  g.phases.forEach((p,i)=>{totalMs+=p.m.length;doneMs+=i<g.cur?p.m.length:(i===g.cur?(g.curDone||0):0);});
+  document.getElementById('s-timeline').innerHTML=`
+    <button class="back" onclick="go('s-home');navSel(0)"><i class="ti ti-arrow-left"></i> Home</button>
+    <h1>${g.title}</h1><p class="sub">${g.len} \u00b7 <b style="color:var(--green)">${doneMs} of ${totalMs} milestones done</b> \u00b7 ${state.members.length>1?m.name+"'s plan":"your full plan"}</p>
+    <div class="tl">${g.phases.map((p,i)=>{
+      const st=i<g.cur?'done':i===g.cur?'cur':'';
+      const pillCls=i<g.cur?'c':i===g.cur?'k':'u';
+      const pillTxt=i<g.cur?'Completed':i===g.cur?`${g.curDone||0} of ${p.m.length} done`:'Upcoming';
+      return `<div class="ph ${st}"><div class="pdot">${i<g.cur?'<i class="ti ti-check"></i>':''}</div>
+        ${i===g.cur?`<span class="youare"><i class="ti ti-map-pin" style="font-size:12px"></i>You are here \u00b7 ${g.pos}</span><br>`:''}
+        <span class="pw">${p.w}</span><h4>${p.t}<span class="st ${pillCls}">${pillTxt}</span></h4>
+        <div class="ach"><b>${i<g.cur?'What you achieved':i===g.cur?"What you're achieving now":"What you'll achieve"}</b>${p.a}
+        <ul>${p.m.map((ms,j)=>{
+          const did=i<g.cur||(i===g.cur&&j<(g.curDone||0));
+          return `<li class="${did?'did':''}"><i class="ti ${did?'ti-circle-check':'ti-circle'}"></i>${ms}${!did&&i===g.cur?' <em>\u00b7 pending</em>':''}</li>`;
+        }).join('')}</ul></div></div>`;
+    }).join('')}</div>
+    <button class="cta" onclick="tab('s-coach');navSel(2)">Ask my health coach about this plan</button>`;
+}
+
+/* ---------------- MODULE DETAIL ---------------- */
+function openModule(name,status){
+  const d=MOD_DETAILS[name]||{icon:"ti-package",d:"Part of your protocol.",inc:["Included in your plan"],cta:"Learn more"};
+  const pl=status==='done'?'<span class="pill done">Done</span>':status==='active'?'<span class="pill active">Active</span>':'<span class="pill up">Upcoming</span>';
+  document.getElementById('s-module').innerHTML=`
+    <button class="back" onclick="go('s-home');navSel(0)"><i class="ti ti-arrow-left"></i> Home</button>
+    <div class="md-hero">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start"><div class="gi"><i class="ti ${d.icon}"></i></div>${pl}</div>
+      <h3>${name}</h3><p>${d.d}</p>
+      <div class="inc">${d.inc.map(x=>`<div><i class="ti ti-circle-check"></i>${x}</div>`).join('')}</div>
+    </div>
+    <button class="cta" onclick="toast('${d.cta} — hook to booking/results flow')">${d.cta}</button>
+    <button class="cta ghost" onclick="tab('s-coach');navSel(2)">Ask my health coach about this</button>`;
+  go('s-module');
+}
+
+/* ---------------- HEALTH COACH CHAT ---------------- */
+let typingEl=null;
+function seedChat(){
+  const m=activeM(),g=GOALS[m.goal];
+  document.getElementById('chat').innerHTML='';m.chat=[];
+  const hello=state.members.length>1&&state.active>0
+    ?`Hi Ayesha — you're viewing ${m.name}'s plan (${g.title.toLowerCase()}). ${g.week} and on track. What would you like to know?`
+    :`Hi ${m.name} — ${g.week.toLowerCase()} of your ${g.title.toLowerCase()} looks good. Anything changed on your side, or any questions about your health?`;
+  bubble(hello,'coach');m.chat.push({role:'assistant',content:hello});
+  document.getElementById('qchips').innerHTML=Object.keys(EVENTS).map(k=>`<button class="chip" onclick="fireChip('${k}')">${EVENTS[k].chip}</button>`).join('');
+}
+function bubble(t,who){const d=document.createElement('div');d.className='bub '+who;d.textContent=t;document.getElementById('chat').appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d;}
+function showTyping(){typingEl=document.createElement('div');typingEl.className='bub coach typing';typingEl.innerHTML='<span></span><span></span><span></span>';document.getElementById('chat').appendChild(typingEl);typingEl.scrollIntoView({behavior:'smooth'});}
+function hideTyping(){if(typingEl){typingEl.remove();typingEl=null;}}
+
+function fireChip(k){document.getElementById('msg').value=EVENTS[k].chip;send();}
+
+function detectEvent(text){
+  for(const k in EVENTS){const e=EVENTS[k];
+    if(e.kw.test(text)||text===e.chip){
+      const m=activeM();
+      if(!m.unlocked.some(u=>u.title===e.unlock.title)){m.unlocked.push(e.unlock);renderHome();renderExplore();document.getElementById('explore-btn').classList.add('show');toast(e.toast);}
+      return e;}}
+  return null;
+}
+
+async function send(){
+  const inp=document.getElementById('msg');const text=inp.value.trim();if(!text)return;
+  inp.value='';const m=activeM();
+  bubble(text,'me');m.chat.push({role:'user',content:text});
+  const ev=detectEvent(text);
+  showTyping();
+  try{
+    const reply=await askAI(m,text,ev);
+    hideTyping();bubble(reply,'coach');m.chat.push({role:'assistant',content:reply});
+    document.getElementById('coach-status').textContent='Knows your protocol & results';
+  }catch(err){
+    hideTyping();
+    const reply=ev?ev.reply:fallback(text,m);
+    bubble(reply,'coach');m.chat.push({role:'assistant',content:reply});
+    document.getElementById('coach-status').textContent='Demo mode (offline)';
+  }
+}
+
+async function askAI(m,text,ev){
+  const g=GOALS[m.goal];
+  const sys=`You are the Valeo Health coach inside the Valeo app (feelvaleo.com), a preventive healthcare company in UAE & KSA offering at-home blood tests, GLP-1 weight loss programs, IV therapy, peptides, supplements, doctor-on-call, physiotherapy, hair growth treatment, newborn & elderly care.
+Current member: ${m.name} (${m.rel}). Their protocol: ${g.title}, ${g.len}, currently ${g.week}. Current phase: "${g.phases[g.cur].t}" — ${g.phases[g.cur].a} Today's tasks: ${g.today.map(t=>t.t).join(', ')}. Unlocked add-ons: ${m.unlocked.map(u=>u.title).join(', ')||'none'}.
+${ev?`The member just shared a life event; the app already added "${ev.unlock.title}" to their plan — acknowledge it warmly and explain what was added: ${ev.unlock.items}.`:''}
+Style: warm, concise (2-4 short sentences), like a knowledgeable health coach. Reference their actual protocol and week when relevant. Give general wellness guidance only — for anything clinical (dosing, symptoms that sound serious, prescriptions) recommend booking their Valeo doctor and offer to arrange it. Never diagnose. Plain text, no markdown.`;
+  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:sys,messages:m.chat.slice(-12)})});
+  if(!res.ok)throw new Error('api');
+  const data=await res.json();
+  return data.content.map(c=>c.type==='text'?c.text:'').join('').trim();
+}
+
+function fallback(text,m){
+  const g=GOALS[m.goal];const t=text.toLowerCase();
+  if(/nausea|side effect|sick|vomit/.test(t))return "Mild nausea is common in the adaptation weeks of GLP-1 — smaller meals, more water, and avoiding fatty food usually helps. If it's persistent or severe, I'd like your Valeo doctor to review your dose. Want me to book a tele-consult?";
+  if(/weight|scale|progress|losing/.test(t))return "You're in "+g.week.toLowerCase()+" — "+g.phases[g.cur].t.toLowerCase()+" phase, where "+g.phases[g.cur].a.split('.')[0].toLowerCase()+". Keep logging your weekly weigh-ins in Today so we can track the trend, not single days.";
+  if(/blood|test|result|panel|marker/.test(t))return "Your baseline panel is in your records and your next retest is already in the plan — you can see exactly when in your full plan timeline. If you want, I can walk you through any specific marker.";
+  if(/protein|eat|food|meal|diet|nutrition/.test(t))return "With your current plan, protein comes first: aim for your 40g lunch target and build the plate around it. Your appetite may be smaller, so every meal has to count. Log today's lunch in the Today section and I'll keep an eye on the pattern.";
+  if(/supplement|vitamin|stack/.test(t))return "Your stack is built from your actual blood work, not generic advice. You can see what's in it and why under Protocol modules. If you're considering adding anything new, tell me first so we check interactions.";
+  if(/energy|tired|fatigue|exhaust/.test(t))return "Some energy dip can happen in this phase. First levers: sleep, hydration, and protein. If it persists more than a week, your panel gives us clues (iron, thyroid, D3) — I can flag it for a doctor review.";
+  if(/pain|hurt|chest|dizzy|faint/.test(t))return "That's something I want a doctor to look at rather than guess about. Valeo has doctors on call 24/7 — I can arrange a home visit or an immediate video consult. If this feels urgent or severe, please seek emergency care right away.";
+  if(/water|hydrat/.test(t))return "Aim for around 2–2.5 liters through the day, more in summer here. It also helps a lot with the appetite side of your program.";
+  if(/plan|protocol|phase|week|month|timeline/.test(t))return "You're in the "+g.phases[g.cur].t+" phase ("+g.phases[g.cur].w+"). "+g.phases[g.cur].a+" Tap your protocol card on Home to see the full timeline — past, present and what's ahead.";
+  if(/thank|great|ok|cool/.test(t))return "Anytime! I'm here whenever something changes or you have questions. Your next check-in is already in your Today list.";
+  return "Good question. Based on your "+g.title.toLowerCase()+" ("+g.week.toLowerCase()+"), I'd look at this in context of your "+g.phases[g.cur].t.toLowerCase()+" phase. Tell me a bit more — or if it's clinical, I can book a free consult with a Valeo doctor.";
+}
+
+/* ---------------- EXPLORE ---------------- */
+function renderExplore(){
+  const m=activeM();
+  const rec={weight:[["ti-droplet","GLP-1 monitoring blood test","Matched to your protocol"],["ti-pill","Valeo Gut Revive","Supports GLP-1 users"],["ti-salad","Dietitian consult","Your coach"]],
+    longevity:[["ti-heartbeat","VO2 Max analyzer","Matched to your protocol"],["ti-pill","Tru Niagen NAD+","Longevity stack"],["ti-dna","GlycanAge biological age","Deep dive"]],
+    hair:[["ti-wand","Advanced hair loss blood test","Matched to your protocol"],["ti-pill","Valeo Hair+","Your program"],["ti-video","Derm consult","Your program"]],
+    energy:[["ti-bolt","IV for fitness & energy","Matched to your protocol"],["ti-pill","Creatine monohydrate","Your stack"],["ti-barbell","Recovery physio session","Matched"]],
+    family:[["ti-stethoscope","Pediatric doctor at home","Matched to your plan"],["ti-vaccine","Flu vaccine at home","Due this season"],["ti-users","Elderly care plans","Your plan"]],
+    kids:[["ti-vaccine","Flu vaccine at home","Due this month"],["ti-stethoscope","Pediatric checkup","Quarterly"],["ti-mood-kid","Growth & nutrition consult","Recommended"]]};
+  document.getElementById('s-explore').innerHTML=`
+    <h1 style="margin-top:10px">Explore</h1><p class="sub">Everything Valeo offers — ranked for ${state.members.length>1?m.name:'you'} first.</p>
+    <p class="exp-head">Recommended for this protocol</p>
+    ${rec[m.goal].map(r=>`<div class="exp"><div class="gi"><i class="ti ${r[0]}"></i></div><div>${r[1]}<small>${r[2]}</small></div><span class="why">For you</span></div>`).join('')}
+    ${m.unlocked.map(u=>`<div class="exp" style="border-color:var(--coral)"><div class="gi" style="background:var(--coral-soft)"><i class="ti ${u.icon}" style="color:#B02A3C"></i></div><div>${u.title}<small>${u.items}</small></div><span class="why" style="background:var(--coral-soft);color:#B02A3C">New</span></div>`).join('')}
+    <p class="exp-head">All services</p>
+    ${[["ti-test-pipe","At-home blood & lab tests","250+ panels, free collection"],["ti-droplet","IV drip therapy","Energy, beauty, recovery"],["ti-scale","GLP-1 weight loss","Doctor-led program"],["ti-stethoscope","Doctor on call & at home","24/7, DHA-licensed"],["ti-wand","Hair growth treatment","Derm-led journey"],["ti-pill","Peptide therapy","With free consult"],["ti-vaccine","Supplements","Valeo range + AG1"],["ti-baby-carriage","Newborn care & babysitting","Hourly to monthly"],["ti-users","Elderly care","Daily & monthly plans"],["ti-barbell","Physiotherapy at home","Recovery & rehab"]]
+      .map(r=>`<div class="exp"><div class="gi"><i class="ti ${r[0]}"></i></div><div>${r[1]}<small>${r[2]}</small></div></div>`).join('')}`;
+}
+
+/* ---------------- INIT ---------------- */
+document.querySelectorAll('.chips').forEach(g=>{if(g.id==='who-chips')return;
+  g.addEventListener('click',ev=>{const b=ev.target.closest('.chip');if(!b)return;
+    if(g.dataset.multi){b.classList.toggle('on');}else{g.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');}});});
+renderGoals();
+
+/* ---------------- INLINE SVG ICONS (no CDN dependency) ---------------- */
+const ICONS={
+"check":'<path d="M5 13l4 4L19 7"/>',
+"circle":'<circle cx="12" cy="12" r="9"/>',
+"circle-check":'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
+"chevron-right":'<path d="M9 6l6 6-6 6"/>',
+"chevron-down":'<path d="M6 9l6 6 6-6"/>',
+"arrow-left":'<path d="M19 12H5"/><path d="M11 18l-6-6 6-6"/>',
+"arrow-up":'<path d="M12 19V5"/><path d="M6 11l6-6 6 6"/>',
+"plus":'<path d="M12 5v14M5 12h14"/>',
+"home":'<path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/>',
+"route":'<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h5.5a3.5 3.5 0 0 0 0-7h-3a3.5 3.5 0 0 1 0-7H16"/>',
+"message-circle":'<path d="M8.5 19L4 20l1.2-4.2A8 8 0 1 1 8.5 19z"/>',
+"layout-grid":'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
+"sparkles":'<path d="M12 3l1.8 4.6L18.5 9.4l-4.7 1.8L12 16l-1.8-4.8L5.5 9.4l4.7-1.8z"/><path d="M18 14l.8 2 2.2.8-2.2.9-.8 2.1-.8-2.1-2.2-.9 2.2-.8z"/>',
+"map-pin":'<path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/>',
+"scale":'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 10a4 4 0 0 1 6 0"/><path d="M12 10l1.5-2"/>',
+"heartbeat":'<path d="M12 20s-7.5-4.8-9.3-9.2A5.2 5.2 0 0 1 12 6.5a5.2 5.2 0 0 1 9.3 4.3C19.5 15.2 12 20 12 20z"/><path d="M7 12h3l1.2-2 1.8 4 1.3-2H17"/>',
+"wand":'<path d="M5 19L15 9"/><path d="M17 4l.8 1.9L20 7l-2.2.9L17 10l-.8-2.1L14 7l2.2-1.1z"/>',
+"bolt":'<path d="M13 3L5 13.5h5L9 21l8-10.5h-5z"/>',
+"users":'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 20a4.5 4.5 0 0 1 5-4"/>',
+"mood-kid":'<circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01"/><path d="M9 14.5a4.2 4.2 0 0 0 6 0"/>',
+"vaccine":'<path d="M17 3l4 4"/><path d="M19 5l-9.5 9.5"/><path d="M6 16l8-8 2 2-8 8H6v-2z"/><path d="M4 20l2-2"/>',
+"salad":'<path d="M4 12h16a8 8 0 0 1-16 0z"/><path d="M9 12V9.5a3 3 0 0 1 6 0V12"/>',
+"video":'<rect x="3" y="7" width="12" height="10" rx="2"/><path d="M15 11l6-3.5v9L15 13"/>',
+"droplet":'<path d="M12 3s6 6.6 6 11a6 6 0 0 1-12 0c0-4.4 6-11 6-11z"/>',
+"pill":'<rect x="3.5" y="8.5" width="17" height="7" rx="3.5"/><path d="M12 8.5v7"/>',
+"stethoscope":'<path d="M5 4v5a4 4 0 0 0 8 0V4"/><path d="M9 13v3a4.5 4.5 0 0 0 9 0v-1"/><circle cx="18" cy="12" r="2"/>',
+"camera":'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7l1.5-2.5h3L15 7"/><circle cx="12" cy="13" r="3.4"/>',
+"barbell":'<path d="M2 12h2M20 12h2M7.5 12h9"/><rect x="4.5" y="8" width="3" height="8" rx="1"/><rect x="16.5" y="8" width="3" height="8" rx="1"/>',
+"calendar":'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>',
+"calendar-stats":'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M9 17v-2M12 17v-4M15 17v-3"/>',
+"ruler":'<rect x="3" y="9" width="18" height="6" rx="1"/><path d="M7.5 9v2.5M12 9v2.5M16.5 9v2.5"/>',
+"test-pipe":'<path d="M9 3h6"/><path d="M10 3v7l-4.3 7.8A2.5 2.5 0 0 0 8 21.5h8a2.5 2.5 0 0 0 2.3-3.7L14 10V3"/><path d="M8.5 15h7"/>',
+"report-analytics":'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 16.5v-3M12 16.5v-6M15 16.5v-2"/>',
+"dna":'<path d="M8 3c0 6 8 6 8 12M16 3c0 6-8 6-8 12"/><path d="M8 15c0 3.5 8 3.5 8 6M16 15c0 3.5-8 3.5-8 6"/><path d="M9 7h6M9 17h6"/>',
+"heart-handshake":'<path d="M12 20s-7.5-4.8-9.3-9.2A5.2 5.2 0 0 1 12 6.5a5.2 5.2 0 0 1 9.3 4.3C19.5 15.2 12 20 12 20z"/><path d="M9.5 10.5L12 13l2.5-2.5"/>',
+"package":'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>',
+"baby-carriage":'<path d="M4 8h13a5 5 0 0 1-5 5H8a4 4 0 0 1-4-4z"/><path d="M13 8V4h2.5"/><circle cx="8" cy="18" r="2"/><circle cx="15" cy="18" r="2"/>',
+"plane":'<path d="M21 3L3 11l7 2.5L12.5 21l3-6.5z"/><path d="M10 13.5L21 3"/>',
+"moon":'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4 7 7 0 0 0 20 14.5z"/>',
+"search":'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>',
+"filter":'<path d="M5 7h14M8 12h8M11 17h2"/>',
+"flask":'<path d="M10 3v5.5L5.2 17a3 3 0 0 0 2.7 4.5h8.2A3 3 0 0 0 18.8 17L14 8.5V3"/><path d="M9 3h6M7.5 14h9"/>',
+"bottle":'<path d="M9.5 3h5v3l1.2 2v11a2 2 0 0 1-2 2h-3.4a2 2 0 0 1-2-2V8l1.2-2z"/><path d="M8.3 12.5h7.4"/>',
+"chart":'<rect x="4" y="4" width="16" height="12" rx="2"/><path d="M12 16v4M8.5 20h7"/><path d="M8 12.5v-2M12 12.5V8M16 12.5V9.5"/>',
+"cart":'<circle cx="9" cy="19.5" r="1.6"/><circle cx="17" cy="19.5" r="1.6"/><path d="M3 4h2l2.4 11h10.2L20 8H6"/>',
+"trending-up":'<path d="M3 17l6-6 4 4 7-8"/><path d="M14 7h6v6"/>'
+};
+function swapIcons(){
+  document.querySelectorAll('i.ti').forEach(el=>{
+    const cls=[...el.classList];
+    const nm=(cls.map(c=>c.startsWith('ti-')?c.slice(3):null).filter(Boolean)[0])||'circle';
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width','1em');svg.setAttribute('height','1em');
+    svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','2');
+    svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');
+    svg.setAttribute('aria-hidden','true');
+    svg.setAttribute('class',el.getAttribute('class'));
+    if(el.getAttribute('style'))svg.setAttribute('style',el.getAttribute('style'));
+    svg.style.verticalAlign='-0.15em';
+    svg.innerHTML=ICONS[nm]||ICONS['circle'];
+    el.replaceWith(svg);
+  });
+}
+new MutationObserver(()=>swapIcons()).observe(document.querySelector('.phone'),{childList:true,subtree:true});
+swapIcons();
+
+</script>
+</body>
+</html>

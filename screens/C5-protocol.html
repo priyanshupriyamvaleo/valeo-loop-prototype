@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C5 · The protocol — mission briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<link rel="stylesheet" href="../design-system/loop.css">
+<script src="../design-system/embed.js"></script>
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .caption .r{margin-bottom:7px;} .caption .r:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  /* ── HERO: the loop, invoked ── */
+  .hero { background:linear-gradient(168deg,#1B395B 0%,#16304C 60%,#122A45 100%);
+    color:#fff; padding:20px 20px 24px; position:relative; overflow:hidden; }
+  .hero::after { content:''; position:absolute; right:-80px; top:-90px; width:240px; height:240px;
+    border-radius:50%; background:radial-gradient(circle,rgba(255,185,0,.16),transparent 68%); }
+  .hero__row { display:flex; align-items:center; gap:15px; position:relative; z-index:1; }
+  .hero__kick { font-size:9.5px; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:var(--yellow); }
+  .hero__phases { font-size:10.5px; color:rgba(255,255,255,.5); margin-top:5px; line-height:1.5; }
+  .hero__phases b { color:#6FD69B; font-weight:700; }
+  .hero__phases em { font-style:normal; color:var(--yellow); font-weight:700; }
+  .hero__h { font-family:var(--font-display); font-size:27px; font-weight:600; line-height:1.16;
+    letter-spacing:-.02em; margin:18px 0 8px; position:relative; z-index:1; }
+  .hero__h em { font-style:normal; color:var(--yellow); }
+  .hero__sub { font-size:12.5px; color:rgba(255,255,255,.7); line-height:1.6; position:relative; z-index:1; }
+  .hero__sub b { color:#fff; }
+
+  /* ── THE ARC ── */
+  .arc { padding:22px 20px 4px; }
+  .arc__track { position:relative; height:3px; background:var(--line); border-radius:2px; margin:0 14px; }
+  .arc__fill { position:absolute; left:0; top:0; bottom:0; width:5%; background:var(--yellow); border-radius:2px; }
+  .arc__nodes { display:flex; justify-content:space-between; margin-top:-9px; }
+  .arc__n { text-align:center; width:25%; }
+  .arc__dot { width:15px; height:15px; border-radius:50%; background:var(--surface-app);
+    border:3px solid var(--line); margin:0 auto 9px; }
+  .arc__n.now .arc__dot { border-color:var(--yellow); background:var(--yellow); box-shadow:0 0 0 5px rgba(255,185,0,.22); }
+  .arc__wk { font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); }
+  .arc__n.now .arc__wk { color:var(--deep); }
+  .arc__t { font-size:11px; font-weight:600; color:var(--deep); margin-top:2px; line-height:1.3; }
+
+  .kick { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:rgba(27,57,91,.38); }
+
+  /* ── WEEK BY WEEK ── */
+  .wk { display:flex; gap:14px; padding:14px 0; }
+  .wk + .wk { border-top:1px solid rgba(27,57,91,.06); }
+  .wk__n { flex-shrink:0; width:54px; font-size:10.5px; font-weight:800; color:var(--deep-2); padding-top:2px; }
+  .wk__t { font-size:14px; font-weight:600; color:var(--text-primary); line-height:1.35; }
+  .wk__s { font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.5; }
+  .wk--final .wk__n { color:var(--yellow-deep); }
+
+  /* ── WHO DOES WHAT ── */
+  .split { display:flex; gap:10px; }
+  .split__c { flex:1; background:var(--surface-card); border-radius:18px; padding:14px; box-shadow:0 1px 2px rgba(27,57,91,.05); }
+  .split__h { font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; margin-bottom:9px; }
+  .split__c--v .split__h { color:var(--teal); }
+  .split__c--y .split__h { color:var(--yellow-deep); }
+  .split__i { font-size:12px; color:var(--text-primary); line-height:1.5; padding:4px 0; display:flex; gap:7px; }
+  .split__i span { color:var(--ink-2); flex-shrink:0; }
+
+  /* ── KIT ── */
+  .kit { display:flex; align-items:flex-start; gap:12px; padding:13px 0; }
+  .kit + .kit { border-top:1px solid rgba(27,57,91,.06); }
+  .kit__ico { width:38px; height:38px; border-radius:12px; background:var(--surface-sunken);
+    display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+  .kit__t { font-size:13.5px; font-weight:600; color:var(--text-primary); }
+  .kit__scored { font-size:8.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
+    background:var(--yellow); color:var(--deep); padding:2px 6px; border-radius:5px; margin-left:6px; }
+  .kit__s { font-size:11.5px; color:var(--ink-2); margin-top:3px; line-height:1.5; }
+  .kit__own { font-size:9.5px; font-weight:700; color:var(--fog); margin-top:5px; }
+
+  /* ── NEXT ACTION ── */
+  .next { margin:26px 20px 0; background:linear-gradient(150deg,#FFF6DC,#FDEDC4);
+    border:1.5px solid var(--yellow); border-radius:22px; padding:18px;
+    box-shadow:0 12px 28px -14px rgba(224,164,0,.5); }
+  .next__k { font-size:9.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--yellow-deep); margin-bottom:9px; }
+  .next__t { font-family:var(--font-display); font-size:20px; font-weight:600; color:var(--deep); line-height:1.25; }
+  .next__s { font-size:12.5px; color:#7A6320; margin-top:7px; line-height:1.55; }
+  .next__s b { color:var(--deep); }
+</style>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">C5 — The protocol · mission briefing, not a cart</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar status-bar--on-dark" style="color:#fff;background:#1B395B"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar" style="background:#1B395B;color:#fff">
+      <div class="nav-bar__back" style="color:rgba(255,255,255,.8)">←</div>
+      <div class="nav-bar__title" style="color:#fff">Your Protocol</div>
+      <div class="nav-bar__action"></div>
+    </div>
+    <div class="screen" style="background:var(--surface-app)">
+
+      <div class="hero">
+        <div class="hero__row">
+          <svg class="ring ring--on-dark" width="58" height="58" viewBox="0 0 200 200" style="flex-shrink:0">
+            <g transform="translate(100,100)">
+              <circle class="ring__arc--done" r="88" stroke-width="13" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-90)"/>
+              <circle class="ring__arc--done" r="88" stroke-width="13" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-18)"/>
+              <circle class="ring__arc--now"  r="88" stroke-width="13" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(54)"/>
+              <circle class="ring__fill"      r="88" stroke-width="13" fill="none" stroke-dasharray="72 484.92" transform="rotate(54)"/>
+              <circle class="ring__arc--todo" r="88" stroke-width="13" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(126)"/>
+              <circle class="ring__arc--todo" r="88" stroke-width="13" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(198)"/>
+            </g>
+          </svg>
+          <div>
+            <div class="hero__kick">Loop 1 · you are here</div>
+            <div class="hero__phases"><b>Measure ✓</b> &nbsp;<b>Read ✓</b> &nbsp;<em>Commit</em> &nbsp;· Act · Prove</div>
+          </div>
+        </div>
+
+        <div class="hero__h">12 weeks. One question. <em>A real answer.</em></div>
+        <div class="hero__sub">
+          You've measured. Now you run the protocol — and on <b>7 December</b> the same lab, on the same assay,
+          tells us whether it worked. <b>It might not.</b> That's what makes the answer worth having.
+        </div>
+      </div>
+
+      <div class="arc">
+        <div class="arc__track"><div class="arc__fill"></div></div>
+        <div class="arc__nodes">
+          <div class="arc__n now"><div class="arc__dot"></div><div class="arc__wk">Week 1</div><div class="arc__t">Start</div></div>
+          <div class="arc__n"><div class="arc__dot"></div><div class="arc__wk">Wk 2–4</div><div class="arc__t">Titrate</div></div>
+          <div class="arc__n"><div class="arc__dot"></div><div class="arc__wk">Wk 5–11</div><div class="arc__t">Steady</div></div>
+          <div class="arc__n"><div class="arc__dot"></div><div class="arc__wk">Week 12</div><div class="arc__t">Verdict</div></div>
+        </div>
+      </div>
+
+      <div class="u-px-4" style="margin-top:20px;">
+        <div class="kick" style="margin-bottom:4px;">What actually happens to you</div>
+        <div class="wk"><div class="wk__n">Week 1</div><div>
+          <div class="wk__t">Your first pen, 2.5 mg</div>
+          <div class="wk__s">A nurse brings it and shows you the injection. Appetite starts shifting within days — most people notice it before the scale does.</div></div></div>
+        <div class="wk"><div class="wk__n">Wk 2–4</div><div>
+          <div class="wk__t">The dose climbs to 5 mg</div>
+          <div class="wk__s">Nausea peaks around day 2 after each shot, then settles. This is the stretch most people quit in — which is exactly why we log it and your clinician watches it.</div></div></div>
+        <div class="wk"><div class="wk__n">Wk 5–11</div><div>
+          <div class="wk__t">Steady state — the quiet part</div>
+          <div class="wk__s">Little drama, one injection a week. This is where HbA1c actually moves, because it's a 90-day average and it needs the time to bend.</div></div></div>
+        <div class="wk wk--final"><div class="wk__n">Week 12</div><div>
+          <div class="wk__t">The retest, and the verdict</div>
+          <div class="wk__s">Same lab, same assay, already paid for. We open the sealed prediction next to the result — confirmed, partial, or refuted.</div></div></div>
+      </div>
+
+      <div class="u-px-4" style="margin-top:26px;">
+        <div class="kick" style="margin-bottom:10px;">Who does what</div>
+        <div class="split">
+          <div class="split__c split__c--v">
+            <div class="split__h">Valeo handles</div>
+            <div class="split__i"><span>·</span>Pen delivered, cold chain</div>
+            <div class="split__i"><span>·</span>Nurse for your first dose</div>
+            <div class="split__i"><span>·</span>Clinician reviews every titration</div>
+            <div class="split__i"><span>·</span>Retest booked, assay matched</div>
+          </div>
+          <div class="split__c split__c--y">
+            <div class="split__h">You handle</div>
+            <div class="split__i"><span>·</span>One injection, weekly</div>
+            <div class="split__i"><span>·</span>Scale, 4× a week</div>
+            <div class="split__i"><span>·</span>Tap how you feel after a shot</div>
+            <div class="split__i"><span>·</span>That's the whole job</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="u-px-4" style="margin-top:26px;">
+        <div class="kick" style="margin-bottom:2px;">What arrives</div>
+        <div class="kit">
+          <div class="kit__ico">💉</div>
+          <div>
+            <div class="kit__t">Tirzepatide<span class="kit__scored">Scored</span></div>
+            <div class="kit__s">2.5 → 5 mg, once weekly. This is the intervention the sealed prediction tests — HbA1c is what we score it against.</div>
+            <div class="kit__own">Valeo sells this</div>
+          </div>
+        </div>
+        <div class="kit">
+          <div class="kit__ico">🧲</div>
+          <div>
+            <div class="kit__t">Iron + vitamin C</div>
+            <div class="kit__s">Your ferritin is also low at 18. Iron-deficiency fatigue is the most common reason people quit a GLP-1 in month two — this protects the experiment rather than being the experiment.</div>
+            <div class="kit__own">Valeo sells this</div>
+          </div>
+        </div>
+        <div class="kit">
+          <div class="kit__ico">🍽️</div>
+          <div>
+            <div class="kit__t">Protein first, iron away from coffee</div>
+            <div class="kit__s">Tannins block iron absorption by up to 60%; protein blunts the day-2 nausea. Costs nothing and moves both markers.</div>
+            <div class="kit__own" style="color:var(--teal)">Free — not a product</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="next">
+        <div class="next__k">⚡ Your next move</div>
+        <div class="next__t">Thursday, 6:00 pm — a nurse arrives with your first pen.</div>
+        <div class="next__s"><b>Nothing for you to do until then.</b> We'll text you the morning of. Confirm on the next screen and the delivery is booked.</div>
+      </div>
+
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:14px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line); margin-top:22px;">
+        <button class="btn btn--primary">Review and confirm →</button>
+        <div style="text-align:center; font-size:11px; color:var(--ink-2); margin-top:9px;">Costs and consent on the next screen — nothing is charged yet.</div>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="r"><span class="tag">The fix</span> This was a cart — line items, a price total, "continue to consent." It answered <i>what's in the box</i> when the user was asking <i>what happens to me</i>. <b>Price is gone entirely</b>; it belongs on C6. A price total on this screen is what made it checkout.</div>
+    <div class="r"><span class="tag">The loop, invoked</span> The ring appears here for the first time — <b>Measure ✓ Read ✓ Commit ●</b> — so the user sees the machine they're stepping into rather than a bundle they're buying.</div>
+    <div class="r"><span class="tag">Positioning</span> The 12-week arc, then week-by-week in plain language including <b>the part where people quit</b> ("nausea peaks day 2… this is the stretch most people quit in"). Naming the hard part in advance is what makes it survivable — the honest version of hype.</div>
+    <div class="r"><span class="tag">Partnership, not purchase</span> Two columns. "That's the whole job" is doing real work: perceived burden is what kills conversion here.</div>
+    <div class="r"><span class="tag">The next action</span> One unmissable card — <b>Thursday 6pm, nurse, first pen, nothing to do until then.</b></div>
+    <div class="r"><span class="tag">The honest game</span> "It might not work. That's what makes the answer worth having." A real experiment with a real chance of a null — not a promise dressed as a plan.</div>
+  </div>
+</div>
+</body>
+</html>

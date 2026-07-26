@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>P6 · Verdict — inconclusive ×4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; }
+  .page-title { text-align:center; font-size:15px; font-weight:700; color:var(--deep); margin-bottom:6px; }
+  .page-sub { text-align:center; font-size:12.5px; color:var(--ink-2); margin-bottom:36px; max-width:640px; margin-left:auto; margin-right:auto; }
+  .grid { display:grid; grid-template-columns: repeat(2, 320px); gap:28px 32px; justify-content:center; max-width: 700px; margin:0 auto; }
+
+  .mini-device { width:320px; background:var(--surface-app); border-radius:32px; box-shadow:var(--shadow-lg); overflow:hidden; border: 1px solid rgba(27,57,91,0.06); }
+  .mini-nav { display:flex; align-items:center; justify-content:space-between; padding: 14px 16px 8px; }
+  .mini-nav__title { font-size:13px; font-weight:700; color:var(--deep); }
+  .mini-nav__back { font-size:14px; color:var(--ink-2); }
+
+  .mini-body { padding: 6px 18px 20px; }
+  .reason-eyebrow { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--fog); margin-bottom:8px; }
+  .reason-icon { width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:12px; }
+  .reason-title { font-family:var(--font-display); font-size:19px; font-weight:600; color:var(--deep); line-height:1.25; margin-bottom:8px; }
+  .reason-body { font-size:12px; color:var(--ink-2); line-height:1.55; margin-bottom:14px; }
+  .reason-body b { color: var(--text-primary); font-weight:600; }
+  .reason-remedy { display:block; text-align:center; background:var(--deep); color:#fff; font-size:12px; font-weight:600; padding:11px; border-radius:10px; }
+  .reason-remedy--ghost { background:transparent; color:var(--deep); border:1.5px solid var(--deep); }
+  .reason-owner { display:inline-block; font-size:9px; font-weight:700; padding:3px 8px; border-radius:5px; margin-bottom:8px; }
+
+  .caption-strip { max-width:700px; margin: 32px auto 0; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 22px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.6; }
+  .caption-strip .row{margin-bottom:8px;} .caption-strip .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+
+  <div class="page-title">P6 — Verdict: inconclusive · four reasons, four screens</div>
+  <div class="page-sub">One generic "we couldn't determine a result" would destroy the trust the honest verdict was meant to buy. Each reason has a different owner of the failure — so a different tone and a different remedy.</div>
+
+  <div class="grid">
+
+    <div class="mini-device">
+      <div class="mini-nav"><span class="mini-nav__back">←</span><span class="mini-nav__title">Your Verdict</span><span></span></div>
+      <div class="mini-body">
+        <span class="reason-owner" style="background:var(--teal-soft); color:var(--teal);">OUR MISTAKE</span>
+        <div class="reason-icon" style="background:var(--teal-soft); color:var(--teal);">🔬</div>
+        <div class="reason-title">We can't compare these two results.</div>
+        <div class="reason-body">Your retest used a different lab method than your baseline — that's on us, and it means we can't honestly tell you if the numbers moved. <b>We're sending a replacement kit, free, no questions.</b></div>
+        <span class="reason-remedy">Book free re-draw →</span>
+      </div>
+    </div>
+
+    <div class="mini-device">
+      <div class="mini-nav"><span class="mini-nav__back">←</span><span class="mini-nav__title">Your Verdict</span><span></span></div>
+      <div class="mini-body">
+        <span class="reason-owner" style="background:var(--fog-soft); color:var(--fog);">SCHEDULING</span>
+        <div class="reason-icon" style="background:var(--fog-soft); color:var(--ink-2);">📅</div>
+        <div class="reason-title">This draw landed outside your window.</div>
+        <div class="reason-body">Your retest was booked for 7 Dec but happened on 19 Dec — 12 days late is enough to blur what we're measuring. <b>No fault here, just timing.</b></div>
+        <span class="reason-remedy">Reschedule within window →</span>
+      </div>
+    </div>
+
+    <div class="mini-device">
+      <div class="mini-nav"><span class="mini-nav__back">←</span><span class="mini-nav__title">Your Verdict</span><span></span></div>
+      <div class="mini-body">
+        <span class="reason-owner" style="background:var(--amber-soft); color:var(--amber);">NOBODY'S FAULT</span>
+        <div class="reason-icon" style="background:var(--amber-soft); color:var(--amber);">⏸️</div>
+        <div class="reason-title">Your protocol paused for Ramadan.</div>
+        <div class="reason-body">Fasting changed your dose timing for 29 days — logged automatically when you paused. <b>That's exactly what Pause is for.</b> We're extending your window by the same 29 days.</div>
+        <span class="reason-remedy reason-remedy--ghost">See your new retest date →</span>
+      </div>
+    </div>
+
+    <div class="mini-device">
+      <div class="mini-nav"><span class="mini-nav__back">←</span><span class="mini-nav__title">Your Verdict</span><span></span></div>
+      <div class="mini-body">
+        <span class="reason-owner" style="background:var(--mint); color:var(--yellow-deep);">ADHERENCE</span>
+        <div class="reason-icon" style="background:var(--mint); color:var(--yellow-deep);">📋</div>
+        <div class="reason-title">There isn't enough logged data to call this fairly.</div>
+        <div class="reason-body">You were at 54% adherence — below the 80% this prediction needed to mean something. This is your methodology record, not a verdict on you. <b>The retest you already paid for still stands.</b></div>
+        <span class="reason-remedy reason-remedy--ghost">Extend 3 weeks, same retest →</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="caption-strip">
+    <div class="row"><span class="tag">P6</span> Metric: % who continue rather than churn, tracked separately <b>by reason</b>. Capture: <code>inconclusive_reason</code>, <code>adherence_pct</code> vs <code>adherence_floor</code>.</div>
+    <div class="row"><span class="tag">Never scored as a loss</span> Per Metaculus's Ambiguous/Annulled model, an inconclusive loop is excluded from the user's verdict history and the causal corpus — counted against neither. Otherwise the honest state carries a penalty and everyone learns to avoid it.</div>
+    <div class="row"><span class="tag">Never routes to a charge</span> All four remedies use a retest the user already owns. If "inconclusive" ever looks like it drives a paid re-draw, the mechanic dies the day someone posts that theory (P2/G3).</div>
+    <div class="row"><span class="tag">Ramadan as a designed state</span> The confounder card and the Pause control (KSA R6, DATA_MODEL §7) are the same object — this is its payoff screen, not a special case bolted on later.</div>
+    <div class="row"><span class="tag">M19 tone carried through</span> "Nobody's fault" and "adherence" variants both avoid "you failed" language — methodology framing throughout, never punishment.</div>
+  </div>
+
+</body>
+</html>

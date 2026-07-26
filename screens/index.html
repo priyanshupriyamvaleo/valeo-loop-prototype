@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Valeo · The Loop — All 30 Screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<style>
+  body { font-family:var(--font-ui); background:#EFE7D6; margin:0; padding:48px 24px 100px; color:var(--ink); }
+  h1 { font-family:var(--font-display); font-size:34px; color:var(--deep); margin:0 0 6px; text-align:center; }
+  .sub { text-align:center; color:var(--ink-2); font-size:14px; margin-bottom:48px; }
+  .section-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--deep-2); text-align:center; margin: 44px 0 20px; }
+  .row { display:flex; flex-wrap:wrap; gap:24px; justify-content:center; max-width:1400px; margin:0 auto; }
+  .card { width:240px; text-decoration:none; color:inherit; }
+  .card__frame { width:240px; height:200px; overflow:hidden; border-radius:20px; box-shadow: var(--shadow-md); background:#fff; position:relative; border: 1px solid rgba(27,57,91,0.08); transition: transform 160ms ease; }
+  .card:hover .card__frame { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+  .card__frame iframe { width:390px; height:844px; border:0; transform: scale(0.615); transform-origin: top left; pointer-events:none; }
+  .card__label { margin-top:12px; font-size:13px; font-weight:600; color:var(--deep); text-align:center; }
+  .card__meta { font-size:11px; color:var(--ink-2); text-align:center; margin-top:2px; }
+  .hero-badge { position:absolute; top:8px; right:8px; background:var(--yellow); color:var(--deep); font-size:9px; font-weight:800; padding:2px 7px; border-radius:5px; z-index:5; }
+  .protobanner {
+    max-width:820px; margin:0 auto 46px; display:flex; align-items:center; gap:20px;
+    background: linear-gradient(150deg,#1B395B,#254A73); color:#fff;
+    border-radius:22px; padding:22px 26px; text-decoration:none;
+    box-shadow: var(--shadow-lg); transition:.16s;
+  }
+  .protobanner:hover { transform:translateY(-3px); }
+  .protobanner__icon { font-size:32px; }
+  .protobanner__t { font-family:var(--font-display); font-size:21px; font-weight:600; margin-bottom:4px; }
+  .protobanner__s { font-size:13px; color:#C7D2DE; line-height:1.5; }
+  .protobanner__go { margin-left:auto; background:var(--yellow); color:var(--deep); font-weight:700; font-size:13px; padding:11px 20px; border-radius:11px; white-space:nowrap; }
+  .fidnote {
+    max-width:820px; margin:0 auto 8px; background:#FBF6E8; border:1px dashed var(--line);
+    border-radius:14px; padding:14px 18px; font-size:12.5px; color:var(--ink-2); line-height:1.6;
+  }
+  .fidnote b { color:var(--deep); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+
+<h1>The Loop</h1>
+<div class="sub">30 screens across all six stages. Click any card to open it full-size with its design rationale.</div>
+
+<a class="protobanner" href="../prototype.html">
+  <span class="protobanner__icon">▶</span>
+  <span>
+    <span class="protobanner__t">Open the interactive prototype</span>
+    <span class="protobanner__s">All 30 screens wired into one clickable app — with branch forks, time skips, recursion, and the full logic tree.</span>
+  </span>
+  <span class="protobanner__go">Walk the loop →</span>
+</a>
+
+<div class="section-title">Commit — the result → plan handoff</div>
+<div class="row">
+
+  <a class="card" href="C1-results-ready.html" target="_blank">
+    <div class="card__frame"><iframe src="C1-results-ready.html"></iframe></div>
+    <div class="card__label">C1 · Results are ready</div>
+    <div class="card__meta">Entry · web/email twin (D1)</div>
+  </a>
+
+  <a class="card" href="C2-the-one-thing.html" target="_blank">
+    <div class="card__frame"><iframe src="C2-the-one-thing.html"></iframe></div>
+    <div class="card__label">C2 · The one thing that matters</div>
+    <div class="card__meta">5-second comprehension</div>
+  </a>
+
+  <a class="card" href="C3-full-panel.html" target="_blank">
+    <div class="card__frame"><iframe src="C3-full-panel.html"></iframe></div>
+    <div class="card__label">C3 · Full panel, ranked</div>
+    <div class="card__meta">Optional depth</div>
+  </a>
+
+  <a class="card" href="C4-sealed-prediction.html" target="_blank">
+    <div class="card__frame"><div class="hero-badge">★ HERO</div><iframe src="C4-sealed-prediction.html"></iframe></div>
+    <div class="card__label">C4 · The sealed prediction</div>
+    <div class="card__meta">Protocol attach rate</div>
+  </a>
+
+  <a class="card" href="C5-protocol.html" target="_blank">
+    <div class="card__frame"><iframe src="C5-protocol.html"></iframe></div>
+    <div class="card__label">C5 · The protocol</div>
+    <div class="card__meta">Conflict printed, not hidden</div>
+  </a>
+
+  <a class="card" href="C6-consent-commit.html" target="_blank">
+    <div class="card__frame"><iframe src="C6-consent-commit.html"></iframe></div>
+    <div class="card__label">C6 · Consent &amp; commit</div>
+    <div class="card__meta">Retest pre-booked, 100%</div>
+  </a>
+
+  <a class="card" href="C7-not-eligible.html" target="_blank">
+    <div class="card__frame"><iframe src="C7-not-eligible.html"></iframe></div>
+    <div class="card__label">C7 · Not eligible</div>
+    <div class="card__meta">Never a dead end</div>
+  </a>
+
+</div>
+
+<div class="section-title">Prove — the retest reveal</div>
+<div class="row">
+
+  <a class="card" href="P1-retest-due.html" target="_blank">
+    <div class="card__frame"><iframe src="P1-retest-due.html"></iframe></div>
+    <div class="card__label">P1 · Retest due</div>
+    <div class="card__meta">The return trigger</div>
+  </a>
+
+  <a class="card" href="P2-verdict-pending.html" target="_blank">
+    <div class="card__frame"><iframe src="P2-verdict-pending.html"></iframe></div>
+    <div class="card__label">P2 · Verdict pending</div>
+    <div class="card__meta">48h wait, filled with evidence</div>
+  </a>
+
+  <a class="card" href="P3-the-reveal.html" target="_blank">
+    <div class="card__frame"><div class="hero-badge">★ HERO</div><iframe src="P3-the-reveal.html"></iframe></div>
+    <div class="card__label">P3 · The reveal</div>
+    <div class="card__meta">Loop 2 start rate</div>
+  </a>
+
+  <a class="card" href="P4b-verdict-partial.html" target="_blank">
+    <div class="card__frame"><iframe src="P4b-verdict-partial.html"></iframe></div>
+    <div class="card__label">P4b · Verdict: partial</div>
+    <div class="card__meta">Likely the modal outcome</div>
+  </a>
+
+  <a class="card" href="P5-verdict-refuted.html" target="_blank">
+    <div class="card__frame"><iframe src="P5-verdict-refuted.html"></iframe></div>
+    <div class="card__label">P5 · Verdict: refuted</div>
+    <div class="card__meta">A success state for the business</div>
+  </a>
+
+  <a class="card" href="P6-verdict-inconclusive.html" target="_blank">
+    <div class="card__frame"><iframe src="P6-verdict-inconclusive.html" style="transform: scale(0.24); width:1000px; height:900px;"></iframe></div>
+    <div class="card__label">P6 · Inconclusive ×4</div>
+    <div class="card__meta">Different owner, tone, remedy</div>
+  </a>
+
+</div>
+
+<div class="section-title">Tier 2 — Act &amp; Memory (daily surface)</div>
+<div class="row">
+
+  <a class="card" href="T2-1-daily-home.html" target="_blank">
+    <div class="card__frame"><div class="hero-badge">★ HERO</div><iframe src="T2-1-daily-home.html"></iframe></div>
+    <div class="card__label">T2-1 · Daily home</div>
+    <div class="card__meta">The state-machine hero</div>
+  </a>
+
+  <a class="card" href="T2-2-log-weight.html" target="_blank">
+    <div class="card__frame"><iframe src="T2-2-log-weight.html"></iframe></div>
+    <div class="card__label">T2-2 · Log weight</div>
+    <div class="card__meta">0-tap autopull first</div>
+  </a>
+
+  <a class="card" href="T2-3-log-dose.html" target="_blank">
+    <div class="card__frame"><iframe src="T2-3-log-dose.html"></iframe></div>
+    <div class="card__label">T2-3 · Log dose</div>
+    <div class="card__meta">Shot day state</div>
+  </a>
+
+  <a class="card" href="T2-4-log-symptom.html" target="_blank">
+    <div class="card__frame"><iframe src="T2-4-log-symptom.html"></iframe></div>
+    <div class="card__label">T2-4 · Log symptom</div>
+    <div class="card__meta">Chips + severity, never free-text-only</div>
+  </a>
+
+  <a class="card" href="T2-5-coach-chat.html" target="_blank">
+    <div class="card__frame"><iframe src="T2-5-coach-chat.html"></iframe></div>
+    <div class="card__label">T2-5 · Coach chat</div>
+    <div class="card__meta">The chat shows its work</div>
+  </a>
+
+  <a class="card" href="T2-6-adherence-at-risk.html" target="_blank">
+    <div class="card__frame"><iframe src="T2-6-adherence-at-risk.html"></iframe></div>
+    <div class="card__label">T2-6 · Adherence at risk</div>
+    <div class="card__meta">Threat + exit, same sentence</div>
+  </a>
+
+  <a class="card" href="T2-7-the-twin.html" target="_blank">
+    <div class="card__frame"><iframe src="T2-7-the-twin.html"></iframe></div>
+    <div class="card__label">T2-7 · The twin</div>
+    <div class="card__meta">Correctable memory</div>
+  </a>
+
+  <a class="card" href="T2-8-protocol-timeline.html" target="_blank">
+    <div class="card__frame"><iframe src="T2-8-protocol-timeline.html"></iframe></div>
+    <div class="card__label">T2-8 · Protocol timeline</div>
+    <div class="card__meta">Ramadan as a first-class state</div>
+  </a>
+
+</div>
+
+<div class="section-title">Tier 3 — Onboard, Activate, Renew</div>
+<div class="fidnote">
+  <b>These are deliberately lower fidelity — that's a strategy call, not unfinished work.</b>
+  The plan allocates 60% of effort to the two hypothesised leak surfaces (Commit, Prove), 25% to the daily
+  loop, and 15% here. Building all nine at Tier-1 polish would be exactly the failure the plan warns
+  against: thirty equally-polished screens is decoration with a project plan attached. Each frame still
+  carries one real design decision — see <code>LEDGER_TIER3.md</code>.
+</div>
+<div class="row">
+
+  <a class="card" href="T3-1-goal-picker.html" target="_blank">
+    <div class="card__frame"><iframe src="T3-1-goal-picker.html"></iframe></div>
+    <div class="card__label">T3-1 · Goal picker</div>
+    <div class="card__meta">Preview what opens, never what closes</div>
+  </a>
+  <a class="card" href="T3-2-intake.html" target="_blank">
+    <div class="card__frame"><iframe src="T3-2-intake.html"></iframe></div>
+    <div class="card__label">T3-2 · Intake</div>
+    <div class="card__meta">Every input moves the prediction</div>
+  </a>
+  <a class="card" href="T3-3-eligibility.html" target="_blank">
+    <div class="card__frame"><iframe src="T3-3-eligibility.html"></iframe></div>
+    <div class="card__label">T3-3 · Eligibility → baseline</div>
+    <div class="card__meta">Screening as branching, not a wall</div>
+  </a>
+  <a class="card" href="T3-4-phlebotomy-booking.html" target="_blank">
+    <div class="card__frame"><iframe src="T3-4-phlebotomy-booking.html"></iframe></div>
+    <div class="card__label">T3-4 · Phlebotomy booking</div>
+    <div class="card__meta">Female nurse default (KSA R5)</div>
+  </a>
+  <a class="card" href="T3-5-sample-processing.html" target="_blank">
+    <div class="card__frame"><iframe src="T3-5-sample-processing.html"></iframe></div>
+    <div class="card__label">T3-5 · Sample processing</div>
+    <div class="card__meta">Status as a first-class object</div>
+  </a>
+  <a class="card" href="T3-6-consult-scheduling.html" target="_blank">
+    <div class="card__frame"><iframe src="T3-6-consult-scheduling.html"></iframe></div>
+    <div class="card__label">T3-6 · Consult scheduling</div>
+    <div class="card__meta">The highest-leverage human touch</div>
+  </a>
+  <a class="card" href="T3-7-consult-summary.html" target="_blank">
+    <div class="card__frame"><iframe src="T3-7-consult-summary.html"></iframe></div>
+    <div class="card__label">T3-7 · Consult summary</div>
+    <div class="card__meta">The goal, quoted back</div>
+  </a>
+  <a class="card" href="T3-8-renew-loop2.html" target="_blank">
+    <div class="card__frame"><iframe src="T3-8-renew-loop2.html"></iframe></div>
+    <div class="card__label">T3-8 · Renew / loop 2</div>
+    <div class="card__meta">Never the acquisition page minus a discount</div>
+  </a>
+  <a class="card" href="T3-9-plan-management.html" target="_blank">
+    <div class="card__frame"><iframe src="T3-9-plan-management.html"></iframe></div>
+    <div class="card__label">T3-9 · Plan management</div>
+    <div class="card__meta">Cancel as easy as buying</div>
+  </a>
+
+</div>
+
+</body>
+</html>

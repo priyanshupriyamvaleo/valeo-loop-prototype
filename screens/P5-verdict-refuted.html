@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>P5 · Verdict — refuted</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .verdict-headline { text-align:center; margin-bottom:20px; }
+  .verdict-headline__eyebrow { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-2); margin-bottom:6px; }
+  .verdict-headline__main { font-family:var(--font-display); font-size:27px; font-weight:600; color:var(--deep); line-height:1.2; }
+  .verdict-headline__sub { font-size:13px; color:var(--ink-2); margin-top:8px; }
+
+  .reveal-card { background:var(--surface-card); border-radius:var(--radius-xl); padding:22px 20px; box-shadow:var(--shadow-md); margin-bottom:16px; }
+  .vband-axis-wrap { width:36px; flex-shrink:0; position:relative; height:180px; }
+  .vband-track { width:100%; height:100%; border-radius:var(--radius-pill); background: linear-gradient(to top, var(--marker-out-of-range) 0%, var(--marker-out-of-range) 18%, var(--marker-borderline) 18%, var(--marker-borderline) 32%, var(--marker-optimal-bg) 32%, var(--marker-optimal) 55%, var(--marker-optimal) 100%); position:relative; }
+  .vband-dot { position:absolute; left:50%; border-radius:50%; border:none; box-shadow: 0 0 0 3px var(--surface-card), var(--shadow-sm); transform:translate(-50%,50%); }
+  .reveal-legend { flex:1; display:flex; flex-direction:column; justify-content:space-between; padding:4px 0; }
+  .legend-item__label { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink-2); }
+  .legend-item__value { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; margin-top:2px; }
+  .legend-delta { display:inline-flex; align-items:center; gap:4px; font-size:12.5px; font-weight:700; color:var(--slate); background:var(--slate-soft); padding:3px 10px; border-radius:var(--radius-pill); margin-top:6px; }
+
+  .honest-banner { display:flex; gap:10px; align-items:flex-start; background: var(--slate-soft); border-radius:var(--radius-md); padding:12px 14px; margin-bottom:16px; }
+  .honest-banner__icon { font-size:16px; }
+  .honest-banner__text { font-size:12px; color:var(--slate); line-height:1.5; }
+  .honest-banner__text b { font-weight:700; }
+
+  .next-hypo { background: linear-gradient(160deg, var(--deep) 0%, var(--deep-2) 100%); border-radius:var(--radius-lg); padding:16px; color:#fff; }
+  .next-hypo__eyebrow { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--yellow); margin-bottom:6px; }
+  .next-hypo__title { font-size:14.5px; font-weight:600; margin-bottom:4px; }
+  .next-hypo__body { font-size:12px; color:var(--text-on-dark-2); line-height:1.5; margin-bottom:12px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">P5 — Verdict: refuted</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Your Verdict</div><div class="nav-bar__action">⤴</div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:16px; padding-bottom:16px;">
+
+        <div class="verdict-headline">
+          <div class="verdict-headline__eyebrow">HbA1c · your sealed prediction</div>
+          <div class="verdict-headline__main">Your HbA1c didn't move this cycle.</div>
+          <div class="verdict-headline__sub">We predicted below 5.7%. You're at 5.9% — exactly where you started.</div>
+        </div>
+
+        <div class="reveal-card">
+          <div style="display:flex; gap:20px;">
+            <div class="vband-axis-wrap">
+              <div class="vband-track">
+                <div class="vband-dot" style="width:15px; height:15px; background:var(--fog); bottom:10%;"></div>
+                <div class="vband-dot" style="width:19px; height:19px; background:var(--slate); bottom:13%;"></div>
+              </div>
+            </div>
+            <div class="reveal-legend">
+              <div><div class="legend-item__label">Prior — 12 Oct</div><div class="legend-item__value" style="color:var(--fog); font-size:19px;">5.9 <span style="font-size:11px; font-weight:500;">%</span></div></div>
+              <div><div class="legend-item__label">Current — 7 Dec</div><div class="legend-item__value" style="color:var(--slate);">5.9 <span style="font-size:12px; font-weight:500;">%</span></div>
+                <div class="legend-delta">— no change · target not met</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="honest-banner">
+          <div class="honest-banner__icon">📎</div>
+          <div class="honest-banner__text"><b>This is a real result, not a data error.</b> You logged 88% adherence — likely this mechanism wasn't the fix, not that you didn't try.</div>
+        </div>
+
+        <div class="next-hypo">
+          <div class="next-hypo__eyebrow">Next hypothesis</div>
+          <div class="next-hypo__title">An HbA1c that doesn't move on a GLP-1 usually points at something other than appetite.</div>
+          <div class="next-hypo__body">Fasting insulin and a continuous glucose read would tell us whether this is insulin resistance rather than intake — a different, cheaper test than another 8 weeks at a higher dose.</div>
+          <button class="btn btn--accent">See the insulin-resistance test →</button>
+        </div>
+
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="row"><span class="tag">P5</span> Metric: <b>loop-2 start rate from a null</b> — the truest measure of whether the verification promise is believed. A confident refuted screen is a success state for the business: a clean null is exactly what a future B2B customer pays for, and it's the proof to this user we weren't just selling.</div>
+    <div class="row"><span class="tag">M19</span> No "you", no "should" — the headline names the marker, not the person: "your ferritin didn't move," never "you failed." Hedge is in the sub-copy ("about where you started"), not an apology.</div>
+    <div class="row"><span class="tag">Colour discipline (P9)</span> Slate, never coral — coral is reserved for out-of-range biomarker values, not verdict outcomes. A null is a serious finding, not an alarm.</div>
+    <div class="row"><span class="tag">Confident, not apologetic</span> The next hypothesis appears in the same screen, framed as scientific progress ("a different, cheaper test than another 8 weeks of guessing") — nobody in the category owns this moment; most hide the outcome, and ZOE architected around ever showing it at all.</div>
+  </div>
+</div>
+</body>
+</html>

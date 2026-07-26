@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valeo · The Loop — Interactive Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-system/tokens.css">
+<style>
+/* ══════════════════════════════════════════════════════════
+   PROTOTYPE SHELL
+   Deliberately NOT in the product's visual language — the shell
+   is a tool (dark navy), the product is cream. Never confusable.
+   ══════════════════════════════════════════════════════════ */
+* { box-sizing:border-box; }
+html,body { margin:0; padding:0; height:100%; }
+body {
+  font-family: var(--font-ui);
+  background: #0E1D2E;
+  color: #E6EDF5;
+  overflow:hidden;
+}
+button { font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+
+.app { display:flex; flex-direction:column; height:100vh; }
+
+/* ── TOP BAR ── */
+.topbar {
+  height:56px; flex-shrink:0;
+  display:flex; align-items:center; gap:18px;
+  padding:0 20px;
+  background:#14283F;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.brand { display:flex; align-items:center; gap:9px; font-weight:700; font-size:14px; letter-spacing:-.01em; }
+.brand__mark {
+  width:26px; height:26px; border-radius:7px;
+  background:var(--yellow); color:#14283F;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:600; font-size:15px;
+}
+.brand__sub { color:#7E93AC; font-weight:500; font-size:12px; }
+
+.modeswitch { display:flex; background:rgba(0,0,0,.28); border-radius:9px; padding:3px; margin-left:8px; }
+.modeswitch button { padding:6px 15px; border-radius:6px; font-size:12px; font-weight:600; color:#8DA2BB; }
+.modeswitch button.on { background:var(--yellow); color:#14283F; }
+
+.state-chips { display:flex; gap:8px; margin-left:auto; align-items:center; }
+.chip {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.09);
+  border-radius:999px; padding:5px 12px; font-size:11.5px; font-weight:600;
+}
+.chip b { color:var(--yellow); font-weight:800; font-variant-numeric:tabular-nums; }
+.chip--loop b { color:#7FD8A4; }
+.topbtn { font-size:11.5px; font-weight:600; color:#8DA2BB; padding:6px 12px; border-radius:7px; border:1px solid rgba(255,255,255,.12); }
+.topbtn:hover { color:#fff; border-color:rgba(255,255,255,.3); }
+
+/* ── MAIN ── */
+.main { flex:1; display:flex; min-height:0; }
+
+/* ── LEFT RAIL ── */
+.rail {
+  width:250px; flex-shrink:0; overflow-y:auto;
+  background:#122234; border-right:1px solid rgba(255,255,255,.07);
+  padding:14px 0 40px;
+}
+.rail::-webkit-scrollbar { width:6px; }
+.rail::-webkit-scrollbar-thumb { background:rgba(255,255,255,.13); border-radius:3px; }
+.rail__hint { font-size:10.5px; color:#66799180; padding:0 16px 10px; line-height:1.5; }
+.stage { margin-bottom:6px; }
+.stage__name {
+  font-size:9.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+  color:#5E7391; padding:12px 16px 6px;
+  display:flex; align-items:center; gap:7px;
+}
+.stage__name::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.07); }
+.node {
+  display:flex; align-items:center; gap:9px;
+  padding:7px 16px; font-size:12.3px; color:#A9BCD1;
+  cursor:pointer; border-left:2px solid transparent; line-height:1.3;
+}
+.node:hover { background:rgba(255,255,255,.05); color:#fff; }
+.node.on { background:rgba(255,185,0,.12); border-left-color:var(--yellow); color:#fff; font-weight:600; }
+.node__dot { width:6px; height:6px; border-radius:50%; background:#33475E; flex-shrink:0; }
+.node.visited .node__dot { background:#5B7A99; }
+.node.on .node__dot { background:var(--yellow); box-shadow:0 0 0 3px rgba(255,185,0,.2); }
+.node__type { font-size:9px; padding:1px 5px; border-radius:4px; font-weight:800; letter-spacing:.03em; flex-shrink:0; }
+.t-branch { background:rgba(255,185,0,.18); color:var(--yellow); }
+.t-skip   { background:rgba(127,216,164,.15); color:#7FD8A4; }
+.t-loop   { background:rgba(140,170,255,.16); color:#9FB8FF; }
+.t-hero   { background:rgba(255,255,255,.14); color:#fff; }
+.node__label { flex:1; overflow:hidden; text-overflow:ellipsis; }
+
+/* ── STAGE (centre) ── */
+.stagearea {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; min-width:0; position:relative;
+  background:
+    radial-gradient(70% 55% at 50% 0%, rgba(255,185,0,.06), transparent 70%),
+    #0E1D2E;
+  padding:20px;
+}
+.kindtag {
+  font-size:9.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+  margin-bottom:10px; padding:4px 11px; border-radius:5px;
+}
+.kindtag--screen { background:rgba(255,255,255,.08); color:#93A9C2; }
+.kindtag--meta   { background:var(--yellow); color:#14283F; }
+
+.phonewrap { position:relative; }
+.phone {
+  width:390px; height:844px; flex-shrink:0;
+  border-radius:44px; overflow:hidden; position:relative;
+  box-shadow: 0 30px 70px rgba(0,0,0,.55), 0 0 0 9px #060D16, 0 0 0 10px #2B3F56;
+  background:#FFFDF5;
+  transform-origin: top center;
+}
+.phone iframe { width:390px; height:844px; border:0; display:block; }
+
+/* ── META CARDS (rendered in the phone slot) ── */
+.meta {
+  width:390px; height:844px; overflow-y:auto;
+  background: linear-gradient(165deg,#16293F 0%,#0D1B2B 100%);
+  padding:34px 26px; display:flex; flex-direction:column;
+  border:2px dashed rgba(255,185,0,.42); border-radius:44px;
+}
+.meta::-webkit-scrollbar { display:none; }
+.meta__eyebrow {
+  font-size:9.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--yellow); margin-bottom:16px; display:flex; align-items:center; gap:7px;
+}
+.meta__icon { font-size:38px; margin-bottom:14px; }
+.meta__title {
+  font-family:var(--font-display); font-size:27px; font-weight:600;
+  color:#fff; line-height:1.2; margin-bottom:10px;
+}
+.meta__q { font-size:13.5px; color:#B9CCE1; line-height:1.6; margin-bottom:8px; }
+.meta__why {
+  font-size:11.5px; color:#7E93AC; line-height:1.6;
+  border-left:2px solid rgba(255,185,0,.35); padding-left:11px; margin:14px 0 22px;
+}
+.opt {
+  display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left;
+  background:rgba(255,255,255,.055); border:1.5px solid rgba(255,255,255,.11);
+  border-radius:15px; padding:15px 16px; margin-bottom:11px;
+  transition:.14s;
+}
+.opt:hover { background:rgba(255,255,255,.11); border-color:var(--yellow); transform:translateX(3px); }
+.opt__key {
+  width:24px; height:24px; border-radius:7px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:800;
+  background:rgba(255,255,255,.1); color:#93A9C2;
+}
+.opt:hover .opt__key { background:var(--yellow); color:#14283F; }
+.opt__body { flex:1; min-width:0; }
+.opt__label { display:block; font-size:14px; font-weight:600; color:#fff; line-height:1.35; }
+.opt__sub { display:block; font-size:11.5px; color:#8DA2BB; margin-top:4px; line-height:1.45; }
+.opt--go   .opt__label { color:#8CE0AE; }
+.opt--warn .opt__label { color:#F2C46B; }
+.opt--null .opt__label { color:#B8C6D8; }
+.opt--grey .opt__label { color:#8DA2BB; }
+.opt--stop .opt__label { color:#F09A96; }
+
+.skipbar { height:5px; border-radius:3px; background:rgba(255,255,255,.1); overflow:hidden; margin:20px 0 8px; }
+.skipbar i { display:block; height:100%; background:var(--yellow); width:0; animation:fill 1.1s var(--ease-decel) forwards; }
+@keyframes fill { to { width:100%; } }
+.deltas { display:flex; flex-direction:column; gap:8px; margin:20px 0 26px; }
+.delta {
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:12px; padding:9px 13px; border-radius:9px;
+  background:rgba(255,255,255,.05);
+}
+.delta span { color:#8DA2BB; }
+.delta b { color:#fff; font-variant-numeric:tabular-nums; }
+.meta__spacer { flex:1; min-height:10px; }
+.meta__cta {
+  width:100%; background:var(--yellow); color:#14283F;
+  border-radius:13px; padding:15px; font-size:14px; font-weight:700;
+}
+.meta__cta:hover { filter:brightness(1.06); }
+.meta__foot { font-size:10.5px; color:#66798F; text-align:center; margin-top:12px; line-height:1.5; }
+
+/* ── RIGHT PANEL ── */
+.why {
+  width:310px; flex-shrink:0; overflow-y:auto;
+  background:#122234; border-left:1px solid rgba(255,255,255,.07);
+  padding:20px 20px 40px;
+}
+.why::-webkit-scrollbar { width:6px; }
+.why::-webkit-scrollbar-thumb { background:rgba(255,255,255,.13); border-radius:3px; }
+.why__id { font-size:10px; font-weight:800; letter-spacing:.1em; color:var(--yellow); margin-bottom:5px; }
+.why__title { font-family:var(--font-display); font-size:21px; font-weight:600; color:#fff; line-height:1.25; margin-bottom:14px; }
+.why__label { font-size:9.5px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; color:#5E7391; margin:20px 0 7px; }
+.why__body { font-size:12.5px; line-height:1.68; color:#AFC2D6; }
+.why__body b { color:#fff; font-weight:600; }
+.exits { display:flex; flex-direction:column; gap:6px; }
+.exit {
+  display:flex; align-items:center; gap:8px; width:100%; text-align:left;
+  font-size:11.5px; padding:8px 11px; border-radius:8px;
+  background:rgba(255,255,255,.05); color:#A9BCD1;
+}
+.exit:hover { background:rgba(255,185,0,.14); color:#fff; }
+.exit__arrow { color:#5E7391; font-size:10px; }
+.exit--back .exit__arrow { color:#9FB8FF; }
+
+/* ── BOTTOM BAR ── */
+.bottom {
+  height:52px; flex-shrink:0; display:flex; align-items:center; gap:12px;
+  padding:0 18px; background:#14283F; border-top:1px solid rgba(255,255,255,.08);
+}
+.navbtn {
+  display:flex; align-items:center; gap:6px;
+  font-size:12px; font-weight:600; color:#A9BCD1;
+  padding:7px 14px; border-radius:8px; border:1px solid rgba(255,255,255,.13);
+}
+.navbtn:hover:not(:disabled) { color:#fff; border-color:var(--yellow); }
+.navbtn:disabled { opacity:.3; cursor:default; }
+.trail { flex:1; display:flex; align-items:center; gap:5px; overflow:hidden; }
+.trail__crumb {
+  font-size:10.5px; padding:3px 9px; border-radius:5px; white-space:nowrap;
+  background:rgba(255,255,255,.06); color:#8DA2BB; flex-shrink:0;
+}
+.trail__crumb.now { background:var(--yellow); color:#14283F; font-weight:700; }
+.trail__sep { color:#3D5470; font-size:9px; flex-shrink:0; }
+
+/* ══ MAP MODE ══ */
+.map { flex:1; overflow:auto; padding:34px 40px 80px; position:relative; }
+.map::-webkit-scrollbar { height:8px; width:8px; }
+.map::-webkit-scrollbar-thumb { background:rgba(255,255,255,.15); border-radius:4px; }
+.map__inner { position:relative; display:flex; gap:44px; min-width:max-content; }
+.mapsvg { position:absolute; inset:0; pointer-events:none; overflow:visible; z-index:0; }
+.col { width:214px; flex-shrink:0; position:relative; z-index:1; }
+.col__head {
+  font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--yellow); margin-bottom:14px; padding-bottom:9px;
+  border-bottom:1px solid rgba(255,185,0,.25);
+}
+.mnode {
+  background:#17293C; border:1.5px solid rgba(255,255,255,.1);
+  border-radius:11px; padding:10px 12px; margin-bottom:11px;
+  cursor:pointer; transition:.13s;
+}
+.mnode:hover { border-color:var(--yellow); transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.4); }
+.mnode.on { border-color:var(--yellow); background:#22374F; box-shadow:0 0 0 3px rgba(255,185,0,.16); }
+.mnode__top { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
+.mnode__id { font-size:9px; font-weight:800; color:#5E7391; letter-spacing:.04em; }
+.mnode__label { font-size:12px; font-weight:600; color:#DCE7F2; line-height:1.3; }
+.mnode__sub { font-size:10px; color:#7E93AC; margin-top:3px; line-height:1.4; }
+.mnode--branch { background:#2B2515; border-color:rgba(255,185,0,.34); }
+.mnode--skip   { background:#14291F; border-color:rgba(127,216,164,.3); }
+.mnode--loop   { background:#1B2039; border-color:rgba(159,184,255,.32); }
+.maplegend { display:flex; gap:18px; margin-bottom:22px; font-size:11px; color:#7E93AC; align-items:center; flex-wrap:wrap; }
+.lg { display:flex; align-items:center; gap:6px; }
+.lg__sw { width:22px; height:3px; border-radius:2px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand__mark">V</div>
+      <div>The Loop <span class="brand__sub">· interactive prototype</span></div>
+    </div>
+    <div class="modeswitch">
+      <button id="mWalk" class="on">Walk</button>
+      <button id="mMap">Map</button>
+    </div>
+    <div class="state-chips">
+      <div class="chip">Day <b id="sDay">—</b></div>
+      <div class="chip">Adherence <b id="sAdh">—</b></div>
+      <div class="chip chip--loop">Loop <b id="sLoop">1</b></div>
+      <button class="topbtn" id="btnReset">Reset</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="rail" id="rail"></div>
+
+    <div class="stagearea" id="walkView">
+      <div class="kindtag kindtag--screen" id="kindtag">Product screen</div>
+      <div class="phonewrap" id="phonewrap"><div class="phone" id="phone"></div></div>
+    </div>
+
+    <div class="map" id="mapView" style="display:none">
+      <div class="maplegend">
+        <div class="lg"><span class="lg__sw" style="background:#4E6E92"></span> forward</div>
+        <div class="lg"><span class="lg__sw" style="background:var(--yellow)"></span> branch outcome</div>
+        <div class="lg"><span class="lg__sw" style="background:#9FB8FF; border-top:2px dashed #9FB8FF; height:0"></span> recursion / back-edge</div>
+        <div class="lg" style="margin-left:auto; color:#5E7391">Every node is clickable — no flow is gated.</div>
+      </div>
+      <div class="map__inner" id="mapInner"><svg class="mapsvg" id="mapSvg"></svg></div>
+    </div>
+
+    <div class="why" id="why"></div>
+  </div>
+
+  <div class="bottom">
+    <button class="navbtn" id="btnBack">‹ Back</button>
+    <div class="trail" id="trail"></div>
+    <button class="navbtn" id="btnFwd">Continue ›</button>
+  </div>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   THE FLOW GRAPH
+   Every routing decision lives here. Screens stay dumb — they only
+   report "primary / secondary / back / tab" and the graph decides.
+
+   node types:  (default) = a built screen  |  branch  |  skip  |  loop  |  end
+   ══════════════════════════════════════════════════════════════════ */
+const STAGES = ['Valeo app','Onboard','Activate','Commit','Journey','Prove','Renew'];
+
+const FLOW = {
+
+/* ─────────────── VALEO APP ─────────────── */
+'V0': { stage:'Valeo app', file:'V0-valeo-home.html', title:'Valeo app home', hero:true,
+  note:'The protocol lives <b>inside the existing Valeo app</b>. The entry card carries a live Loop Ring — three arcs closed, the fourth filling — so you can see how far through the loop you are without opening anything.<br><br>This screen keeps the app\'s own 5-tab bar. Tapping the card swaps to the protocol\'s 3-tab bar with a <code>‹ Valeo</code> escape: two nested apps, two tab bars.',
+  primary:'T2-1' },
+
+/* ─────────────── ONBOARD ─────────────── */
+'T3-1': { stage:'Onboard', file:'T3-1-goal-picker.html', title:'Goal picker',
+  note:'Single-select, <b>no auto-advance</b>. The five unbuilt goals render like WHOOP\'s grey Recovery score — real UI, visibly disabled, dated. Never animated-closed: shown-but-inert plus mutual-exclusion is the one configuration that reads as bait-and-switch.',
+  primary:'T3-2' },
+
+'T3-2': { stage:'Onboard', file:'T3-2-intake.html', title:'Intake',
+  note:'Every question must visibly move the eventual sealed prediction. If an answer wouldn\'t change C4, it isn\'t asked. Noom\'s pace selector famously doesn\'t move its output — teardowns caught it.',
+  primary:'B-eligible', back:'T3-1' },
+
+'B-eligible': { type:'branch', stage:'Onboard', title:'Eligibility fork', icon:'⚖️',
+  q:'Does this user clear the clinical threshold?',
+  why:'Screening as branching, not a wall. The decline path is a designed surface, not an error state — and it is where a health company either earns trust or becomes a store.',
+  options:[
+    { label:'Clears the threshold', sub:'BMI ≥30, or ≥27 with a comorbidity → baseline draw', to:'T3-3', tone:'go' },
+    { label:'Below the threshold', sub:'BMI 26.1 — the honest-decline path (C7)', to:'C7', tone:'stop' }
+  ] },
+
+/* ─────────────── ACTIVATE ─────────────── */
+'T3-3': { stage:'Activate', file:'T3-3-eligibility.html', title:'Baseline recommended',
+  note:'<b>No drug name appears pre-login</b> — SFDA prohibits DTC advertising of prescription medicines. The acquisition surface sells the programme (doctor, at-home labs, plan), never the molecule.',
+  primary:'T3-4', back:'T3-2' },
+
+'T3-4': { stage:'Activate', file:'T3-4-phlebotomy-booking.html', title:'Book at-home draw',
+  note:'Gender-of-provider defaulted female-for-female, with the slot trade-off shown <b>inline</b> so opting out is informed. No mahram field — sending a female nurse dissolves the khalwah concern entirely.',
+  primary:'SKIP-draw', back:'T3-3' },
+
+'SKIP-draw': { type:'skip', stage:'Activate', title:'The draw happens', icon:'🩸',
+  headline:'Tuesday, 10:12 AM',
+  detail:'Nurse Sara arrives. Four tubes. Fasted 8h. <b>assay_version recorded</b> — this is the field the entire week-12 comparison depends on.',
+  deltas:[['Sample','Collected'],['Fasting state','8h, confirmed'],['Assay version','QUEST-FER-2.1']],
+  to:'T3-5' },
+
+'T3-5': { stage:'Activate', file:'T3-5-sample-processing.html', title:'Sample processing',
+  note:'Status as a first-class object with a published ETA (Quest\'s pattern). The dead interval between draw and result is addressable inventory, not empty time.',
+  primary:'SKIP-lab', back:'T3-4' },
+
+'SKIP-lab': { type:'skip', stage:'Activate', title:'48 hours in the lab', icon:'⏱',
+  headline:'48 hours pass',
+  detail:'Panel resulted and interpretation written. <b>Both ship together</b> — never a bare number first. Function\'s 28-day gap between results and clinician notes is the failure mode being avoided.',
+  deltas:[['Elapsed','+2 days'],['Markers resulted','40'],['Out of range','3']],
+  adv:{ day:2 }, to:'C1' },
+
+/* ─────────────── COMMIT ─────────────── */
+'C1': { stage:'Commit', file:'C1-results-ready.html?frame=1', title:'Results ready — push',
+  note:'The push names <b>the finding, not the event</b>. "Your ferritin is low" beats "your results are ready" — the screen is opened by someone who already knows the shape of the answer.',
+  primary:'B-entry' },
+
+'B-entry': { type:'branch', stage:'Commit', title:'Entry fork', icon:'📲',
+  q:'Where does this user open their results?',
+  why:'Native app was chosen for push notifications — but that puts an install step upstream of the exact leak we\'re fixing. The web/email twin removes the gate: value lands first, install is asked for after.',
+  options:[
+    { label:'Taps the push → opens in app', sub:'The happy path', to:'C2', tone:'go' },
+    { label:'Opens the emailed link instead', sub:'No install required — the web twin (D1)', to:'C1w', tone:'alt' }
+  ] },
+
+'C1w': { stage:'Commit', file:'C1-results-ready.html?frame=2', title:'Web / email twin',
+  note:'The results moment must not be gated behind an install. This delivers the read and the sealed prediction in full; the app is offered afterwards — <b>"to run the protocol"</b> — never before.',
+  primary:'C2', back:'B-entry' },
+
+'C2': { stage:'Commit', file:'C2-the-one-thing.html', title:'The one thing that matters',
+  note:'One verdict sentence, one hero marker. The highlighted number is the count of <b>actions</b>, never the count of problems — Everlywell highlights "28 foods," which produces dread and zero direction.<br><br>Falsifier: 5-second test. Fewer than 4 of 5 naming the right marker = fail.',
+  primary:'B-depth', back:'C1' },
+
+'B-depth': { type:'branch', stage:'Commit', title:'How deep does this user go?', icon:'🔍',
+  q:'Do they read the full panel before committing?',
+  why:'C3 is an optional depth path, and the metric that matters is uncomfortable: does expanding it LOWER attach rate? If so it is a leak wearing a feature\'s clothes, and it belongs behind the prediction rather than in front of it.',
+  options:[
+    { label:'Straight to the plan', sub:'Most users — the intended path', to:'C4', tone:'go' },
+    { label:'Reads all 40 markers first', sub:'The auditor — measure whether this costs conversion', to:'C3', tone:'alt' }
+  ] },
+
+'C3': { stage:'Commit', file:'C3-full-panel.html', title:'Full panel, ranked',
+  note:'Ranked by <b>impact score</b> (deviation × evidence strength) — the only prioritisation claim in the category that survives scrutiny. Normals collapse to one row per panel. Never alphabetical: Function sorts 148 markers A–Z on a screen whose entire job is triage.',
+  primary:'C4', back:'C2' },
+
+'C4': { stage:'Commit', file:'C4-sealed-prediction.html', title:'The sealed prediction', hero:true,
+  note:'<b>The frame this whole project is judged on.</b> Metric: protocol attach rate.<br><br>Sealed, timestamped, non-editable. The adherence floor is visible from this moment — Calibrate hid theirs in legal, so members failed on day 40 and learned on day 400.<br><br>Falsifier: render this one screen for existing eligibility-panel buyers and measure the lift. One screen, no platform.',
+  primary:'C5', back:'C2' },
+
+'C5': { stage:'Commit', file:'C5-protocol.html', title:'The protocol',
+  note:'Every item states its job in plain language. <b>The conflict is printed</b> — Valeo sells 2 of these 3. Never recommend into a green marker: the moment you do, the user re-reads the entire result as advertising, retroactively.',
+  primary:'C6', back:'C4' },
+
+'C6': { stage:'Commit', file:'C6-consent-commit.html', title:'Consent & commit',
+  note:'Retest pre-booked at <b>100%</b> — it reserves a matched assay_version, without which the week-12 comparison is fiction.<br><br>Two promises that are also competitive weapons: inconclusive never costs extra, and results stay yours forever (ZOE deletes test results when membership lapses).',
+  primary:'T3-6', back:'C5' },
+
+'C7': { stage:'Commit', file:'C7-not-eligible.html', title:'Not eligible',
+  note:'BMI shown <b>once</b>, as a number, with a plain clinical sentence — no colour band, no figure, no "obese" label. Its only job is explaining the gate, then it\'s gone.<br><br>Never a dead end: this screen always redirects to a real next action.',
+  primary:'B-decline', back:'B-eligible' },
+
+'B-decline': { type:'branch', stage:'Commit', title:'After the honest decline', icon:'🚪',
+  q:'What does a declined user actually do?',
+  why:'This fork forces the duty-of-care-vs-monetisable decision to be explicit. LetsGetChecked splits it: an abnormal HbA1c gets a free clinical call, a high LDL gets a $39 consult. Deciding it accidentally is how a health company becomes a store.',
+  options:[
+    { label:'Takes the alternative protocol', sub:'Insulin-focused plan — a real finding, not a consolation', to:'C4', tone:'go' },
+    { label:'Talks to a clinician first', sub:'Free — duty of care, not upsell', to:'T3-6', tone:'alt' },
+    { label:'Leaves, checks back in 6 months', sub:'No retention modal, no dark pattern', to:'END-decline', tone:'stop' }
+  ] },
+
+'END-decline': { type:'end', stage:'Commit', title:'Honest exit', icon:'🕊',
+  headline:'They leave — and that is fine',
+  detail:'No dark pattern, no save-offer modal, no friction. We remind them in six months, free. <b>The trust is the asset</b>, and this is the cheapest place to buy it.',
+  deltas:[['Outcome','No sale'],['Trust','Intact'],['Reminder','6 months, free']] },
+
+'T3-6': { stage:'Commit', file:'T3-6-consult-scheduling.html', title:'Consult scheduled',
+  note:'The human call is the highest-leverage retention intervention available (Superhuman: ~65% of manually-onboarded users fully migrated, ~2× self-serve) — treated as the intervention, not as logistics.',
+  primary:'T3-7', back:'C6' },
+
+'T3-7': { stage:'Commit', file:'T3-7-consult-summary.html', title:'Consult summary',
+  note:'The goal captured at intake is <b>quoted back by name</b> at the moment of highest credibility — Function Health\'s pattern: a goal captured, held, and visibly honoured by a human.',
+  primary:'LOOP-start', back:'T3-6' },
+
+/* ─────────────── JOURNEY ─────────────── */
+'LOOP-start': { type:'loop', stage:'Journey', title:'The loop begins', icon:'▶',
+  headline:'Day 1 of 84',
+  detail:'Protocol active. Sealed prediction locked and timestamped. Retest already booked for 7 Dec with a matched assay.',
+  deltas:[['Protocol','Active'],['Adherence floor','80%'],['Retest','7 Dec, pre-paid']],
+  set:{ day:1, adh:100 }, to:'T2-1' },
+
+'T2-1': { stage:'Journey', file:'T2-1-today.html?frame=1', title:'Today — ordinary day', hero:true,
+  note:'One sentence owns the screen. The dose-cycle card answers "where am I in the week", which matters more than weight on a day with no shot and no draw. Then <b>one</b> action, then quiet numbers.<br><br>The Loop Ring sits top-right on every protocol screen — <b>the loop is now visible everywhere</b>. Bio-age is deliberately absent: it cannot honestly move daily.',
+  primary:'T2-2', secondary:'B-day', back:'V0', tabs:[null,'T2-9','T2-7'] },
+
+'T2-1s': { stage:'Journey', file:'T2-1-today.html?frame=2', title:'Today — shot day',
+  note:'The same screen, one day later. <b>~1 item on six days, 5 clocked items on one</b> — each a side-effect mitigation, each with its reason stated underneath. This is asymmetry, not minimalism, actually built.',
+  primary:'T2-3', back:'B-day', tabs:[null,'T2-9','T2-7'] },
+
+'T2-1p': { stage:'Journey', file:'T2-1-today.html?frame=3', title:'Today — day 2 post-shot',
+  note:'The symptom instrument appears <b>on the day symptoms happen</b>, pre-empted by the user\'s own history: "your last three cycles peaked today." Logging stops being data entry for someone else and becomes recognition.<br><br>Nobody in the GLP-1 category ships a structured symptom instrument at all.',
+  primary:'T2-4', back:'B-day', tabs:[null,'T2-9','T2-7'] },
+
+'T2-9': { stage:'Journey', file:'T2-9-loop.html?frame=1', title:'The Loop', hero:true,
+  note:'<b>The tab that was missing.</b> The whole thesis is a closed loop and there wasn\'t a pixel of it anywhere.<br><br>Five arcs — Measure · Read · Commit · Act · Prove. Apple\'s rings work because closing one feels good, but 500 calories is arbitrary. <b>This ring closes when a sealed prediction actually gets a verdict</b> — the mechanic and the truth are the same thing. The contract sits at the centre, with adherence measured against the floor it must clear.',
+  primary:'T2-9b', back:'T2-1', tabs:['T2-1',null,'T2-7'] },
+
+'T2-9b': { stage:'Journey', file:'T2-9-loop.html?frame=2', title:'The Loop — loop 3, tree rings',
+  note:'Each closed loop is laid <b>inward as a permanent ring</b>. Your history becomes a physical object that grows, and it cannot be bought, faked or reset — every ring is a verified fact about your own body.<br><br>Loop 2 came back <b>refuted</b> and is still a ring: slate, not green, listed with equal weight. A null is an answer, and answers are what you collect here. That is the gamification — honest by construction.',
+  primary:'T2-1', back:'T2-9', tabs:['T2-1',null,'T2-7'] },
+
+'B-day': { type:'branch', stage:'Journey', title:'Which day is it?', icon:'📅',
+  q:'The daily hero renders five different ways. Pick the day-state to inspect.',
+  why:'D4 — the daily surface is a state machine, not a to-do list. A six-item checklist on a day with one real action manufactures failure; Noom\'s own data shows successful users weighed in once a week, not daily.',
+  options:[
+    { label:'Ordinary day (6 of 7)', sub:'Dose-cycle curve + one action', to:'T2-1' },
+    { label:'Shot day (1 of 7)', sub:'The hero re-renders as a 5-item timed protocol', to:'T2-1s' },
+    { label:'Day 2 post-shot', sub:'The hero re-renders as the symptom window', to:'T2-1p' },
+    { label:'Titration review week', sub:'The dose decision, evidence-first', to:'T2-8' },
+    { label:'Week 12', sub:'Retest due — jump to Prove', to:'P1' },
+    { label:'Any day — message the coach', sub:'The chat that shows its work', to:'T2-5' }
+  ] },
+
+'T2-2': { stage:'Journey', file:'T2-2-log-weight.html', title:'Log weight',
+  note:'Zero-tap is the ideal — a connected scale makes this a <b>confirmation, not a form</b>. Raw stored, trend rendered, and the trend line is visually heavier than the raw scatter, because the thing that gets scored should be the thing easiest to see.',
+  primary:'B-adherence', back:'T2-1' },
+
+'T2-3': { stage:'Journey', file:'T2-3-log-dose.html', title:'Log dose (shot day)',
+  note:'Barcode scan = zero-typo capture of product, strength and batch (Lilly\'s pattern; nearly free given Valeo\'s dose-level SKUs).<br><br><b>Taken / Skip / Later at equal weight.</b> A user with only "Taken" available either lies or goes silent — and a false log corrupts the causal read worse than a missed one.',
+  primary:'B-adherence', back:'T2-1' },
+
+'T2-4': { stage:'Journey', file:'T2-4-log-symptom.html', title:'Log symptom',
+  note:'The worst-served surface in the entire GLP-1 category — <b>nobody ships a structured symptom instrument.</b> Chips over a closed vocabulary + 0–3 severity, with days_since_injection auto-tagged. That tagging is what turns logs into "nausea peaks day 2, clears by day 4."',
+  primary:'B-adherence', back:'T2-1' },
+
+'T2-5': { stage:'Journey', file:'T2-5-coach-chat.html', title:'Coach chat',
+  note:'Every message implying a loggable event renders a <b>separate, editable card</b> — free text that vanishes into a transcript is structured data that was never captured. AI first, human escalation with the SLA printed on the handoff.',
+  primary:'T2-1', back:'T2-1' },
+
+'B-adherence': { type:'branch', stage:'Journey', title:'Adherence fork', icon:'📊',
+  q:'Is this user holding the 80% floor?',
+  why:'This is the second hypothesised leak, and P2 in full: loss aversion on <i>the answer</i>, not on a streak. Nobody in consumer health ships consequence-based loss aversion — it is unproven, not disproven.',
+  options:[
+    { label:'Holding — 86%', sub:'The loop runs clean', to:'SKIP-weeks', tone:'go' },
+    { label:'Slipping — 62%', sub:'The intervention fires (T2-6)', to:'T2-6', tone:'warn' },
+    { label:'Something came up', sub:'Travel, illness, Ramadan → the Pause control', to:'PAUSE', tone:'alt' }
+  ] },
+
+'T2-6': { stage:'Journey', file:'T2-6-adherence-at-risk.html', title:'Adherence at risk',
+  note:'All three P2 guardrails visible at once: <b>G1</b> the number is real and defensible, <b>G2</b> the threat and the exit appear in the same sentence, <b>G3</b> every remedy is free — nothing here routes to a charge.',
+  primary:'B-recover', back:'T2-1' },
+
+'B-recover': { type:'branch', stage:'Journey', title:'Does the intervention work?', icon:'🔧',
+  q:'What does the user do with the warning?',
+  why:'The failure mode of consequence-based loss aversion is a one-way ratchet to despair: "your retest is inconclusive" is terminal for the cycle and removes any reason to log for the remaining 60 days. So the exit must exist before it is needed.',
+  options:[
+    { label:'Logs the missed days', sub:'Back above floor — repair is behavioural and free', to:'SKIP-weeks', tone:'go' },
+    { label:'Pauses the protocol', sub:'Honest window extension, confounder logged', to:'PAUSE', tone:'alt' },
+    { label:'Ignores it entirely', sub:'→ arrives at week 12 below floor', to:'SKIP-weeks-low', tone:'warn' }
+  ] },
+
+'PAUSE': { type:'skip', stage:'Journey', title:'Protocol paused', icon:'⏸',
+  headline:'Paused 29 days — Ramadan',
+  detail:'A <b>ConfounderEvent</b> is written — the Pause UI and the confounder capture are the same object. Dose frozen at 28mg, reminders shifted to after Iftar, retest window extended by 29 days, and demands ramp back proportionally on exit (Oura\'s Rest Mode).',
+  deltas:[['Confounder','ramadan_fasting'],['Dose','Frozen — no escalation'],['Retest window','+29 days'],['Goal this month','Hold, don\'t lose']],
+  adv:{ day:29 }, to:'T2-8' },
+
+'T2-7': { stage:'Journey', file:'T2-7-twin.html', title:'The Twin',
+  note:'Personal causal claims are gated on <b>variance, not volume</b> — 5 yes / 5 no over 90 days (WHOOP\'s rule). Population claims ship immediately and stay visually distinct.<br><br>Self-report moves <i>confidence</i>, never the verdict — which is what forecloses gaming in one stroke.',
+  primary:'T2-1', back:'T2-1', tabs:['T2-1','T2-9',null] },
+
+'T2-8': { stage:'Journey', file:'T2-8-protocol-timeline.html', title:'Protocol timeline',
+  note:'Ramadan renders as a shaded band computed from Umm al-Qura — <b>never hardcoded</b> (2030 contains two Ramadans). The goal is restated <i>before</i> the first odd weigh-in, not after: 59.5% of Saudis gain weight during Ramadan, so an unannotated chart will read as failure to a compliant patient.',
+  primary:'SKIP-weeks', back:'T2-9' },
+
+'SKIP-weeks': { type:'skip', stage:'Journey', title:'The protocol runs', icon:'⏱',
+  headline:'8 weeks pass',
+  detail:'The engagement loop does its only job: protecting the outcome loop. Nothing dramatic happens, which is the point.',
+  deltas:[['Doses scheduled','56'],['Doses logged','48'],['Adherence','86% — above floor'],['Confounders','None disqualifying']],
+  adv:{ day:56 }, set:{ adh:86 }, to:'P1' },
+
+'SKIP-weeks-low': { type:'skip', stage:'Journey', title:'The protocol runs (poorly)', icon:'⏱',
+  headline:'8 weeks pass',
+  detail:'The warning was ignored. Note what the product does <b>not</b> do here: no escalating guilt, no streak-break animation, no charge. It simply arrives at week 12 unable to answer the question honestly.',
+  deltas:[['Doses scheduled','56'],['Doses logged','30'],['Adherence','54% — below the 80% floor'],['Verdict risk','Inconclusive']],
+  adv:{ day:56 }, set:{ adh:54 }, to:'P1' },
+
+/* ─────────────── PROVE ─────────────── */
+'P1': { stage:'Prove', file:'P1-retest-due.html?frame=1', title:'Retest due — push',
+  note:'The return trigger, and the strongest argument for the native-app decision. Copy names <b>the sealed prediction</b>, not the appointment: "We said below 5.7 by 12 Oct. Let\'s find out."',
+  primary:'P1b' },
+
+'P1b': { stage:'Prove', file:'P1-retest-due.html?frame=2', title:'Retest due — in app',
+  note:'The empty socket from C4 reappears, now glowing. Function draws this dashed future point and attaches nothing to it; here it is the entry to the entire Prove surface.<br><br>This screen confirms or reschedules — it never re-sells the retest, which was pre-paid at C6.',
+  primary:'SKIP-retest', back:'P1' },
+
+'SKIP-retest': { type:'skip', stage:'Prove', title:'The retest draw', icon:'🩸',
+  headline:'Thursday, 9:12 AM',
+  detail:'Same nurse, same assay, same fasting protocol. <b>Comparability is the whole point</b> — this is what the reservation at C6 bought.',
+  deltas:[['Assay match','Confirmed'],['Fasting state','8h'],['Sample quality','Good']],
+  to:'P2' },
+
+'P2': { stage:'Prove', file:'P2-verdict-pending.html', title:'Verdict pending',
+  note:'The 48-hour wait, filled with <b>the evidence the verdict will be computed from</b> — adherence, confounders, assay match. Function had four weeks of natural narrative beats here and sent one email.<br><br>Showing the inputs before the answer also pre-frames an honest outcome, in either direction.',
+  primary:'B-verdict' },
+
+'B-verdict': { type:'branch', stage:'Prove', title:'THE VERDICT', icon:'⚖️', big:true,
+  q:'The sealed prediction was: <b>ferritin above 40 by 7 Dec</b>. What actually happened?',
+  why:'Not one product in consumer health makes a falsifiable prediction and later scores itself against it. Calibrate priced a 10% weight-loss guarantee and never built the instrument that measures it. All four outcomes below are designed with equal care — that IS the differentiation.',
+  options:[
+    { label:'Confirmed — 46 ng/mL', sub:'Target met', to:'P3', tone:'go' },
+    { label:'Partial — 34 ng/mL', sub:'Right direction, short of target · likely the MODAL outcome', to:'P4b', tone:'warn' },
+    { label:'Refuted — 21 ng/mL', sub:'Didn\'t move. A clean null — valid, and valuable', to:'P5', tone:'null' },
+    { label:'Inconclusive', sub:'Can\'t call it fairly — four different reasons', to:'B-inconc', tone:'grey' }
+  ] },
+
+'P3': { stage:'Prove', file:'P3-the-reveal.html', title:'The reveal — confirmed', hero:true,
+  note:'<b>The screen that does not exist anywhere in the category.</b> Metric: loop-2 start rate — the retention definition, made measurable.<br><br>Vertical band scale (sidesteps RTL entirely — the axis is value, not time), dose-timeline overlay tying the marker\'s move to the dose that caused it, and anchored to the user\'s own baseline rather than a cohort average.',
+  primary:'LOOP-2' },
+
+'P4b': { stage:'Prove', file:'P4b-verdict-partial.html', title:'Verdict — partial',
+  note:'<b>Graded, not binary.</b> Voy prorates its guarantee; Manifold ships a PARTIAL resolution. Two unrelated categories converged here because a binary win/lose feels arbitrary at exactly the boundary where most users land.<br><br>"Direction confirmed, magnitude needs more time" is a genuinely useful causal statement.',
+  primary:'SKIP-extend' },
+
+'SKIP-extend': { type:'skip', stage:'Prove', title:'Extended four weeks', icon:'⏩',
+  headline:'The prediction is amended',
+  detail:'Dose raised, window extended, same scored marker. The amendment is a <b>visible event with a reason attached</b> — never a silent revision. Noom quietly improves its projected date 21 screens later and hopes nobody notices.',
+  deltas:[['Dose','28mg → 42mg'],['New window','+4 weeks'],['Prediction','Amended, re-sealed'],['Causal quality','Degraded — logged']],
+  adv:{ day:28 }, to:'P1' },
+
+'P5': { stage:'Prove', file:'P5-verdict-refuted.html', title:'Verdict — refuted',
+  note:'<b>A success state for the business.</b> A clean null is exactly what a future B2B customer pays for, and the proof to this user that we weren\'t just selling.<br><br>Slate, never coral — a null is a serious finding, not an alarm. The headline names the marker, never the person: "your ferritin didn\'t move," never "you failed."',
+  primary:'LOOP-hypo' },
+
+'LOOP-hypo': { type:'loop', stage:'Prove', title:'A different question', icon:'🔁',
+  headline:'New hypothesis, not a bigger dose',
+  detail:'Oral iron didn\'t move it → test absorption directly. <b>A different, cheaper test than another eight weeks of guessing.</b> This is what a verification company does with a null that a supplement company cannot.',
+  deltas:[['Loop 1 verdict','Refuted — recorded'],['Corpus','+1 causal row'],['Next','New sealed prediction']],
+  to:'C4' },
+
+'B-inconc': { type:'branch', stage:'Prove', title:'Inconclusive — which reason?', icon:'🌫',
+  q:'Four reasons, four screens. Different owner of the failure → different tone and different remedy.',
+  why:'A generic "we couldn\'t determine a result" would destroy precisely the trust the honest verdict was meant to buy. And per Metaculus\'s model, an inconclusive is EXCLUDED from the track record — never scored as a loss, or everyone learns to avoid the honest state.',
+  options:[
+    { label:'Assay mismatch', sub:'OUR fault → free re-draw, booked in the same flow', to:'P6a', tone:'alt' },
+    { label:'Retest outside window', sub:'Scheduling → reschedule, comparability cost stated', to:'P6b', tone:'grey' },
+    { label:'Ramadan pause', sub:'Nobody\'s fault → extend; the Pause already logged why', to:'P6c', tone:'warn' },
+    { label:'Below the adherence floor', sub:'Theirs, said kindly → extend, using the retest they own', to:'P6d', tone:'null' }
+  ] },
+
+'P6a': { stage:'Prove', file:'P6-verdict-inconclusive.html?card=1', title:'Inconclusive — assay mismatch',
+  note:'Owner: <b>us</b>. Apology is specific, remedy is immediate and free. An honest product that occasionally says "we can\'t tell you yet, on us" is more trustworthy than one that always has an answer.',
+  primary:'SKIP-redraw', back:'B-inconc' },
+'P6b': { stage:'Prove', file:'P6-verdict-inconclusive.html?card=2', title:'Inconclusive — outside window',
+  note:'Owner: <b>shared</b>. Neutral and practical. The comparability cost is stated plainly rather than hidden — 12 days late is enough to blur what we\'re measuring.',
+  primary:'P1', back:'B-inconc' },
+'P6c': { stage:'Prove', file:'P6-verdict-inconclusive.html?card=3', title:'Inconclusive — Ramadan',
+  note:'Owner: <b>nobody</b>. The Pause the user declared weeks earlier is what makes this screen matter-of-fact instead of a surprise. Ramadan as a first-class program state, not an edge case.',
+  primary:'SKIP-weeks', back:'B-inconc' },
+'P6d': { stage:'Prove', file:'P6-verdict-inconclusive.html?card=4', title:'Inconclusive — below floor',
+  note:'Owner: <b>theirs</b>, said kindly. The adherence record is shown as <b>methodology, not punishment</b> (Medisafe\'s "a report your doctor will read").<br><br>And the rule that protects the entire mechanic: this never routes to a charge. The retest is already owned.',
+  primary:'SKIP-weeks', back:'B-inconc' },
+
+'SKIP-redraw': { type:'skip', stage:'Prove', title:'Free re-draw', icon:'🔄',
+  headline:'Matched assay, no charge',
+  detail:'The retest was already paid for at Commit. <b>Inconclusive never routes to a charge</b> — if it ever appeared to drive a paid re-draw, the mechanic dies the day someone posts that theory.',
+  deltas:[['Cost to user','SAR 0'],['Assay','Matched to baseline'],['Verdict history','Not counted as a loss']],
+  to:'P2' },
+
+/* ─────────────── RENEW ─────────────── */
+'LOOP-2': { type:'loop', stage:'Renew', title:'The loop closes and reopens', icon:'🔁', big:true,
+  headline:'Loop 1 complete',
+  detail:'Ferritin 18 → 46, confirmed against a prediction sealed eight weeks earlier.<br><br>This is the whole thesis in one transition: <b>not a subscription that renews, but a question that got answered and a next one worth asking.</b> One completed loop = one unit of delivered value AND one row of causal data.',
+  deltas:[['Loop 1','Confirmed'],['Causal corpus','+1 verified row'],['loop_index','2'],['Goals unlocked','+1']],
+  set:{ loop:2 }, to:'T3-8' },
+
+'T3-8': { stage:'Renew', file:'T3-8-renew-loop2.html', title:'Renew / loop 2',
+  note:'Never the acquisition page minus a discount — ZOE\'s reactivation flow renders the same hero and plans as new-user acquisition, just with the trial removed.<br><br><b>loop_index changes the whole screen</b>: this user sees their own result and an unlocked goal, not a first-timer\'s pitch.',
+  primary:'RECURSE', back:'P3' },
+
+'RECURSE': { type:'loop', stage:'Renew', title:'Loop 2 begins', icon:'↻',
+  headline:'Back to the top — with memory',
+  detail:'New goal, new intake, new sealed prediction. Same machinery, sharper twin. The intake this time is shorter because the system already knows things — which is Stage 2 of the moat, rendered as a UI decision.',
+  deltas:[['Returning to','Intake (T3-2)'],['Carried over','Full history + corpus'],['Loop','2']],
+  to:'T3-2' },
+
+'T3-9': { stage:'Renew', file:'T3-9-plan-management.html', title:'Plan management (from avatar)',
+  note:'Cancel is one tap, self-serve, in-app, <b>no chatbot gate</b> — the direct answer to Noom\'s $62M settlement. That settlement was about friction asymmetry between joining and leaving, not about the long funnel.<br><br>Per C6\'s promise: results stay downloadable and exportable after cancellation.',
+  primary:'T2-1', back:'T2-1' }
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   ENGINE
+   ══════════════════════════════════════════════════════════════════ */
+const S = { day:0, adh:100, loop:1 };
+let current = 'T3-1';
+let history = [];
+let visited = new Set();
+let mode = 'walk';
+
+const $ = id => document.getElementById(id);
+const phone = $('phone');
+
+function nodeType(n){ return n.type || 'screen'; }
+
+function applyState(n){
+  if (n.set) { if(n.set.day!=null) S.day=n.set.day; if(n.set.adh!=null) S.adh=n.set.adh; if(n.set.loop!=null) S.loop=n.set.loop; }
+  if (n.adv) { if(n.adv.day) S.day += n.adv.day; }
+  renderState();
+}
+function renderState(){
+  $('sDay').textContent = S.day ? S.day + ' / 84' : '—';
+  $('sAdh').textContent = S.adh + '%';
+  $('sLoop').textContent = S.loop;
+}
+
+function go(id, push=true){
+  if (!FLOW[id]) return;
+  if (push && current && current !== id) history.push(current);
+  current = id;
+  visited.add(id);
+  const n = FLOW[id];
+  applyState(n);
+  location.hash = id;
+  render();
+}
+
+function back(){
+  if (!history.length) return;
+  current = history.pop();
+  visited.add(current);
+  location.hash = current;
+  render();
+}
+
+/* ── outgoing edges of a node (used by rail, why-panel, map) ── */
+function exitsOf(id){
+  const n = FLOW[id]; if(!n) return [];
+  const out = [];
+  if (n.options) n.options.forEach(o => out.push({to:o.to, label:o.label, kind:'branch'}));
+  if (n.to)        out.push({to:n.to, label:'Continue', kind:'flow'});
+  if (n.primary)   out.push({to:n.primary, label:'Primary action', kind:'flow'});
+  if (n.secondary) out.push({to:n.secondary, label:'Secondary action', kind:'flow'});
+  if (n.back)      out.push({to:n.back, label:'Back', kind:'back'});
+  if (n.tabs) n.tabs.forEach((t,i)=>{ if(t) out.push({to:t, label:'Tab · '+['Today','Twin','Timeline','Care'][i], kind:'tab'}); });
+  return out.filter(e => FLOW[e.to]);
+}
+
+/* ── RENDER: the phone slot ── */
+function renderPhone(){
+  const n = FLOW[current];
+  const t = nodeType(n);
+
+  if (t === 'screen'){
+    $('kindtag').className = 'kindtag kindtag--screen';
+    $('kindtag').textContent = 'Product screen · ' + current;
+    phone.style.border = 'none';
+    phone.innerHTML = '<iframe src="screens/' + n.file + '" title="' + n.title + '"></iframe>';
+    return;
+  }
+
+  $('kindtag').className = 'kindtag kindtag--meta';
+  $('kindtag').textContent = 'Demo control';
+
+  let inner = '';
+  const eyebrow = { branch:'Branch point', skip:'Time skip', loop:'Recursion', end:'Terminal state' }[t];
+
+  inner += '<div class="meta__eyebrow">◆ ' + eyebrow + '</div>';
+  if (n.icon) inner += '<div class="meta__icon">' + n.icon + '</div>';
+  inner += '<div class="meta__title">' + (n.headline || n.title) + '</div>';
+
+  if (t === 'branch'){
+    inner += '<div class="meta__q">' + n.q + '</div>';
+    if (n.why) inner += '<div class="meta__why">' + n.why + '</div>';
+    n.options.forEach((o,i) => {
+      inner += '<button class="opt opt--' + (o.tone||'alt') + '" data-go="' + o.to + '">' +
+                 '<span class="opt__key">' + (i+1) + '</span>' +
+                 '<span class="opt__body"><span class="opt__label">' + o.label + '</span>' +
+                 '<span class="opt__sub">' + o.sub + '</span></span></button>';
+    });
+    inner += '<div class="meta__spacer"></div>';
+    inner += '<div class="meta__foot">Every branch is reversible — use Back, the rail, or Map to explore the others.</div>';
+  } else {
+    if (n.detail) inner += '<div class="meta__q">' + n.detail + '</div>';
+    if (t === 'skip') inner += '<div class="skipbar"><i></i></div>';
+    if (n.deltas){
+      inner += '<div class="deltas">';
+      n.deltas.forEach(d => inner += '<div class="delta"><span>' + d[0] + '</span><b>' + d[1] + '</b></div>');
+      inner += '</div>';
+    }
+    inner += '<div class="meta__spacer"></div>';
+    if (n.to) inner += '<button class="meta__cta" data-go="' + n.to + '">Continue →</button>';
+    else inner += '<div class="meta__foot">End of this path. Pick another branch from the rail or the Map.</div>';
+  }
+
+  phone.style.border = 'none';
+  phone.innerHTML = '<div class="meta">' + inner + '</div>';
+  phone.querySelectorAll('[data-go]').forEach(b =>
+    b.addEventListener('click', () => go(b.dataset.go)));
+}
+
+/* ── RENDER: left rail ── */
+function renderRail(){
+  let h = '<div class="rail__hint">Every node is directly clickable. No flow is ever gated behind another.</div>';
+  STAGES.forEach(st => {
+    const ids = Object.keys(FLOW).filter(id => FLOW[id].stage === st);
+    if (!ids.length) return;
+    h += '<div class="stage"><div class="stage__name">' + st + '</div>';
+    ids.forEach(id => {
+      const n = FLOW[id], t = nodeType(n);
+      let badge = '';
+      if (t === 'branch') badge = '<span class="node__type t-branch">FORK</span>';
+      else if (t === 'skip') badge = '<span class="node__type t-skip">TIME</span>';
+      else if (t === 'loop') badge = '<span class="node__type t-loop">LOOP</span>';
+      else if (t === 'end') badge = '<span class="node__type t-loop">END</span>';
+      else if (n.hero) badge = '<span class="node__type t-hero">★</span>';
+      h += '<div class="node' + (id===current?' on':'') + (visited.has(id)?' visited':'') + '" data-go="' + id + '">' +
+             '<span class="node__dot"></span>' +
+             '<span class="node__label">' + n.title + '</span>' + badge +
+           '</div>';
+    });
+    h += '</div>';
+  });
+  $('rail').innerHTML = h;
+  $('rail').querySelectorAll('[data-go]').forEach(el =>
+    el.addEventListener('click', () => go(el.dataset.go)));
+  const on = $('rail').querySelector('.node.on');
+  if (on) on.scrollIntoView({block:'nearest'});
+}
+
+/* ── RENDER: right panel ── */
+function renderWhy(){
+  const n = FLOW[current], t = nodeType(n);
+  let h = '<div class="why__id">' + current + ' · ' + n.stage + '</div>';
+  h += '<div class="why__title">' + n.title + '</div>';
+
+  if (n.note){
+    h += '<div class="why__label">Why this screen looks like this</div><div class="why__body">' + n.note + '</div>';
+  } else if (n.why){
+    h += '<div class="why__label">Why this fork exists</div><div class="why__body">' + n.why + '</div>';
+  } else if (n.detail){
+    h += '<div class="why__label">What just happened</div><div class="why__body">' + n.detail + '</div>';
+  }
+
+  const ex = exitsOf(current);
+  if (ex.length){
+    h += '<div class="why__label">Where this goes (' + ex.length + ')</div><div class="exits">';
+    ex.forEach(e => {
+      h += '<button class="exit' + (e.kind==='back'?' exit--back':'') + '" data-go="' + e.to + '">' +
+             '<span class="exit__arrow">' + (e.kind==='back'?'↩':'→') + '</span>' +
+             '<span>' + FLOW[e.to].title + '</span></button>';
+    });
+    h += '</div>';
+  }
+  if (t === 'screen'){
+    h += '<div class="why__label">File</div><div class="why__body" style="font-size:11px;color:#7E93AC">screens/' + n.file + '</div>';
+  }
+  $('why').innerHTML = h;
+  $('why').querySelectorAll('[data-go]').forEach(el =>
+    el.addEventListener('click', () => go(el.dataset.go)));
+}
+
+/* ── RENDER: bottom trail ── */
+function renderTrail(){
+  const path = history.slice(-7).concat([current]);
+  let h = '';
+  path.forEach((id,i) => {
+    if (i) h += '<span class="trail__sep">›</span>';
+    h += '<span class="trail__crumb' + (id===current?' now':'') + '" data-go="' + id + '">' + FLOW[id].title + '</span>';
+  });
+  $('trail').innerHTML = h;
+  $('trail').querySelectorAll('[data-go]').forEach(el =>
+    el.addEventListener('click', () => go(el.dataset.go)));
+  $('btnBack').disabled = !history.length;
+  const n = FLOW[current];
+  const fwd = n.to || n.primary || (n.options && n.options[0] && n.options[0].to);
+  $('btnFwd').disabled = !fwd;
+  $('btnFwd').onclick = () => fwd && go(fwd);
+}
+
+/* ── RENDER: map ── */
+function renderMap(){
+  const inner = $('mapInner');
+  let h = '<svg class="mapsvg" id="mapSvg"></svg>';
+  STAGES.forEach(st => {
+    const ids = Object.keys(FLOW).filter(id => FLOW[id].stage === st);
+    if (!ids.length) return;
+    h += '<div class="col"><div class="col__head">' + st + '</div>';
+    ids.forEach(id => {
+      const n = FLOW[id], t = nodeType(n);
+      const cls = t==='branch' ? ' mnode--branch' : t==='skip' ? ' mnode--skip' : (t==='loop'||t==='end') ? ' mnode--loop' : '';
+      let sub = '';
+      if (t==='branch') sub = n.options.length + ' outcomes';
+      else if (t==='skip') sub = n.headline;
+      else if (t==='loop'||t==='end') sub = n.headline;
+      h += '<div class="mnode' + cls + (id===current?' on':'') + '" id="m_' + id.replace(/[^\w]/g,'_') + '" data-go="' + id + '">' +
+             '<div class="mnode__top"><span class="mnode__id">' + id + '</span>' + (n.hero?'<span class="node__type t-hero">★</span>':'') + '</div>' +
+             '<div class="mnode__label">' + n.title + '</div>' +
+             (sub?'<div class="mnode__sub">' + sub + '</div>':'') +
+           '</div>';
+    });
+    h += '</div>';
+  });
+  inner.innerHTML = h;
+  inner.querySelectorAll('[data-go]').forEach(el =>
+    el.addEventListener('click', () => { setMode('walk'); go(el.dataset.go); }));
+  requestAnimationFrame(drawEdges);
+}
+
+function drawEdges(){
+  const svg = $('mapSvg'); if(!svg) return;
+  const inner = $('mapInner');
+  const box = inner.getBoundingClientRect();
+  svg.setAttribute('width', inner.scrollWidth);
+  svg.setAttribute('height', inner.scrollHeight);
+  let paths = '';
+  const stageIdx = id => STAGES.indexOf(FLOW[id].stage);
+
+  Object.keys(FLOW).forEach(from => {
+    const a = document.getElementById('m_' + from.replace(/[^\w]/g,'_'));
+    if (!a) return;
+    const ra = a.getBoundingClientRect();
+    exitsOf(from).forEach(e => {
+      const b = document.getElementById('m_' + e.to.replace(/[^\w]/g,'_'));
+      if (!b) return;
+      const rb = b.getBoundingClientRect();
+      const si = stageIdx(from), ti = stageIdx(e.to);
+      const isBack   = ti < si;
+      const sameCol  = ti === si;
+      const L1 = ra.left-box.left,  R1 = ra.right-box.left;
+      const T1 = ra.top-box.top,    B1 = ra.bottom-box.top;
+      const M1 = T1 + ra.height/2,  CX1 = L1 + ra.width/2;
+      const L2 = rb.left-box.left,  R2 = rb.right-box.left;
+      const T2 = rb.top-box.top,    B2 = rb.bottom-box.top;
+      const M2 = T2 + rb.height/2,  CX2 = L2 + rb.width/2;
+
+      let d, stroke = '#4E6E92', dash = '', w = 1.4, op = .45;
+      if (e.kind === 'branch') { stroke = '#FFB900'; op = .6; w = 1.6; }
+
+      if (sameCol) {
+        /* within a column: hug the right gutter so nothing crosses the cards */
+        const down = T2 > B1;
+        const gut  = R1 + 16;
+        if (down && (T2 - B1) < 26) {
+          d = 'M' + CX1 + ',' + B1 + ' L' + CX2 + ',' + T2;      // adjacent → straight drop
+        } else {
+          const ay = down ? B1 : T1, by = down ? T2 : B2;
+          d = 'M' + R1 + ',' + M1 + ' C' + gut + ',' + M1 +
+              ' ' + gut + ',' + M2 + ' ' + R2 + ',' + M2;
+        }
+        if (!down) { dash = '5 5'; stroke = '#9FB8FF'; op = .5; }   // upward = recursion
+      } else if (isBack) {
+        const lift = 30 + ((si*7 + ti*13) % 26);                  // deterministic, not random
+        d = 'M' + L1 + ',' + M1 +
+            ' C' + (L1-90) + ',' + (M1-lift) +
+            ' ' + (R2+90) + ',' + (M2-lift) +
+            ' ' + R2 + ',' + M2;
+        stroke = '#9FB8FF'; dash = '5 5'; op = .5;
+      } else {
+        const mx = (R1 + L2)/2;
+        d = 'M' + R1 + ',' + M1 + ' C' + mx + ',' + M1 + ' ' + mx + ',' + M2 + ' ' + L2 + ',' + M2;
+      }
+      paths += '<path d="' + d + '" fill="none" stroke="' + stroke + '" stroke-width="' + w +
+               '" stroke-dasharray="' + dash + '" opacity="' + op + '" stroke-linecap="round"/>';
+    });
+  });
+  svg.innerHTML = paths;
+}
+
+/* ── mode ── */
+function setMode(m){
+  mode = m;
+  $('mWalk').classList.toggle('on', m==='walk');
+  $('mMap').classList.toggle('on', m==='map');
+  $('walkView').style.display = m==='walk' ? 'flex' : 'none';
+  $('mapView').style.display  = m==='map'  ? 'block' : 'none';
+  $('why').style.display      = m==='walk' ? 'block' : 'none';
+  $('rail').style.display     = m==='walk' ? 'block' : 'none';
+  if (m==='map') renderMap();
+}
+
+/* Scale the phone to fit short laptop viewports without clipping. */
+function fitPhone(){
+  const avail = window.innerHeight - 56 - 52 - 84;   // topbar + bottombar + tag/padding
+  const k = Math.min(1, Math.max(.52, avail / 844));
+  const p = $('phone'), w = $('phonewrap');
+  if (!p || !w) return;
+  p.style.transform = 'scale(' + k + ')';
+  w.style.height = (844 * k) + 'px';
+  w.style.width  = (390 * k) + 'px';
+}
+
+function render(){
+  if (mode==='walk') { renderPhone(); fitPhone(); }
+  renderRail(); renderWhy(); renderTrail();
+  if (mode==='map') renderMap();
+}
+
+/* ── messages from screens ── */
+window.addEventListener('message', ev => {
+  const m = ev.data;
+  if (!m || m.source !== 'valeo-screen') return;
+  const n = FLOW[current]; if(!n) return;
+  if (m.type === 'ready') return;
+  if (m.type === 'nav' && FLOW[m.to])  return go(m.to);
+  if (m.type === 'back')               return n.back ? go(n.back) : back();
+  if (m.type === 'tab'){
+    const t = n.tabs && n.tabs[m.index];
+    return t ? go(t) : null;
+  }
+  if (m.type === 'secondary' && n.secondary) return go(n.secondary);
+  if (n.primary) return go(n.primary);
+});
+
+/* ── keyboard ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  { back(); return; }
+  if (e.key === 'ArrowRight') { const n=FLOW[current]; const f=n.to||n.primary; if(f) go(f); return; }
+  if (e.key === 'm' || e.key === 'M') setMode(mode==='walk'?'map':'walk');
+  const n = FLOW[current];
+  if (n && n.options && /^[1-9]$/.test(e.key)){
+    const o = n.options[+e.key - 1];
+    if (o) go(o.to);
+  }
+});
+
+$('mWalk').onclick = () => setMode('walk');
+$('mMap').onclick  = () => setMode('map');
+$('btnBack').onclick = back;
+$('btnReset').onclick = () => {
+  S.day=0; S.adh=100; S.loop=1; history=[]; visited=new Set();
+  go('V0', false);
+};
+window.addEventListener('resize', () => { if (mode==='map') drawEdges(); else fitPhone(); });
+
+/* boot */
+const hash = location.hash.replace('#','');
+current = FLOW[hash] ? hash : 'V0';
+visited.add(current);
+renderState(); render();
+</script>
+</body>
+</html>

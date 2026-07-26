@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-7 · The Twin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<link rel="stylesheet" href="../design-system/loop.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .caption .r{margin-bottom:7px;} .caption .r:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .kick { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+          color:rgba(27,57,91,.38); }
+  .lede { font-family:var(--font-display); font-size:27px; font-weight:600; color:var(--deep);
+          line-height:1.18; letter-spacing:-.02em; margin:9px 0 6px; }
+  .sub { font-size:13px; color:var(--ink-2); line-height:1.55; }
+
+  /* evidence counter — the twin's weight */
+  .evid { display:flex; gap:9px; margin-top:20px; }
+  .evid__c { flex:1; background:var(--surface-card); border-radius:17px; padding:13px 12px;
+             box-shadow:0 1px 2px rgba(27,57,91,.05); }
+  .evid__n { font-family:var(--font-display); font-size:25px; font-weight:600; color:var(--deep);
+             line-height:1; font-variant-numeric:tabular-nums; }
+  .evid__l { font-size:9.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+             color:var(--ink-2); margin-top:5px; line-height:1.3; }
+
+  /* systems — numbers and sparklines, never a body (KSA R2) */
+  .sys { display:flex; align-items:center; gap:13px; padding:14px 0; }
+  .sys + .sys { border-top:1px solid rgba(27,57,91,.06); }
+  .sys__ico { width:36px; height:36px; border-radius:12px; flex-shrink:0; display:flex;
+              align-items:center; justify-content:center; font-size:16px; }
+  .sys__b { flex:1; min-width:0; }
+  .sys__t { font-size:14px; font-weight:600; color:var(--text-primary); }
+  .sys__s { font-size:11.5px; color:var(--ink-2); margin-top:2px; }
+  .sys__v { text-align:right; flex-shrink:0; }
+  .sys__n { font-size:14.5px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .sys__d { font-size:10px; font-weight:700; margin-top:1px; }
+
+  /* claims */
+  .claim { background:var(--surface-card); border-radius:19px; padding:15px 16px; margin-bottom:11px;
+           box-shadow:0 1px 2px rgba(27,57,91,.05); }
+  .claim__t { font-size:13.5px; color:var(--text-primary); line-height:1.55; }
+  .claim__t b { font-weight:700; color:var(--deep); }
+  .claim__n { display:flex; align-items:center; gap:8px; margin-top:11px; padding-top:10px;
+              border-top:1px solid rgba(27,57,91,.06); font-size:10.5px; color:var(--ink-2); }
+  .claim__pill { font-size:9px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+                 padding:3px 8px; border-radius:14px; background:var(--teal-soft); color:var(--teal); }
+
+  /* the gated personal claim */
+  .gate { background:var(--surface-sunken); border:1.5px dashed rgba(27,57,91,.14);
+          border-radius:19px; padding:15px 16px; }
+  .gate__t { font-size:13.5px; font-weight:600; color:var(--ink-2); line-height:1.5; }
+  .gate__bar { display:flex; gap:5px; margin:12px 0 7px; }
+  .gate__bar i { flex:1; height:6px; border-radius:3px; background:rgba(27,57,91,.1); display:block; }
+  .gate__bar i.on { background:var(--fog); }
+  .gate__s { font-size:11px; color:var(--fog); line-height:1.5; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T2-7 · The Twin</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="appbar">
+      <span class="appbar__back">‹ Valeo</span>
+      <span class="appbar__spacer"></span>
+      <span class="appbar__ring">
+        <span class="appbar__ringlabel"><b>Loop 1 · Act</b><span>Day 28 of 84</span></span>
+        <svg class="ring" width="30" height="30" viewBox="0 0 200 200"><g transform="translate(100,100)">
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-90)"/>
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-18)"/>
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(54)"/>
+          <circle class="ring__arc--now"  r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(126)"/>
+          <circle class="ring__fill"      r="88" stroke-width="15" fill="none" stroke-dasharray="68 484.92" transform="rotate(126)"/>
+          <circle class="ring__arc--todo" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(198)"/>
+        </g></svg>
+      </span>
+      <span class="appbar__avatar">FA</span>
+    </div>
+
+    <div class="screen">
+      <div style="padding:6px 20px 26px;">
+
+        <div class="kick">Your twin</div>
+        <h1 class="lede">Everything Valeo knows about your body.</h1>
+        <p class="sub">All of it editable. If something's wrong, fix it — the verdict depends on it being right.</p>
+
+        <div class="evid">
+          <div class="evid__c"><div class="evid__n">40</div><div class="evid__l">Markers<br>measured</div></div>
+          <div class="evid__c"><div class="evid__n">142</div><div class="evid__l">Events<br>logged</div></div>
+          <div class="evid__c"><div class="evid__n">28</div><div class="evid__l">Days of<br>history</div></div>
+        </div>
+
+        <div style="margin-top:28px;">
+          <div class="kick" style="margin-bottom:4px;">Systems</div>
+
+          <div class="sys">
+            <div class="sys__ico" style="background:var(--amber-soft)">🩸</div>
+            <div class="sys__b"><div class="sys__t">Metabolic</div><div class="sys__s">HbA1c, insulin, glucose</div></div>
+            <svg class="spark" viewBox="0 0 64 24"><path d="M2,8 C16,9 30,12 44,15 C52,17 58,18 62,19" stroke="var(--amber)"/></svg>
+            <div class="sys__v"><div class="sys__n" style="color:var(--amber)">5.9%</div><div class="sys__d" style="color:var(--green)">▼ improving</div></div>
+          </div>
+
+          <div class="sys">
+            <div class="sys__ico" style="background:var(--coral-soft)">🧲</div>
+            <div class="sys__b"><div class="sys__t">Iron status</div><div class="sys__s">Ferritin, transferrin</div></div>
+            <svg class="spark" viewBox="0 0 64 24"><path d="M2,18 C16,17 30,15 44,13 C52,12 58,11 62,10" stroke="var(--coral)"/></svg>
+            <div class="sys__v"><div class="sys__n" style="color:var(--coral)">18</div><div class="sys__d" style="color:var(--green)">▲ rising</div></div>
+          </div>
+
+          <div class="sys">
+            <div class="sys__ico" style="background:var(--green-soft)">❤️</div>
+            <div class="sys__b"><div class="sys__t">Cardiovascular</div><div class="sys__s">Lipids, blood pressure</div></div>
+            <svg class="spark" viewBox="0 0 64 24"><path d="M2,12 C16,12 30,11 44,11 C52,11 58,11 62,11" stroke="var(--green)"/></svg>
+            <div class="sys__v"><div class="sys__n" style="color:var(--green)">Optimal</div><div class="sys__d" style="color:var(--ink-2)">stable</div></div>
+          </div>
+
+          <div class="sys">
+            <div class="sys__ico" style="background:var(--green-soft)">🫀</div>
+            <div class="sys__b"><div class="sys__t">Liver &amp; kidney</div><div class="sys__s">ALT, AST, eGFR</div></div>
+            <svg class="spark" viewBox="0 0 64 24"><path d="M2,13 C16,13 30,12 44,12 C52,12 58,12 62,12" stroke="var(--green)"/></svg>
+            <div class="sys__v"><div class="sys__n" style="color:var(--green)">Optimal</div><div class="sys__d" style="color:var(--ink-2)">stable</div></div>
+          </div>
+        </div>
+
+        <div style="margin-top:28px;">
+          <div class="kick" style="margin-bottom:10px;">What people like you show</div>
+          <div class="claim">
+            <div class="claim__t">Members taking iron <b>with vitamin C</b> reach target ferritin about <b>2.3 weeks sooner</b>.</div>
+            <div class="claim__n">
+              <span class="claim__pill">Population</span>
+              <span>n = 340 · associated with, not proven to cause</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:26px;">
+          <div class="kick" style="margin-bottom:10px;">What's true for <u>you</u></div>
+          <div class="gate">
+            <div class="gate__t">Does coffee near your dose actually slow your iron down?</div>
+            <div class="gate__bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+            <div class="gate__s">3 of 5 days logged without coffee near your dose. We need real variation on both sides before we'll claim anything about you specifically.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="tabs3">
+      <div class="tabs3__i"><span class="tabs3__ico">◉</span><span class="tabs3__lbl">Today</span></div>
+      <div class="tabs3__i"><span class="tabs3__ico">◍</span><span class="tabs3__lbl">Loop</span></div>
+      <div class="tabs3__i on"><span class="tabs3__ico">◎</span><span class="tabs3__lbl">Twin</span></div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="r"><span class="tag">Systems, not a body</span> Four systems with real sparklines and directional deltas. <b>No silhouette, no avatar, no BMI figure</b> — 50.2% of Saudi women report weight stigma, the media regulator's standard is minimum body exposure, and a silhouette has no clinical job anyway. The Saudi apps that win don't have one.</div>
+    <div class="r"><span class="tag">Two evidentiary standards, visibly separated</span> Population claims ship immediately with n disclosed and hedged verbs. Personal claims are <b>gated on variance — 5 yes / 5 no over 90 days</b> (WHOOP's rule), with honest progress toward the gate instead of a fabricated number.</div>
+    <div class="r"><span class="tag">Correctable</span> Every fact is editable, which is what turns memory from surveillance into a shared record — and makes visible memory free data cleaning.</div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C2 · The one thing that matters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background: #EFE7D6; padding: 60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width: var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row { margin-bottom:8px; } .caption .row:last-child{margin-bottom:0;}
+  .tag { display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--deep-2); background:var(--teal-soft); padding:2px 8px; border-radius:6px; margin-right:6px; }
+
+  .greet { font-size: var(--text-sm); color: var(--ink-2); margin-bottom: 4px; }
+  .verdict {
+    font-family: var(--font-display);
+    font-size: 26px;
+    line-height: 1.28;
+    font-weight: 500;
+    color: var(--deep);
+    margin: 0 0 var(--space-5);
+  }
+  .verdict .hl { color: var(--coral); font-weight: 600; }
+  .verdict .hl-count { background: var(--yellow); padding: 1px 8px; border-radius: 6px; color: var(--deep); font-weight:700; }
+
+  .hero-marker { background: var(--surface-card); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); margin-bottom: var(--space-4); }
+  .hero-marker__top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: var(--space-3); }
+  .hero-marker__name { font-size: var(--text-lg); font-weight:600; }
+  .hero-marker__value { font-size: var(--text-2xl); font-weight:700; font-variant-numeric: tabular-nums; color: var(--marker-out-of-range); }
+  .hero-marker__unit { font-size: var(--text-sm); color: var(--ink-2); font-weight:500; }
+  .hero-marker__why { font-size: var(--text-sm); color: var(--ink-2); line-height:1.5; margin-top: var(--space-3); padding-top: var(--space-3); border-top:1px solid var(--line); }
+
+  .trust-strip { display:flex; align-items:center; gap:10px; background: var(--teal-soft); border-radius: var(--radius-md); padding: 10px 12px; margin-bottom: var(--space-4); }
+  .trust-strip__avatar { width:32px; height:32px; border-radius:50%; background:var(--deep); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+  .trust-strip__text { font-size: 12px; color: var(--deep-2); line-height:1.4; flex:1; }
+  .trust-strip__text b { font-weight:600; }
+  .trust-strip__link { font-size:11px; font-weight:700; color:var(--deep); white-space:nowrap; }
+
+  .expand-row { display:flex; align-items:center; justify-content:space-between; padding: 14px 4px; border-bottom:1px solid var(--line); }
+  .expand-row__label { font-size: var(--text-base); font-weight:500; }
+  .expand-row__meta { font-size: var(--text-xs); color: var(--ink-2); margin-top:2px; }
+  .expand-row__chev { color: var(--ink-2); font-size:18px; }
+
+  .bottom-cta { position:sticky; bottom:0; background:var(--surface-app); padding: var(--space-4) var(--space-4) calc(var(--safe-bottom) + var(--space-3)); border-top:1px solid var(--line); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">C2 — The one thing that matters</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar">
+      <div class="nav-bar__back">←</div>
+      <div class="nav-bar__title">Your Results</div>
+      <div class="nav-bar__action">⋯</div>
+    </div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:16px;">
+
+        <div class="greet">Hi Faisal — here's what we found.</div>
+        <div class="verdict">
+          Your <span class="hl">HbA1c is 5.9%</span> — the single number worth moving.
+        </div>
+
+        <div class="hero-marker">
+          <div class="hero-marker__top">
+            <div>
+              <div class="hero-marker__name">HbA1c</div>
+              <span class="pill pill--out-of-range" style="margin-top:6px;"><span class="pill__dot"></span>Above range</span>
+            </div>
+            <div style="text-align:right;">
+              <span class="hero-marker__value">5.9</span>
+              <div class="hero-marker__unit">%</div>
+            </div>
+          </div>
+          <div class="band-gauge">
+            <div class="band-gauge__flank-warn" style="left:0; width:22%;"></div>
+            <div class="band-gauge__optimal-band" style="left:22%; width:55%;"></div>
+            <div class="band-gauge__marker" style="left:10%;"></div>
+          </div>
+          <div class="band-gauge__labels"><span>0</span><span>Optimal: below 5.7</span><span>9+</span></div>
+          <div class="hero-marker__why">
+            HbA1c is your average blood sugar over the last 90 days. At 5.9% you're in the pre-diabetic band — and because it <i>is</i> a 90-day average, it is exactly the marker a 12-week protocol can move and prove.
+          </div>
+        </div>
+
+        <div class="trust-strip">
+          <div class="trust-strip__avatar">SA</div>
+          <div class="trust-strip__text"><b>Reviewed by Dr. Sara Al-Amri</b> — we use optimal ranges, not just "normal." <span style="text-decoration:underline;">Why?</span></div>
+        </div>
+
+        <div class="expand-row">
+          <div>
+            <div class="expand-row__label">See your full panel</div>
+            <div class="expand-row__meta">40 markers · 3 need attention</div>
+          </div>
+          <div class="expand-row__chev">›</div>
+        </div>
+        <div class="expand-row" style="border-bottom:none;">
+          <div>
+            <div class="expand-row__label">Your other results</div>
+            <div class="expand-row__meta">37 markers in healthy range</div>
+          </div>
+          <div class="expand-row__chev">›</div>
+        </div>
+
+      </div>
+
+      <div class="bottom-cta">
+        <button class="btn btn--primary">See what we'd do about it <span class="hl-count" style="margin-left:6px; background:rgba(255,255,255,0.2); color:#fff;">3 steps</span></button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="row"><span class="tag">C2</span> Leak: <i>"there were forty numbers and I couldn't tell which one was about me."</i> One verdict sentence, one hero marker. Everything else is one tap away, never zero taps away.</div>
+    <div class="row"><span class="tag">M9 fixed</span> Everlywell highlights "28 foods" — a count of problems, pure dread. Our highlighted number is the count of <b>actions</b>, always framed as "steps," never as "issues."</div>
+    <div class="row"><span class="tag">M6</span> Band gauge: red is a location on the axis (the left flank), not a legend — so an in-range marker on C3 will show no red at all.</div>
+    <div class="row"><span class="tag">M8 / KSA R2–R3</span> The trust strip earns the right to use optimal-vs-reference ranges before the user hits a range that would otherwise read as "normal." No body imagery anywhere on this screen (KSA R2).</div>
+    <div class="row"><span class="tag">Falsifier</span> 5-second test: flash this screen, ask "what's the one thing?" &lt;4/5 correct = fail.</div>
+  </div>
+</div>
+</body>
+</html>

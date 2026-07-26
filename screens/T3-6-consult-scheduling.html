@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T3-6 · Consult scheduling + prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .clin-card { display:flex; gap:12px; align-items:center; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow-sm); margin: 12px 0 18px; }
+  .clin-card__avatar { width:48px; height:48px; border-radius:50%; background:var(--deep); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; }
+  .clin-card__name { font-size:14.5px; font-weight:600; }
+  .clin-card__meta { font-size:11.5px; color:var(--ink-2); margin-top:2px; }
+
+  .prep-list { margin-bottom:16px; }
+  .prep-item { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:12.5px; }
+  .prep-item__when { font-weight:700; color:var(--deep-2); min-width:74px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T3-6 — Consult scheduling + prep</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Your Consult</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px;">
+        <div class="clin-card">
+          <div class="clin-card__avatar">SA</div>
+          <div><div class="clin-card__name">Dr. Sara Al-Amri</div><div class="clin-card__meta">Video · Tue 15 Oct, 5:00 PM · 20 min</div></div>
+        </div>
+
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-2); margin-bottom:6px;">Before your call</div>
+        <div class="prep-list">
+          <div class="prep-item"><span class="prep-item__when">72h before</span><span>Stop non-essential supplements</span></div>
+          <div class="prep-item"><span class="prep-item__when">8h before</span><span>Fast — water only</span></div>
+          <div class="prep-item"><span class="prep-item__when">Morning of</span><span>Drink at least 1L of water</span></div>
+        </div>
+        <button class="btn btn--secondary">Reschedule</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <span class="tag">Superhuman finding</span> The human call is the highest-leverage retention intervention available, not logistics — booked with the same visual weight as the blood draw. <span class="tag" style="margin-left:4px;">Function pattern</span> Procedural specificity ("72h before…") is proof of a real process in a way a progress bar never is.
+  </div>
+</div>
+</body>
+</html>

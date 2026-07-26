@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>P3 · The reveal ★ HERO (confirmed)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:700; color:var(--deep); margin-bottom:14px; }
+  .frame-label .star { color:var(--yellow-deep); }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+  .tag--hero { background:var(--yellow); color:var(--deep); }
+
+  .unsealed-chip { display:flex; align-items:center; justify-content:center; gap:6px; font-size:11.5px; font-weight:600; color:var(--green); background:var(--green-soft); border-radius:var(--radius-pill); padding:6px 14px; width:fit-content; margin: 4px auto 16px; }
+
+  .verdict-headline { text-align:center; margin-bottom: 20px; }
+  .verdict-headline__eyebrow { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-2); margin-bottom:6px; }
+  .verdict-headline__main { font-family:var(--font-display); font-size:32px; font-weight:600; color:var(--deep); line-height:1.1; }
+  .verdict-headline__sub { font-size:13px; color:var(--ink-2); margin-top:8px; }
+  .verdict-headline__sub b { color: var(--green); font-weight:700; }
+
+  .reveal-card { background:var(--surface-card); border-radius:var(--radius-xl); padding:22px 20px; box-shadow:var(--shadow-md); margin-bottom:16px; }
+  .reveal-card__vband { display:flex; gap:20px; }
+  .vband-axis-wrap { width:36px; flex-shrink:0; position:relative; height:180px; }
+  .vband-track { width:100%; height:100%; border-radius:var(--radius-pill); background: linear-gradient(to top, var(--marker-out-of-range) 0%, var(--marker-out-of-range) 18%, var(--marker-borderline) 18%, var(--marker-borderline) 32%, var(--marker-optimal-bg) 32%, var(--marker-optimal) 55%, var(--marker-optimal) 100%); position:relative; }
+  .vband-dot { position:absolute; left:50%; border-radius:50%; border:none; box-shadow: 0 0 0 3px var(--surface-card), var(--shadow-sm); transform:translate(-50%,50%); }
+  .reveal-legend { flex:1; display:flex; flex-direction:column; justify-content:space-between; padding: 4px 0; }
+  .legend-item { }
+  .legend-item__label { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink-2); }
+  .legend-item__value { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; margin-top:2px; }
+  .legend-item__date { font-size:11px; color:var(--ink-2); margin-top:2px; }
+  .legend-item--current .legend-item__value { color:var(--marker-optimal); font-size:26px; }
+  .legend-delta { display:inline-flex; align-items:center; gap:4px; font-size:12.5px; font-weight:700; color:var(--green); background:var(--green-soft); padding:3px 10px; border-radius:var(--radius-pill); margin-top:6px; }
+
+  .dose-strip { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+  .dose-strip__label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); margin-bottom:8px; }
+  .dose-chart { position:relative; height:56px; }
+  .dose-chart svg { width:100%; height:100%; overflow:visible; }
+  .dose-phase-labels { display:flex; justify-content:space-between; font-size:10px; color:var(--ink-2); margin-top:4px; }
+
+  .stat-strip { display:flex; gap:10px; margin-bottom:16px; }
+  .stat-chip { flex:1; background:var(--surface-card); border-radius:var(--radius-md); padding:10px 12px; box-shadow:var(--shadow-sm); text-align:center; }
+  .stat-chip__label { font-size:9.5px; font-weight:700; text-transform:uppercase; color:var(--ink-2); }
+  .stat-chip__value { font-size:15px; font-weight:700; margin-top:2px; }
+
+  .next-loop { background: linear-gradient(160deg, var(--deep) 0%, var(--deep-2) 100%); border-radius:var(--radius-lg); padding:16px; color:#fff; margin-top:6px; }
+  .next-loop__eyebrow { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--yellow); margin-bottom:6px; }
+  .next-loop__title { font-size:14.5px; font-weight:600; margin-bottom:10px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label"><span class="star">★</span> P3 — The reveal · verdict: confirmed</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Your Verdict</div><div class="nav-bar__action">⤴</div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:16px;">
+
+        <div class="unsealed-chip">🔓 Unsealed just now — sealed 12 Oct, kept promise</div>
+
+        <div class="verdict-headline">
+          <div class="verdict-headline__eyebrow">HbA1c · your sealed prediction</div>
+          <div class="verdict-headline__main">You did this.</div>
+          <div class="verdict-headline__sub">We predicted below 5.7%. You're at <b>5.6%</b>. Confirmed.</div>
+        </div>
+
+        <div class="reveal-card">
+          <div class="reveal-card__vband">
+            <div class="vband-axis-wrap">
+              <div class="vband-track">
+                <div class="vband-dot" style="width:15px; height:15px; background:var(--fog); bottom:10%;"></div>
+                <div class="vband-dot" style="width:19px; height:19px; background:var(--marker-optimal); bottom:68%;"></div>
+                <svg style="position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none;">
+                  <line x1="50%" y1="90%" x2="50%" y2="32%" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="3 4"/>
+                </svg>
+              </div>
+            </div>
+            <div class="reveal-legend">
+              <div class="legend-item">
+                <div class="legend-item__label">Prior — 12 Oct</div>
+                <div class="legend-item__value" style="color:var(--fog); font-size:19px;">5.9 <span style="font-size:11px; font-weight:500;">%</span></div>
+              </div>
+              <div class="legend-item legend-item--current">
+                <div class="legend-item__label">Current — 7 Dec</div>
+                <div class="legend-item__value">5.6 <span style="font-size:12px; font-weight:500;">%</span></div>
+                <div class="legend-delta">▼ −0.3 · target met</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dose-strip">
+            <div class="dose-strip__label">Dose timeline — what actually moved it</div>
+            <div class="dose-chart">
+              <svg viewBox="0 0 340 56" preserveAspectRatio="none">
+                <line x1="0" y1="48" x2="340" y2="10" stroke="var(--green)" stroke-width="3" stroke-linecap="round"/>
+                <rect x="0" y="0" width="340" height="56" fill="none"/>
+                <circle cx="0" cy="48" r="4" fill="var(--fog)"/>
+                <circle cx="340" cy="10" r="5" fill="var(--green)"/>
+              </svg>
+            </div>
+            <div class="dose-phase-labels"><span>2.5 mg → 5 mg tirzepatide</span><span>Week 12 · retest</span></div>
+          </div>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat-chip"><div class="stat-chip__label">Adherence</div><div class="stat-chip__value" style="color:var(--green);">91%</div></div>
+          <div class="stat-chip"><div class="stat-chip__label">Confidence</div><div class="stat-chip__value" style="color:var(--green);">Strong</div></div>
+          <div class="stat-chip"><div class="stat-chip__label">Disruptions</div><div class="stat-chip__value">None</div></div>
+        </div>
+
+        <div class="next-loop">
+          <div class="next-loop__eyebrow">Loop 2</div>
+          <div class="next-loop__title">You moved a marker most people only watch drift. Your ferritin is still low — want to close that one next?</div>
+          <button class="btn btn--accent">Start loop 2 →</button>
+        </div>
+
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="row"><span class="tag tag--hero">HERO</span> This screen does not exist anywhere in the category, confirmed across 7 research tracks. Metric: <b>loop 2 start rate</b> — the retention definition, made measurable, at the exact moment it matters most.</div>
+    <div class="row"><span class="tag">Same object, 2nd moment</span> The sealed card from C4 reappears "unsealed" rather than as a new component — the unsealing chip literally references the sealed date. Staged, not instant, in the live product (interaction not fully expressible in a static frame).</div>
+    <div class="row"><span class="tag">M17</span> Hims' vertical band scale — Prior → Current joined by a dotted line. Vertical sidesteps the RTL time-axis problem entirely: the axis is <i>value</i>, not time.</div>
+    <div class="row"><span class="tag">M16</span> Shotsy's dose-segmented curve, applied to a biomarker instead of weight — nobody in the category ties a marker's movement to the dose that caused it. This is the unoccupied position.</div>
+    <div class="row"><span class="tag">M17b</span> Anchored to the user's own baseline, never a cohort average — ZOE's "typical member" anchor makes a null invisible; ours makes a win undeniable and a null visible on purpose.</div>
+    <div class="row"><span class="tag">P4/M19</span> "You did this" — green is the only band that says "you" (WHOOP). The next-loop offer sits below a visual divider, never fused into the same beat as the news.</div>
+    <div class="row"><span class="tag">Exportable, forever</span> The ⤴ share icon in the nav bar is not decorative — WHOOP members were furious when a beloved report was retired because they used it for doctor visits and employer wellness reimbursement. This screen must outlive any subscription state.</div>
+  </div>
+</div>
+</body>
+</html>

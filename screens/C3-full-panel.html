@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C3 · Full panel, ranked by actionability</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .filter-tabs { display:flex; gap:8px; padding: 4px 0 14px; overflow-x:auto; }
+  .filter-tab { flex-shrink:0; padding:7px 14px; border-radius:var(--radius-pill); font-size:12px; font-weight:600; background:var(--surface-sunken); color:var(--ink-2); white-space:nowrap; }
+  .filter-tab.is-active { background:var(--deep); color:#fff; }
+
+  .impact-card { display:flex; align-items:flex-start; gap:12px; padding:14px 0; border-bottom:1px solid var(--line); }
+  .impact-badge { width:40px; height:40px; border-radius:10px; background:var(--deep); color:var(--yellow); display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
+  .impact-badge__num { font-size:14px; font-weight:800; line-height:1; }
+  .impact-badge__label { font-size:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; margin-top:1px; }
+  .impact-body { flex:1; min-width:0; }
+  .impact-name { font-size:14px; font-weight:600; }
+  .impact-meta { font-size:11.5px; color:var(--ink-2); margin-top:2px; }
+  .impact-value { text-align:right; flex-shrink:0; }
+  .impact-value__num { font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; }
+
+  .section-head { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-2); margin: 18px 0 4px; }
+
+  .collapsed-group { display:flex; align-items:center; justify-content:space-between; padding:10px 0; font-size:13px; color:var(--ink-2); border-bottom:1px solid var(--line); }
+  .collapsed-group .n { font-weight:600; color:var(--text-primary); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">C3 — Full panel, ranked by actionability</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar">
+      <div class="nav-bar__back">←</div>
+      <div class="nav-bar__title">Full Panel · 40 markers</div>
+      <div class="nav-bar__action">⋯</div>
+    </div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:24px;">
+
+        <div class="filter-tabs">
+          <div class="filter-tab is-active">Ranked for you</div>
+          <div class="filter-tab">By panel</div>
+          <div class="filter-tab">A–Z</div>
+        </div>
+
+        <div class="section-head">Needs attention · ranked by impact</div>
+
+        <div class="impact-card">
+          <div class="impact-badge"><span class="impact-badge__num">9.4</span><span class="impact-badge__label">Impact</span></div>
+          <div class="impact-body">
+            <div class="impact-name">HbA1c</div>
+            <div class="impact-meta">90-day blood sugar · the scored marker</div>
+          </div>
+          <div class="impact-value">
+            <span class="impact-value__num" style="color:var(--marker-out-of-range);">5.9</span>
+            <div style="font-size:10px; color:var(--ink-2);">%</div>
+          </div>
+        </div>
+
+        <div class="impact-card">
+          <div class="impact-badge" style="background:var(--marker-borderline); color:#fff;"><span class="impact-badge__num">6.1</span><span class="impact-badge__label">Impact</span></div>
+          <div class="impact-body">
+            <div class="impact-name">Ferritin</div>
+            <div class="impact-meta">Iron stores · fixed alongside, not scored</div>
+          </div>
+          <div class="impact-value">
+            <span class="impact-value__num" style="color:var(--marker-borderline);">18</span>
+            <div style="font-size:10px; color:var(--ink-2);">ng/mL</div>
+          </div>
+        </div>
+
+        <div class="impact-card" style="border-bottom:none;">
+          <div class="impact-badge" style="background:var(--marker-borderline); color:#fff;"><span class="impact-badge__num">4.8</span><span class="impact-badge__label">Impact</span></div>
+          <div class="impact-body">
+            <div class="impact-name">Vitamin D</div>
+            <div class="impact-meta">Below optimal — affects mood &amp; immunity</div>
+          </div>
+          <div class="impact-value">
+            <span class="impact-value__num" style="color:var(--marker-borderline);">22</span>
+            <div style="font-size:10px; color:var(--ink-2);">ng/mL</div>
+          </div>
+        </div>
+
+        <div class="section-head">In healthy range · collapsed</div>
+        <div class="collapsed-group"><span>Lipid panel</span><span class="n">4 markers — Optimal</span></div>
+        <div class="collapsed-group"><span>Liver function</span><span class="n">4 markers — Optimal</span></div>
+        <div class="collapsed-group"><span>Kidney function</span><span class="n">3 markers — Optimal</span></div>
+        <div class="collapsed-group"><span>Thyroid</span><span class="n">3 markers — Optimal</span></div>
+        <div class="collapsed-group" style="border-bottom:none;"><span>Vitamins &amp; minerals (other)</span><span class="n">23 markers — In range</span></div>
+
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="row"><span class="tag">C3</span> Optional depth path. Metric to watch: does expanding <b>lower</b> attach rate at C4? If so, this screen is a leak wearing a feature's clothes — demote behind the prediction.</div>
+    <div class="row"><span class="tag">M4</span> InsideTracker's printed impact score — deviation × evidence strength — is the only ranking claim in the category that survives scrutiny. Ordering here is by that score, never alphabetical, never by lab panel.</div>
+    <div class="row"><span class="tag">M7</span> Everlywell's collapse: normals crush into one grey row per panel. 33 in-range markers become 5 lines, not 33.</div>
+    <div class="row"><span class="tag">Anti: Function</span> 148 markers sorted alphabetically on a screen whose entire job is triage. Anti: Labcorp ships the out-of-range filter default-OFF. Ours is default-ON and un-toggleable — the "A–Z" tab exists for auditors, not as the default.</div>
+    <div class="row"><span class="tag">Amber tier</span> HbA1c and Vitamin D render amber, not red — the middle tier Marek and LetsGetChecked both lack, avoiding cliff effects at the range boundary.</div>
+  </div>
+</div>
+</body>
+</html>

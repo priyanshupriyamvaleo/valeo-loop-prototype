@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-2 · Log weight — the 10-second interaction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .autopull-card { text-align:center; padding: 30px 20px; }
+  .scale-icon { font-size:44px; margin-bottom:14px; }
+  .autopull-title { font-family:var(--font-display); font-size:22px; font-weight:500; color:var(--deep); margin-bottom:6px; }
+  .autopull-sub { font-size:13px; color:var(--ink-2); margin-bottom:22px; }
+  .autopull-value { font-size:48px; font-weight:700; color:var(--deep); font-variant-numeric:tabular-nums; }
+  .autopull-unit { font-size:16px; color:var(--ink-2); font-weight:500; }
+  .autopull-source { font-size:11px; color:var(--teal); font-weight:600; margin-top:8px; }
+
+  .trend-chart { margin: 18px 0; height:130px; position:relative; }
+
+  .divider-or { text-align:center; font-size:11px; color:var(--fog); margin: 18px 0; position:relative; }
+  .divider-or::before, .divider-or::after { content:''; position:absolute; top:50%; width:38%; height:1px; background:var(--line); }
+  .divider-or::before { left:0; } .divider-or::after { right:0; }
+
+  .ruler-wrap { text-align:center; }
+  .ruler-value { font-size:40px; font-weight:700; color:var(--deep); margin-bottom:12px; }
+  .ruler-track { height:48px; background: var(--surface-sunken); border-radius: var(--radius-md); position:relative; overflow:hidden; display:flex; align-items:center; }
+  .ruler-tick { position:absolute; top:0; bottom:0; width:1.5px; background:var(--line); }
+  .ruler-center-line { position:absolute; left:50%; top:0; bottom:0; width:3px; background:var(--yellow); transform:translateX(-50%); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T2-2 — Log weight (connected scale)</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">✕</div><div class="nav-bar__title">Today's Weight</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:20px;">
+        <div class="autopull-card">
+          <div class="scale-icon">⚖️</div>
+          <div class="autopull-title">Got it from your scale</div>
+          <div class="autopull-sub">Withings synced automatically — nothing to type</div>
+          <div><span class="autopull-value">78.4</span><span class="autopull-unit"> kg</span></div>
+          <div class="autopull-source">● Auto-logged via HealthKit</div>
+        </div>
+
+        <div class="trend-chart">
+          <svg viewBox="0 0 340 130" style="width:100%; height:100%;">
+            <circle cx="20" cy="60" r="3" fill="var(--fog)"/><circle cx="60" cy="72" r="3" fill="var(--fog)"/><circle cx="100" cy="58" r="3" fill="var(--fog)"/>
+            <circle cx="140" cy="80" r="3" fill="var(--fog)"/><circle cx="180" cy="66" r="3" fill="var(--fog)"/><circle cx="220" cy="90" r="3" fill="var(--fog)"/>
+            <circle cx="260" cy="74" r="3" fill="var(--fog)"/><circle cx="300" cy="96" r="3" fill="var(--fog)"/><circle cx="330" cy="88" r="4" fill="var(--deep)"/>
+            <path d="M10,68 C90,72 180,78 330,92" fill="none" stroke="var(--green)" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--ink-2); margin-top:-8px;">
+          <span>● Raw reading</span><span style="color:var(--green); font-weight:600;">— Trend (what we score)</span>
+        </div>
+
+        <div class="divider-or">or log manually</div>
+
+        <div class="ruler-wrap">
+          <div class="ruler-value">78.4 <span style="font-size:18px; color:var(--ink-2); font-weight:500;">kg</span></div>
+          <div class="ruler-track">
+            <div class="ruler-center-line"></div>
+            <svg width="100%" height="48" style="position:absolute;"><g></g></svg>
+          </div>
+        </div>
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--primary">Confirm →</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">P8</span> Zero-tap is the ideal: a connected scale means this screen is a <b>confirmation</b>, not an entry form. The manual ruler-scrubber (Noom's pattern) is the fallback, never the default when a scale exists.</div>
+    <div class="row"><span class="tag">DATA_MODEL §6</span> Raw stored always; trend computed at render, never pre-smoothed. The trend line is visually heavier than the raw scatter — the thing that gets scored is the thing that's easiest to see.</div>
+    <div class="row"><span class="tag">Anti-pattern avoided</span> No daily pass/fail framing on a number with ±1kg of water noise. This screen never says "up" or "down" as a verdict — that judgment belongs to Prove, at week 12, not to Tuesday.</div>
+  </div>
+</div>
+</body>
+</html>

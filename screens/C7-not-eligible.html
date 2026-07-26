@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C7 · Not eligible / nothing actionable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .verdict { font-family: var(--font-display); font-size:24px; line-height:1.28; font-weight:500; color:var(--deep); margin:0 0 14px; }
+  .verdict .soft { color: var(--teal); font-weight:600; }
+
+  .reason-card { background: var(--surface-card); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); margin-bottom:14px; }
+  .reason-card__label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); margin-bottom:6px; }
+  .reason-card__value { font-size:22px; font-weight:700; color:var(--deep); }
+  .reason-card__note { font-size:13px; color:var(--ink-2); line-height:1.55; margin-top:8px; padding-top:8px; border-top:1px solid var(--line); }
+
+  .alt-card { background: linear-gradient(160deg, var(--green) 0%, #1f7a49 100%); color:#fff; border-radius: var(--radius-lg); padding:16px; margin-bottom:14px; }
+  .alt-card__eyebrow { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color: var(--mint); margin-bottom:6px; }
+  .alt-card__title { font-size:16px; font-weight:700; margin-bottom:4px; }
+  .alt-card__body { font-size:12.5px; opacity:0.92; line-height:1.5; }
+
+  .care-row { display:flex; align-items:center; gap:10px; padding:12px 0; border-top:1px solid var(--line); }
+  .care-row__icon { width:32px; height:32px; border-radius:50%; background:var(--teal-soft); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+  .care-row__text { font-size:12.5px; flex:1; }
+  .care-row__free { font-size:10px; font-weight:700; color:var(--green); background:var(--green-soft); padding:2px 7px; border-radius:5px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">C7 — Not eligible / nothing actionable</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar">
+      <div class="nav-bar__back">←</div>
+      <div class="nav-bar__title">Your Results</div>
+      <div class="nav-bar__action">⋯</div>
+    </div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:16px;">
+
+        <div class="verdict">GLP-1 <span class="soft">isn't the right fit yet</span> — but we found something that is.</div>
+
+        <div class="reason-card">
+          <div class="reason-card__label">Your BMI</div>
+          <div class="reason-card__value">26.1</div>
+          <div class="reason-card__note">Medication-assisted weight loss is typically appropriate from a BMI of 27 with a related condition, or 30 without one. Yours is 26.1 — this route isn't clinically indicated right now, and prescribing it wouldn't be responsible medicine.</div>
+        </div>
+
+        <div class="alt-card">
+          <div class="alt-card__eyebrow">What we'd focus on instead</div>
+          <div class="alt-card__title">Your fasting insulin is elevated</div>
+          <div class="alt-card__body">This is often the earliest, most fixable signal — years before weight or glucose move. A focused 8-week protocol here is likely to matter more than the goal you came in with.</div>
+        </div>
+
+        <div class="care-row">
+          <div class="care-row__icon">👩‍⚕️</div>
+          <div class="care-row__text">Want to talk it through first? A clinician call about this result</div>
+          <div class="care-row__free">Free</div>
+        </div>
+        <div class="care-row">
+          <div class="care-row__icon">🔁</div>
+          <div class="care-row__text">Or check again in 6 months — we'll remind you, no charge</div>
+        </div>
+
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding: 12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--primary">See the insulin-focused plan →</button>
+        <button class="btn btn--ghost" style="margin-top:4px;">Talk to a clinician instead</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="row"><span class="tag">C7</span> Leak: <i>"they took my money for a test and then told me nothing."</i> Metric: post-screen trust rating; % returning within 90 days.</div>
+    <div class="row"><span class="tag">KSA R3</span> BMI shown once, as a number, with a plain clinical sentence — no colour band, no figure, no "obese" label. Its only job here is explaining the eligibility gate, then it's gone.</div>
+    <div class="row"><span class="tag">M14</span> LetsGetChecked's duty-of-care split, made explicit: a concerning finding gets a <b>free</b> clinician call; an elective path gets a paid consult. Valeo has to decide this list deliberately — not let it fall out by accident.</div>
+    <div class="row"><span class="tag">Anti: Marek</span> If you paint a marker as a concern, you owe it a sentence and a next step. Never a dead end — this screen always redirects to a real, honest next action.</div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C4 · The sealed prediction ★ HERO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,500italic&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:700; color:var(--deep); margin-bottom:14px; }
+  .frame-label .star { color: var(--yellow-deep); }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+  .tag--hero { background: var(--yellow); color:var(--deep); }
+
+  .breadcrumb { font-size:12px; color:var(--ink-2); margin-bottom:14px; }
+  .breadcrumb b { color:var(--deep); }
+
+  .target-range {
+    display:flex; align-items:center; gap:10px; margin-top: var(--space-4);
+    background: var(--surface-card); border: 1.5px dashed var(--line);
+    border-radius: var(--radius-md); padding: 12px 14px;
+  }
+  .target-range__label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); }
+  .target-range__value { font-size:14px; font-weight:600; color:var(--deep); margin-top:2px; }
+
+  .floor-strip {
+    display:flex; align-items:center; gap:12px;
+    background: var(--mint); border-radius: var(--radius-md);
+    padding: 12px 14px; margin-top: var(--space-4);
+  }
+  .floor-strip__ring { width:38px; height:38px; border-radius:50%; border:4px solid var(--line); flex-shrink:0; position:relative; }
+  .floor-strip__ring::after { content:''; position:absolute; inset:-4px; border-radius:50%; border:4px solid var(--deep); clip-path: inset(0 0 0 50%); }
+  .floor-strip__text { font-size:12px; color:var(--deep-2); line-height:1.4; }
+  .floor-strip__text b { font-weight:700; }
+
+  .rationale-link { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-top:1px solid var(--line); margin-top: var(--space-4); font-size:13px; font-weight:500; color:var(--deep); }
+
+  .bottom-cta { position:sticky; bottom:0; background:var(--surface-app); padding: var(--space-4) var(--space-4) calc(var(--safe-bottom) + var(--space-3)); border-top:1px solid var(--line); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label"><span class="star">★</span> C4 — The sealed prediction · HERO FRAME</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar">
+      <div class="nav-bar__back">←</div>
+      <div class="nav-bar__title">Your Plan</div>
+      <div class="nav-bar__action"></div>
+    </div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:24px;">
+
+        <div class="breadcrumb">Based on your <b>HbA1c</b> result (5.9%, above range)</div>
+
+        <div class="sealed-card">
+          <div class="sealed-card__seal">🔓 Draft · awaiting sign-off</div>
+          <div class="sealed-card__eyebrow">The bet we're proposing</div>
+          <p class="sealed-card__prediction">
+            Take <em>tirzepatide, once weekly</em>. You should notice appetite change by <em>week 2</em>. We'll retest your HbA1c on <em>7 Dec</em> — aiming for <em>below 5.7%</em>.
+          </p>
+
+          <div class="sealed-card__stat-row">
+            <div class="sealed-card__stat">
+              <div class="sealed-card__stat-label">Health impact</div>
+              <div class="sealed-card__stat-value">Metabolic</div>
+            </div>
+            <div class="sealed-card__stat">
+              <div class="sealed-card__stat-label">Window</div>
+              <div class="sealed-card__stat-value">8 weeks</div>
+            </div>
+            <div class="sealed-card__stat">
+              <div class="sealed-card__stat-label">Priority</div>
+              <div class="sealed-card__stat-value" style="color:var(--yellow);">High</div>
+            </div>
+          </div>
+
+          <div class="sealed-card__timestamp">Drafted from your panel · 12 Oct 2026 · A licensed clinician signs this before anything is charged — once signed it is locked until retest</div>
+        </div>
+
+        <div class="target-range">
+          <div style="flex:1;">
+            <div class="target-range__label">Target range, not a point</div>
+            <div class="target-range__value">HbA1c 5.4–5.7% by 7 Dec</div>
+          </div>
+        </div>
+
+        <div class="floor-strip">
+          <div class="floor-strip__ring"></div>
+          <div class="floor-strip__text">This prediction needs <b>80% dose adherence</b> to count as a real test. We'll show you this number every day — not to nag, but because it's the number that decides whether your retest means anything.</div>
+        </div>
+
+        <div class="rationale-link">
+          <span>Why HbA1c, and why this dose? →</span>
+        </div>
+
+      </div>
+
+      <div class="bottom-cta">
+        <button class="btn btn--primary">See the protocol →</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="row"><span class="tag tag--hero">HERO</span> Metric: <b>protocol attach rate</b> — the number this whole project is judged on. Falsifier (B5): render this one screen for existing eligibility-panel buyers and measure the lift. One screen, no platform, testable this month.</div>
+    <div class="row"><span class="tag">M2</span> Superpower's Concierge sentence, adapted: dose → short-horizon feeling → long-horizon marker. The single best line found in the entire research corpus.</div>
+    <div class="row"><span class="tag">M1 / M15</span> Three-column stat strip (Health Impact / Recovery time / Priority) + the socket this card fills at Prove (Function's empty dashed dot).</div>
+    <div class="row"><span class="tag">Sealed, not styled</span> The card must read as a signed document, not a settings row — locked icon, named clinician, explicit "cannot be edited." Noom quietly revises its projected date 21 screens later; ours cannot move without a visible, reasoned amendment event.</div>
+    <div class="row"><span class="tag">Adherence floor visible NOW</span> Calibrate's 85% tracking gate was hidden in legal — members failed on day 40 and learned on day 400. Ours is stated here, at the moment of maximum trust, before any daily nagging exists to resent.</div>
+    <div class="row"><span class="tag">Range, not point</span> Noom's real legal shield was a stated range ("0.5–1 kg/week") plus refusing unhealthy targets — not a footnote. A range stays falsifiable without inviting a single-point dispute.</div>
+    <div class="row"><span class="tag">P6</span> Exactly one scored marker. Vitamin D and HbA1c are visible on C3 but not scored here — five shots at significance is how false verdicts get manufactured.</div>
+  </div>
+</div>
+</body>
+</html>

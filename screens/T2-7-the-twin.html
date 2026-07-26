@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-7 · The twin — what Valeo knows, correctable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); margin: 20px 0 6px; display:flex; align-items:center; gap:6px; }
+  .section-title .avail { font-size:9px; font-weight:700; padding:2px 7px; border-radius:5px; text-transform:none; letter-spacing:0; }
+  .avail--now { background:var(--green-soft); color:var(--green); }
+  .avail--gated { background:var(--fog-soft); color:var(--fog); }
+
+  .gate-card { background:var(--fog-soft); border-radius: var(--radius-md); padding:14px; }
+  .gate-card__title { font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:8px; }
+  .gate-progress { display:flex; gap:4px; margin-bottom:6px; }
+  .gate-progress__seg { flex:1; height:5px; border-radius:3px; background:var(--line); }
+  .gate-progress__seg.is-done { background: var(--fog); }
+  .gate-card__sub { font-size:11px; color:var(--fog); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T2-7 — The twin</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div></div><div class="nav-bar__title">Your Twin</div><div class="nav-bar__action">⋯</div></div>
+    <div class="screen">
+      <div class="u-px-4">
+
+        <div class="section-title">What we've measured <span class="avail avail--now">Available now</span></div>
+        <div class="card" style="padding:4px 16px;">
+          <div class="fact-row"><span class="fact-row__label">Doses logged</span><span class="fact-row__value">24 of 28 <span class="fact-row__edit">Edit ›</span></span></div>
+          <div class="fact-row"><span class="fact-row__label">Weigh-ins</span><span class="fact-row__value">19 of 20 <span class="fact-row__edit">Edit ›</span></span></div>
+          <div class="fact-row"><span class="fact-row__label">Nausea logged</span><span class="fact-row__value">6 times <span class="fact-row__edit">Edit ›</span></span></div>
+          <div class="fact-row" style="border-bottom:none;"><span class="fact-row__label">Disruptions</span><span class="fact-row__value">1 — illness, 3 days</span></div>
+        </div>
+
+        <div class="section-title">What people like you show <span class="avail avail--now">Population-level</span></div>
+        <div class="card" style="font-size:12.5px; color:var(--ink-2); line-height:1.6;">
+          Members who take iron <b style="color:var(--text-primary);">with vitamin C</b> tend to reach target ferritin <b style="color:var(--green);">2.3 weeks sooner</b> than those who don't. <span style="font-size:10.5px; color:var(--fog);">(n=340 · associated with, not proven to cause)</span>
+        </div>
+
+        <div class="section-title">What this means for <u>you</u> <span class="avail avail--gated">Locked — needs more data</span></div>
+        <div class="gate-card">
+          <div class="gate-card__title">Does coffee near your iron dose actually slow you down?</div>
+          <div class="gate-progress">
+            <div class="gate-progress__seg is-done"></div><div class="gate-progress__seg is-done"></div><div class="gate-progress__seg is-done"></div>
+            <div class="gate-progress__seg"></div><div class="gate-progress__seg"></div>
+          </div>
+          <div class="gate-card__sub">3 of 5 logged days without coffee near your dose — we need real variation before we'll claim anything about you specifically.</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab-bar__item"><span class="tab-bar__icon">●</span>Today</div>
+      <div class="tab-bar__item is-active"><span class="tab-bar__icon">◐</span>Twin</div>
+      <div class="tab-bar__item"><span class="tab-bar__icon">▬</span>Timeline</div>
+      <div class="tab-bar__item"><span class="tab-bar__icon">♡</span>Care</div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">P11</span> Self-report never moves the verdict — only confidence. This screen is the correction UI for the whole schema: every fact is editable, which is what makes memory visible instead of surveilled, and what makes visible memory free data cleaning.</div>
+    <div class="row"><span class="tag">M20 / WHOOP gate</span> Personal causal claims require <b>5 yes / 5 no over 90 days</b> — variance, not volume. Population claims ship immediately and are visually distinct (grey "locked" tag vs green "available now").</div>
+    <div class="row"><span class="tag">Falsifier</span> Seed one deliberately wrong fact — can a user find and fix it in under 15 seconds? If not, this screen isn't doing its job.</div>
+    <div class="row"><span class="tag">KSA R2</span> No body imagery anywhere — this is numbers and named facts only, exactly the register the brief called for.</div>
+  </div>
+</div>
+</body>
+</html>

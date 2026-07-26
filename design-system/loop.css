@@ -1,0 +1,143 @@
+/* ============================================================
+   THE LOOP RING  +  app chrome
+   The product is a closed loop. Closing a ring is the most
+   effective engagement mechanic ever shipped — and unlike
+   Apple's, ours is not arbitrary: the ring closes when a sealed
+   prediction actually receives a verdict.
+   ============================================================ */
+
+/* ── RING ──────────────────────────────────────────────────
+   5 equal arcs: Measure · Interpret · Decide · Act · Prove.
+   r=88 → C = 2πr = 552.92 ; each arc = 110.58 ; gap 9 → 101.58 drawn.
+   Each arc is one <circle> rotated i×72°, dasharray "101.58 451.34".
+   ─────────────────────────────────────────────────────────── */
+.ring { display:block; }
+.ring__track,
+.ring__arc,
+.ring__fill { fill:none; stroke-linecap:round; }
+
+.ring__track { stroke: rgba(27,57,91,.10); }
+.ring__arc--done    { stroke: var(--green); }
+.ring__arc--now     { stroke: rgba(255,185,0,.22); }
+.ring__fill         { stroke: var(--yellow); }
+.ring__arc--todo    { stroke: rgba(27,57,91,.10); }
+
+.ring--on-dark .ring__track,
+.ring--on-dark .ring__arc--todo { stroke: rgba(255,255,255,.13); }
+.ring--on-dark .ring__arc--done { stroke: #6FD69B; }
+
+/* completed loops — tree rings, laid inward */
+.ring__tree { fill:none; stroke: var(--green); opacity:.42; }
+.ring--on-dark .ring__tree { stroke:#6FD69B; opacity:.5; }
+
+/* the closing beat — used once, on the reveal */
+@keyframes ringClose { from { stroke-dashoffset: 553; } to { stroke-dashoffset: 0; } }
+.ring__fill--closing {
+  stroke: var(--green);
+  stroke-dasharray: 553;
+  animation: ringClose 1.5s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+/* centre stack */
+.ring-wrap { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+.ring-core { position:absolute; inset:0; display:flex; flex-direction:column;
+             align-items:center; justify-content:center; text-align:center; }
+.ring-core__kicker { font-size:9.5px; font-weight:800; letter-spacing:.13em;
+                     text-transform:uppercase; color:var(--ink-2); }
+.ring-core__value  { font-family:var(--font-display); font-weight:600;
+                     font-size:44px; line-height:1; color:var(--deep);
+                     font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+.ring-core__unit   { font-size:11.5px; font-weight:600; color:var(--ink-2); margin-top:5px; }
+.ring--on-dark ~ .ring-core .ring-core__value,
+.ring-core--on-dark .ring-core__value { color:#fff; }
+.ring-core--on-dark .ring-core__kicker,
+.ring-core--on-dark .ring-core__unit  { color:rgba(255,255,255,.62); }
+
+/* phase legend under the hero ring */
+.phase-legend { display:flex; justify-content:space-between; margin-top:var(--space-5); }
+.phase-legend__i { flex:1; text-align:center; }
+.phase-legend__dot { width:7px; height:7px; border-radius:50%; margin:0 auto 6px;
+                     background:rgba(27,57,91,.16); }
+.phase-legend__i.is-done .phase-legend__dot { background:var(--green); }
+.phase-legend__i.is-now  .phase-legend__dot { background:var(--yellow);
+                     box-shadow:0 0 0 4px rgba(255,185,0,.22); }
+.phase-legend__t { font-size:9.5px; font-weight:700; letter-spacing:.04em;
+                   text-transform:uppercase; color:rgba(27,57,91,.34); }
+.phase-legend__i.is-done .phase-legend__t { color:var(--green); }
+.phase-legend__i.is-now  .phase-legend__t { color:var(--deep); }
+
+/* ── NAV BAR with inline ring ─────────────────────────────── */
+.appbar {
+  height:52px; flex-shrink:0; display:flex; align-items:center; gap:12px;
+  padding:0 var(--space-4);
+}
+.appbar__back { display:flex; align-items:center; gap:5px; font-size:13.5px;
+                font-weight:600; color:var(--deep-2); }
+.appbar__spacer { flex:1; }
+.appbar__ring { display:flex; align-items:center; gap:8px; }
+.appbar__ringlabel { text-align:right; line-height:1.15; }
+.appbar__ringlabel b { display:block; font-size:11.5px; font-weight:700; color:var(--deep); }
+.appbar__ringlabel span { display:block; font-size:9.5px; color:var(--ink-2); font-weight:600; }
+.appbar__avatar { width:32px; height:32px; border-radius:50%; background:var(--deep);
+                  color:#fff; display:flex; align-items:center; justify-content:center;
+                  font-size:12px; font-weight:700; flex-shrink:0; }
+
+/* ── 3-TAB PROTOCOL BAR ───────────────────────────────────── */
+.tabs3 {
+  height:var(--tab-bar-height); flex-shrink:0; display:flex;
+  padding-bottom:var(--safe-bottom);
+  background:rgba(255,253,245,.94); backdrop-filter:blur(24px);
+  border-top:1px solid var(--border-hairline);
+}
+.tabs3__i { flex:1; display:flex; flex-direction:column; align-items:center;
+            justify-content:center; gap:4px; color:#9AA8B8; }
+.tabs3__i.on { color:var(--deep); }
+.tabs3__ico { width:24px; height:24px; }
+.tabs3__lbl { font-size:10px; font-weight:600; letter-spacing:.01em; }
+
+/* ── SECTION RHYTHM (the thing the old screens lacked) ────── */
+.sec { padding:0 var(--space-5); }
+.sec + .sec { margin-top:var(--space-8); }
+.sec__kicker { font-size:10px; font-weight:800; letter-spacing:.12em;
+               text-transform:uppercase; color:rgba(27,57,91,.38);
+               margin-bottom:var(--space-3); }
+.sec__title { font-family:var(--font-display); font-size:22px; font-weight:600;
+              color:var(--deep); line-height:1.22; letter-spacing:-.01em; }
+
+.bigstat { display:flex; align-items:baseline; gap:7px; }
+.bigstat__n { font-family:var(--font-display); font-size:46px; font-weight:600;
+              line-height:1; color:var(--deep); font-variant-numeric:tabular-nums;
+              letter-spacing:-.025em; }
+.bigstat__u { font-size:14px; font-weight:600; color:var(--ink-2); }
+.bigstat__d { margin-left:auto; font-size:12px; font-weight:700;
+              padding:4px 10px; border-radius:var(--radius-pill); }
+.bigstat__d--good { background:var(--green-soft); color:var(--green); }
+.bigstat__d--warn { background:var(--amber-soft); color:var(--amber); }
+
+/* elevated surface — soft, no hard borders */
+.surface {
+  background:var(--surface-card); border-radius:22px; padding:var(--space-5);
+  box-shadow: 0 1px 2px rgba(27,57,91,.04), 0 8px 24px -12px rgba(27,57,91,.14);
+}
+.surface--tint { background:linear-gradient(168deg,#FFFDF7,#FBF5E6); }
+.surface--dark {
+  background:linear-gradient(165deg,#1B395B,#122a45); color:#fff;
+  box-shadow:0 14px 40px -14px rgba(18,42,69,.55);
+}
+
+/* quiet list rows — generous, borderless */
+.qrow { display:flex; align-items:center; gap:14px; padding:15px 0; }
+.qrow + .qrow { border-top:1px solid rgba(27,57,91,.06); }
+.qrow__ico { width:38px; height:38px; border-radius:12px; flex-shrink:0;
+             display:flex; align-items:center; justify-content:center; font-size:17px;
+             background:var(--surface-sunken); }
+.qrow__b { flex:1; min-width:0; }
+.qrow__t { font-size:14.5px; font-weight:600; color:var(--text-primary); line-height:1.3; }
+.qrow__s { font-size:12px; color:var(--ink-2); margin-top:2px; line-height:1.4; }
+.qrow__r { font-size:13.5px; font-weight:700; color:var(--deep);
+           font-variant-numeric:tabular-nums; flex-shrink:0; }
+.qrow__chev { color:rgba(27,57,91,.25); font-size:17px; flex-shrink:0; }
+
+/* sparkline */
+.spark { width:64px; height:24px; flex-shrink:0; }
+.spark path { fill:none; stroke-width:2; stroke-linecap:round; }

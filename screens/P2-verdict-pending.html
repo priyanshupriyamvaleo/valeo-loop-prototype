@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>P2 · Sample collected → verdict pending</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .pulse-ring { width:88px; height:88px; border-radius:50%; margin: 12px auto 18px; position:relative; display:flex; align-items:center; justify-content:center; }
+  .pulse-ring svg { position:absolute; inset:0; transform:rotate(-90deg); }
+  .pulse-ring__icon { font-size:30px; }
+  .wait-title { font-family:var(--font-display); font-size:22px; font-weight:500; text-align:center; color:var(--deep); margin-bottom:4px; }
+  .wait-eta { text-align:center; font-size:13px; color:var(--ink-2); margin-bottom:24px; }
+
+  .stepper { display:flex; align-items:center; margin-bottom: 24px; }
+  .stepper__step { flex:1; text-align:center; }
+  .stepper__dot { width:26px; height:26px; border-radius:50%; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+  .stepper__dot.done { background:var(--green); color:#fff; }
+  .stepper__dot.active { background:var(--yellow); color:var(--deep); }
+  .stepper__dot.todo { background:var(--fog-soft); color:var(--fog); }
+  .stepper__label { font-size:10px; color:var(--ink-2); font-weight:600; }
+  .stepper__line { flex:0.6; height:2px; background:var(--line); margin-bottom:20px; }
+  .stepper__line.done { background:var(--green); }
+
+  .evidence-card { background:var(--surface-card); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow-sm); }
+  .evidence-card__title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); margin-bottom:10px; }
+  .evidence-row { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); }
+  .evidence-row:last-child { border-bottom:none; }
+  .evidence-row__label { font-size:13px; }
+  .evidence-row__value { font-size:13px; font-weight:600; }
+  .evidence-row__value.good { color:var(--green); }
+
+  .draw-meta { font-size:11px; color:var(--ink-2); text-align:center; margin-top:14px; line-height:1.6; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">P2 — Verdict pending</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Your Retest</div><div class="nav-bar__action"></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:16px; padding-bottom:24px;">
+
+        <div class="pulse-ring">
+          <svg width="88" height="88"><circle cx="44" cy="44" r="38" fill="none" stroke="var(--fog-soft)" stroke-width="6"/><circle cx="44" cy="44" r="38" fill="none" stroke="var(--yellow)" stroke-width="6" stroke-dasharray="180 239" stroke-linecap="round"/></svg>
+          <span class="pulse-ring__icon">🧪</span>
+        </div>
+        <div class="wait-title">Your verdict is being processed</div>
+        <div class="wait-eta">Ready tomorrow by 6:00 PM · we'll notify you the moment it lands</div>
+
+        <div class="stepper">
+          <div class="stepper__step"><div class="stepper__dot done">✓</div><div class="stepper__label">DRAWN</div></div>
+          <div class="stepper__line done"></div>
+          <div class="stepper__step"><div class="stepper__dot active">2</div><div class="stepper__label">IN LAB</div></div>
+          <div class="stepper__line"></div>
+          <div class="stepper__step"><div class="stepper__dot todo">3</div><div class="stepper__label">VERDICT</div></div>
+        </div>
+
+        <div class="evidence-card">
+          <div class="evidence-card__title">What your verdict will be built from</div>
+          <div class="evidence-row"><span class="evidence-row__label">Dose adherence (need 80%)</span><span class="evidence-row__value good">86% ✓</span></div>
+          <div class="evidence-row"><span class="evidence-row__label">Disruptions logged</span><span class="evidence-row__value">None</span></div>
+          <div class="evidence-row"><span class="evidence-row__label">Assay match to baseline</span><span class="evidence-row__value good">Confirmed ✓</span></div>
+          <div class="evidence-row"><span class="evidence-row__label">Sample quality</span><span class="evidence-row__value good">Good</span></div>
+        </div>
+
+        <div class="draw-meta">Drawn today 9:12 AM · fasted 8h · at-home, Al Olaya<br>This is exactly what an honest verdict needs — nothing to fix.</div>
+
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">P2</span> Leak: <i>"I gave blood and then heard nothing for a week."</i> Metric: drop-off during the wait; app opens during wait.</div>
+    <div class="row"><span class="tag">Function's lesson, inverted</span> Function fills this gap with procedural prep instructions but sends one email across a month of silence. We fill it with the <b>evidence itself</b> — showing what the verdict will be computed from turns dead air into reassurance and pre-frames an honest outcome either way.</div>
+    <div class="row"><span class="tag">Capture</span> This is where <code>fasting_state</code>, <code>collection_mode</code>, <code>assay_version</code> match get written and shown back — the schema fields the whole comparability promise depends on.</div>
+  </div>
+</div>
+</body>
+</html>

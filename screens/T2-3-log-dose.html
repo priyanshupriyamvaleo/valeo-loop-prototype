@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-3 · Log dose — shot day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .dose-hero { text-align:center; padding: 22px 0 6px; }
+  .dose-hero__icon { width:64px; height:64px; border-radius:50%; background:var(--teal-soft); display:flex; align-items:center; justify-content:center; font-size:28px; margin: 0 auto 14px; }
+  .dose-hero__name { font-family: var(--font-display); font-size:22px; font-weight:600; color:var(--deep); }
+  .dose-hero__dose { font-size:14px; color:var(--ink-2); margin-top:4px; }
+
+  .scan-row { display:flex; align-items:center; justify-content:center; gap:8px; background:var(--surface-sunken); border: 1.5px dashed var(--deep-2); border-radius: var(--radius-md); padding:12px; margin:18px 0; font-size:13px; font-weight:600; color:var(--deep); }
+
+  .site-card { display:flex; align-items:center; gap:12px; background:var(--surface-card); border-radius:var(--radius-md); padding:14px; box-shadow:var(--shadow-sm); margin-bottom:16px; }
+  .site-card__icon { font-size:22px; }
+  .site-card__label { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-2); }
+  .site-card__value { font-size:14px; font-weight:600; margin-top:2px; }
+  .site-card__edit { margin-left:auto; font-size:11px; color:var(--deep-2); font-weight:600; }
+
+  .response-row { display:flex; gap:10px; margin-top: 20px; }
+  .resp-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px 8px; border-radius: var(--radius-md); font-size:12px; font-weight:700; }
+  .resp-btn__icon { font-size:20px; }
+  .resp-btn--taken { background: var(--green); color:#fff; }
+  .resp-btn--skip { background: var(--surface-card); border: 1.5px solid var(--ink-2); color:var(--text-primary); }
+  .resp-btn--reschedule { background: var(--surface-card); border: 1.5px solid var(--line); color:var(--text-primary); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T2-3 — Log dose (shot day state)</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">✕</div><div class="nav-bar__title">Shot Day</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4">
+        <div class="dose-hero">
+          <div class="dose-hero__icon">💉</div>
+          <div class="dose-hero__name">Ferrolactin Plus</div>
+          <div class="dose-hero__sub" style="font-size:13px; color:var(--ink-2); margin-top:4px;">28mg elemental iron · once daily</div>
+        </div>
+
+        <div class="scan-row">📷 Scan the box to confirm dose &amp; batch</div>
+
+        <div class="site-card">
+          <div class="site-card__icon">📍</div>
+          <div style="flex:1;">
+            <div class="site-card__label">Today's site (auto-rotated)</div>
+            <div class="site-card__value">Left thigh — outer</div>
+          </div>
+          <div class="site-card__edit">Change ›</div>
+        </div>
+
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-2); margin-bottom:4px;">Log your response</div>
+        <div class="response-row">
+          <div class="resp-btn resp-btn--taken"><span class="resp-btn__icon">✓</span>Taken</div>
+          <div class="resp-btn resp-btn--skip"><span class="resp-btn__icon">—</span>Skip</div>
+          <div class="resp-btn resp-btn--reschedule"><span class="resp-btn__icon">⏰</span>Later today</div>
+        </div>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">D4</span> Shot day: the hero expands from "log weight" to a full timed protocol. This is the ~1-of-7-days state where five things genuinely matter.</div>
+    <div class="row"><span class="tag">M24</span> Barcode scan (Lilly's pattern) — captures product, strength and batch with zero typing. With Valeo's dose-level SKUs this is nearly free, and it's what makes the record trustworthy enough for a causal database.</div>
+    <div class="row"><span class="tag">Shotsy's site rotation</span> Pre-filled to the next position by default, not a nag — rotation becomes the path of least resistance instead of a rule to remember.</div>
+    <div class="row"><span class="tag">M23 — equal weight</span> Taken / Skip / Later are the same size, same row. Skip is dignified and logged, not hidden — a user with only "Taken" available either lies or goes silent, and a lie here corrupts the exact causal read the whole product exists to protect.</div>
+  </div>
+</div>
+</body>
+</html>

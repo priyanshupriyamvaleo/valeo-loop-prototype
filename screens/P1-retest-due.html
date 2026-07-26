@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>P1 · Retest due</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:48px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .lockscreen { width:var(--frame-width); height:var(--frame-height); border-radius:46px; overflow:hidden; position:relative; box-shadow:var(--shadow-lg);
+    background: radial-gradient(120% 90% at 50% 0%, rgba(255,185,0,0.35) 0%, rgba(255,185,0,0) 55%), linear-gradient(180deg, #14283F 0%, #1B395B 45%, #254A73 100%); }
+  .lockscreen__notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:28px; background:#000; border-radius:0 0 18px 18px; z-index:50; }
+  .lockscreen__time { text-align:center; margin-top:74px; color:#fff; }
+  .lockscreen__clock { font-size:74px; font-weight:600; line-height:1; letter-spacing:-0.02em; }
+  .lockscreen__date { font-size:17px; font-weight:500; margin-top:6px; opacity:0.92; }
+  .notif { margin:44px 14px 0; background:rgba(255,255,255,0.22); backdrop-filter:blur(24px); border-radius:20px; padding:14px 14px 15px; }
+  .notif__head { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .notif__icon { width:20px; height:20px; border-radius:6px; background:var(--yellow); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:var(--deep); flex-shrink:0; }
+  .notif__app { font-size:13px; font-weight:600; color:rgba(255,255,255,0.85); flex:1; }
+  .notif__time { font-size:12px; color:rgba(255,255,255,0.6); }
+  .notif__title { font-size:15px; font-weight:700; color:#fff; margin-bottom:2px; }
+  .notif__body { font-size:14px; color:rgba(255,255,255,0.92); line-height:1.35; }
+
+  .mini-sealed { background: var(--surface-sunken); border: 1.5px dashed var(--line); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+  .mini-sealed__lock { font-size:16px; }
+  .mini-sealed__text { font-size:12px; color:var(--ink-2); line-height:1.4; }
+  .mini-sealed__text b { color:var(--deep); font-weight:600; }
+
+  .socket-wrap { background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 16px 14px; box-shadow:var(--shadow-sm); margin-bottom:16px; }
+  .socket-title { font-size:13px; font-weight:700; color:var(--ink-2); margin-bottom: 6px; }
+
+  .appt-card { background: var(--surface-card); border-radius: var(--radius-lg); padding:16px; box-shadow:var(--shadow-sm); }
+  .appt-card__label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--green); margin-bottom:6px; }
+  .appt-card__date { font-size:19px; font-weight:700; color:var(--deep); }
+  .appt-card__meta { font-size:12.5px; color:var(--ink-2); margin-top:4px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+
+<div class="frame-col">
+  <div class="frame-label">P1a — The return trigger · lock screen</div>
+  <div class="lockscreen">
+    <div class="lockscreen__notch"></div>
+    <div class="lockscreen__time"><div class="lockscreen__clock">9:41</div><div class="lockscreen__date">Monday, 7 December</div></div>
+    <div class="notif">
+      <div class="notif__head"><div class="notif__icon">V</div><div class="notif__app">Valeo</div><div class="notif__time">now</div></div>
+      <div class="notif__title">Time to find out if the tirzepatide worked</div>
+      <div class="notif__body">We predicted HbA1c below 5.7%. Your retest window is open — appointment's already booked.</div>
+    </div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">M18</span> The push names the <b>sealed prediction</b>, not "your retest is due" — it's opened by someone already invested in the specific bet, not a generic reminder.</div>
+  </div>
+</div>
+
+<div class="frame-col">
+  <div class="frame-label">P1b — In-app: the socket about to close</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Retest</div><div class="nav-bar__action"></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:16px;">
+
+        <div class="mini-sealed">
+          <div class="mini-sealed__lock">🔒</div>
+          <div class="mini-sealed__text">You sealed this on <b>12 Oct</b>: HbA1c below 5.7% by today. Let's see.</div>
+        </div>
+
+        <div class="socket-wrap">
+          <div class="socket-title">HbA1c · %</div>
+          <div class="socket-chart">
+            <div class="socket-chart__zones">
+              <div class="socket-chart__zone"><span class="socket-chart__zone-label">below 5.7 optimal</span></div>
+              <div class="socket-chart__zone"></div>
+              <div class="socket-chart__zone"><span class="socket-chart__zone-label" style="color:var(--marker-out-of-range);">above 5.7</span></div>
+            </div>
+            <div class="socket-point socket-point--historic" style="left:12%; top:88%;"></div>
+            <div class="socket-point socket-point--current" style="left:45%; top:88%;">
+              <div class="socket-point__label">5.9 · 12 Oct</div>
+            </div>
+            <div class="socket-point socket-point--future" style="left:85%; top:20%; box-shadow: 0 0 0 6px rgba(224,164,0,0.25);">
+              <div class="socket-point__label" style="color:var(--yellow-deep);">? · today</div>
+            </div>
+            <svg style="position:absolute; inset:0; width:100%; height:100%;"><line x1="45%" y1="88%" x2="85%" y2="20%" stroke="var(--fog)" stroke-width="2" stroke-dasharray="4 5"/></svg>
+          </div>
+        </div>
+
+        <div class="appt-card">
+          <div class="appt-card__label">Already booked</div>
+          <div class="appt-card__date">Today, 7 Dec · 10:00–11:00 AM</div>
+          <div class="appt-card__meta">At-home draw · ممرضة (female nurse) · Riyadh, Al Olaya</div>
+        </div>
+
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--primary">Confirm — I'll be home →</button>
+        <button class="btn btn--ghost" style="margin-top:2px;">Reschedule</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">P1</span> Leak: <i>"the protocol ended and nothing happened."</i> Metric: retest completion rate inside the pre-booked window.</div>
+    <div class="row"><span class="tag">M15</span> The empty socket from C4 reappears, now glowing — the unfinished chart the eye wants closed. Function draws this and attaches nothing; we attach the whole Prove flow to it.</div>
+    <div class="row"><span class="tag">Not a new booking</span> Per C6, the appointment already exists — this screen confirms/reschedules, it never re-sells the retest.</div>
+  </div>
+</div>
+
+</body>
+</html>

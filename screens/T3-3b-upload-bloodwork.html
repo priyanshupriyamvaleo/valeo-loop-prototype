@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T3-3b · Upload existing bloodwork</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<link rel="stylesheet" href="../design-system/loop.css">
+<script src="../design-system/embed.js"></script>
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:34px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .caption .r{margin-bottom:7px;} .caption .r:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .kick { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:rgba(27,57,91,.38); }
+  .lede { font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--deep);
+    line-height:1.18; letter-spacing:-.02em; margin:9px 0 8px; }
+  .lede em { font-style:normal; color:var(--yellow-deep); }
+  .sub { font-size:13px; color:var(--ink-2); line-height:1.6; }
+
+  .drop { border:2px dashed rgba(27,57,91,.2); border-radius:22px; padding:28px 20px;
+    text-align:center; margin-top:20px; background:var(--surface-card); }
+  .drop__i { font-size:34px; margin-bottom:12px; }
+  .drop__t { font-size:15px; font-weight:700; color:var(--deep); }
+  .drop__s { font-size:12px; color:var(--ink-2); margin-top:5px; line-height:1.5; }
+  .drop__btns { display:flex; gap:9px; margin-top:16px; }
+  .drop__b { flex:1; background:var(--deep); color:#fff; font-size:12.5px; font-weight:700;
+    padding:11px; border-radius:12px; }
+  .drop__b--alt { background:var(--surface-sunken); color:var(--deep); }
+
+  .labs { display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
+  .lab { font-size:11px; font-weight:600; color:var(--deep-2); background:var(--teal-soft);
+    padding:5px 11px; border-radius:20px; }
+
+  .free { display:flex; gap:10px; background:var(--green-soft); border-radius:16px;
+    padding:13px 14px; margin-top:18px; font-size:12.5px; color:var(--green); line-height:1.55; }
+  .free b { color:#1c6b41; }
+
+  /* result */
+  .found { background:var(--surface-card); border-radius:20px; padding:16px; box-shadow:var(--shadow-sm); margin-top:18px; }
+  .found__h { display:flex; align-items:center; gap:9px; padding-bottom:11px; margin-bottom:6px;
+    border-bottom:1px solid var(--line); }
+  .found__lab { font-size:13.5px; font-weight:700; color:var(--deep); }
+  .found__meta { font-size:11px; color:var(--ink-2); }
+  .mrow { display:flex; align-items:center; justify-content:space-between; padding:8px 0; font-size:13px; }
+  .mrow + .mrow { border-top:1px solid rgba(27,57,91,.05); }
+  .mrow__v { font-weight:700; font-variant-numeric:tabular-nums; }
+
+  .verdictbox { border-radius:20px; padding:17px; margin-top:18px; }
+  .verdictbox--ok { background:linear-gradient(155deg,#E3F3E9,#D5EEDF); border:1.5px solid var(--green); }
+  .verdictbox--no { background:linear-gradient(155deg,#E2F0F4,#D6E9EF); border:1.5px solid var(--teal); }
+  .verdictbox__k { font-size:9.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; margin-bottom:8px; }
+  .verdictbox--ok .verdictbox__k { color:var(--green); }
+  .verdictbox--no .verdictbox__k { color:var(--teal); }
+  .verdictbox__t { font-family:var(--font-display); font-size:19px; font-weight:600; color:var(--deep); line-height:1.28; }
+  .verdictbox__s { font-size:12.5px; color:var(--ink-2); line-height:1.6; margin-top:8px; }
+  .verdictbox__s b { color:var(--deep); }
+  .saved { display:flex; gap:14px; margin-top:14px; padding-top:13px; border-top:1px solid rgba(27,57,91,.1); }
+  .saved__i b { display:block; font-size:15px; font-weight:800; color:var(--deep); }
+  .saved__i span { display:block; font-size:9.5px; font-weight:700; letter-spacing:.05em;
+    text-transform:uppercase; color:var(--ink-2); margin-top:2px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ FRAME 1 · UPLOAD ═══ -->
+<div class="frame-col">
+  <div class="frame-label">T3-3b — Already have bloodwork?</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Your Baseline</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:20px;">
+        <div class="kick">Measure</div>
+        <h1 class="lede">Had bloods done recently? <em>Send them over.</em></h1>
+        <p class="sub">We'll read them free — no account, no charge, whether or not you go ahead with us.</p>
+
+        <div class="drop">
+          <div class="drop__i">📄</div>
+          <div class="drop__t">Drop your report here</div>
+          <div class="drop__s">PDF, or a photo of the printout</div>
+          <div class="drop__btns">
+            <div class="drop__b">Choose file</div>
+            <div class="drop__b drop__b--alt">Take a photo</div>
+          </div>
+        </div>
+
+        <div class="kick" style="margin-top:22px;">Labs we can read automatically</div>
+        <div class="labs">
+          <span class="lab">Al Borg</span><span class="lab">Dr. Sulaiman Al Habib</span>
+          <span class="lab">Fakeeh</span><span class="lab">Saudi German</span>
+          <span class="lab">Quest</span><span class="lab">Labcorp</span>
+          <span class="lab">+ most hospital reports</span>
+        </div>
+
+        <div class="free">
+          <span>✓</span>
+          <span><b>Free, either way.</b> If your panel is recent and from a lab whose method we can match,
+            it becomes your baseline and you skip the draw entirely. If not, we'll still read it and tell you
+            what it means.</span>
+        </div>
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--primary">Read my report →</button>
+        <button class="btn btn--ghost" style="margin-top:2px;">I don't have one — book a draw</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="r"><span class="tag">Why this exists</span> Plenty of KSA users already have recent bloods from Al Borg, a hospital, or an employer screening. Forcing a fresh draw is cost and friction — and for some of them it's genuinely unnecessary.</div>
+    <div class="r"><span class="tag">Free read as top-of-funnel</span> "We'll read it free, whether or not you go ahead" is real value delivered <b>before</b> any payment — the strongest version of "selling is sequencing."</div>
+  </div>
+</div>
+
+<!-- ═══ FRAME 2 · ACCEPTED AS BASELINE ═══ -->
+<div class="frame-col">
+  <div class="frame-label">T3-3b — <b>Accepted</b> · draw skipped</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Your Baseline</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:20px;">
+        <div class="kick">Report read · 4 seconds</div>
+        <h1 class="lede">We can use this <em>as your baseline</em>.</h1>
+
+        <div class="found">
+          <div class="found__h">
+            <span style="font-size:19px;">🏥</span>
+            <div><div class="found__lab">Al Borg Diagnostics</div>
+              <div class="found__meta">Drawn 18 days ago · fasted · 32 markers</div></div>
+          </div>
+          <div class="mrow"><span>HbA1c</span><span class="mrow__v" style="color:var(--marker-out-of-range)">5.9 %</span></div>
+          <div class="mrow"><span>Ferritin</span><span class="mrow__v" style="color:var(--marker-out-of-range)">18 ng/mL</span></div>
+          <div class="mrow"><span>Fasting glucose</span><span class="mrow__v" style="color:var(--marker-borderline)">104 mg/dL</span></div>
+          <div class="mrow"><span>Lipids, liver, kidney</span><span class="mrow__v" style="color:var(--green)">In range</span></div>
+        </div>
+
+        <div class="verdictbox verdictbox--ok">
+          <div class="verdictbox__k">✓ Assay matched</div>
+          <div class="verdictbox__t">Al Borg runs HbA1c on the same method as our retest lab.</div>
+          <div class="verdictbox__s">That matters more than it sounds. Two HbA1c results from different methods
+            aren't comparable — and a verdict computed across them would be fiction. Because these match,
+            <b>this panel can be your baseline and you don't need a draw.</b></div>
+          <div class="saved">
+            <div class="saved__i"><b>SAR 0</b><span>Draw cost</span></div>
+            <div class="saved__i"><b>−4 days</b><span>Straight to plan</span></div>
+            <div class="saved__i"><b>32</b><span>Markers used</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--primary">See what we'd do about it →</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="r"><span class="tag">A branch with real consequences</span> This path <b>skips the draw entirely</b> — days and cost removed. Most flows treat "upload" as a formality; here it genuinely changes what happens next.</div>
+    <div class="r"><span class="tag">assay_version, surfaced</span> The schema field that makes the whole verification thesis work becomes the visible reason the shortcut is allowed. Rigor as a feature, not fine print.</div>
+  </div>
+</div>
+
+<!-- ═══ FRAME 3 · READ FREE, STILL NEED A DRAW ═══ -->
+<div class="frame-col">
+  <div class="frame-label">T3-3b — <b>Read free</b> · draw still needed</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Your Baseline</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:20px;">
+        <div class="kick">Report read · 4 seconds</div>
+        <h1 class="lede">Read it. Here's <em>what it says</em>.</h1>
+
+        <div class="found">
+          <div class="found__h">
+            <span style="font-size:19px;">🏥</span>
+            <div><div class="found__lab">Regional Medical Centre</div>
+              <div class="found__meta">Drawn 5 months ago · 14 markers</div></div>
+          </div>
+          <div class="mrow"><span>HbA1c</span><span class="mrow__v" style="color:var(--marker-out-of-range)">5.8 %</span></div>
+          <div class="mrow"><span>Ferritin</span><span class="mrow__v" style="color:var(--ink-2)">Not tested</span></div>
+          <div class="mrow"><span>Fasting glucose</span><span class="mrow__v" style="color:var(--marker-borderline)">101 mg/dL</span></div>
+        </div>
+
+        <div class="verdictbox verdictbox--no">
+          <div class="verdictbox__k">⚠ Can't be your baseline</div>
+          <div class="verdictbox__t">Two reasons, and we'd rather say them than quietly use it anyway.</div>
+          <div class="verdictbox__s">
+            <b>1 · Different method.</b> This lab runs HbA1c on a different assay than our retest lab.
+            Two results from different methods aren't comparable, and a verdict computed across them is fiction.<br><br>
+            <b>2 · Five months old.</b> HbA1c is a 90-day average — this one has already been overwritten by
+            the intervening months.<br><br>
+            So we'll draw our own. <b>Your report still did work:</b> it shaped which panel we recommend
+            and let us skip six intake questions.
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:16px; background:var(--surface-sunken); border-radius:16px; padding:13px 14px;">
+          <span>💡</span>
+          <span style="font-size:12px; color:var(--ink-2); line-height:1.55;">
+            Most products would just accept this and call it a baseline. That's how you get a confident
+            verdict that means nothing.</span>
+        </div>
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--primary">Book my baseline draw →</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="r"><span class="tag">The constraint becomes the pitch</span> Refusing a free shortcut, and explaining exactly why, is a stronger trust signal than accepting it would have been. <i>"Most products would just accept this and call it a baseline. That's how you get a confident verdict that means nothing."</i></div>
+    <div class="r"><span class="tag">Never wasted</span> The upload still earns its keep — it shaped the panel and removed six intake questions. A declined path that returns nothing is a dead end; this one doesn't.</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-4 · Log symptom — structured, never free-text-only</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); margin: 18px 0 10px; }
+  .day-badge { display:inline-block; font-size:11px; font-weight:600; color:var(--teal); background:var(--teal-soft); padding:4px 10px; border-radius: var(--radius-pill); margin-bottom: 14px; }
+  .pattern-link { display:flex; align-items:center; justify-content:space-between; background:var(--mint); border-radius:var(--radius-md); padding:12px 14px; margin-top:18px; font-size:12.5px; color:var(--deep); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T2-4 — Log symptom (post-shot day 2)</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">✕</div><div class="nav-bar__title">How are you feeling?</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4">
+        <div class="day-badge">Day 2 after your shot</div>
+
+        <div class="section-label">Select what applies</div>
+        <div class="chip-grid">
+          <div class="chip is-selected">🤢 Nausea</div>
+          <div class="chip">🤕 Headache</div>
+          <div class="chip">💩 Constipation</div>
+          <div class="chip">〜 Diarrhoea</div>
+          <div class="chip">📍 Injection site</div>
+          <div class="chip">😴 Fatigue</div>
+          <div class="chip">🔥 Reflux</div>
+          <div class="chip">+ Other</div>
+        </div>
+
+        <div class="section-label">How strong — nausea</div>
+        <div class="severity-scale">
+          <div class="severity-scale__seg">None</div>
+          <div class="severity-scale__seg">Mild</div>
+          <div class="severity-scale__seg is-selected">Moderate</div>
+          <div class="severity-scale__seg">Severe</div>
+        </div>
+
+        <div class="pattern-link">
+          <span>📊 See your nausea pattern across this protocol</span>
+          <span>›</span>
+        </div>
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--primary">Log this →</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">T2-4</span> The worst-served surface in the entire GLP-1 category — nobody has a structured symptom instrument. This is the input that should <b>drive titration</b>, not sit unread in a chat transcript.</div>
+    <div class="row"><span class="tag">Closed vocabulary</span> Chips from Noom's Side Effect Guides — nausea, headache, constipation, diarrhoea, injection-site, fatigue, reflux — plus severity 0–3. Four taps, zero free-text-only inputs.</div>
+    <div class="row"><span class="tag">Auto-tagged</span> <code>days_since_injection</code> is captured automatically (the day badge), not asked — this is what turns a pile of symptom logs into "nausea peaks day 2, clears by day 4," the exact insight surfaced back on T2-1's home hero.</div>
+    <div class="row"><span class="tag">Payoff, not chore</span> The pattern link turns logging into an immediate return rather than pure data entry for someone else's benefit.</div>
+  </div>
+</div>
+</body>
+</html>

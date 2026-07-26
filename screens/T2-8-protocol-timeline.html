@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-8 · Protocol timeline (SUPERSEDED — folded into the Loop tab in app.html)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .phase-labels-top { display:flex; font-size:10.5px; font-weight:700; color:var(--ink-2); margin-top: 20px; }
+  .phase-labels-top span { flex:1; text-align:center; }
+
+  .ladder-wrap { margin: 20px 0 6px; }
+  .ladder-title { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-2); margin-bottom:8px; }
+
+  .ramadan-card { display:flex; gap:10px; background: var(--mint); border: 1.5px dashed var(--yellow-deep); border-radius: var(--radius-md); padding:12px 14px; margin: 16px 0; }
+  .ramadan-card__icon { font-size:18px; }
+  .ramadan-card__text { font-size:12px; color:var(--deep); line-height:1.55; }
+  .ramadan-card__text b { font-weight:700; }
+
+  .finish-card { display:flex; align-items:center; gap:12px; background: var(--surface-card); border: 2px dashed var(--deep); border-radius: var(--radius-md); padding:14px; margin-top:16px; }
+  .finish-card__icon { font-size:22px; }
+  .finish-card__label { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-2); }
+  .finish-card__value { font-size:15px; font-weight:700; color:var(--deep); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T2-8 — Protocol timeline (crossing Ramadan)</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div></div><div class="nav-bar__title">Your Timeline</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4">
+
+        <div style="font-size:13px; color:var(--ink-2); margin-top:8px;">Week 6 of 12 · Iron protocol</div>
+
+        <div class="phase-strip" style="margin-top:16px;">
+          <div class="ramadan-band" style="left:38%; width:28%;"></div>
+          <div class="phase-strip__seg" style="left:0; width:33%; background:var(--teal);"></div>
+          <div class="phase-strip__seg" style="left:33%; width:34%; background:var(--marker-optimal);"></div>
+          <div class="phase-strip__seg" style="left:67%; width:33%; background:var(--fog-soft);"></div>
+          <div class="phase-strip__now" style="left:50%;"></div>
+        </div>
+        <div class="phase-labels-top"><span>Titration</span><span>Maintenance</span><span>Pre-retest</span></div>
+
+        <div class="ramadan-card">
+          <span class="ramadan-card__icon">🌙</span>
+          <span class="ramadan-card__text"><b>Weeks 6–10 cross Ramadan.</b> We've frozen your dose at 28mg and shifted reminders to after Iftar. This month's goal: <b>hold, don't lose</b> — your weight chart will show this as a shaded band, not a slip.</span>
+        </div>
+
+        <div class="ladder-wrap">
+          <div class="ladder-title">Dose ladder</div>
+          <svg viewBox="0 0 340 70" style="width:100%;">
+            <path d="M0,60 L60,60 L60,44 L140,44 L140,44 L220,44 L220,44 L300,44 L300,44 L340,44" fill="none" stroke="var(--deep)" stroke-width="3"/>
+            <circle cx="60" cy="60" r="3.5" fill="var(--deep)"/><circle cx="140" cy="44" r="3.5" fill="var(--deep)"/>
+            <line x1="170" y1="0" x2="170" y2="70" stroke="var(--fog)" stroke-width="1.5" stroke-dasharray="3 3"/>
+          </svg>
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--ink-2); margin-top:-6px;">
+            <span>14mg → 28mg</span><span style="color:var(--yellow-deep); font-weight:600;">held for Ramadan</span><span>Week 12</span>
+          </div>
+        </div>
+
+        <div class="finish-card">
+          <span class="finish-card__icon">🧪</span>
+          <div><div class="finish-card__label">Retest — the finish line</div><div class="finish-card__value">7 Dec · HbA1c below 5.7%</div></div>
+        </div>
+
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">T2-8</span> A protocol with no visible arc reads as indefinite, which quietly erodes commitment. This renders the same schema entities C5 already models — no new data, just visibility.</div>
+    <div class="row"><span class="tag">KSA R6/R7</span> Ramadan renders as a shaded band computed from Umm al-Qura (never hardcoded — 2030 has two), with the goal explicitly restated <i>before</i> the first odd weigh-in, not after. The escalation freeze shown here is the software form of "don't start, don't escalate during."</div>
+    <div class="row"><span class="tag">Same object, 3rd appearance</span> The dashed retest card echoes C4's sealed card and P3's empty socket — one motif, three moments: sealed → glowing/about-to-close → finish line.</div>
+    <div class="row"><span class="tag">Lilly's staircase</span> The dose ladder is the canonical rendering for titration — paired here with the Ramadan freeze marker so the "why did the ladder stop" question answers itself.</div>
+  </div>
+</div>
+</body>
+</html>

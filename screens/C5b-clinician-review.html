@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C5b · Clinician review — before payment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<link rel="stylesheet" href="../design-system/loop.css">
+<script src="../design-system/embed.js"></script>
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:34px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .caption .r{margin-bottom:7px;} .caption .r:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .kick { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:rgba(27,57,91,.38); }
+  .lede { font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--deep);
+    line-height:1.18; letter-spacing:-.02em; margin:9px 0 8px; }
+  .lede em { font-style:normal; color:var(--yellow-deep); }
+  .sub { font-size:13px; color:var(--ink-2); line-height:1.6; }
+
+  /* clinician */
+  .doc { display:flex; align-items:center; gap:14px; background:var(--surface-card);
+    border-radius:20px; padding:16px; box-shadow:var(--shadow-sm); margin-top:20px; }
+  .doc__av { width:52px; height:52px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(150deg,#254A73,#1B395B); color:#fff; display:flex;
+    align-items:center; justify-content:center; font-weight:700; font-size:16px; }
+  .doc__n { font-size:15px; font-weight:700; color:var(--deep); }
+  .doc__c { font-size:11.5px; color:var(--ink-2); margin-top:2px; line-height:1.45; }
+  .doc__lic { font-size:10px; color:var(--fog); margin-top:3px; }
+  .doc__live { display:flex; align-items:center; gap:5px; font-size:10px; font-weight:800;
+    letter-spacing:.05em; text-transform:uppercase; color:var(--yellow-deep);
+    background:var(--mint); padding:4px 9px; border-radius:14px; margin-left:auto; flex-shrink:0; }
+  .pulse { width:6px; height:6px; border-radius:50%; background:var(--yellow-deep);
+    animation:pl 1.6s ease-in-out infinite; }
+  @keyframes pl { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+  .checks { margin-top:22px; }
+  .chk { display:flex; align-items:flex-start; gap:11px; padding:11px 0; }
+  .chk + .chk { border-top:1px solid rgba(27,57,91,.06); }
+  .chk__b { width:19px; height:19px; border-radius:6px; flex-shrink:0; margin-top:1px;
+    display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff;
+    background:var(--green); }
+  .chk__b--now { background:var(--yellow); color:var(--deep); }
+  .chk__b--todo { background:transparent; border:2px solid rgba(27,57,91,.16); }
+  .chk__t { font-size:13.5px; color:var(--text-primary); line-height:1.4; }
+  .chk__s { font-size:11.5px; color:var(--ink-2); margin-top:2px; line-height:1.45; }
+
+  .sla { display:flex; align-items:center; gap:11px; background:var(--teal-soft);
+    border-radius:16px; padding:13px 14px; margin-top:20px; }
+  .sla__t { font-size:12.5px; color:var(--deep-2); line-height:1.5; flex:1; }
+  .sla__t b { color:var(--deep); }
+  .sla__pill { font-size:10px; font-weight:800; color:var(--teal); background:#fff;
+    padding:4px 9px; border-radius:14px; white-space:nowrap; }
+
+  .nocharge { display:flex; gap:10px; background:var(--green-soft); border-radius:16px;
+    padding:13px 14px; margin-top:12px; font-size:12.5px; color:#1c6b41; line-height:1.55; }
+  .nocharge b { font-weight:700; }
+
+  /* changes */
+  .chg { background:var(--surface-card); border-radius:20px; padding:16px; box-shadow:var(--shadow-sm); margin-bottom:11px; }
+  .chg__h { display:flex; align-items:center; gap:9px; margin-bottom:9px; }
+  .chg__n { width:22px; height:22px; border-radius:7px; background:var(--amber); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; }
+  .chg__t { font-size:14px; font-weight:700; color:var(--deep); }
+  .chg__was { display:flex; align-items:center; gap:9px; font-size:12.5px; margin-bottom:9px; }
+  .chg__old { color:var(--fog); text-decoration:line-through; }
+  .chg__new { color:var(--deep); font-weight:700; }
+  .chg__why { font-size:12px; color:var(--ink-2); line-height:1.55; font-style:italic;
+    border-left:2px solid var(--amber); padding-left:11px; }
+
+  .sealed { background:linear-gradient(160deg,#1B395B,#14293F); border-radius:22px; padding:18px;
+    color:#fff; margin-top:18px; position:relative; overflow:hidden; }
+  .sealed::after { content:''; position:absolute; right:-60px; top:-60px; width:170px; height:170px;
+    border-radius:50%; background:radial-gradient(circle,rgba(255,185,0,.16),transparent 70%); }
+  .sealed__k { display:flex; align-items:center; gap:7px; font-size:9.5px; font-weight:800;
+    letter-spacing:.12em; text-transform:uppercase; color:#6FD69B; margin-bottom:11px;
+    position:relative; z-index:1; }
+  .sealed__q { font-family:var(--font-display); font-size:19px; font-weight:500; line-height:1.35;
+    position:relative; z-index:1; }
+  .sealed__q em { font-style:normal; color:var(--yellow); }
+  .sealed__sig { font-size:10.5px; color:rgba(255,255,255,.55); margin-top:13px; padding-top:11px;
+    border-top:1px solid rgba(255,255,255,.12); line-height:1.5; position:relative; z-index:1; }
+</style>
+</head>
+<body>
+
+<!-- ═══ FRAME 1 · UNDER REVIEW ═══ -->
+<div class="frame-col">
+  <div class="frame-label">C5b — Clinician review · <b>before payment</b></div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Clinician Review</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:20px;">
+        <div class="kick">Commit · step 2 of 3</div>
+        <h1 class="lede">A doctor checks this <em>before you pay</em>.</h1>
+        <p class="sub">Tirzepatide is prescription-only. Nobody at Valeo can dispense it, and no card is charged,
+          until a licensed clinician has read your panel and signed the plan.</p>
+
+        <div class="doc">
+          <div class="doc__av">SA</div>
+          <div>
+            <div class="doc__n">Dr. Sara Al-Amri</div>
+            <div class="doc__c">Internal medicine · metabolic health</div>
+            <div class="doc__lic">SCFHS licence 24-118736</div>
+          </div>
+          <div class="doc__live"><span class="pulse"></span>Reviewing</div>
+        </div>
+
+        <div class="checks">
+          <div class="kick" style="margin-bottom:6px;">What she's checking</div>
+          <div class="chk"><span class="chk__b">✓</span><div>
+            <div class="chk__t">Eligibility against your panel</div>
+            <div class="chk__s">HbA1c 5.9%, BMI 31.2 — both clear the prescribing threshold</div></div></div>
+          <div class="chk"><span class="chk__b">✓</span><div>
+            <div class="chk__t">Contraindications and your medication list</div>
+            <div class="chk__s">No thyroid history, no pancreatitis, nothing that interacts</div></div></div>
+          <div class="chk"><span class="chk__b chk__b--now">•</span><div>
+            <div class="chk__t">Starting dose and titration pace</div>
+            <div class="chk__s">Weighing your low ferritin against how fast to climb</div></div></div>
+          <div class="chk"><span class="chk__b chk__b--todo"></span><div>
+            <div class="chk__t">The prediction itself</div>
+            <div class="chk__s">Is “below 5.7% in 12 weeks” actually a fair bet on this body?</div></div></div>
+        </div>
+
+        <div class="sla">
+          <div class="sla__t"><b>Usually back within 4 hours.</b> Always within 24 on weekdays —
+            we'll notify you the moment she signs.</div>
+          <div class="sla__pill">&lt; 24h</div>
+        </div>
+
+        <div class="nocharge"><span>✓</span>
+          <span><b>Nothing is charged yet.</b> If she says this isn't right for you, there's nothing to refund —
+            you were never billed.</span></div>
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--secondary">Rather talk it through? Book 15 min →</button>
+        <div style="text-align:center; font-size:11px; color:var(--ink-2); margin-top:9px;">Free · video or phone · usually same day</div>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="r"><span class="tag">The gap this closes</span> C4 claimed “Sealed by Dr. Sara Al-Amri” but no screen ever showed her looking at it. The clinician was <b>asserted, never witnessed</b>. Now the prediction is <i>drafted</i> at C4 and <i>sealed here</i> — which also answers the open Ledger question of who seals it.</div>
+    <div class="r"><span class="tag">Superhuman's inversion</span> Review before payment makes this read as <b>being accepted</b>, not buying. Their users went through a call “to get the privilege to pay for it.”</div>
+    <div class="r"><span class="tag">Named, licensed, checking specifics</span> Marek and LetsGetChecked both show a named, credentialed clinician rather than “physician-reviewed.” The checklist cites <i>your</i> actual numbers, so it can't read as a template.</div>
+    <div class="r"><span class="tag">Printed SLA + live escalation</span> Superpower prints the wait on the handoff; Form Health makes the live call prominent rather than buried. Both here.</div>
+  </div>
+</div>
+
+<!-- ═══ FRAME 2 · APPROVED WITH CHANGES ═══ -->
+<div class="frame-col">
+  <div class="frame-label">C5b — <b>Approved, with changes</b> · the doctor is real</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Clinician Review</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:20px;">
+        <div class="kick">Signed 3 hours ago</div>
+        <h1 class="lede">Dr. Sara approved it — <em>with two changes</em>.</h1>
+
+        <div class="doc" style="margin-top:16px;">
+          <div class="doc__av">SA</div>
+          <div>
+            <div class="doc__n">Dr. Sara Al-Amri</div>
+            <div class="doc__c">Reviewed your full panel + intake</div>
+          </div>
+          <div class="doc__live" style="background:var(--green-soft); color:var(--green);">✓ Signed</div>
+        </div>
+
+        <div style="margin-top:22px;">
+          <div class="kick" style="margin-bottom:10px;">What she changed</div>
+
+          <div class="chg">
+            <div class="chg__h"><span class="chg__n">1</span><span class="chg__t">Slower start</span></div>
+            <div class="chg__was"><span class="chg__old">Start at 5 mg</span><span>→</span><span class="chg__new">Start at 2.5 mg for 4 weeks</span></div>
+            <div class="chg__why">“Your ferritin is 18. Low iron plus early GLP-1 nausea is the combination that
+              makes people stop in week three. I'd rather climb slowly and keep you on it.”</div>
+          </div>
+
+          <div class="chg">
+            <div class="chg__h"><span class="chg__n">2</span><span class="chg__t">One more marker at retest</span></div>
+            <div class="chg__was"><span class="chg__old">HbA1c + ferritin</span><span>→</span><span class="chg__new">+ TSH</span></div>
+            <div class="chg__why">“Thyroid can quietly explain both the fatigue and a stubborn HbA1c. If this
+              protocol doesn't work, I want to have already ruled it out rather than start over.”</div>
+          </div>
+        </div>
+
+        <div class="sealed">
+          <div class="sealed__k">🔒 Now sealed · locked until retest</div>
+          <div class="sealed__q">Tirzepatide, <em>2.5 mg</em> weekly for 4 weeks then 5 mg, will move your HbA1c
+            from 5.9% to <em>below 5.7%</em> by <em>7 December</em>.</div>
+          <div class="sealed__sig">Signed by Dr. Sara Al-Amri · SCFHS 24-118736 · 12 Oct 2026, 14:20 —
+            cannot be edited after today. If it changes, you'll see the change and the reason.</div>
+        </div>
+
+        <div style="display:flex; gap:10px; background:var(--surface-sunken); border-radius:16px;
+          padding:13px 14px; margin-top:16px;">
+          <span>💬</span>
+          <span style="font-size:12px; color:var(--ink-2); line-height:1.55;">
+            Disagree with either change? <b style="color:var(--deep)">Reply to Dr. Sara</b> before you confirm —
+            still nothing charged.</span>
+        </div>
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px); border-top:1px solid var(--line);">
+        <button class="btn btn--primary">Accept and continue →</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="r"><span class="tag">Why "with changes" is the default path</span> If every review came back “approved,” users would correctly conclude it's a rubber stamp. <b>Showing a real, reasoned change is the entire point</b> — it's the difference between a clinician and a checkbox.</div>
+    <div class="r"><span class="tag">The changes are clinically real</span> Slower titration because low ferritin + GLP-1 nausea is the documented week-three quit pattern; adding TSH so a null result doesn't send you back to the start. Both come straight from the GLP-1 research.</div>
+    <div class="r"><span class="tag">The seal is now an event</span> The prediction is drafted at C4 and <b>sealed here, by a named licensed human</b>, timestamped — with the amendment rule stated up front rather than discovered later.</div>
+    <div class="r"><span class="tag">Still reversible, still free</span> “Disagree? Reply before you confirm — still nothing charged.” Approval isn't a trapdoor into payment.</div>
+  </div>
+</div>
+
+</body>
+</html>

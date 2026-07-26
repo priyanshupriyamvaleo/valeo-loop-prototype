@@ -1,0 +1,181 @@
+/* ============================================================
+   VALEO DESIGN TOKENS — v1
+   Source: Valeo_Personalization_Prototype_v3.html (base palette)
+   Semantic roles derived from PLAN.md principles P2/P3/P9/P10/P11
+   and REFERENCES.md mechanics M6/M19/M20.
+   ============================================================ */
+
+:root {
+
+  /* ---------- BASE PALETTE (from brand prototype — do not rename) ---------- */
+  --deep:        #1B395B;
+  --deep-2:      #254A73;
+  --yellow:      #FFB900;
+  --yellow-deep: #E0A400;
+  --green:       #27995B;
+  --green-soft:  #E3F3E9;
+  --teal:        #408FA4;
+  --teal-soft:   #E2F0F4;
+  --mint:        #FDF1CC;
+  --cream:       #FFFDF5;
+  --ink:         #22354C;
+  --ink-2:       #5E6E82;
+  --coral:       #E94F5F;
+  --coral-soft:  #FBE3E6;
+  --card:        #FFFFFF;
+  --line:        #F0E7D0;
+
+  /* ---------- NEW BASE TOKENS (added for this system) ----------
+     Amber tier: Marek/LetsGetChecked ship binary green/red only —
+     cliff effects at the boundary. We add a real middle tier. Distinct
+     from --yellow (brand accent, used for CTAs/highlights) so a status
+     color is never confused with a brand color. */
+  --amber:       #C97A1F;
+  --amber-soft:  #FBEDDD;
+
+  /* Slate: reserved for REFUTED verdicts only (P9 — a null result is a
+     legitimate finding, not a failure; it must never read as an alarm).
+     Never reuse for errors or destructive actions. */
+  --slate:       #4A5A72;
+  --slate-soft:  #E9EDF2;
+
+  /* Fog: reserved for INCONCLUSIVE states (4 reasons, see DATA_MODEL §8).
+     Deliberately the flattest color in the system — inconclusive is
+     "no verdict," not "bad verdict." */
+  --fog:         #8A93A0;
+  --fog-soft:    #EEF0F3;
+
+  /* ---------- SEMANTIC — MARKER STATUS (biomarker rows, panels) ----------
+     Per M6 (Marek): red is a LOCATION on the axis, not a legend color —
+     rendered via the .band-gauge component, not via text color alone.
+     Per KSA R2/R3: never a body-shaped visual; text + dot + line only. */
+  --marker-optimal:     var(--green);
+  --marker-optimal-bg:  var(--green-soft);
+  --marker-in-range:    var(--teal);
+  --marker-in-range-bg: var(--teal-soft);
+  --marker-borderline:  var(--amber);
+  --marker-borderline-bg: var(--amber-soft);
+  --marker-out-of-range:    var(--coral);   /* de-escalated red — "terracotta," never true alarm red */
+  --marker-out-of-range-bg: var(--coral-soft);
+
+  /* ---------- SEMANTIC — VERDICT STATUS (P10/P11, Statsig-style palette,
+     adapted per P9: refuted is a serious color, not an alarm color) ---------- */
+  --verdict-confirmed:      var(--green);
+  --verdict-confirmed-bg:   var(--green-soft);
+  --verdict-partial:        var(--amber);
+  --verdict-partial-bg:     var(--amber-soft);
+  --verdict-refuted:        var(--slate);      /* NOT coral/red — see P9 */
+  --verdict-refuted-bg:     var(--slate-soft);
+  --verdict-inconclusive:      var(--fog);
+  --verdict-inconclusive-bg:   var(--fog-soft);
+
+  /* ---------- SEMANTIC — VERDICT CONFIDENCE BANDS (P10) ----------
+     WHOOP-style: 3 bands, widest at the bottom (compresses emotional
+     distance at the low end), descriptive names, clamp 1–99 (never 0/100).
+     These are distinct from verdict-status colors: confidence is about
+     the DAILY signal quality, not the final outcome. */
+  --confidence-strong:      var(--green);
+  --confidence-strong-bg:   var(--green-soft);
+  --confidence-watch:       var(--amber);
+  --confidence-watch-bg:    var(--amber-soft);
+  --confidence-at-risk:     var(--coral);
+  --confidence-at-risk-bg:  var(--coral-soft);
+
+  /* ---------- TEXT ---------- */
+  --text-primary:    var(--ink);
+  --text-secondary:  var(--ink-2);
+  --text-on-dark:    var(--cream);
+  --text-on-dark-2:  #C7D2DE;
+  --text-link:       var(--deep-2);
+
+  /* ---------- SURFACES ---------- */
+  --surface-app:     var(--cream);
+  --surface-card:    var(--card);
+  --surface-sunken:  #FBF6E8;
+  --surface-dark:    var(--deep);
+  --surface-dark-2:  var(--deep-2);
+  --border-hairline: var(--line);
+  --border-focus:    var(--deep);
+
+  /* ---------- TYPE — Poppins (UI), Fraunces (display/"moment" headlines) ----------
+     Fraunces is reserved for: the sealed prediction card, the reveal
+     headline, and verdict headlines. Everywhere else is Poppins.
+     RTL note: zero letter-spacing on any Arabic-adjacent token; Arabic
+     type pairing (Poppins has no Arabic cut) is still an open decision —
+     see KSA_CONSTRAINTS.md. Do not hardcode letter-spacing > 0 on body text. */
+  --font-ui:      'Poppins', system-ui, -apple-system, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+
+  --text-2xs:  11px;
+  --text-xs:   12px;
+  --text-sm:   13px;
+  --text-base: 15px;
+  --text-md:   17px;
+  --text-lg:   20px;
+  --text-xl:   24px;
+  --text-2xl:  30px;
+  --text-3xl:  38px;
+  --text-4xl:  48px;
+
+  --leading-tight:  1.15;
+  --leading-snug:   1.3;
+  --leading-normal: 1.45;
+  --leading-loose:  1.65;
+
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* ---------- SPACING (4px base) ---------- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-7:  28px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ---------- RADIUS ---------- */
+  --radius-sm:  8px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+  --radius-pill: 999px;
+
+  /* ---------- ELEVATION ---------- */
+  --shadow-sm: 0 1px 2px rgba(27,57,91,0.06), 0 1px 1px rgba(27,57,91,0.04);
+  --shadow-md: 0 4px 16px rgba(27,57,91,0.10), 0 1px 3px rgba(27,57,91,0.06);
+  --shadow-lg: 0 12px 32px rgba(27,57,91,0.16), 0 2px 6px rgba(27,57,91,0.08);
+  --shadow-sticky: 0 -6px 20px rgba(27,57,91,0.10);
+
+  /* ---------- MOTION ---------- */
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-decel:    cubic-bezier(0, 0, 0.2, 1);
+  --duration-fast:   150ms;
+  --duration-base:   240ms;
+  --duration-slow:   420ms;
+  --duration-reveal: 700ms; /* the sealed-prediction "unsealing" beat only */
+
+  /* ---------- iOS FRAME (390×844 canonical build target) ---------- */
+  --frame-width:  390px;
+  --frame-height: 844px;
+  --safe-top:     54px;  /* status bar + notch */
+  --safe-bottom:  34px;  /* home indicator */
+  --tab-bar-height: 83px; /* incl. safe-bottom */
+  --nav-bar-height: 44px;
+}
+
+/* ---------- DARK MODE — placeholder, not designed yet ----------
+   Valeo's brand is warm/light by design intent (sand/cream); dark mode
+   is out of scope for v1. Token names are stable so it can be added later
+   without renaming anything downstream. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* intentionally left as light-mode values — see note above */
+  }
+}

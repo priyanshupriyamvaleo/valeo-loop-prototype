@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T3-4 · At-home phlebotomy booking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .who-row { display:flex; gap:10px; margin: 8px 0 16px; }
+  .who-opt { flex:1; border-radius:var(--radius-md); padding:14px 10px; text-align:center; background:var(--surface-card); box-shadow:var(--shadow-sm); border:2px solid transparent; }
+  .who-opt.is-selected { border-color:var(--deep); background: var(--teal-soft); }
+  .who-opt__icon { font-size:20px; margin-bottom:4px; }
+  .who-opt__label { font-size:12.5px; font-weight:600; }
+  .who-opt__note { font-size:10px; color:var(--ink-2); margin-top:2px; }
+
+  .promise-line { display:flex; gap:8px; align-items:center; background:var(--mint); border-radius:var(--radius-md); padding:10px 12px; font-size:12px; color:var(--deep); margin-bottom:16px; }
+
+  .day-row { display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; }
+  .day-chip { flex-shrink:0; width:52px; text-align:center; padding:10px 4px; border-radius:var(--radius-md); background:var(--surface-card); box-shadow:var(--shadow-sm); }
+  .day-chip.is-selected { background:var(--deep); color:#fff; }
+  .day-chip__dow { font-size:10px; }
+  .day-chip__num { font-size:16px; font-weight:700; margin-top:2px; }
+
+  .slot-row { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:var(--surface-card); border-radius:var(--radius-md); box-shadow:var(--shadow-sm); margin-bottom:8px; font-size:13px; }
+  .slot-row.is-selected { border: 2px solid var(--deep); }
+
+  .access-note { display:flex; gap:8px; align-items:center; background:var(--surface-sunken); border-radius:var(--radius-md); padding:10px 12px; font-size:11.5px; color:var(--ink-2); margin-top:14px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T3-4 — At-home phlebotomy booking</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Book Your Draw</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px;">
+
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-2); margin-bottom:6px;">Who will visit you?</div>
+        <div class="who-row">
+          <div class="who-opt is-selected"><div class="who-opt__icon">👩‍⚕️</div><div class="who-opt__label">ممرضة (female)</div><div class="who-opt__note">Fewer slots nearby</div></div>
+          <div class="who-opt"><div class="who-opt__icon">🧑‍⚕️</div><div class="who-opt__label">No preference</div><div class="who-opt__note">More slots available</div></div>
+        </div>
+
+        <div class="promise-line">✓ Once confirmed, we'll never substitute — you'll see her name and can reschedule instead.</div>
+
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-2); margin-bottom:6px;">Day</div>
+        <div class="day-row">
+          <div class="day-chip"><div class="day-chip__dow">Mon</div><div class="day-chip__num">14</div></div>
+          <div class="day-chip is-selected"><div class="day-chip__dow">Tue</div><div class="day-chip__num">15</div></div>
+          <div class="day-chip"><div class="day-chip__dow">Wed</div><div class="day-chip__num">16</div></div>
+          <div class="day-chip"><div class="day-chip__dow">Thu</div><div class="day-chip__num">17</div></div>
+        </div>
+
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-2); margin-bottom:6px;">Time</div>
+        <div class="slot-row is-selected"><span>10:00 – 11:00 AM</span><span style="color:var(--green); font-weight:600;">Available</span></div>
+        <div class="slot-row"><span>2:00 – 3:00 PM</span><span style="color:var(--green); font-weight:600;">Available</span></div>
+        <div class="slot-row" style="opacity:0.4;"><span>4:00 – 5:00 PM</span><span>Full</span></div>
+
+        <div class="access-note">📍 اتصل من البوابة — add an access note for your nurse (optional)</div>
+
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px);">
+        <button class="btn btn--primary">Confirm booking →</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <span class="tag">KSA R5</span> Defaulted female-for-female for female patients (94.7% of Saudi women choose a female provider for anything intimate) — with the slot trade-off shown <b>inline</b>, not hidden, so opting for "no preference" is informed, not a trap. No mahram/guardian field: the fiqh concern (khalwah) is dissolved by sending a female nurse, not by asking about a male relative.
+  </div>
+</div>
+</body>
+</html>

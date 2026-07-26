@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C1 · Results are ready</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background: #EFE7D6; padding: 60px 20px; display: flex; gap: 48px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+  .frame-label { text-align: center; font-family: var(--font-ui); font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 14px; letter-spacing: 0.02em; }
+  .frame-col { display: flex; flex-direction: column; align-items: center; }
+
+  /* ---- Lock screen ---- */
+  .lockscreen {
+    width: var(--frame-width); height: var(--frame-height);
+    border-radius: 46px; overflow: hidden; position: relative;
+    box-shadow: var(--shadow-lg);
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(255,185,0,0.35) 0%, rgba(255,185,0,0) 55%),
+      linear-gradient(180deg, #14283F 0%, #1B395B 45%, #254A73 100%);
+  }
+  .lockscreen__notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:28px; background:#000; border-radius:0 0 18px 18px; z-index:50; }
+  .lockscreen__time { text-align:center; margin-top: 74px; color: #fff; }
+  .lockscreen__clock { font-size: 74px; font-weight: 600; line-height: 1; letter-spacing: -0.02em; }
+  .lockscreen__date { font-size: 17px; font-weight: 500; margin-top: 6px; opacity: 0.92; }
+
+  .notif {
+    margin: 44px 14px 0;
+    background: rgba(255,255,255,0.22);
+    backdrop-filter: blur(24px);
+    border-radius: 20px;
+    padding: 14px 14px 15px;
+    animation: dropIn 700ms var(--ease-decel) both;
+  }
+  @keyframes dropIn { from { opacity:0; transform: translateY(-14px); } to { opacity:1; transform:none; } }
+  .notif__head { display:flex; align-items:center; gap:8px; margin-bottom: 6px; }
+  .notif__icon { width:20px; height:20px; border-radius:6px; background: var(--yellow); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:var(--deep); flex-shrink:0; }
+  .notif__app { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); flex:1; }
+  .notif__time { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .notif__title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .notif__body { font-size: 14px; color: rgba(255,255,255,0.92); line-height: 1.35; }
+
+  .lockscreen__bottom { position:absolute; bottom: 40px; left:0; right:0; display:flex; justify-content:space-between; padding: 0 34px; }
+  .lockscreen__bicon { width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.18); display:flex; align-items:center; justify-content:center; }
+
+  /* ---- caption card ---- */
+  .caption {
+    width: var(--frame-width);
+    margin-top: 20px;
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .caption b { color: var(--deep); }
+  .caption .row { margin-bottom: 8px; }
+  .caption .row:last-child { margin-bottom:0; }
+  .tag { display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color: var(--deep-2); background: var(--teal-soft); padding: 2px 8px; border-radius: 6px; margin-right:6px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+
+<div class="frame-col">
+  <div class="frame-label">C1a — Lock screen · the push carries the headline (M18)</div>
+  <div class="lockscreen">
+    <div class="lockscreen__notch"></div>
+    <div class="lockscreen__time">
+      <div class="lockscreen__clock">9:41</div>
+      <div class="lockscreen__date">Monday, 12 October</div>
+    </div>
+    <div class="notif">
+      <div class="notif__head">
+        <div class="notif__icon">V</div>
+        <div class="notif__app">Valeo</div>
+        <div class="notif__time">now</div>
+      </div>
+      <div class="notif__title">Your HbA1c is climbing — and it's reversible</div>
+      <div class="notif__body">We've turned your results into a plan. Takes 2 minutes to see.</div>
+    </div>
+    <div class="lockscreen__bottom">
+      <div class="lockscreen__bicon">🔦</div>
+      <div class="lockscreen__bicon">📷</div>
+    </div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">Copy rule</span> Never "Your results are ready." The push names the <b>finding</b>, not the event — per M18 (LetsGetChecked: <i>"Your results: Normal"</i>). The screen is opened by someone who already knows the shape of the answer.</div>
+    <div class="row"><span class="tag">Metric</span> Push → open rate within 2h. This is the cheapest A/B in the whole product — test 3 copy variants before building anything downstream.</div>
+  </div>
+</div>
+
+<div class="frame-col">
+  <div class="frame-label">C1b — Email / web twin (D1) · same headline, no install required</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>Safari</span></div>
+    <div class="screen" style="background:#fff;">
+      <div style="padding:0 4px;">
+        <div style="height:40px; display:flex; align-items:center; gap:8px; padding:0 12px; border-bottom:1px solid var(--line);">
+          <div style="flex:1; background:var(--surface-sunken); border-radius:8px; height:28px; display:flex; align-items:center; padding:0 10px; font-size:12px; color:var(--ink-2);">🔒 app.feelvaleo.com/r/8f2a91</div>
+        </div>
+      </div>
+      <div style="padding: 28px 22px;">
+        <div style="width:40px; height:40px; border-radius:11px; background:var(--deep); color:var(--yellow); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:600; font-size:20px; margin-bottom:20px;">V</div>
+        <div style="font-family:var(--font-display); font-size:26px; font-weight:500; line-height:1.25; color:var(--deep); margin-bottom:10px;">
+          Hi Faisal — your HbA1c is climbing, and it's reversible.
+        </div>
+        <div style="font-size:14px; color:var(--ink-2); line-height:1.6; margin-bottom:24px;">
+          We've reviewed your panel and built a plan around the one marker that matters most. No account needed to see it.
+        </div>
+        <div class="card" style="margin-bottom:20px;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--teal); margin-bottom:8px;">Your finding</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:8px; height:36px; border-radius:4px; background:var(--coral);"></div>
+            <div>
+              <div style="font-weight:600; font-size:15px;">HbA1c</div>
+              <div style="font-size:13px; color:var(--ink-2);">5.9% · above optimal range</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn--primary" style="margin-bottom:12px;">See my full read →</button>
+        <div style="text-align:center; font-size:12px; color:var(--ink-2);">Prefer the app? <span style="color:var(--deep-2); font-weight:600;">Get faster updates →</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">D1</span> The results moment must not be gated behind an install. This link-openable twin delivers the read and the sealed prediction (C4) in full — the app is offered <b>after</b> value lands ("to run the protocol"), never before.</div>
+    <div class="row"><span class="tag">Why it matters</span> Native app was chosen for push + daily logging ergonomics, but that decision puts an install step upstream of the exact leak we're fixing. This twin is the mitigation, not an afterthought.</div>
+  </div>
+</div>
+
+</body>
+</html>

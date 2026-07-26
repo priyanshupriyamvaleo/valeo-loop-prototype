@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-1 · Daily home — the state-machine hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:700; color:var(--deep); margin-bottom:14px; }
+  .frame-label .star{color:var(--yellow-deep);}
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+  .tag--hero{background:var(--yellow); color:var(--deep);}
+
+  .greet { font-size:13px; color:var(--ink-2); }
+  .greet b { color:var(--deep); font-weight:600; }
+
+  .hero-card { background: linear-gradient(160deg, var(--deep) 0%, var(--deep-2) 100%); border-radius: var(--radius-xl); padding:20px; color:#fff; margin: 12px 0 16px; }
+  .hero-card__eyebrow { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--yellow); margin-bottom:12px; }
+  .hero-top { display:flex; align-items:center; gap:16px; margin-bottom:14px; }
+  .conf-ring { width:64px; height:64px; flex-shrink:0; position:relative; }
+  .conf-ring svg { transform: rotate(-90deg); }
+  .conf-ring__label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .conf-ring__pct { font-size:15px; font-weight:800; line-height:1; }
+  .conf-ring__word { font-size: 8px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; color: var(--text-on-dark-2); margin-top:1px; }
+  .hero-top__text { flex:1; }
+  .hero-top__title { font-size:14px; font-weight:600; }
+  .hero-top__sub { font-size:11.5px; color: var(--text-on-dark-2); margin-top:2px; }
+
+  .pk-strip { background: rgba(255,255,255,0.08); border-radius: var(--radius-md); padding: 12px; margin-bottom:14px; }
+  .pk-strip__label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color: var(--text-on-dark-2); margin-bottom:6px; }
+  .pk-chart { height:32px; position:relative; }
+
+  .rail { display:flex; gap:10px; overflow-x:auto; margin-bottom:16px; padding-bottom:2px; }
+  .rail-chip { flex-shrink:0; background:var(--surface-card); border-radius: var(--radius-md); padding:12px 14px; box-shadow:var(--shadow-sm); min-width:132px; }
+  .rail-chip__label { font-size:10px; font-weight:700; text-transform:uppercase; color:var(--ink-2); margin-bottom:6px; }
+  .rail-chip__value { font-size:16px; font-weight:700; }
+  .rail-chip__sub { font-size:10.5px; color:var(--ink-2); margin-top:2px; }
+
+  .insight-card { background:var(--mint); border-radius: var(--radius-md); padding: 12px 14px; font-size:12.5px; color:var(--deep); line-height:1.5; margin-bottom:16px; }
+  .insight-card b { font-weight:700; }
+
+  /* state legend */
+  .state-legend { display:flex; gap:8px; margin-top:6px; }
+  .state-thumb { flex:1; background:var(--surface-card); border-radius:10px; padding:8px 6px; text-align:center; box-shadow:var(--shadow-sm); border: 1.5px solid transparent; }
+  .state-thumb.is-now { border-color: var(--yellow-deep); }
+  .state-thumb__icon { font-size:16px; }
+  .state-thumb__label { font-size:8px; font-weight:700; color:var(--ink-2); margin-top:3px; line-height:1.3; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+
+<div class="frame-col">
+  <div class="frame-label"><span class="star">★</span> T2-1 — Daily home · state: ORDINARY DAY</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px; padding-bottom:8px;">
+
+        <div class="greet">Wednesday · <b>Faisal</b></div>
+
+        <div class="hero-card">
+          <div class="hero-card__eyebrow">Verdict confidence</div>
+          <div class="hero-top">
+            <div class="conf-ring">
+              <svg width="64" height="64"><circle cx="32" cy="32" r="27" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="6"/><circle cx="32" cy="32" r="27" fill="none" stroke="var(--green)" stroke-width="6" stroke-dasharray="145 170" stroke-linecap="round"/></svg>
+              <div class="conf-ring__label"><span class="conf-ring__pct">86</span><span class="conf-ring__word">Strong</span></div>
+            </div>
+            <div class="hero-top__text">
+              <div class="hero-top__title">Your retest verdict is on track</div>
+              <div class="hero-top__sub">Needs 80% adherence · you're at 86%</div>
+            </div>
+          </div>
+          <div class="pk-strip">
+            <div class="pk-strip__label">Day 4 of 7 · 28mg iron · level steady</div>
+            <div class="pk-chart">
+              <svg viewBox="0 0 320 32" preserveAspectRatio="none" style="width:100%; height:100%;">
+                <path d="M0,10 Q40,4 80,14 T160,10 T240,16 T320,12" fill="none" stroke="var(--yellow)" stroke-width="2.5"/>
+                <circle cx="182" cy="11" r="4" fill="#fff"/>
+              </svg>
+            </div>
+          </div>
+          <button class="btn btn--accent">Log today's dose →</button>
+        </div>
+
+        <div class="rail">
+          <div class="rail-chip">
+            <div class="rail-chip__label">Weigh-in quota</div>
+            <div class="quota" style="margin-top:2px;">
+              <div class="quota__track"><div class="quota__seg is-done"></div><div class="quota__seg is-done"></div><div class="quota__seg is-done"></div><div class="quota__seg"></div></div>
+            </div>
+            <div class="rail-chip__sub">3 of 4 this week</div>
+          </div>
+          <div class="rail-chip">
+            <div class="rail-chip__label">Trend weight</div>
+            <div class="rail-chip__value">78.4 <span style="font-size:11px; font-weight:500;">kg</span></div>
+            <div class="rail-chip__sub" style="color:var(--green);">▼ 0.6 kg / wk</div>
+          </div>
+        </div>
+
+        <div class="insight-card">💡 Your nausea tends to peak on <b>day 2</b> after your shot and clears by day 4 — right on schedule today.</div>
+
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-2); margin-bottom:8px;">This hero on other days</div>
+        <div class="state-legend">
+          <div class="state-thumb is-now"><div class="state-thumb__icon">📈</div><div class="state-thumb__label">Ordinary<br>(today)</div></div>
+          <div class="state-thumb"><div class="state-thumb__icon">💉</div><div class="state-thumb__label">Shot<br>day</div></div>
+          <div class="state-thumb"><div class="state-thumb__icon">🩹</div><div class="state-thumb__label">Post-shot<br>1–3</div></div>
+          <div class="state-thumb"><div class="state-thumb__icon">🩺</div><div class="state-thumb__label">Titration<br>review</div></div>
+          <div class="state-thumb"><div class="state-thumb__icon">🧪</div><div class="state-thumb__label">Week 12<br>retest</div></div>
+        </div>
+
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab-bar__item is-active"><span class="tab-bar__icon">●</span>Today</div>
+      <div class="tab-bar__item"><span class="tab-bar__icon">◐</span>Twin</div>
+      <div class="tab-bar__item"><span class="tab-bar__icon">▬</span>Timeline</div>
+      <div class="tab-bar__item"><span class="tab-bar__icon">♡</span>Care</div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <div class="caption">
+    <div class="row"><span class="tag tag--hero">STATE MACHINE</span> D4: one hero that changes shape, not a 6-item checklist. This is 1 of 5 states — the other four appear as their own frames (T2-3 shot day, T2-4 post-shot, T2-8 titration review, P1–P3 week 12).</div>
+    <div class="row"><span class="tag">P10</span> Confidence is <b>banded</b> (Strong/Watch/At risk), the 86 is texture not the claim, and it's never shown without a prescription — here, "log today's dose."</div>
+    <div class="row"><span class="tag">M16</span> The PK strip answers "where am I in the dose cycle," which matters more than weight on a day with no draw and no shot.</div>
+    <div class="row"><span class="tag">M22</span> Quota, not streak — 3/4 this week, not a flame that resets to zero.</div>
+    <div class="row"><span class="tag">M32</span> Tab bar: Today = the loop, Care = the clinical admin (prescription, refills, dose-change requests). Loop stays on the hero; admin never intrudes on it.</div>
+    <div class="row"><span class="tag">P9</span> No red, no streak, no grading language anywhere on this screen.</div>
+  </div>
+</div>
+
+</body>
+</html>

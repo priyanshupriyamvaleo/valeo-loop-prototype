@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T3-8 · Renew / loop 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .history-card { background: var(--green-soft); border-radius: var(--radius-lg); padding:14px 16px; margin: 8px 0 18px; }
+  .history-card__label { font-size:10.5px; font-weight:700; text-transform:uppercase; color:var(--green); margin-bottom:4px; }
+  .history-card__row { display:flex; justify-content:space-between; font-size:13px; font-weight:600; color:var(--deep); }
+
+  .unlock-note { font-size:12px; color:var(--ink-2); margin-bottom:12px; }
+  .goal-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .goal-card { border-radius: var(--radius-md); padding:14px 10px; text-align:center; background:var(--surface-card); box-shadow:var(--shadow-sm); }
+  .goal-card--active { background:var(--deep); color:#fff; border:2px solid var(--yellow); }
+  .goal-card--locked { background:var(--fog-soft); color:var(--fog); }
+  .goal-card__icon { font-size:18px; margin-bottom:4px; }
+  .goal-card__label { font-size:12px; font-weight:700; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T3-8 — Renew · loop_index = 2</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div></div><div class="nav-bar__title">Welcome back, Faisal</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px;">
+        <div class="history-card">
+          <div class="history-card__label">Loop 1 · Complete</div>
+          <div class="history-card__row"><span>HbA1c 5.9% → 5.6%</span><span>✓ Confirmed</span></div>
+        </div>
+
+        <div class="unlock-note">One loop closed — one more goal just unlocked. Same rule: one at a time.</div>
+
+        <div class="goal-grid">
+          <div class="goal-card"><div class="goal-card__icon">⚖️</div><div class="goal-card__label">Weight (again)</div></div>
+          <div class="goal-card goal-card--active"><div class="goal-card__icon">⚡</div><div class="goal-card__label">Energy</div></div>
+          <div class="goal-card"><div class="goal-card__icon">🧬</div><div class="goal-card__label">Longevity</div></div>
+          <div class="goal-card goal-card--locked"><div class="goal-card__icon">💇</div><div class="goal-card__label">Hair</div></div>
+        </div>
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px);">
+        <button class="btn btn--primary">Start Energy loop →</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <span class="tag">Anti: ZOE</span> ZOE's reactivation page is the acquisition page minus the trial — same hero, same pitch, no acknowledgement of history. Here, <code>Loop.loop_index=2</code> changes the whole screen: this user sees their own result and an unlocked goal, never a first-timer's pitch.
+  </div>
+</div>
+</body>
+</html>

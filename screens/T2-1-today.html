@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-1 · Today</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<link rel="stylesheet" href="../design-system/loop.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:34px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+  .screen { background:#FFFDF5; }
+
+  .kick { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(27,57,91,.38); }
+  .lede { font-family:var(--font-display); font-size:29px; font-weight:600; color:var(--deep);
+    line-height:1.16; letter-spacing:-.02em; margin:9px 0 0; }
+  .lede em { font-style:normal; color:var(--yellow-deep); }
+
+  /* dose-cycle card */
+  .pk { background:linear-gradient(168deg,#1B395B,#14293F); border-radius:24px;
+        padding:18px 18px 10px; color:#fff; margin-top:20px;
+        box-shadow:0 16px 34px -16px rgba(18,42,69,.6); }
+  .pk__top { display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+  .pk__drug { font-size:13.5px; font-weight:700; }
+  .pk__pill { font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    background:rgba(255,185,0,.16); color:var(--yellow); padding:3px 9px; border-radius:20px; }
+  .pk__meta { font-size:11.5px; color:rgba(255,255,255,.55); }
+  .pk__chart { height:74px; margin-top:6px; }
+  .pk__days { display:flex; justify-content:space-between; font-size:9.5px;
+    color:rgba(255,255,255,.4); font-weight:600; padding-bottom:8px; }
+  .pk__days b { color:var(--yellow); }
+
+  /* the single action */
+  .act { display:flex; align-items:center; gap:14px; background:var(--surface-card);
+    border-radius:20px; padding:16px 18px; margin-top:14px;
+    box-shadow:0 1px 2px rgba(27,57,91,.05), 0 10px 26px -14px rgba(27,57,91,.22); }
+  .act__ico { width:44px; height:44px; border-radius:14px; background:var(--mint);
+    display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .act__t { font-size:15.5px; font-weight:700; color:var(--deep); }
+  .act__s { font-size:11.5px; color:var(--ink-2); margin-top:2px; }
+  .act__go { margin-left:auto; width:32px; height:32px; border-radius:50%; background:var(--deep);
+    color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+
+  /* shot-day protocol */
+  .proto { margin-top:14px; }
+  .proto__i { display:flex; align-items:center; gap:13px; padding:12px 0; }
+  .proto__i + .proto__i { border-top:1px solid rgba(27,57,91,.06); }
+  .proto__box { width:21px; height:21px; border-radius:7px; flex-shrink:0;
+    border:2px solid rgba(27,57,91,.18); display:flex; align-items:center;
+    justify-content:center; font-size:11px; color:#fff; }
+  .proto__i.done .proto__box { background:var(--green); border-color:var(--green); }
+  .proto__i.now  .proto__box { border-color:var(--yellow-deep); background:var(--yellow); color:var(--deep); }
+  .proto__t { flex:1; font-size:13.5px; color:var(--text-primary); }
+  .proto__i.done .proto__t { color:var(--ink-2); text-decoration:line-through; }
+  .proto__i.now .proto__t { font-weight:700; font-size:16px; color:var(--deep); }
+  .proto__w { font-size:11px; color:var(--ink-2); font-variant-numeric:tabular-nums; flex-shrink:0; }
+
+  .numbers { margin-top:26px; }
+  .quota-mini { display:flex; gap:3px; }
+  .quota-mini i { width:13px; height:5px; border-radius:3px; background:rgba(27,57,91,.13); display:block; }
+  .quota-mini i.on { background:var(--green); }
+
+  .insight { display:flex; gap:11px; background:linear-gradient(150deg,#FDF1CC,#FBEBBC);
+    border-radius:18px; padding:14px 15px; margin-top:22px; font-size:12.5px;
+    color:var(--deep); line-height:1.55; }
+  .insight b { font-weight:700; }
+
+  .conf { display:flex; align-items:center; gap:11px; }
+  .conf__band { font-size:12.5px; font-weight:800; padding:4px 11px; border-radius:20px;
+    background:var(--green-soft); color:var(--green); }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+
+<!-- ══════════ ORDINARY DAY ══════════ -->
+<div class="frame-col">
+  <div class="frame-label">T2-1 · Today — <b>ordinary day</b> (6 of 7)</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+
+    <div class="appbar">
+      <span class="appbar__back">‹ Valeo</span>
+      <span class="appbar__spacer"></span>
+      <span class="appbar__ring">
+        <span class="appbar__ringlabel"><b>Loop 1 · Act</b><span>Day 28 of 84</span></span>
+        <svg class="ring" width="30" height="30" viewBox="0 0 200 200"><g transform="translate(100,100)">
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-90)"/>
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-18)"/>
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(54)"/>
+          <circle class="ring__arc--now"  r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(126)"/>
+          <circle class="ring__fill"      r="88" stroke-width="15" fill="none" stroke-dasharray="68 484.92" transform="rotate(126)"/>
+          <circle class="ring__arc--todo" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(198)"/>
+        </g></svg>
+      </span>
+      <span class="appbar__avatar">FA</span>
+    </div>
+
+    <div class="screen">
+      <div style="padding:6px 20px 26px;">
+        <div class="kick">Tuesday · 12 November</div>
+        <h1 class="lede">Your next dose is <em>in 3 days</em>.</h1>
+
+        <div class="pk">
+          <div class="pk__top">
+            <span class="pk__drug">Tirzepatide 5 mg</span>
+            <span class="pk__pill">Level falling</span>
+          </div>
+          <div class="pk__meta">Weekly · injected Saturday 8:15 pm</div>
+          <div class="pk__chart">
+            <svg viewBox="0 0 320 74" preserveAspectRatio="none" style="width:100%;height:100%;overflow:visible">
+              <defs><linearGradient id="pkg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#FFB900" stop-opacity=".34"/>
+                <stop offset="100%" stop-color="#FFB900" stop-opacity="0"/>
+              </linearGradient></defs>
+              <path d="M0,58 C22,54 34,10 62,8 C104,6 130,30 168,42 C210,55 250,62 320,66 L320,74 L0,74 Z" fill="url(#pkg)"/>
+              <path d="M0,58 C22,54 34,10 62,8 C104,6 130,30 168,42 C210,55 250,62 320,66"
+                    fill="none" stroke="#FFB900" stroke-width="2.4" stroke-linecap="round"/>
+              <circle cx="168" cy="42" r="5" fill="#14293F" stroke="#FFB900" stroke-width="3"/>
+            </svg>
+          </div>
+          <div class="pk__days"><span>Sat</span><span>Sun</span><span>Mon</span><b>Tue · today</b><span>Wed</span><span>Thu</span><span>Fri</span></div>
+        </div>
+
+        <div class="act">
+          <div class="act__ico">⚖️</div>
+          <div><div class="act__t">Log today's weight</div><div class="act__s">Withings synced — just confirm</div></div>
+          <div class="act__go">→</div>
+        </div>
+
+        <div class="numbers">
+          <div class="kick" style="margin-bottom:4px;">Today's numbers</div>
+          <div class="qrow">
+            <div class="qrow__b"><div class="qrow__t">Trend weight</div><div class="qrow__s">▼ 0.6 kg per week</div></div>
+            <svg class="spark" viewBox="0 0 64 24"><path d="M2,5 C14,7 24,11 38,15 C48,18 56,20 62,21" stroke="var(--green)"/></svg>
+            <div class="qrow__r">78.4 kg</div>
+          </div>
+          <div class="qrow">
+            <div class="qrow__b"><div class="qrow__t">Weigh-in quota</div><div class="qrow__s">3 of 4 this week</div></div>
+            <div class="quota-mini"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+          </div>
+          <div class="qrow">
+            <div class="qrow__b"><div class="qrow__t">Verdict confidence</div><div class="qrow__s">Adherence 86% · floor is 80%</div></div>
+            <div class="conf"><span class="conf__band">Strong</span></div>
+          </div>
+        </div>
+
+        <div class="insight">
+          <span>💡</span>
+          <span>Your nausea peaks on <b>day 2</b> after each shot and clears by day 4 — you're past it today.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs3">
+      <div class="tabs3__i on"><span class="tabs3__ico">◉</span><span class="tabs3__lbl">Today</span></div>
+      <div class="tabs3__i"><span class="tabs3__ico">◍</span><span class="tabs3__lbl">Loop</span></div>
+      <div class="tabs3__i"><span class="tabs3__ico">◎</span><span class="tabs3__lbl">Twin</span></div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div style="margin-bottom:7px;"><span class="tag">Hierarchy</span> One sentence owns the screen. The dose-cycle card answers "where am I in the week" — which matters more than weight on a day with no shot and no draw. Then <b>one</b> action, then quiet numbers.</div>
+    <div><span class="tag">Ring, always</span> Top-right: 26px ring + "Loop 1 · Act · Day 28". Tappable → Loop tab. The loop is now visible on every protocol screen.</div>
+  </div>
+</div>
+
+<!-- ══════════ SHOT DAY ══════════ -->
+<div class="frame-col">
+  <div class="frame-label">T2-1 · Today — <b>shot day</b> (1 of 7)</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="appbar">
+      <span class="appbar__back">‹ Valeo</span>
+      <span class="appbar__spacer"></span>
+      <span class="appbar__ring">
+        <span class="appbar__ringlabel"><b>Loop 1 · Act</b><span>Day 32 of 84</span></span>
+        <svg class="ring" width="30" height="30" viewBox="0 0 200 200"><g transform="translate(100,100)">
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-90)"/>
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-18)"/>
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(54)"/>
+          <circle class="ring__arc--now"  r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(126)"/>
+          <circle class="ring__fill"      r="88" stroke-width="15" fill="none" stroke-dasharray="76 484.92" transform="rotate(126)"/>
+          <circle class="ring__arc--todo" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(198)"/>
+        </g></svg>
+      </span>
+      <span class="appbar__avatar">FA</span>
+    </div>
+
+    <div class="screen">
+      <div style="padding:6px 20px 26px;">
+        <div class="kick" style="color:var(--yellow-deep)">Saturday · shot day</div>
+        <h1 class="lede">Tonight at <em>8:15</em>.<br>Five things, in order.</h1>
+
+        <div class="proto">
+          <div class="proto__i done"><span class="proto__box">✓</span><span class="proto__t">High-protein meal</span><span class="proto__w">7:15 pm</span></div>
+          <div class="proto__i done"><span class="proto__box">✓</span><span class="proto__t">Water + electrolytes</span><span class="proto__w">7:15 pm</span></div>
+          <div class="proto__i done"><span class="proto__box">✓</span><span class="proto__t">Pen out of the fridge</span><span class="proto__w">7:45 pm</span></div>
+          <div class="proto__i now"><span class="proto__box">→</span><span class="proto__t">Inject — 5 mg</span><span class="proto__w">now</span></div>
+          <div class="proto__i"><span class="proto__box"></span><span class="proto__t">Second protein serving</span><span class="proto__w">9:15 pm</span></div>
+        </div>
+
+        <div class="act" style="background:linear-gradient(160deg,#1B395B,#14293F);">
+          <div class="act__ico" style="background:rgba(255,185,0,.18)">💉</div>
+          <div><div class="act__t" style="color:#fff">Log your dose</div>
+               <div class="act__s" style="color:rgba(255,255,255,.6)">Left thigh — outer · rotated for you</div></div>
+          <div class="act__go" style="background:var(--yellow); color:var(--deep)">→</div>
+        </div>
+
+        <div class="insight" style="background:var(--teal-soft); color:var(--deep-2)">
+          <span>📷</span><span>Scan the box to capture strength and batch — no typing, no transcription errors.</span>
+        </div>
+
+        <div class="numbers">
+          <div class="kick" style="margin-bottom:4px;">Why each step is here</div>
+          <div class="qrow"><div class="qrow__ico">🥩</div><div class="qrow__b"><div class="qrow__t">Protein, before and after</div><div class="qrow__s">Blunts the nausea that peaks on day 2</div></div></div>
+          <div class="qrow"><div class="qrow__ico">🌡️</div><div class="qrow__b"><div class="qrow__t">Pen at room temperature</div><div class="qrow__s">A cold injection stings and bruises more</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tabs3">
+      <div class="tabs3__i on"><span class="tabs3__ico">◉</span><span class="tabs3__lbl">Today</span></div>
+      <div class="tabs3__i"><span class="tabs3__ico">◍</span><span class="tabs3__lbl">Loop</span></div>
+      <div class="tabs3__i"><span class="tabs3__ico">◎</span><span class="tabs3__lbl">Twin</span></div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <span class="tag">Asymmetry</span> The same screen, one day later. ~1 item on six days, <b>5 clocked items on one</b> — each one a side-effect mitigation, each with its reason stated. This is what "the daily surface is a state machine" actually looks like built.
+  </div>
+</div>
+
+<!-- ══════════ POST-SHOT ══════════ -->
+<div class="frame-col">
+  <div class="frame-label">T2-1 · Today — <b>day 2 post-shot</b></div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="appbar">
+      <span class="appbar__back">‹ Valeo</span>
+      <span class="appbar__spacer"></span>
+      <span class="appbar__ring">
+        <span class="appbar__ringlabel"><b>Loop 1 · Act</b><span>Day 34 of 84</span></span>
+        <svg class="ring" width="30" height="30" viewBox="0 0 200 200"><g transform="translate(100,100)">
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-90)"/>
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(-18)"/>
+          <circle class="ring__arc--done" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(54)"/>
+          <circle class="ring__arc--now"  r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(126)"/>
+          <circle class="ring__fill"      r="88" stroke-width="15" fill="none" stroke-dasharray="80 484.92" transform="rotate(126)"/>
+          <circle class="ring__arc--todo" r="88" stroke-width="15" fill="none" stroke-dasharray="101.58 451.34" transform="rotate(198)"/>
+        </g></svg>
+      </span>
+      <span class="appbar__avatar">FA</span>
+    </div>
+
+    <div class="screen">
+      <div style="padding:6px 20px 26px;">
+        <div class="kick">Monday · day 2 after your shot</div>
+        <h1 class="lede">This is usually the <em>rough one</em>.</h1>
+        <p style="font-size:13.5px; color:var(--ink-2); line-height:1.6; margin:11px 0 0;">
+          Your last three cycles all peaked today and cleared by Wednesday. Tell us how it's going —
+          it's what your clinician uses to decide the next dose.
+        </p>
+
+        <div style="margin-top:20px;">
+          <div class="kick" style="margin-bottom:9px;">Anything today?</div>
+          <div class="chip-grid">
+            <div class="chip is-selected">🤢 Nausea</div>
+            <div class="chip">😴 Fatigue</div>
+            <div class="chip">💩 Constipation</div>
+            <div class="chip">🤕 Headache</div>
+            <div class="chip">📍 Injection site</div>
+            <div class="chip">✓ Nothing</div>
+          </div>
+          <div class="kick" style="margin:18px 0 8px;">How strong — nausea</div>
+          <div class="severity-scale">
+            <div class="severity-scale__seg">None</div>
+            <div class="severity-scale__seg">Mild</div>
+            <div class="severity-scale__seg is-selected">Moderate</div>
+            <div class="severity-scale__seg">Severe</div>
+          </div>
+        </div>
+
+        <div class="surface" style="margin-top:20px; padding:16px;">
+          <div class="kick" style="margin-bottom:10px;">Your pattern, three cycles</div>
+          <svg viewBox="0 0 300 62" style="width:100%;height:62px;overflow:visible">
+            <path d="M6,50 C30,50 40,10 66,10 C92,10 104,44 130,50 C160,56 176,54 200,52 C240,50 268,50 294,50"
+                  fill="none" stroke="var(--amber)" stroke-width="2.4" stroke-linecap="round"/>
+            <circle cx="66" cy="10" r="4.5" fill="var(--amber)"/>
+            <text x="66" y="2" font-size="9" fill="var(--ink-2)" text-anchor="middle" font-weight="700">peak</text>
+          </svg>
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--ink-2); font-weight:600;">
+            <span>Shot</span><span>D2</span><span>D4</span><span>D6</span>
+          </div>
+        </div>
+
+        <div class="act" style="margin-top:16px;">
+          <div class="act__ico">✓</div>
+          <div><div class="act__t">Log it</div><div class="act__s">4 taps · goes straight to your clinician</div></div>
+          <div class="act__go">→</div>
+        </div>
+      </div>
+    </div>
+    <div class="tabs3">
+      <div class="tabs3__i on"><span class="tabs3__ico">◉</span><span class="tabs3__lbl">Today</span></div>
+      <div class="tabs3__i"><span class="tabs3__ico">◍</span><span class="tabs3__lbl">Loop</span></div>
+      <div class="tabs3__i"><span class="tabs3__ico">◎</span><span class="tabs3__lbl">Twin</span></div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <span class="tag">The payoff</span> The symptom instrument appears <b>on the day symptoms happen</b>, pre-empted by the user's own history ("your last three cycles peaked today"). Logging stops being data entry for someone else and becomes recognition. Nobody in the GLP-1 category ships a structured symptom instrument at all.
+  </div>
+</div>
+
+</body>
+</html>

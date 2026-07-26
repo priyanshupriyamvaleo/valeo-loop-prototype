@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T3-3 · Eligibility → baseline recommend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; justify-content:center; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:16px 18px; box-shadow:var(--shadow-sm); font-size:12.5px; line-height:1.55; }
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+  .verdict { font-family:var(--font-display); font-size:24px; font-weight:500; color:var(--deep); line-height:1.3; margin: 8px 0 18px; }
+  .panel-card { background:var(--surface-card); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow-sm); margin-bottom:12px; }
+  .panel-card__name { font-size:15px; font-weight:600; }
+  .panel-card__meta { font-size:12px; color:var(--ink-2); margin-top:2px; }
+  .included-row { display:flex; justify-content:space-between; font-size:12px; padding:6px 0; border-top:1px solid var(--line); margin-top:8px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T3-3 — Eligibility → baseline recommend</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Recommended for you</div><div></div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px;">
+        <div class="verdict">Based on your answers, we'd start with a <b style="color:var(--coral);">GLP-1 &amp; metabolic baseline</b>.</div>
+
+        <div class="panel-card">
+          <div class="panel-card__name">GLP-1 Eligibility Panel</div>
+          <div class="panel-card__meta">HbA1c, fasting insulin, lipids, liver &amp; kidney function, ferritin, vitamin D, TSH</div>
+          <div class="included-row"><span>At-home draw</span><span>Included</span></div>
+          <div class="included-row"><span>Results</span><span>48h</span></div>
+        </div>
+
+        <div class="panel-card" style="opacity:0.6;">
+          <div class="panel-card__name">Also flagged, not required</div>
+          <div class="panel-card__meta">Your BMI (26.1) is close to the medication threshold — we'll confirm this reading during baseline review rather than asking you to guess now.</div>
+        </div>
+      </div>
+      <div style="position:sticky; bottom:0; background:var(--surface-app); padding:12px 16px calc(var(--safe-bottom) + 12px);">
+        <button class="btn btn--primary">Book my baseline draw →</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <span class="tag">KSA R1</span> No drug name appears pre-login or pre-eligibility — the acquisition surface sells the programme (doctor, at-home labs, plan), never the molecule, per SFDA's DTC restriction. <span class="tag" style="margin-left:4px;">Ro pattern</span> Screening branches conditionally rather than front-loading every possible lab.
+  </div>
+</div>
+</body>
+</html>

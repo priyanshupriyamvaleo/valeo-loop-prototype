@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>T2-5 · Coach chat — the chat shows its work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/tokens.css">
+<link rel="stylesheet" href="../design-system/components.css">
+<style>
+  body { background:#EFE7D6; padding:60px 20px; display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start; }
+  .frame-col { display:flex; flex-direction:column; align-items:center; }
+  .frame-label { text-align:center; font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:14px; }
+  .caption { width:var(--frame-width); margin-top:20px; background:var(--surface-card); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); font-size:13px; line-height:1.55; }
+  .caption .row{margin-bottom:8px;} .caption .row:last-child{margin-bottom:0;}
+  .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--deep-2);background:var(--teal-soft);padding:2px 8px;border-radius:6px;margin-right:6px;}
+
+  .date-divider { text-align:center; font-size:10.5px; color:var(--fog); margin: 10px 0 14px; }
+  .composer { display:flex; align-items:center; gap:8px; padding: 10px 14px calc(var(--safe-bottom) + 10px); border-top:1px solid var(--line); background:var(--surface-app); }
+  .composer__input { flex:1; background:var(--surface-sunken); border-radius: var(--radius-pill); padding: 10px 16px; font-size:13px; color:var(--ink-2); }
+  .composer__send { width:34px; height:34px; border-radius:50%; background:var(--deep); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; }
+</style>
+<script src="../design-system/embed.js"></script>
+</head>
+<body>
+<div class="frame-col">
+  <div class="frame-label">T2-5 — Coach chat (structured extraction)</div>
+  <div class="device">
+    <div class="device__notch"></div>
+    <div class="status-bar"><span>9:41</span><span>●●● 5G 87%</span></div>
+    <div class="nav-bar"><div class="nav-bar__back">←</div><div class="nav-bar__title">Your Coach</div><div class="nav-bar__action">Welli AI</div></div>
+    <div class="screen">
+      <div class="u-px-4" style="padding-top:8px;">
+        <div class="date-divider">Today, 2:14 PM</div>
+
+        <div class="chat-bubble chat-bubble--user">I took my iron a bit late today, around 2pm</div>
+        <div class="extraction-card">
+          <span class="extraction-card__icon">✓</span>
+          <span class="extraction-card__text">Logged — Ferrolactin Plus, 28mg · Today 2:00 PM</span>
+          <span class="extraction-card__edit">Edit</span>
+        </div>
+        <div class="chat-bubble chat-bubble--ai">Got it, logged. Taking it with a bit of food can help if it's been upsetting your stomach.</div>
+
+        <div class="chat-bubble chat-bubble--user">also been pretty tired the last two days</div>
+        <div class="extraction-card">
+          <span class="extraction-card__icon">✓</span>
+          <span class="extraction-card__text">Logged — Fatigue, Moderate · Day 2 post-shot</span>
+          <span class="extraction-card__edit">Edit</span>
+        </div>
+        <div class="chat-bubble chat-bubble--ai">That's common in the first two weeks and usually eases on its own. If it's still there by day 5, it's worth a proper look.</div>
+
+        <div class="escalation-card">
+          <div class="escalation-card__avatars"><span>SA</span><span>RM</span></div>
+          <div class="escalation-card__text">Want a clinician to check on this instead?</div>
+          <div class="escalation-card__sla">&lt;24h weekdays</div>
+        </div>
+      </div>
+    </div>
+    <div class="composer">
+      <div class="composer__input">Message Welli…</div>
+      <div class="composer__send">↑</div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  <div class="caption">
+    <div class="row"><span class="tag">The chat shows its work</span> Every message that implies a loggable event renders a separate, tappable, editable card beneath it — free text that vanishes into a transcript is structured data that was never captured.</div>
+    <div class="row"><span class="tag">M12 / M33</span> AI answers first (Welli), human escalation is a distinct card with the response SLA printed on it — never hidden in a settings menu. Same pattern as Superpower's Concierge and Noom's Welli→Coach routing.</div>
+    <div class="row"><span class="tag">Falsifier</span> Show a user a logged card and ask them to correct one field. If they can't find where to tap, "shows its work" has failed as a mechanic.</div>
+  </div>
+</div>
+</body>
+</html>
