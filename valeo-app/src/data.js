@@ -146,3 +146,73 @@ export const DOCTOR = {
     'Compares your retest against this baseline at week 12',
   ],
 };
+
+/* ══════════════════════════════════════════════════════════════
+   THE TWIN, COMPUTED
+   ══════════════════════════════════════════════════════════════
+   Completeness is derived from what the user has actually given us,
+   never stored as a number. That keeps every screen honest: the Twin
+   tab can't claim 60% while the answers say otherwise, and each row
+   is worth exactly what it says it's worth.
+
+   The weights are the model: behaviour is cheap to collect and worth
+   less; a blood baseline is expensive and worth the most.            */
+export const SIGNALS = [
+  { k: 'basic',  t: 'Age, gender, body',  pct: 15, via: 'questions', sub: 'The floor for any reference range' },
+  { k: 'life',   t: 'Work & habits',      pct: 20, via: 'questions', sub: 'Smoking, drinking, how you move' },
+  { k: 'food',   t: 'Food',               pct: 10, via: 'questions', sub: 'What you actually eat' },
+  { k: 'sleep',  t: 'Sleep',              pct: 10, via: 'questions', sub: 'Hours and quality' },
+  { k: 'stress', t: 'Stress',             pct: 10, via: 'questions', sub: 'Load and where it comes from' },
+  { k: 'goal',   t: 'Your goal',          pct: 10, via: 'questions', sub: 'What you want changed' },
+  { k: 'blood',  t: 'Blood baseline',     pct: 25, via: 'blood',     sub: 'One draw at home — the biggest single jump' },
+];
+
+export function signalDone(k, st) {
+  const qa = st.qa || {};
+  if (k === 'blood') return !!st.blood;
+  if (k === 'basic') return !!(qa.age && qa.gender);
+  if (k === 'life')  return !!(qa.work && qa.smoke && qa.drink);
+  if (k === 'goal')  return !!qa.goal;
+  if (k === 'food')  return !!(qa.food && qa.food.length);
+  return !!qa[k];                                    /* sleep, stress */
+}
+export function twinPct(st) {
+  return SIGNALS.reduce((n, s) => n + (signalDone(s.k, st) ? s.pct : 0), 0);
+}
+
+/* A thin twin scores conservatively. Filling it in is the only way the
+   number climbs — which is the whole flywheel, made visible. */
+export function matchFor(tw, st) {
+  return Math.round(tw.match * (0.82 + 0.18 * (twinPct(st) / 100)));
+}
+/* What a blurred card is still owed. Derived from the answers, so there's
+   no second list to keep in sync. */
+export function owedBy(tw, st) {
+  return (tw.needs || []).filter((g) => !signalDone(g, st));
+}
+export function isBlurred(tw, st) {
+  return !!tw.blur && !(st.revealed || []).includes(tw.id) && owedBy(tw, st).length > 0;
+}
+
+/* ── THE LOOP ── */
+export const PHASES = ['Measure', 'Read', 'Commit', 'Act', 'Prove'];
+export const PHASE_NOTE = {
+  Measure: 'Baseline drawn',
+  Read:    'Panel read and signed off',
+  Commit:  'Protocol agreed',
+  Act:     'Running it',
+  Prove:   'Retest and verdict',
+};
+export function phaseOf(active) {
+  if (!active) return null;
+  if (active.day >= active.total) return 'Prove';
+  return 'Act';
+}
+
+/* ── AI COACH ── a short, honest exchange that escalates rather than guesses */
+export const COACH = [
+  { me: false, t: 'Ask me anything about your protocol. I escalate to Dr. Mahmoud when it needs a prescriber.' },
+  { me: true,  t: 'Nausea is bad this week. Should I drop the dose?' },
+  { me: false, t: 'Week 2 nausea is expected on tirzepatide and usually settles by week 4. You logged it on 4 of 6 days.' },
+  { me: false, t: "I'm not going to change your dose — that's a prescriber decision. Sending this to Dr. Mahmoud with your logs.", esc: true },
+];

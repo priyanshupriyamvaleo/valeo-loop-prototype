@@ -10,7 +10,8 @@ import LockIcon from '@mui/icons-material/Lock';
 import ScienceIcon from '@mui/icons-material/Science';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import ProtocolSheet from '../components/ProtocolSheet';
-import { TWINS, TIERS, TIER_ORDER, PROTOCOLS, GROUP_LABEL, SWIPE_TARGET } from '../data';
+import { TWINS, TIERS, TIER_ORDER, PROTOCOLS, GROUP_LABEL, SWIPE_TARGET,
+         isBlurred, owedBy, matchFor } from '../data';
 import { C } from '../theme';
 
 export default function Discover({ st, dispatch, onQuestions, onBlood }) {
@@ -31,7 +32,7 @@ export default function Discover({ st, dispatch, onQuestions, onBlood }) {
   const p0 = useRef({ x: 0, y: 0 });
   const drag = useRef(false);
 
-  const blurred = (t) => t?.blur && !st.revealed.includes(t.id);
+  const blurred = (t) => isBlurred(t, st);
 
   const commit = (dir) => {
     if (!w || fly) return;
@@ -128,7 +129,7 @@ export default function Discover({ st, dispatch, onQuestions, onBlood }) {
                   position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
                   transform: `scale(${1 - k * 0.03}) translateY(${k * 9}px)`, opacity: 1 - k * 0.24,
                 }}>
-                  <TwinCard tw={c} blurred={blurred(c)} />
+                  <TwinCard tw={c} blurred={blurred(c)} shownMatch={matchFor(c, st)} />
                 </Box>
               );
             })}
@@ -137,7 +138,8 @@ export default function Discover({ st, dispatch, onQuestions, onBlood }) {
               transform: `translate(${off}px,${d.y}px) rotate(${d.axis === 'x' ? off / 28 : 0}deg)`,
               transition: drag.current ? 'none' : 'transform .4s cubic-bezier(.2,.8,.2,1)',
             }}>
-              <TwinCard tw={w} blurred={blurred(w)} top
+              <TwinCard tw={w} blurred={blurred(w)} top shownMatch={matchFor(w, st)}
+                        owedCount={owedBy(w, st).length}
                         onTap={() => { if (!d.axis) openDetail(w); }}
                         onUnlock={() => setGate({ twin: w })} />
             </Box>
@@ -214,7 +216,7 @@ export default function Discover({ st, dispatch, onQuestions, onBlood }) {
               }}>
         {gate && (() => {
           const tw = gate.twin;
-          const owed = tw ? tw.needs.filter((g) => st.skipped.includes(g)) : [];
+          const owed = tw ? owedBy(tw, st) : [];
           return (
             <>
               <Typography variant="h3" sx={{ color: C.deep }}>
@@ -287,7 +289,7 @@ function Door({ icon, title, sub, tag, hero, onClick }) {
 
 /* Partial blur: photo, name and hook stay sharp — only the match score and
    the protocol are gated. Total blur leaves nothing to want. */
-function TwinCard({ tw, blurred, top, onUnlock, onTap }) {
+function TwinCard({ tw, blurred, top, onUnlock, onTap, shownMatch, owedCount }) {
   const p = PROTOCOLS[tw.protocol];
   const [imgOk, setImgOk] = useState(!!tw.img);
   return (
@@ -326,7 +328,7 @@ function TwinCard({ tw, blurred, top, onUnlock, onTap }) {
         <Typography sx={{
           fontSize: 22, fontWeight: 800, color: C.yellow, lineHeight: 1,
           filter: blurred ? 'blur(4.5px)' : 'none', opacity: blurred ? 0.75 : 1,
-        }}>{tw.match}</Typography>
+        }}>{shownMatch}</Typography>
         <Typography sx={{
           fontSize: 7, letterSpacing: '.16em', textTransform: 'uppercase',
           color: 'rgba(255,255,255,.6)', mt: 0.4,
@@ -375,7 +377,7 @@ function TwinCard({ tw, blurred, top, onUnlock, onTap }) {
               <LockIcon sx={{ fontSize: 14, color: C.yellow }} />
               <Typography sx={{
                 fontSize: 10, fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase',
-              }}>{tw.needs.length} questions to reveal</Typography>
+              }}>{owedCount} question{owedCount === 1 ? '' : 's'} to reveal</Typography>
             </Stack>
           )}
         </Box>
