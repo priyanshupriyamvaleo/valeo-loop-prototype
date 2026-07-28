@@ -133,6 +133,157 @@ body.mob .meta{width:100%;height:100%;border-radius:0}
 .msheet__n i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.28);flex-shrink:0}
 .msheet__n.on i{background:#14283F}
 .msheet__n.vis i{background:#6FD69B}
+
+/* ═══════════ TWIN FLOW — deck, tiers, twin meter ═══════════ */
+
+/* — twin completeness meter — */
+.tm{display:flex;align-items:center;gap:10px}
+.tm__bar{flex:1;height:7px;border-radius:4px;background:rgba(27,57,91,.10);overflow:hidden;position:relative}
+.tm__fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--yellow),var(--yellow-deep));
+  transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.tm__ghost{position:absolute;top:0;height:100%;border-radius:4px;
+  background:repeating-linear-gradient(115deg,rgba(255,185,0,.30) 0 4px,transparent 4px 8px)}
+.tm__n{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--deep);
+  font-variant-numeric:tabular-nums;flex-shrink:0}
+.tm--dark .tm__bar{background:rgba(255,255,255,.14)}
+.tm--dark .tm__n{color:#fff}
+
+/* — the deck — */
+.deck{position:relative;height:454px;margin:6px -2px 0;touch-action:pan-y}
+.dcard{position:absolute;inset:0;border-radius:24px;overflow:hidden;background:#fff;
+  box-shadow:0 18px 44px -16px rgba(27,57,91,.34),0 0 0 1px rgba(27,57,91,.07);
+  display:flex;flex-direction:column;will-change:transform}
+.dcard--drag{transition:none}
+.dcard--rest{transition:transform .42s cubic-bezier(.2,.8,.2,1)}
+.dcard__top{padding:15px 16px 13px;color:#fff;position:relative;overflow:hidden;flex-shrink:0;
+  background:linear-gradient(158deg,#1B395B,#16304C 62%,#122A45)}
+.dcard__top::after{content:'';position:absolute;right:-56px;top:-64px;width:186px;height:186px;
+  border-radius:50%;background:radial-gradient(circle,rgba(255,185,0,.20),transparent 68%)}
+.dcard__tierrow{display:flex;align-items:center;gap:7px;position:relative;z-index:1}
+.tpill{font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;padding:4px 8px;border-radius:6px;display:inline-flex;gap:4px;align-items:center}
+.dcard__mt{margin-left:auto;text-align:right}
+.dcard__mn{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;
+  color:var(--yellow);font-variant-numeric:tabular-nums}
+.dcard__mk{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);margin-top:3px}
+.dcard__ic{font-size:30px;margin:12px 0 7px;position:relative;z-index:1}
+.dcard__t{font-family:var(--font-display);font-size:25px;font-weight:600;line-height:1.13;
+  position:relative;z-index:1}
+.dcard__soc{display:flex;gap:7px;align-items:flex-start;margin-top:11px;padding-top:11px;
+  border-top:1px solid rgba(255,255,255,.14);position:relative;z-index:1}
+.dcard__soc b{color:var(--yellow);font-weight:700}
+.dcard__socx{font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.82)}
+.dcard__body{flex:1;padding:15px 16px;display:flex;flex-direction:column;min-height:0}
+.dcard__use{font-size:14.5px;line-height:1.42;color:var(--deep);font-weight:600}
+.dcard__meta{display:flex;gap:0;margin-top:auto;padding-top:13px;border-top:1px solid var(--line)}
+.dcard__m{flex:1}
+.dcard__m + .dcard__m{border-left:1px solid var(--line);padding-left:12px}
+.dcard__mv{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--deep);
+  font-variant-numeric:tabular-nums}
+.dcard__ml{font-family:var(--mono);font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink-2);margin-top:4px}
+.dcard__hint{text-align:center;font-size:10.5px;color:var(--ink-2);margin-top:11px}
+
+/* swipe verdict stamps */
+.stamp{position:absolute;top:22px;padding:7px 13px;border-radius:9px;font-family:var(--mono);
+  font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  border:2.5px solid;z-index:6;pointer-events:none}
+.stamp--save{left:18px;transform:rotate(-11deg);color:var(--green);border-color:var(--green);
+  background:rgba(255,255,255,.94)}
+.stamp--pass{right:18px;transform:rotate(11deg);color:var(--coral);border-color:var(--coral);
+  background:rgba(255,255,255,.94)}
+
+/* deck controls */
+.dctl{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px}
+.dbtn{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:20px;background:#fff;box-shadow:0 6px 18px -6px rgba(27,57,91,.34),0 0 0 1px rgba(27,57,91,.07)}
+.dbtn--save{width:62px;height:62px;background:var(--green);color:#fff;font-size:24px;
+  box-shadow:0 10px 24px -8px rgba(39,153,91,.6)}
+.dbtn--info{width:44px;height:44px;font-size:15px;color:var(--ink-2)}
+
+/* — locked tier teaser — */
+.lock{margin-top:16px;border-radius:20px;padding:16px;position:relative;overflow:hidden;
+  background:linear-gradient(152deg,#16304C,#122A45);color:#fff}
+.lock__blur{display:flex;gap:8px;margin-top:12px}
+.lock__c{flex:1;border-radius:12px;padding:11px 9px;background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.12);text-align:center}
+.lock__cn{font-size:10.5px;font-weight:700;filter:blur(4px);color:#fff;user-select:none}
+.lock__cs{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--yellow);margin-top:6px}
+.lock__cta{margin-top:14px;width:100%;padding:13px;border-radius:13px;background:var(--yellow);
+  color:var(--deep);font-size:13.5px;font-weight:700}
+
+/* — trigger rows (data capture) — */
+.trg{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 0}
+.trg + .trg{border-top:1px solid rgba(27,57,91,.07)}
+.trg__i{width:38px;height:38px;border-radius:12px;background:var(--surface-sunken);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.trg__t{font-size:13.5px;font-weight:600;color:var(--text-primary)}
+.trg__s{font-size:11px;color:var(--ink-2);margin-top:2px}
+.trg__p{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green);flex-shrink:0}
+.trg--done .trg__i{background:var(--green-soft)}
+.trg--done .trg__p{color:var(--ink-2)}
+
+/* — saved / portfolio rows — */
+.prow{display:flex;align-items:center;gap:12px;padding:14px 0}
+.prow + .prow{border-top:1px solid rgba(27,57,91,.07)}
+.prow__i{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;
+  justify-content:center;font-size:19px;flex-shrink:0;background:var(--surface-sunken)}
+.prow__t{font-size:14px;font-weight:600;color:var(--text-primary)}
+.prow__s{font-size:11.5px;color:var(--ink-2);margin-top:2px;line-height:1.45}
+.prow__cta{flex-shrink:0;padding:9px 13px;border-radius:11px;font-size:11.5px;font-weight:700;
+  background:var(--deep);color:#fff;max-width:104px;line-height:1.3;text-align:center}
+.prow__cta--done{background:var(--yellow);color:var(--deep)}
+
+/* — loop hero on Protocols — */
+.lhero{border-radius:24px;padding:18px;color:#fff;position:relative;overflow:hidden;
+  background:linear-gradient(158deg,#1B395B,#16304C 60%,#122A45)}
+.lhero::after{content:'';position:absolute;right:-70px;top:-80px;width:230px;height:230px;
+  border-radius:50%;background:radial-gradient(circle,rgba(255,185,0,.16),transparent 68%)}
+.lhero__row{display:flex;align-items:center;gap:15px;position:relative;z-index:1}
+.lhero__k{font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--yellow)}
+.lhero__t{font-family:var(--font-display);font-size:21px;font-weight:600;margin-top:5px;line-height:1.16}
+.lhero__s{font-size:11.5px;color:rgba(255,255,255,.62);margin-top:5px;line-height:1.5}
+.lhero__ph{display:flex;gap:7px;margin-top:14px;font-family:var(--mono);font-size:8.5px;
+  font-weight:700;letter-spacing:.08em;text-transform:uppercase;position:relative;z-index:1}
+.lhero__ph span{color:rgba(255,255,255,.3)}
+.lhero__ph .d{color:#6FD69B}.lhero__ph .n{color:var(--yellow)}
+
+/* — question card (onboarding) — */
+.q{background:#fff;border-radius:20px;padding:18px;box-shadow:var(--shadow-sm)}
+.q__k{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-2)}
+.q__t{font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--deep);
+  margin-top:7px;line-height:1.2}
+.qo{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:13px 14px;
+  border-radius:14px;background:var(--surface-sunken);margin-top:9px;font-size:13.5px;
+  font-weight:600;color:var(--text-primary)}
+.qo.on{background:var(--deep);color:#fff}
+.qo__k{width:22px;height:22px;border-radius:50%;background:rgba(27,57,91,.09);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700}
+.qo.on .qo__k{background:var(--yellow);color:var(--deep)}
+
+/* — assembly / "cooking" — */
+.asm{font-family:var(--mono);font-size:11.5px;color:rgba(255,255,255,.5);display:flex;
+  gap:9px;align-items:center;padding:7px 0}
+.asm b{color:#6FD69B;font-weight:700}
+.asm--now{color:#fff}
+.asm--now b{color:var(--yellow)}
+
+/* — AI coach — */
+.coach{display:flex;gap:11px;align-items:center;width:100%;text-align:left;border-radius:18px;
+  padding:14px;background:linear-gradient(152deg,#254A73,#1B395B);color:#fff}
+.coach__av{width:40px;height:40px;border-radius:50%;background:var(--yellow);color:var(--deep);
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.coach__t{font-size:13.5px;font-weight:700}
+.coach__s{font-size:11px;color:rgba(255,255,255,.62);margin-top:2px;line-height:1.45}
+.bub{max-width:82%;padding:11px 13px;border-radius:15px;font-size:13px;line-height:1.5;margin-top:9px}
+.bub--ai{background:var(--surface-sunken);color:var(--text-primary);border-bottom-left-radius:5px}
+.bub--me{background:var(--deep);color:#fff;margin-left:auto;border-bottom-right-radius:5px}
+.esc{margin-top:13px;padding:12px 13px;border-radius:14px;background:var(--mint);
+  border:1px solid var(--yellow);font-size:12px;line-height:1.5;color:#7A6320}
+.esc b{color:var(--deep)}
 .pscreen{width:390px;height:844px;display:flex;flex-direction:column;background:var(--surface-app);
   position:relative;overflow:hidden}
 .pbody{flex:1;overflow-y:auto}
@@ -418,14 +569,15 @@ const {useReducer, useEffect, useRef, useCallback} = React;
    comp:'X'  → native React component (shares app chrome)
    file:'x'  → self-contained document, rendered in an iframe
    ══════════════════════════════════════════════════════════════ */
-const STAGES = ['Start','Valeo app','Onboard','Activate','Commit','Journey','Prove','Renew'];
+const STAGES = ['Start','Valeo app','Discover','Onboard','Activate','Commit','Journey','Prove','Renew'];
 
 const FLOW = {
 'B-start': {type:'branch', stage:'Start', title:'Which journey?', icon:'🎬',
   q:'Two ways in. Both are fully walkable.',
   why:'A returning member and a first-time member see genuinely different products — loop_index changes the whole experience. Pick one; the rail and Map reach every node either way.',
   options:[
-    {label:'First-time member', sub:'Walk the full loop from signup → Commit → Prove', to:'T3-1', tone:'go'},
+    {label:'First-time member', sub:'Meet your twin → swipe → consult → measure', to:'DS1', tone:'go'},
+    {label:'Original onboarding', sub:'The evidence-first path — goal picker → intake → draw', to:'T3-1', tone:'alt'},
     {label:'Returning member', sub:'Day 28 of loop 1 — straight into the live app', to:'V0', tone:'alt'}
   ]},
 
@@ -663,8 +815,36 @@ const FLOW = {
   detail:'New goal, new intake, new sealed prediction. Same machinery, sharper twin. The intake is shorter because the system already knows things — Stage 2 of the moat, rendered as a UI decision.',
   deltas:[['Returning to','Intake'],['Carried over','Full history + corpus'],['Loop','2']], to:'T3-2'},
 'T3-9':{stage:'Renew', file:'T3-9-plan-management.html', title:'Plan management', phase:'Act',
-  note:'Cancel is one tap, self-serve, <b>no chatbot gate</b> — the direct answer to Noom\'s $62M settlement, which was about friction asymmetry between joining and leaving.', primary:'T2-1', back:'T2-1'}
-};
+  note:'Cancel is one tap, self-serve, <b>no chatbot gate</b> — the direct answer to Noom\'s $62M settlement, which was about friction asymmetry between joining and leaving.', primary:'T2-1', back:'T2-1'},
+/* ══ TWIN FLOW — the desire-first front door (TWIN_FLOW_PLAN.md) ══ */
+'DS1':{stage:'Discover', comp:'DsIntro', title:'Meet your twin', phase:'Measure',
+  headline:'Introducing Valeo Twins',
+  note:'The cold open shows the twin <b>doing something</b> before it asks for anything. Ends on the warm-start promise — the twin is already part-built, which makes the next screen a continuation rather than a signup.',
+  primary:'DS2'},
+'DS2':{stage:'Discover', comp:'DsWarm', title:'Your twin starts warm', phase:'Measure',
+  note:'<b>The thing no new entrant can copy.</b> Valeo already holds orders and lab results for existing users, so the twin opens at 34%, not 0%. "Confirm this" is a fundamentally easier ask than "fill this in".',
+  primary:'DS3', back:'DS1'},
+'DS3':{stage:'Discover', comp:'DsQuiz', title:'Core 5 questions', phase:'Measure',
+  note:'The mandatory 20%. Five questions, ~40 seconds, twin climbs visibly per answer. The other 80% is harvested later by pings and by the coach on the call — never as one long form.',
+  primary:'DS4', back:'DS2'},
+'DS4':{stage:'Discover', comp:'DsAssembly', title:'Twin assembly', phase:'Read',
+  note:'Honest computation theatre (M36). It names the real work — history read, signals matched, trials scanned, collisions removed — instead of a fake spinner. Auto-advances into the deck.',
+  primary:'DS-DISC'},
+'DS-DISC':{stage:'Discover', comp:'Discover', title:'Discover — the deck', phase:'Read', hero:true,
+  note:'Swipe deck. Right = <b>save</b>, never buy — saving is a low-stakes signal and the real commitment happens on the coach call. Left captures a <b>rejection reason</b> (M35), which is free structured data at the exact moment of rejection.<br><br>Virtue signalling is <b>tiered</b>: Popular → Advanced → Elite → Inner Circle, with locked rungs visible-but-blurred, so the climb is the data collection.'},
+'DS10':{stage:'Commit', comp:'DsConsult', title:'Book coach consult', phase:'Commit',
+  note:'Free, 30 minutes, no card. The consult does triple duty — it converts, it captures the 80% of the profile a form would never finish, and it puts a human between a swipe and a medical commitment.',
+  primary:'DS11', back:'T2-P'},
+'DS11':{stage:'Commit', comp:'DsConsultDone', title:'After the consult', phase:'Commit',
+  note:'Twin jumps 48% → 78% from 12 fields captured in conversation. The saved card flips to "View protocol", and the baseline becomes the one pending action — discounted, because <b>the baseline is the asset</b>.',
+  primary:'T3-3', back:'T2-P'},
+'DS12':{stage:'Commit', file:'C5-protocol.html', title:'Full protocol', phase:'Commit',
+  note:'Reuses the existing mission-briefing screen (C5). Post-baseline the protocol is <b>amended, not blocked</b> — the user sees what changed once their bloods are in, which reads as personalisation rather than a toll gate.',
+  primary:'T3-3', back:'T2-P'},
+'DS14':{stage:'Renew', comp:'DsVerdictTwin', title:'Verdict → twin → deck', phase:'Prove',
+  note:'<b>The closing edge, and the whole thesis in one screen.</b> A real verdict on your body re-scores the deck: the failed mechanism is removed, an adjacent protocol climbs. Without this edge the deck is a commodity marketplace; with it, every completed loop makes the next deck better in a way no competitor can copy.',
+  primary:'DS-DISC', back:'T2-P'}
+}
 
 const PHASES = ['Measure','Read','Commit','Act','Prove'];
 
@@ -695,8 +875,157 @@ const AVAILABLE = [
   {id:'A4', t:'Gut', ic:'🦠', marker:'Microbiome diversity', why:'Fibre + strain protocol', blocks:null}
 ];
 
+/* ── TIER LADDER ────────────────────────────────────────────
+   Virtue signalling is TIERED, not flat. If every card says
+   "used by athletes" it's wallpaper; as a ladder with visible
+   locked rungs it becomes continuous pull. Each tier unlocks on
+   twin completeness, so the climb IS the data collection. */
+const TIERS = {
+  pop: {k:'pop', n:'Popular',      at:0,  c:'var(--teal)',   bg:'var(--teal-soft)',   ic:'◆'},
+  adv: {k:'adv', n:'Advanced',     at:55, c:'var(--amber)',  bg:'#FBEEDA',            ic:'◆◆'},
+  eli: {k:'eli', n:'Elite',        at:75, c:'var(--yellow-deep)', bg:'var(--mint)',   ic:'◆◆◆'},
+  inn: {k:'inn', n:'Inner Circle', at:90, c:'var(--deep)',   bg:'#E4EAF2',            ic:'◈'}
+};
+const TIER_ORDER = ['pop','adv','eli','inn'];
+
+/* ── THE CATALOG ────────────────────────────────────────────
+   Deck inventory. A swipe deck with 5 cards dies in 20 seconds,
+   so this is deliberately deep. `soc` is the virtue-signal line —
+   the cold-start substitute for an outcome corpus we don't have
+   yet. `match` is the headline number; `ceil` is what it could
+   reach with a fuller twin, which is what drives data capture. */
+const CATALOG = [
+  {id:'K1', t:'Metabolic Reset', ic:'⚖️', tier:'pop', match:88, ceil:94, wk:12,
+   mk:'HbA1c', use:'Drop fasting glucose and lose fat without losing muscle',
+   soc:'Run by 40k+ members worldwide', by:'The most-run protocol on Valeo',
+   stack:['Tirzepatide 2.5 → 5 mg weekly','Iron + vitamin C, mornings','Protein floor 1.6 g/kg'],
+   risk:'Nausea peaks around day 2 after each dose, then settles.',
+   wrong:'Not for you if you\'re pregnant, planning to be, or have a personal history of MTC.'},
+  {id:'K2', t:'Deep Sleep Protocol', ic:'😴', tier:'pop', match:81, ceil:93, wk:8,
+   mk:'HRV + sleep latency', use:'Fall asleep faster and wake up with a higher HRV',
+   soc:'Standard in two Premier League medical rooms', by:'Adapted from pro football recovery programmes',
+   stack:['Magnesium glycinate 400 mg, 90 min pre-bed','Morning light 10 min within 30 min of waking','Last caffeine 10 h before bed'],
+   risk:'Week one often feels worse before it feels better as your rhythm shifts.',
+   wrong:'Skip if you work rotating night shifts — we\'d be measuring noise.'},
+  {id:'K3', t:'Hair Density', ic:'💇', tier:'pop', match:76, ceil:88, wk:16,
+   mk:'Terminal hair count', use:'Stop the shed and thicken what\'s still there',
+   soc:'Used by on-camera talent before shoot cycles', by:'The dermatology stack, minus the clinic markup',
+   stack:['Topical minoxidil 5%, evenings','Ketoconazole shampoo 2×/week','Ferritin correction if below 40'],
+   risk:'A temporary shed at weeks 3–6 is expected and means it\'s working.',
+   wrong:'Won\'t rebuild follicles that are already gone — this holds and thickens.'},
+  {id:'K4', t:'Gut Reset', ic:'🦠', tier:'pop', match:72, ceil:86, wk:10,
+   mk:'Microbiome diversity', use:'Fix the bloating and stop guessing which food did it',
+   soc:'Run by 12k members this year', by:'Built on stool-sequencing data, not elimination guesswork',
+   stack:['30 g fibre from 20+ plant sources weekly','Targeted strain, 8 weeks','Two-week trigger log'],
+   risk:'More gas in week one as the fibre load climbs. It passes.',
+   wrong:'If you have IBD, this needs your gastroenterologist first.'},
+  {id:'K5', t:'Stress Load', ic:'🌊', tier:'pop', match:69, ceil:84, wk:8,
+   mk:'Cortisol curve', use:'Flatten the 4pm crash and the 2am wake-up',
+   soc:'Adapted from military selection recovery programmes', by:'Cortisol slope, not a vibe',
+   stack:['Ashwagandha 600 mg, evenings','Breath protocol, 6 min daily','Caffeine cutoff moved earlier'],
+   risk:'Sedating for some people at the evening dose — we\'ll move it if so.',
+   wrong:'Not with thyroid medication until your clinician clears the interaction.'},
+
+  {id:'K6', t:'Cognitive Edge', ic:'🧠', tier:'adv', match:84, ceil:95, wk:12,
+   mk:'Reaction time + ApoB', use:'Hold focus through a 10-hour day without the 3pm collapse',
+   soc:'Standard in F1 driver preparation programmes', by:'What race teams run for reaction time under load',
+   stack:['Creatine 5 g daily','Omega-3, 2 g EPA+DHA','Zone-2 cardio, 150 min/week'],
+   risk:'Creatine adds 1–2 kg of water weight in week one. It\'s not fat.',
+   wrong:'If your eGFR is flagged, we test kidney function before starting.'},
+  {id:'K7', t:'Testosterone Optimisation', ic:'⚡', tier:'adv', match:79, ceil:92, wk:16,
+   mk:'Total + free T, SHBG', use:'Rebuild drive, strength and morning energy',
+   soc:'The stack behind a Mr. Olympia prep coach', by:'Endocrine-led, not a bro-science protocol',
+   stack:['Full hormone panel, then decide','Resistance training, 4×/week','Sleep floor of 7 h — non-negotiable'],
+   risk:'We will not start anything until the panel is in. That is the point.',
+   wrong:'If you\'re trying to conceive in the next year, tell us — this changes.'},
+  {id:'K8', t:'Skin Longevity', ic:'✨', tier:'adv', match:74, ceil:89, wk:12,
+   mk:'Collagen density', use:'Firmer skin and fewer fine lines, measured not eyeballed',
+   soc:'Used by A-list actors before shirtless roles', by:'The pre-shoot protocol, made repeatable',
+   stack:['Tretinoin 0.05%, nightly ramp','SPF 50 daily, no exceptions','Collagen 15 g + vitamin C'],
+   risk:'Weeks 2–4 bring purging and peeling. Everyone wants to quit here.',
+   wrong:'Not during pregnancy — tretinoin is out.'},
+  {id:'K9', t:'Endurance Base', ic:'🏃', tier:'adv', match:71, ceil:90, wk:16,
+   mk:'VO₂max + lactate', use:'Add a gear you don\'t currently have',
+   soc:'Run by three Olympic middle-distance squads', by:'Lactate-guided, the way actual athletes train',
+   stack:['80/20 volume split','Iron + B12 correction','Fuelling protocol, 60 g carb/h'],
+   risk:'It is boring. Most of it is deliberately, unglamorously easy.',
+   wrong:'Needs a cardiac clearance if you\'re over 45 and new to volume.'},
+
+  {id:'K10', t:'Longevity Stack', ic:'🧬', tier:'eli', match:91, ceil:97, wk:24,
+   mk:'ApoB, hsCRP, biological age', use:'Move the markers that actually predict how long you get',
+   soc:'What Zurich longevity clinics charge $8,000 for', by:'The full panel, quarterly, with a clinician reading it',
+   stack:['Metformin or rapamycin — panel decides','ApoB target under 60','Zone-2 + resistance, 5×/week'],
+   risk:'This is a 24-week loop. The first verdict is half a year out.',
+   wrong:'Blocked while Metabolic Reset is running — both move HbA1c.'},
+  {id:'K11', t:'Elite Recovery', ic:'🧊', tier:'eli', match:86, ceil:96, wk:12,
+   mk:'HRV, sleep architecture, CK', use:'Train harder by recovering like it\'s your job',
+   soc:'The protocol behind two Tour de France support teams', by:'Load management with actual load data',
+   stack:['Cold exposure, 11 min/week total','Sleep extension to 8.5 h','Protein timing around sessions'],
+   risk:'Cold immediately post-lifting blunts hypertrophy. Timing matters.',
+   wrong:'Not with Raynaud\'s or uncontrolled hypertension.'},
+  {id:'K12', t:'Fertility Window', ic:'👪', tier:'eli', match:83, ceil:95, wk:16,
+   mk:'AMH, sperm parameters', use:'Improve the odds before you start trying',
+   soc:'Used by IVF clinics as a pre-cycle protocol', by:'Both partners measured, not just one',
+   stack:['Full panel, both partners','CoQ10 200 mg + antioxidant stack','Heat and alcohol exposure audit'],
+   risk:'Sperm parameters take a full 74-day cycle to respond. Patience is structural.',
+   wrong:'If you\'re already in an IVF cycle, your clinic leads and we support.'},
+  {id:'K13', t:'Immune Resilience', ic:'🛡', tier:'eli', match:78, ceil:93, wk:12,
+   mk:'Vitamin D, hsCRP, NK activity', use:'Stop losing two weeks a year to being ill',
+   soc:'Run by an Everest expedition medical team', by:'Built for people who cannot afford downtime',
+   stack:['Vitamin D to 40–60 ng/mL','Zinc 15 mg + selenium','Sleep and training load ceilings'],
+   risk:'Vitamin D needs re-testing — over-correction is a real thing.',
+   wrong:'Sarcoidosis or hypercalcaemia rules this out.'},
+
+  {id:'K14', t:'Full Biological Rebuild', ic:'◈', tier:'inn', match:96, ceil:99, wk:52,
+   mk:'62 markers, quarterly', use:'One year, every system, measured end to end',
+   soc:'12 members. Referral only.', by:'A dedicated clinician, quarterly panels, everything sequenced',
+   stack:['62-marker panel every 90 days','Sequenced protocol stack, one variable at a time','Named clinician on call'],
+   risk:'A year-long commitment with quarterly verdicts, not one answer.',
+   wrong:'Requires a completed loop first — we don\'t start here.'},
+  {id:'K15', t:'Executive Performance', ic:'♟', tier:'inn', match:93, ceil:98, wk:24,
+   mk:'Cognitive battery + metabolic', use:'Perform under sustained pressure without burning down',
+   soc:'Run by 30 founders and two sovereign fund CIOs', by:'Built for people whose output is their judgement',
+   stack:['Quarterly cognitive battery','Metabolic + hormone panel','Travel and circadian protocol'],
+   risk:'Requires genuinely honest self-reporting. Most people flinch.',
+   wrong:'Not a substitute for treating burnout that\'s already happened.'}
+];
+
+/* ── TWIN COMPLETENESS ──────────────────────────────────────
+   WARM START — the thing no new entrant can copy. Valeo already
+   has orders and lab results for existing users, so the twin does
+   not begin at 0%. It begins mid-way and asks you to CONTINUE,
+   which is a fundamentally easier request than STARTING. */
+const TWIN_SEED = 34;
+const TWIN_KNOWN = [
+  {ic:'📦', t:'3 previous orders',        s:'Lab panel · supplements · IV drip', src:'Valeo history'},
+  {ic:'🩸', t:'Ferritin 18 ng/mL',        s:'From your panel in March',          src:'Valeo lab'},
+  {ic:'👤', t:'Age band, sex, city',      s:'34–40 · male · Riyadh',             src:'Your account'},
+  {ic:'🧲', t:'One closed loop',          s:'Iron correction — refuted',         src:'Your loop history'}
+];
+/* Each trigger is a data-capture ping: what it costs, what it pays. */
+const TRIGGERS = [
+  {id:'G1', ic:'🎯', t:'Your goals, ranked',   q:4, pct:9,  mins:'40 sec', un:'Sharpens every match score'},
+  {id:'G2', ic:'😴', t:'Sleep & recovery',     q:4, pct:8,  mins:'40 sec', un:'Unlocks 3 Advanced protocols'},
+  {id:'G3', ic:'🍽', t:'What you actually eat', q:6, pct:11, mins:'1 min',  un:'Unlocks Gut + Metabolic depth'},
+  {id:'G4', ic:'💊', t:'Current medications',   q:3, pct:12, mins:'30 sec', un:'Required before any protocol'},
+  {id:'G5', ic:'🧬', t:'Family history',        q:5, pct:10, mins:'50 sec', un:'Unlocks Elite tier'},
+  {id:'G6', ic:'🏋️', t:'Training load',        q:4, pct:7,  mins:'40 sec', un:'Unlocks Endurance + Recovery'}
+];
+/* Left-swipe reasons. A rejection is free structured data at the
+   exact moment of rejection — and it tells us why the deck is wrong. */
+const PASS_REASONS = [
+  {k:'hard',  t:'Too demanding for me right now'},
+  {k:'goal',  t:'Not what I\'m trying to fix'},
+  {k:'doing', t:'Already doing something like this'},
+  {k:'doubt', t:'I don\'t buy that it works'},
+  {k:'later', t:'Interesting, but not yet'}
+];
+
 const INIT = {node:'B-start', focus:'L1', history:[], visited:{'B-start':1},
-  day:28, adherence:86, loop:1, phase:'Act', dayState:'ordinary', sheet:null, mode:'walk'};
+  day:28, adherence:86, loop:1, phase:'Act', dayState:'ordinary', sheet:null, mode:'walk',
+  /* twin-flow state */
+  twinPct:TWIN_SEED, deck:0, saved:['K2'], passed:[], passWhy:{}, consulted:[],
+  answered:[], card:null, landed:false};
 
 function reducer(s, a){
   switch(a.type){
@@ -720,6 +1049,25 @@ function reducer(s, a){
     case 'SHEET': return {...s, sheet:a.sheet};
     case 'SET':   return {...s, ...a.patch};
     case 'MODE':  return {...s, mode:a.mode};
+
+    /* ── twin flow ─────────────────────────────────────────── */
+    case 'SAVE':                       /* right swipe → saved, never bought */
+      return {...s, deck:s.deck+1, card:null,
+        saved: s.saved.indexOf(a.id)>-1 ? s.saved : [...s.saved, a.id]};
+    case 'PASS':                       /* left swipe → reason captured */
+      return {...s, deck:s.deck+1, card:null, passed:[...s.passed, a.id],
+        passWhy: a.why ? {...s.passWhy, [a.id]:a.why} : s.passWhy};
+    case 'DECKRESET': return {...s, deck:0, card:null};
+    case 'CARD':      return {...s, card:a.id};
+    case 'TWIN': {                     /* a trigger answered → twin grows */
+      if(s.answered.indexOf(a.id)>-1) return s;
+      const g = TRIGGERS.find(t=>t.id===a.id);
+      return {...s, answered:[...s.answered, a.id],
+        twinPct: Math.min(100, s.twinPct + (g?g.pct:0))};
+    }
+    case 'CONSULT':                    /* consult done → card flips, twin jumps */
+      return {...s, consulted: s.consulted.indexOf(a.id)>-1 ? s.consulted : [...s.consulted, a.id],
+        twinPct: Math.min(100, s.twinPct + 30)};
     case 'RESET': return {...INIT};
     default: return s;
   }
@@ -769,7 +1117,10 @@ function AppBar({st, go, dark}){
 }
 
 function TabBar({active, go}){
-  const T=[['today','◉','Today','T2-1'],['loop','◍','Loop','T2-9'],['protocols','▤','Protocols','T2-P'],['twin','◎','Twin','T2-7']];
+  /* Per spec: 4 tabs. The Loop folds into Protocols as its hero and stays
+     reachable from the app-bar ring — the page itself is not deleted. */
+  const T=[['discover','◇','Discover','DS-DISC'],['today','◉','Today','T2-1'],
+           ['protocols','▤','Protocols','T2-P'],['twin','◎','Twin','T2-7']];
   return (
     <div className="tabs3">
       {T.map(([k,ic,lb,node])=>(
@@ -800,8 +1151,295 @@ function Sheet({title, sub, children, onClose, cta, onCta}){
 }
 
 /* ══════════════════════════════════════════════════════════════
+   3b · TWIN FLOW PRIMITIVES
+   ══════════════════════════════════════════════════════════════ */
+/* Twin completeness. `ceil` draws a hatched ghost beyond the fill —
+   the visible gap between what we know and what we could know is
+   what makes the meter motivating rather than decorative. */
+function TwinMeter({pct, ceil, dark, label}){
+  return (
+    <div className={'tm'+(dark?' tm--dark':'')}>
+      <div className="tm__bar">
+        {ceil>pct && <div className="tm__ghost" style={{left:pct+'%',width:(ceil-pct)+'%'}}/>}
+        <div className="tm__fill" style={{width:pct+'%'}}/>
+      </div>
+      <span className="tm__n">{pct}%</span>
+      {label && <span style={{fontSize:10.5,color:dark?'rgba(255,255,255,.55)':'var(--ink-2)'}}>{label}</span>}
+    </div>
+  );
+}
+
+/* State-dependent landing. A swipe deck is right for a stranger and wrong
+   for someone on day 28 of a protocol, so the tab ORDER is fixed but where
+   the app opens is not. */
+function landing(st){
+  const hasActive = LOOPS.some(l=>l.st==='active');
+  const fresh = st.consulted.length===0 && st.saved.length===0;
+  return (fresh && !hasActive) ? 'DS-DISC' : 'T2-1';
+}
+function tierOf(k){ return TIERS[k]; }
+function unlocked(k, twinPct){ return twinPct >= TIERS[k].at; }
+/* The deck only serves cards whose tier the twin has earned. */
+function deckFor(st){
+  return CATALOG.filter(c=>unlocked(c.tier, st.twinPct)
+    && st.saved.indexOf(c.id)<0 && st.passed.indexOf(c.id)<0);
+}
+function nextLockedTier(twinPct){
+  return TIER_ORDER.map(k=>TIERS[k]).find(t=>twinPct < t.at) || null;
+}
+
+/* ══════════════════════════════════════════════════════════════
    4 · NATIVE SCREENS
    ══════════════════════════════════════════════════════════════ */
+/* ── DISCOVER ──────────────────────────────────────────────────
+   Swipe deck. Right = save (never a purchase — saving is a low-stakes
+   signal, the commitment happens on the coach call). Left = pass, and
+   we capture WHY, because a rejection reason is free structured data
+   at the exact moment of rejection and it tells us why the deck is
+   wrong. Tap = detail. */
+function Discover({st, go, dispatch}){
+  const pool = deckFor(st);
+  const card = pool[0];
+  const [dx, setDx] = React.useState(0);
+  const [drag, setDrag] = React.useState(false);
+  const [fly, setFly] = React.useState(0);          /* commit animation */
+  const [why, setWhy] = React.useState(null);       /* pending pass → reason sheet */
+  const start = useRef(0);
+  const TH = 88;                                     /* commit threshold */
+
+  const reset = () => { setDx(0); setDrag(false); };
+  /* `fly` guards re-entry — a second commit mid-flight used to leave the
+     card stranded off-screen with the empty stack showing through. */
+  const commit = (dir) => {
+    if(!card || fly) return;
+    setFly(dir); setDrag(false);
+    setTimeout(()=>{
+      setFly(0); setDx(0);
+      if(dir>0) dispatch({type:'SAVE', id:card.id});
+      else setWhy(card.id);                          /* ask why before recording */
+    }, 260);
+  };
+
+  const down = e => { if(!card || fly) return; start.current = e.clientX; setDrag(true);
+                      e.currentTarget.setPointerCapture&&e.currentTarget.setPointerCapture(e.pointerId); };
+  const move = e => { if(!drag || fly) return; setDx(e.clientX - start.current); };
+  const up   = () => { if(!drag) return;
+                       if(dx >  TH) return commit(1);
+                       if(dx < -TH) return commit(-1);
+                       reset(); };
+
+  const off = fly ? fly*520 : dx;
+  const rot = off/26;
+  const saveOp = Math.max(0, Math.min(1, off/TH));
+  const passOp = Math.max(0, Math.min(1, -off/TH));
+  const locked = nextLockedTier(st.twinPct);
+
+  return (
+    <div className="pscreen">
+      <StatusBar/>
+      <div className="appbar">
+        <button className="appbar__back" onClick={()=>go('V0')}>‹ Valeo</button>
+        <span className="appbar__spacer"></span>
+        <button className="appbar__ring" onClick={()=>go('T2-7')}>
+          <span className="appbar__ringlabel">
+            <b>Twin {st.twinPct}%</b><span>{pool.length} matches left</span></span>
+        </button>
+      </div>
+
+      <div className="pbody">
+        <div style={{padding:'8px 18px 24px'}}>
+          <div className="kick">Discover</div>
+          <h1 className="lede" style={{marginBottom:12}}>Your twin found these.</h1>
+
+          {card ? (<>
+            <div className="deck"
+                 onPointerDown={down} onPointerMove={move}
+                 onPointerUp={up} onPointerCancel={up}>
+              {/* Real cards behind, not blank placeholders — otherwise a card
+                  in flight reveals an empty white rectangle. */}
+              {pool.slice(1,3).reverse().map((c,i)=>{
+                const back = pool.slice(1,3);
+                const d = back.length - i;                 /* 2 = further back */
+                return <div key={c.id} style={{position:'absolute',inset:0,zIndex:1,
+                  pointerEvents:'none',
+                  transform:'scale('+(1-d*.035)+') translateY('+(d*10)+'px)',
+                  opacity:1-d*.22}}>
+                  <DeckCard card={c} cls="dcard--rest" style={{}} saveOp={0} passOp={0}/>
+                </div>;
+              })}
+              <DeckCard card={card} onTap={()=>dispatch({type:'CARD', id:card.id})}
+                cls={drag?'dcard--drag':'dcard--rest'}
+                style={{transform:'translateX('+off+'px) rotate('+rot+'deg)', zIndex:5}}
+                saveOp={saveOp} passOp={passOp}/>
+            </div>
+
+            <div className="dctl">
+              <button className="dbtn" onClick={()=>commit(-1)} title="Pass">✕</button>
+              <button className="dbtn dbtn--info" onClick={()=>dispatch({type:'CARD', id:card.id})}>ⓘ</button>
+              <button className="dbtn dbtn--save" onClick={()=>commit(1)} title="Save">♥</button>
+            </div>
+            <div className="dcard__hint">Drag the card, or use the buttons. Saving costs nothing —
+              you commit on the coach call.</div>
+          </>) : (
+            <div className="q" style={{textAlign:'center',padding:'30px 18px'}}>
+              <div style={{fontSize:30}}>◍</div>
+              <div className="q__t" style={{marginTop:8}}>That's every protocol your twin can score.</div>
+              <div style={{fontSize:12.5,color:'var(--ink-2)',marginTop:9,lineHeight:1.55}}>
+                {locked ? 'Feed it more and it reaches deeper into the catalog.'
+                        : 'You\'ve seen the whole catalog. Check your saved list.'}</div>
+              <button className="btn btn--primary" style={{marginTop:16}}
+                      onClick={()=>go('T2-P')}>Go to my protocols →</button>
+              <button className="btn btn--ghost" style={{marginTop:8}}
+                      onClick={()=>dispatch({type:'DECKRESET'})}>Replay the deck</button>
+            </div>
+          )}
+
+          {/* ── the tier ladder: locked rungs are visible, not hidden ── */}
+          {locked && (
+            <div className="lock">
+              <div style={{display:'flex',alignItems:'center',gap:8,position:'relative',zIndex:1}}>
+                <span className="tpill" style={{background:'rgba(255,255,255,.13)',color:'#fff'}}>
+                  {locked.ic} {locked.n}</span>
+                <span style={{marginLeft:'auto',fontFamily:'var(--mono)',fontSize:9,
+                  letterSpacing:'.14em',color:'rgba(255,255,255,.5)'}}>LOCKED</span>
+              </div>
+              <div style={{fontSize:13.5,lineHeight:1.5,marginTop:11,position:'relative',zIndex:1}}>
+                <b style={{color:'var(--yellow)'}}>{CATALOG.filter(c=>c.tier===locked.k).length} protocols</b>{' '}
+                sit in {locked.n}. Your twin needs <b style={{color:'var(--yellow)'}}>{locked.at}%</b> to
+                score them — you're at {st.twinPct}%.
+              </div>
+              <div className="lock__blur">
+                {CATALOG.filter(c=>c.tier===locked.k).slice(0,3).map(c=>(
+                  <div className="lock__c" key={c.id}>
+                    <div className="lock__cn">{c.t}</div>
+                    <div className="lock__cs">{c.soc.split(' ').slice(0,3).join(' ')}…</div>
+                  </div>))}
+              </div>
+              <button className="lock__cta" onClick={()=>go('T2-7')}>
+                Complete your twin → unlock {locked.n}</button>
+            </div>
+          )}
+
+          <div className="tm" style={{marginTop:18}}>
+            <TwinMeter pct={st.twinPct} ceil={locked?locked.at:100}
+                       label={locked?('→ '+locked.n+' at '+locked.at+'%'):'fully unlocked'}/>
+          </div>
+        </div>
+      </div>
+
+      {/* pass-reason capture */}
+      {why && <Sheet title="Why not this one?"
+        sub="One tap. It stops us showing you the same kind of thing again."
+        onClose={()=>{dispatch({type:'PASS', id:why}); setWhy(null);}}
+        cta="Skip" onCta={()=>{dispatch({type:'PASS', id:why}); setWhy(null);}}>
+        {PASS_REASONS.map(r=>(
+          <button className="qo" key={r.k}
+            onClick={()=>{dispatch({type:'PASS', id:why, why:r.k}); setWhy(null);}}>
+            <span className="qo__k">›</span>{r.t}</button>))}
+      </Sheet>}
+
+      {/* detail */}
+      {st.card && <CardSheet id={st.card} st={st} go={go} dispatch={dispatch}/>}
+
+      <TabBar active="discover" go={go}/>
+      <div className="home-indicator"></div>
+    </div>
+  );
+}
+
+function DeckCard({card, style, cls, saveOp, passOp, onTap}){
+  const T = tierOf(card.tier);
+  return (
+    <div className={'dcard '+cls} style={style} onClick={onTap}>
+      {saveOp>0.06 && <div className="stamp stamp--save" style={{opacity:saveOp}}>Save</div>}
+      {passOp>0.06 && <div className="stamp stamp--pass" style={{opacity:passOp}}>Pass</div>}
+      <div className="dcard__top">
+        <div className="dcard__tierrow">
+          <span className="tpill" style={{background:T.bg,color:T.c}}>{T.ic} {T.n}</span>
+          <span className="dcard__mt">
+            <span className="dcard__mn">{card.match}</span>
+            <div className="dcard__mk">Match</div>
+          </span>
+        </div>
+        <div className="dcard__ic">{card.ic}</div>
+        <div className="dcard__t">{card.t}</div>
+        <div className="dcard__soc">
+          <span style={{color:'var(--yellow)',fontSize:12}}>★</span>
+          <span className="dcard__socx"><b>{card.soc}</b><br/>{card.by}</span>
+        </div>
+      </div>
+      <div className="dcard__body">
+        <div className="dcard__use">{card.use}</div>
+        {/* stack preview — a swipe decision needs more than a headline */}
+        <div style={{marginTop:12}}>
+          {card.stack.slice(0,3).map((x,i)=>(
+            <div key={i} style={{display:'flex',gap:8,padding:'5px 0',fontSize:12,
+              lineHeight:1.4,color:'var(--ink-2)'}}>
+              <span style={{color:'var(--green)',flexShrink:0,fontSize:11}}>✓</span>
+              <span>{x}</span></div>))}
+        </div>
+        <div className="dcard__meta">
+          <div className="dcard__m"><div className="dcard__mv">{card.wk} wk</div>
+            <div className="dcard__ml">Duration</div></div>
+          <div className="dcard__m"><div className="dcard__mv" style={{fontSize:11.5}}>{card.mk}</div>
+            <div className="dcard__ml">Scored on</div></div>
+          <div className="dcard__m"><div className="dcard__mv">+{card.ceil-card.match}</div>
+            <div className="dcard__ml">If twin full</div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Detail sheet — the Bumble tap-through. Deliberately includes what
+   could go wrong and who it's wrong for; a protocol you can't refuse
+   is a protocol nobody believes. */
+function CardSheet({id, st, go, dispatch}){
+  const c = CATALOG.find(x=>x.id===id); if(!c) return null;
+  const T = tierOf(c.tier);
+  const isSaved = st.saved.indexOf(id)>-1;
+  return (
+    <Sheet title={c.t} sub={c.use} onClose={()=>dispatch({type:'CARD', id:null})}
+      cta={isSaved?'Already saved — see my protocols':'Save this protocol'}
+      onCta={()=>{ if(isSaved){dispatch({type:'CARD',id:null}); go('T2-P'); }
+                   else { dispatch({type:'SAVE', id}); dispatch({type:'CARD', id:null}); }}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
+        <span className="tpill" style={{background:T.bg,color:T.c}}>{T.ic} {T.n}</span>
+        <span style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,color:'var(--deep)'}}>
+          {c.match}% match</span>
+        <span style={{marginLeft:'auto',fontSize:11,color:'var(--ink-2)'}}>{c.wk} weeks · {c.mk}</span>
+      </div>
+
+      <div style={{display:'flex',gap:8,padding:'12px 13px',borderRadius:14,
+        background:'var(--mint)',border:'1px solid var(--yellow)',marginBottom:16}}>
+        <span style={{color:'var(--yellow-deep)'}}>★</span>
+        <span style={{fontSize:12,lineHeight:1.5,color:'#7A6320'}}>
+          <b style={{color:'var(--deep)'}}>{c.soc}</b> — {c.by}</span>
+      </div>
+
+      <div className="kick" style={{marginBottom:7}}>What's in it</div>
+      {c.stack.map((s,i)=>(
+        <div key={i} style={{display:'flex',gap:9,padding:'7px 0',fontSize:13,lineHeight:1.45}}>
+          <span style={{color:'var(--green)',flexShrink:0}}>✓</span><span>{s}</span></div>))}
+
+      <div className="kick" style={{margin:'16px 0 7px'}}>What could go wrong</div>
+      <div style={{fontSize:12.5,lineHeight:1.55,color:'var(--ink-2)'}}>{c.risk}</div>
+
+      <div className="kick" style={{margin:'16px 0 7px'}}>Who it's wrong for</div>
+      <div style={{fontSize:12.5,lineHeight:1.55,color:'var(--ink-2)'}}>{c.wrong}</div>
+
+      <div style={{marginTop:16,padding:'12px 13px',borderRadius:14,
+        background:'var(--surface-sunken)'}}>
+        <div style={{fontSize:11.5,color:'var(--ink-2)',lineHeight:1.5}}>
+          Match is <b style={{color:'var(--deep)'}}>{c.match}%</b> on what your twin knows today.
+          It reaches <b style={{color:'var(--deep)'}}>{c.ceil}%</b> once your twin is complete.</div>
+        <div style={{marginTop:9}}><TwinMeter pct={c.match} ceil={c.ceil}/></div>
+      </div>
+    </Sheet>
+  );
+}
+
+
 function V0Home({st, go}){
   const fill = Math.min(1, st.day/84*1.5);
   const svcs=[['🧪','Lab Tests'],['⚖️','Weight Loss'],['💧','IV Therapy'],['💊','Supplements'],['🩺','Doctor on Call'],['💇','Hair Growth']];
@@ -812,7 +1450,7 @@ function V0Home({st, go}){
         <div style={{padding:'8px 20px 24px'}}>
           <div className="searchbar">🔍 Search "Blood tests"</div>
           <div className="hi">Hi <b>Faisal</b>, welcome back</div>
-          <button className="hud" onClick={()=>go('T2-P')}>
+          <button className="hud" onClick={()=>go(landing(st))}>
             <div className="hud__bar">
               <span className="hud__lbl">◈ Protocol Status</span>
               <span className="hud__live"><span className="hud__dot"></span>LIVE</span>
@@ -877,6 +1515,7 @@ function V0Home({st, go}){
 
 function Today({st, go, dispatch}){
   const ds = st.dayState;
+  const [coach, setCoach] = React.useState(false);
   const fill = Math.min(1, st.day/84*1.5);
   const setSheet = s => dispatch({type:'SHEET', sheet:s});
 
@@ -895,6 +1534,16 @@ function Today({st, go, dispatch}){
       <AppBar st={st} go={go}/>
       <div className="pbody">
         <div style={{padding:'6px 20px 26px'}}>
+
+          {/* ── AI health coach · escalates to a human ── */}
+          <button className="coach" style={{marginBottom:16}} onClick={()=>setCoach(true)}>
+            <div className="coach__av">◎</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div className="coach__t">Ask your AI health coach</div>
+              <div className="coach__s">Answers instantly · hands you to Coach Layla when it matters</div>
+            </div>
+            <span style={{color:'var(--yellow)',fontSize:16}}>›</span>
+          </button>
           <div className="kick" style={ds==='shot'?{color:'var(--yellow-deep)'}:{}}>{HEAD[0]}</div>
           <h1 className="lede">{HEAD[1]}</h1>
 
@@ -1066,6 +1715,26 @@ function Today({st, go, dispatch}){
             Switch day-state ↻</button>
         </div>
       </div>
+      {coach && <Sheet title="Your AI health coach"
+        sub="It knows your protocol, your markers and today's log. It escalates rather than guesses."
+        onClose={()=>setCoach(false)} cta="Close">
+        <div className="bub bub--me">Felt nauseous again this morning, day 2 after the shot. Normal?</div>
+        <div className="bub bub--ai">Yes — day 2 is when it peaks for most people on 5&nbsp;mg, and
+          you logged the same pattern in weeks 3 and 5. It settled by day 3 both times.</div>
+        <div className="bub bub--ai">Two things that helped you specifically: eating before
+          10&nbsp;am, and moving your iron to the evening on shot weekends.</div>
+        <div className="bub bub--me">Should I drop back to 2.5?</div>
+        <div className="bub bub--ai">That's a dose change, so I won't decide it — I've flagged it for
+          Coach Layla with your last three logs attached.</div>
+        <div className="esc">
+          <b>Escalated to a human.</b> Coach Layla has your nausea logs, adherence and current dose.
+          She'll reply today — and if it needs a prescriber, Dr.&nbsp;Sara is looped in, not
+          re-briefed from scratch.
+        </div>
+        <button className="btn btn--ghost" style={{marginTop:12}}
+                onClick={()=>{setCoach(false); go('T2-6');}}>See my care team →</button>
+      </Sheet>}
+
       <TabBar active="today" go={go}/>
       <div className="home-indicator"></div>
 
@@ -1289,8 +1958,18 @@ function BodyMap({systems, sel, onSel}){
   );
 }
 
-function Twin({st, go}){
+/* ── TWIN ──────────────────────────────────────────────────────
+   Per spec: explains what the twin DOES, and carries the data
+   capture triggers. Two things make this ours rather than generic:
+   (1) WARM START — the twin opens already part-built from Valeo's
+       existing orders and lab history, so the ask is "continue",
+       not "start". No new entrant can copy that.
+   (2) LIVE MATCH MOVEMENT — you watch a real card climb from its
+       current match to its ceiling as answers land. A live before/
+       after on one object is far more persuasive than a bar. */
+function Twin({st, go, dispatch}){
   const [sel, setSel] = React.useState(null);
+  const [demo, setDemo] = React.useState(false);
   const SYS=[
     {id:'met', ic:'🩸', t:'Metabolic',       s:'HbA1c, insulin, glucose', v:'5.9%',    c:'var(--amber)', bg:'var(--amber-soft)', d:'▼ improving',
      x:100, y:190, path:'M2,8 C16,9 30,12 44,15 C52,17 58,18 62,19', note:'Your scored marker. 5.9% today, target below 5.7% by 7 Feb.'},
@@ -1304,20 +1983,134 @@ function Twin({st, go}){
      x:100, y:74,  path:'M2,12 L62,12', note:'Dr. Sara added TSH to your retest panel — so if the protocol returns a null, thyroid is already ruled out.'}
   ];
   const cur = SYS.find(x=>x.id===sel);
+  const locked = nextLockedTier(st.twinPct);
+  const todo = TRIGGERS.filter(t=>st.answered.indexOf(t.id)<0);
+  const gain = todo.reduce((n,t)=>n+t.pct,0);
+  /* the demo card — a real catalog item the user hasn't seen yet */
+  const dc = CATALOG.find(c=>c.tier==='adv') || CATALOG[0];
+
   return (
     <div className="pscreen">
       <StatusBar/>
       <AppBar st={st} go={go}/>
       <div className="pbody">
-        <div style={{padding:'6px 20px 26px'}}>
-          <div className="kick">Your twin</div>
-          <h1 className="lede">Everything Valeo knows about your body.</h1>
+        <div style={{padding:'6px 18px 26px'}}>
 
-          <div style={{margin:'14px -4px 0',padding:'10px 0 4px',
+          {/* ══ WHAT IT DOES ══ */}
+          <div className="kick">Your twin</div>
+          <h1 className="lede" style={{marginBottom:0}}>It reads everything, so you don't have to.</h1>
+          <div style={{fontSize:13,color:'var(--ink-2)',lineHeight:1.6,marginTop:9}}>
+            Your twin is you, in data. It goes through the trials, the protocols and what worked for
+            people built like you — then brings back only what clears the bar. The more it knows,
+            the deeper into the catalog it can reach.
+          </div>
+
+          {/* ══ COMPLETENESS — warm start ══ */}
+          <div className="lhero" style={{marginTop:16}}>
+            <div style={{position:'relative',zIndex:1}}>
+              <div className="lhero__k">◈ Twin completeness</div>
+              <div style={{display:'flex',alignItems:'flex-end',gap:9,marginTop:9}}>
+                <div style={{fontFamily:'var(--mono)',fontSize:44,fontWeight:700,lineHeight:.9,
+                  color:'var(--yellow)',fontVariantNumeric:'tabular-nums'}}>{st.twinPct}</div>
+                <div style={{fontFamily:'var(--mono)',fontSize:15,color:'rgba(255,255,255,.45)',
+                  paddingBottom:4}}>%</div>
+                <div style={{marginLeft:'auto',textAlign:'right',fontSize:11,
+                  color:'rgba(255,255,255,.6)',lineHeight:1.4,paddingBottom:2}}>
+                  {locked ? <>next unlock<br/><b style={{color:'var(--yellow)'}}>{locked.n} at {locked.at}%</b></>
+                          : <b style={{color:'#6FD69B'}}>every tier unlocked</b>}</div>
+              </div>
+              <div style={{marginTop:12}}>
+                <TwinMeter pct={st.twinPct} ceil={Math.min(100,st.twinPct+gain)} dark={true}/>
+              </div>
+              <div style={{fontSize:11.5,color:'rgba(255,255,255,.6)',marginTop:10,lineHeight:1.5}}>
+                You didn't start at zero — <b style={{color:'#fff'}}>{TWIN_SEED}% was already here</b> from
+                what Valeo has measured and shipped to you before.
+              </div>
+            </div>
+          </div>
+
+          {/* ══ WHAT IT ALREADY KNOWS — the warm start, itemised ══ */}
+          <div className="kick" style={{margin:'24px 0 2px'}}>Already in your twin</div>
+          {TWIN_KNOWN.map((k,i)=>(
+            <div className="trg trg--done" key={i}>
+              <div className="trg__i">{k.ic}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div className="trg__t">{k.t}</div>
+                <div className="trg__s">{k.s} · from {k.src}</div>
+              </div>
+              <span style={{color:'var(--green)',fontSize:15}}>✓</span>
+            </div>))}
+
+          {/* ══ LIVE MATCH MOVEMENT ══ */}
+          <div className="kick" style={{margin:'26px 0 10px'}}>What more data actually buys you</div>
+          <div className="q">
+            <div style={{display:'flex',alignItems:'center',gap:11}}>
+              <div style={{width:42,height:42,borderRadius:13,background:tierOf(dc.tier).bg,
+                display:'flex',alignItems:'center',justifyContent:'center',fontSize:19}}>{dc.ic}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:14,fontWeight:700,color:'var(--deep)'}}>{dc.t}</div>
+                <div style={{fontSize:11,color:'var(--ink-2)',marginTop:2}}>scores {dc.mk}</div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                <div style={{fontFamily:'var(--mono)',fontSize:26,fontWeight:700,lineHeight:1,
+                  color: demo ? 'var(--green)' : 'var(--deep)',
+                  transition:'color .5s', fontVariantNumeric:'tabular-nums'}}>
+                  {demo ? dc.ceil : dc.match}</div>
+                <div style={{fontFamily:'var(--mono)',fontSize:7.5,letterSpacing:'.15em',
+                  textTransform:'uppercase',color:'var(--ink-2)',marginTop:3}}>Match</div>
+              </div>
+            </div>
+            <div style={{marginTop:13}}>
+              <TwinMeter pct={demo?dc.ceil:dc.match} ceil={dc.ceil}/>
+            </div>
+            <div style={{fontSize:11.5,color:'var(--ink-2)',marginTop:11,lineHeight:1.55}}>
+              {demo
+                ? <>That's the same protocol at a <b style={{color:'var(--deep)'}}>complete twin</b> —
+                    {' '}<b style={{color:'var(--green)'}}>+{dc.ceil-dc.match} points</b> of confidence,
+                    from answers you already have in your head.</>
+                : <>This is scored on what your twin knows <b style={{color:'var(--deep)'}}>today</b>.
+                    Tap below to see where it lands with a full twin.</>}
+            </div>
+            <button className="btn btn--primary" style={{marginTop:13}}
+                    onClick={()=>setDemo(!demo)}>
+              {demo ? '↺ Show it at today\'s twin' : 'Show me what a full twin does →'}</button>
+          </div>
+
+          {/* ══ CAPTURE TRIGGERS ══ */}
+          <div className="kick" style={{margin:'26px 0 2px'}}>
+            Feed your twin{todo.length>0 && <> · <span style={{color:'var(--green)'}}>+{gain}% available</span></>}
+          </div>
+          {TRIGGERS.map(t=>{
+            const done = st.answered.indexOf(t.id)>-1;
+            return (
+              <button className={'trg'+(done?' trg--done':'')} key={t.id}
+                      onClick={()=>!done && dispatch({type:'TWIN', id:t.id})}>
+                <div className="trg__i">{t.ic}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="trg__t">{t.t}</div>
+                  <div className="trg__s">{done ? 'Answered · thank you'
+                    : t.q+' questions · '+t.mins+' · '+t.un}</div>
+                </div>
+                <span className="trg__p">{done ? '✓' : '+'+t.pct+'%'}</span>
+              </button>);
+          })}
+          {todo.length>0 && (
+            <div style={{display:'flex',gap:10,background:'var(--mint)',border:'1px solid var(--yellow)',
+              borderRadius:16,padding:'13px 14px',marginTop:14}}>
+              <span>⚡</span>
+              <span style={{fontSize:11.5,color:'#7A6320',lineHeight:1.55}}>
+                <b style={{color:'var(--deep)'}}>Biology moves, so your twin goes stale.</b> We'll ask for
+                a little at a time rather than one long form — and we'll tell you what each answer
+                unlocked.</span>
+            </div>
+          )}
+
+          {/* ══ BODY MAP ══ */}
+          <div className="kick" style={{margin:'28px 0 0'}}>Your body, measured</div>
+          <div style={{margin:'8px -4px 0',padding:'10px 0 4px',
             background:'radial-gradient(60% 46% at 50% 42%,rgba(255,185,0,.10),transparent 70%)'}}>
             <BodyMap systems={SYS} sel={sel} onSel={setSel}/>
           </div>
-
           <div style={{textAlign:'center',fontSize:11.5,color:'var(--ink-2)',
             marginTop:2,minHeight:34,lineHeight:1.5,padding:'0 6px'}}>
             {cur ? <><b style={{color:'var(--deep)'}}>{cur.t}</b> — {cur.note}</>
@@ -1370,10 +2163,427 @@ function Twin({st, go}){
     </div>
   );
 }
+
+/* ══════════════════════════════════════════════════════════════
+   4b · TWIN ONBOARDING (DS series)
+   ══════════════════════════════════════════════════════════════ */
+/* DS1 — cold open. The twin DOES something before asking for anything. */
+function DsIntro({st, go}){
+  return (
+    <div className="pscreen" style={{background:'linear-gradient(168deg,#1B395B,#16304C 58%,#122A45)'}}>
+      <StatusBar dark={true}/>
+      <div className="pbody">
+        <div style={{padding:'28px 22px 26px',color:'#fff'}}>
+          <div style={{position:'relative',width:118,height:118,margin:'6px auto 0'}}>
+            <LoopRing size={118} sw={13} phase="Read" fill={.7} loops={1} dark={true}/>
+            <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',
+              justifyContent:'center',fontSize:38}}>◎</div>
+          </div>
+
+          <div style={{fontFamily:'var(--mono)',fontSize:9,fontWeight:700,letterSpacing:'.2em',
+            textTransform:'uppercase',color:'var(--yellow)',textAlign:'center',marginTop:20}}>
+            ◈ Introducing Valeo Twins</div>
+          <h1 style={{fontFamily:'var(--font-display)',fontSize:34,fontWeight:600,lineHeight:1.12,
+            textAlign:'center',margin:'11px 0 0'}}>Meet your twin.</h1>
+          <div style={{fontSize:14,color:'rgba(255,255,255,.72)',lineHeight:1.6,textAlign:'center',
+            marginTop:12}}>
+            The stack a full-time optimiser would build for you — without you becoming one.</div>
+
+          <div style={{marginTop:26}}>
+            {[['🧬','Your twin is you, in data','Every marker, every order, every result Valeo has ever run for you — in one model.'],
+              ['📚','It reads what the top 1% read','Trials, protocols, and what actually worked for people built like you. Continuously.'],
+              ['🎯','It goes and finds, so you don\'t','It brings back only what clears the bar — scored for you, not for everyone.']].map(([ic,t,s],i)=>(
+              <div key={i} style={{display:'flex',gap:13,padding:'14px 0',
+                borderTop:i>0?'1px solid rgba(255,255,255,.11)':'none'}}>
+                <div style={{width:40,height:40,borderRadius:13,flexShrink:0,fontSize:18,
+                  background:'rgba(255,255,255,.10)',display:'flex',alignItems:'center',
+                  justifyContent:'center'}}>{ic}</div>
+                <div>
+                  <div style={{fontSize:14.5,fontWeight:700}}>{t}</div>
+                  <div style={{fontSize:12,color:'rgba(255,255,255,.6)',marginTop:3,lineHeight:1.5}}>{s}</div>
+                </div>
+              </div>))}
+          </div>
+
+          <div style={{padding:'14px 15px',borderRadius:16,background:'rgba(255,185,0,.13)',
+            border:'1px solid rgba(255,185,0,.34)',marginTop:14}}>
+            <div style={{fontSize:12.5,lineHeight:1.55,color:'rgba(255,255,255,.88)'}}>
+              <b style={{color:'var(--yellow)'}}>Yours is already part-built.</b> You've ordered from
+              Valeo before, so your twin starts warm — not from zero.</div>
+          </div>
+
+          <button className="btn btn--primary" style={{marginTop:18}} onClick={()=>go('DS2')}>
+            See what it already knows →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* DS2 — the warm start. Continuing beats starting. */
+function DsWarm({st, go}){
+  return (
+    <div className="pscreen">
+      <StatusBar/>
+      <div className="appbar"><button className="appbar__back" onClick={()=>go('DS1')}>‹ Back</button>
+        <span className="appbar__spacer"></span></div>
+      <div className="pbody">
+        <div style={{padding:'8px 20px 26px'}}>
+          <div className="kick">Your twin, before you type anything</div>
+          <h1 className="lede">You're already <em>{TWIN_SEED}%</em> of the way in.</h1>
+          <div style={{fontSize:13,color:'var(--ink-2)',lineHeight:1.6,marginTop:8}}>
+            Most people start a health app at zero and fill in forms for twenty minutes. You've been
+            a Valeo customer — so we already have this.
+          </div>
+
+          <div style={{marginTop:16}}><TwinMeter pct={TWIN_SEED} ceil={48} label="→ 48% after 5 questions"/></div>
+
+          <div style={{marginTop:18}}>
+            {TWIN_KNOWN.map((k,i)=>(
+              <div className="trg trg--done" key={i}>
+                <div className="trg__i" style={{background:'var(--green-soft)'}}>{k.ic}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="trg__t">{k.t}</div>
+                  <div className="trg__s">{k.s} · from {k.src}</div>
+                </div>
+                <span style={{color:'var(--green)',fontSize:15}}>✓</span>
+              </div>))}
+          </div>
+
+          <div style={{display:'flex',gap:10,background:'var(--green-soft)',borderRadius:16,
+            padding:'13px 14px',marginTop:16}}>
+            <span>✓</span>
+            <span style={{fontSize:12,color:'#1c6b41',lineHeight:1.55}}>
+              <b>Nothing here is new to us.</b> Confirm it's still right, answer five short questions,
+              and your twin starts searching.</span>
+          </div>
+
+          <button className="btn btn--primary" style={{marginTop:18}} onClick={()=>go('DS3')}>
+            Looks right — continue →</button>
+          <button className="btn btn--ghost" style={{marginTop:9}} onClick={()=>go('DS3')}>
+            Something's changed</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* DS3 — the mandatory 20%. Five questions, twin climbs per answer. */
+const CORE_Q = [
+  {k:'goal', t:'What are you actually trying to change?',
+   o:['Lose fat, keep muscle','Sleep and recovery','Energy through the day','Hair','Live longer, healthier']},
+  {k:'hard', t:'What\'s been hardest so far?',
+   o:['Staying consistent','Not knowing if it works','Too many conflicting opinions','Cost','Nothing — I\'m starting fresh']},
+  {k:'stack', t:'What are you taking right now?',
+   o:['Nothing','A multivitamin or two','A real stack, 3+ things','Prescription medication','Prefer to discuss on a call']},
+  {k:'time', t:'Realistically, how much time per week?',
+   o:['Under 1 hour','1–3 hours','3–6 hours','6+ hours — I train seriously']},
+  {k:'horizon', t:'How soon do you need to see something?',
+   o:['Weeks','A few months','I\'m playing a long game']}
+];
+function DsQuiz({st, go, dispatch}){
+  const [i, setI]   = React.useState(0);
+  const [ans, setA] = React.useState({});
+  const q   = CORE_Q[i];
+  const pct = TWIN_SEED + Math.round((i/CORE_Q.length)*14);
+  const pick = (o)=>{
+    setA({...ans,[q.k]:o});
+    if(i < CORE_Q.length-1) setTimeout(()=>setI(i+1), 190);
+    else setTimeout(()=>go('DS4'), 230);
+  };
+  return (
+    <div className="pscreen">
+      <StatusBar/>
+      <div className="appbar">
+        <button className="appbar__back" onClick={()=> i>0 ? setI(i-1) : go('DS2')}>‹ Back</button>
+        <span className="appbar__spacer"></span>
+        <span style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,color:'var(--deep)'}}>
+          {i+1} / {CORE_Q.length}</span>
+      </div>
+      <div className="pbody">
+        <div style={{padding:'10px 20px 26px'}}>
+          <TwinMeter pct={pct} ceil={48} label="twin"/>
+          <div className="q" style={{marginTop:18}}>
+            <div className="q__k">Question {i+1}</div>
+            <div className="q__t">{q.t}</div>
+            <div style={{marginTop:14}}>
+              {q.o.map((o,n)=>(
+                <button className={'qo'+(ans[q.k]===o?' on':'')} key={o} onClick={()=>pick(o)}>
+                  <span className="qo__k">{n+1}</span>{o}</button>))}
+            </div>
+          </div>
+          <div style={{textAlign:'center',fontSize:11.5,color:'var(--ink-2)',marginTop:16,lineHeight:1.55}}>
+            Five now. The rest we'll ask a little at a time — or your coach will, on the call.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* DS4 — assembly. Honest computation theatre: show the real work. */
+function DsAssembly({st, go}){
+  const STEPS = [
+    'Reading your Valeo history · 3 orders, 1 panel',
+    'Matching your 8 known signals',
+    'Scanning 1,240 trials and protocol records',
+    'Filtering for people built like you',
+    'Removing anything that collides with a running loop',
+    'Scoring what\'s left'
+  ];
+  const [n, setN] = React.useState(0);
+  useEffect(()=>{
+    if(n >= STEPS.length){ const t=setTimeout(()=>go('DS-DISC'), 700); return ()=>clearTimeout(t); }
+    const t = setTimeout(()=>setN(n+1), 620);
+    return ()=>clearTimeout(t);
+  },[n]);
+  return (
+    <div className="pscreen" style={{background:'linear-gradient(168deg,#1B395B,#16304C 58%,#122A45)'}}>
+      <StatusBar dark={true}/>
+      <div className="pbody">
+        <div style={{padding:'40px 22px 26px',color:'#fff'}}>
+          <div style={{position:'relative',width:104,height:104,margin:'0 auto'}}>
+            <LoopRing size={104} sw={13} phase="Read" fill={n/STEPS.length} loops={0} dark={true}/>
+            <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',
+              justifyContent:'center',fontFamily:'var(--mono)',fontSize:19,fontWeight:700,
+              color:'var(--yellow)'}}>{Math.round(n/STEPS.length*100)}%</div>
+          </div>
+          <h1 style={{fontFamily:'var(--font-display)',fontSize:26,fontWeight:600,lineHeight:1.18,
+            textAlign:'center',margin:'22px 0 4px'}}>Building your twin.</h1>
+          <div style={{fontSize:12.5,color:'rgba(255,255,255,.6)',textAlign:'center',lineHeight:1.55}}>
+            This is the actual work, not a loading bar.</div>
+
+          <div style={{marginTop:24}}>
+            {STEPS.map((s,i)=>(
+              <div className={'asm'+(i===n?' asm--now':'')} key={i}
+                   style={{opacity: i<=n ? 1 : .28}}>
+                <span style={{width:14,flexShrink:0}}>{i<n ? <b>✓</b> : i===n ? <b>◍</b> : '○'}</span>
+                <span>{s}</span>
+              </div>))}
+          </div>
+
+          {n>=STEPS.length && (
+            <div style={{padding:'14px 15px',borderRadius:16,background:'rgba(255,185,0,.14)',
+              border:'1px solid rgba(255,185,0,.36)',marginTop:16}}>
+              <div style={{fontSize:13,lineHeight:1.55}}>
+                <b style={{color:'var(--yellow)'}}>{CATALOG.filter(c=>c.tier==='pop').length} protocols
+                cleared the bar</b> at your twin's current depth. More unlock as it learns.</div>
+            </div>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ CONSULT — free, and where the commitment actually happens ══ */
+function DsConsult({st, go, dispatch}){
+  const target = st.saved.map(id=>CATALOG.find(c=>c.id===id))
+                   .filter(c=>c && st.consulted.indexOf(c.id)<0)[0] || CATALOG[0];
+  const [slot, setSlot] = React.useState(null);
+  const SLOTS = [
+    ['Today','7:30 PM','Coach Layla · ends 8:00'],
+    ['Tomorrow','10:00 AM','Coach Layla · ends 10:30'],
+    ['Tomorrow','6:00 PM','Coach Omar · ends 6:30'],
+    ['Thursday','11:30 AM','Coach Layla · ends 12:00']
+  ];
+  return (
+    <div className="pscreen">
+      <StatusBar/>
+      <div className="appbar"><button className="appbar__back" onClick={()=>go('T2-P')}>‹ Protocols</button>
+        <span className="appbar__spacer"></span></div>
+      <div className="pbody">
+        <div style={{padding:'8px 20px 26px'}}>
+          <div className="kick">Free · 30 minutes · no card needed</div>
+          <h1 className="lede">Talk it through before you commit to anything.</h1>
+
+          <div style={{display:'flex',alignItems:'center',gap:12,padding:'13px 14px',borderRadius:16,
+            background:'var(--surface-sunken)',marginTop:14}}>
+            <div style={{width:40,height:40,borderRadius:13,background:tierOf(target.tier).bg,
+              display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>{target.ic}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:13.5,fontWeight:700,color:'var(--deep)'}}>{target.t}</div>
+              <div style={{fontSize:11.5,color:'var(--ink-2)',marginTop:2}}>
+                {target.wk} weeks · scores {target.mk}</div>
+            </div>
+          </div>
+
+          <div className="kick" style={{margin:'22px 0 8px'}}>What happens on the call</div>
+          {[['🩺','A coach walks the protocol with you','Dose, timing, what week three feels like — and whether it\'s right for you at all.'],
+            ['📋','They fill in the rest of your twin','The questions nobody finishes in a form get answered in conversation. Twin jumps to about '+Math.min(100,st.twinPct+30)+'%.'],
+            ['🧪','You leave with a baseline booked','Your protocol gets tuned once your bloods are in — that\'s the point of measuring first.']].map(([ic,t,s],i)=>(
+            <div key={i} style={{display:'flex',gap:12,padding:'11px 0',
+              borderTop:i>0?'1px solid rgba(27,57,91,.07)':'none'}}>
+              <span style={{fontSize:17,width:24,flexShrink:0}}>{ic}</span>
+              <div><div style={{fontSize:13.5,fontWeight:600,color:'var(--text-primary)'}}>{t}</div>
+                <div style={{fontSize:11.5,color:'var(--ink-2)',marginTop:2,lineHeight:1.5}}>{s}</div></div>
+            </div>))}
+
+          <div className="kick" style={{margin:'22px 0 8px'}}>Pick a time</div>
+          {SLOTS.map(([d,t,c],i)=>(
+            <button className={'qo'+(slot===i?' on':'')} key={i} onClick={()=>setSlot(i)}>
+              <span className="qo__k">{slot===i?'✓':'›'}</span>
+              <span style={{flex:1}}>
+                <span style={{fontWeight:700}}>{d} · {t}</span>
+                <span style={{display:'block',fontSize:11,opacity:.72,marginTop:2,fontWeight:400}}>{c}</span>
+              </span>
+            </button>))}
+
+          <div style={{display:'flex',gap:10,background:'var(--teal-soft)',borderRadius:16,
+            padding:'13px 14px',marginTop:14}}>
+            <span>🧕</span>
+            <span style={{fontSize:11.5,color:'#1F5C6B',lineHeight:1.55}}>
+              A female coach is available for every slot — say the word when booking and it's honoured,
+              not "requested".</span>
+          </div>
+
+          <button className="btn btn--primary" style={{marginTop:16}} disabled={slot===null}
+            onClick={()=>{ dispatch({type:'CONSULT', id:target.id}); go('DS11'); }}>
+            {slot===null ? 'Pick a time above' : 'Confirm — it\'s free →'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* DS11 — post-consult. Twin jumps, card flips, baseline is the next act. */
+function DsConsultDone({st, go}){
+  const c = CATALOG.find(x=>x.id===st.consulted[st.consulted.length-1]) || CATALOG[0];
+  return (
+    <div className="pscreen">
+      <StatusBar dark={true}/>
+      <div style={{background:'linear-gradient(170deg,#1B395B,#16304C 62%,#122A45)',color:'#fff',
+        padding:'24px 20px 22px',textAlign:'center',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'relative',zIndex:1}}>
+          <div style={{fontSize:32}}>✓</div>
+          <div style={{fontFamily:'var(--mono)',fontSize:9,fontWeight:700,letterSpacing:'.16em',
+            textTransform:'uppercase',color:'#6FD69B',marginTop:10}}>Consult complete</div>
+          <h1 style={{fontFamily:'var(--font-display)',fontSize:27,fontWeight:600,margin:'8px 0 6px',
+            lineHeight:1.15}}>Coach Layla signed off.</h1>
+          <div style={{fontSize:12.5,color:'rgba(255,255,255,.68)',lineHeight:1.6}}>
+            {c.t} is yours to run. She tuned two things and flagged one to re-check after your bloods.</div>
+        </div>
+      </div>
+
+      <div className="pbody">
+        <div style={{padding:'18px 20px 26px'}}>
+          <div className="lhero">
+            <div style={{position:'relative',zIndex:1}}>
+              <div className="lhero__k">◈ Your twin just jumped</div>
+              <div style={{display:'flex',alignItems:'flex-end',gap:8,marginTop:8}}>
+                <span style={{fontFamily:'var(--mono)',fontSize:15,color:'rgba(255,255,255,.45)',
+                  textDecoration:'line-through'}}>{Math.max(0,st.twinPct-30)}%</span>
+                <span style={{fontFamily:'var(--mono)',fontSize:34,fontWeight:700,lineHeight:.95,
+                  color:'var(--yellow)'}}>{st.twinPct}%</span>
+              </div>
+              <div style={{marginTop:11}}><TwinMeter pct={st.twinPct} ceil={100} dark={true}/></div>
+              <div style={{fontSize:11.5,color:'rgba(255,255,255,.62)',marginTop:10,lineHeight:1.5}}>
+                12 fields captured on the call — medications, family history, training load. Things
+                nobody finishes typing.</div>
+            </div>
+          </div>
+
+          <div className="kick" style={{margin:'22px 0 8px'}}>Action pending</div>
+          <div style={{background:'linear-gradient(150deg,#FFF6DC,#FDEDC4)',border:'1.5px solid var(--yellow)',
+            borderRadius:20,padding:17,boxShadow:'0 14px 30px -14px rgba(224,164,0,.5)'}}>
+            <div style={{fontSize:9.5,fontWeight:800,letterSpacing:'.14em',textTransform:'uppercase',
+              color:'var(--yellow-deep)'}}>🧪 Book your baseline</div>
+            <div style={{fontFamily:'var(--font-display)',fontSize:20,fontWeight:600,color:'var(--deep)',
+              marginTop:8,lineHeight:1.22}}>Book by Sunday and the panel is half price.</div>
+            <div style={{fontSize:12,color:'#7A6320',marginTop:8,lineHeight:1.55}}>
+              Your protocol gets tuned to your actual bloods — and without a baseline there's nothing
+              to compare the retest against.</div>
+            <button className="btn btn--primary" style={{marginTop:14}} onClick={()=>go('T3-3')}>
+              Book my blood test →</button>
+          </div>
+
+          <button className="qrow" style={{width:'100%',textAlign:'left',marginTop:16}}
+                  onClick={()=>go('DS12')}>
+            <div className="qrow__ico">📋</div>
+            <div className="qrow__b"><div className="qrow__t">View the full protocol</div>
+              <div className="qrow__s">Everything Layla walked you through, written down</div></div>
+            <span className="qrow__chev">›</span>
+          </button>
+          <button className="btn btn--ghost" style={{marginTop:10}} onClick={()=>go('T2-P')}>
+            Back to my protocols</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* DS14 — THE CLOSING EDGE. A verdict makes the twin smarter, which
+   re-scores the deck. This is what stops the swipe deck from being a
+   commodity marketplace: your own outcomes score your next cards. */
+function DsVerdictTwin({st, go}){
+  const changed = [
+    {ic:'🧲', t:'Iron Correction', d:'refuted for you', c:'var(--slate)',
+     s:'Oral iron didn\'t move your ferritin — absorption flagged, not dosing.'},
+    {ic:'🩸', t:'Gut Reset', d:'92% ↑ from 72%', c:'var(--green)',
+     s:'Absorption issues make this newly relevant to you specifically.'},
+    {ic:'💊', t:'Oral iron protocols', d:'dropped off your deck', c:'var(--coral)',
+     s:'We won\'t show you the same mechanism that already failed.'}
+  ];
+  return (
+    <div className="pscreen">
+      <StatusBar dark={true}/>
+      <div style={{background:'linear-gradient(170deg,#1B395B,#16304C 62%,#122A45)',color:'#fff',
+        padding:'24px 20px 22px',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'relative',zIndex:1}}>
+          <div style={{fontFamily:'var(--mono)',fontSize:9,fontWeight:700,letterSpacing:'.18em',
+            textTransform:'uppercase',color:'var(--yellow)'}}>◈ Loop closed · twin updated</div>
+          <h1 style={{fontFamily:'var(--font-display)',fontSize:30,fontWeight:600,margin:'10px 0 8px',
+            lineHeight:1.14}}>Your verdict just changed your twin.</h1>
+          <div style={{fontSize:12.5,color:'rgba(255,255,255,.68)',lineHeight:1.6}}>
+            This is the part nobody else can do. A real result on your body re-scores everything
+            we'd ever suggest to you again.</div>
+        </div>
+      </div>
+      <div className="pbody">
+        <div style={{padding:'18px 20px 26px'}}>
+          <div className="kick" style={{marginBottom:4}}>What moved</div>
+          {changed.map((x,i)=>(
+            <div className="trg" key={i}>
+              <div className="trg__i">{x.ic}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div className="trg__t">{x.t}</div>
+                <div className="trg__s">{x.s}</div>
+              </div>
+              <span style={{fontFamily:'var(--mono)',fontSize:10,fontWeight:700,color:x.c,
+                flexShrink:0,maxWidth:78,textAlign:'right',lineHeight:1.3}}>{x.d}</span>
+            </div>))}
+
+          <div style={{display:'flex',gap:10,background:'var(--green-soft)',borderRadius:16,
+            padding:'13px 14px',marginTop:16}}>
+            <span>🔬</span>
+            <span style={{fontSize:12,color:'#1c6b41',lineHeight:1.55}}>
+              <b>A refuted loop is not a wasted loop.</b> You now know something true about your body
+              that no protocol card could have told you — and your deck is permanently better for it.</span>
+          </div>
+
+          <button className="btn btn--primary" style={{marginTop:18}} onClick={()=>go('DS-DISC')}>
+            See my re-scored deck →</button>
+          <button className="btn btn--ghost" style={{marginTop:9}} onClick={()=>go('T2-P')}>
+            Back to my protocols</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── PROTOCOLS ─────────────────────────────────────────────────
+   The portfolio home. Per spec this is where the LOOP lives now —
+   the ring and the current stage are the hero at the top, not a
+   widget below a list. (The dedicated Loop page still exists and
+   stays reachable from the app-bar ring; it isn't deleted.)
+   Below the hero: saved protocols with the consult CTA, then
+   running, then verified. */
 function Protocols({st, go, dispatch}){
   const active = LOOPS.filter(l=>l.st==='active');
   const done   = LOOPS.filter(l=>l.st==='done');
+  const L      = active.find(l=>l.id===st.focus) || active[0];
+  const saved  = st.saved.map(id=>CATALOG.find(c=>c.id===id)).filter(Boolean);
   const open   = (id)=>{ dispatch({type:'SET', patch:{focus:id}}); go('T2-1'); };
+
   return (
     <div className="pscreen">
       <StatusBar/>
@@ -1383,29 +2593,95 @@ function Protocols({st, go, dispatch}){
         <button className="appbar__avatar" onClick={()=>go('T3-9')}>FA</button>
       </div>
       <div className="pbody">
-        <div style={{padding:'6px 20px 26px'}}>
-          {/* ── the questionnaire entry ── */}
-          <button className="surface surface--dark" style={{marginTop:4,width:'100%',textAlign:'left',
-            padding:18,borderRadius:22}} onClick={()=>go('T3-2')}>
-            <div style={{fontSize:9.5,fontWeight:800,letterSpacing:'.13em',textTransform:'uppercase',
-              color:'var(--yellow)',marginBottom:7}}>Not sure what to run next?</div>
-            <div style={{fontFamily:'var(--font-display)',fontSize:19,fontWeight:600,lineHeight:1.25}}>
-              Six questions, and we'll tell you which number is worth moving.</div>
-            <div style={{fontSize:12,color:'rgba(255,255,255,.6)',marginTop:7,lineHeight:1.5}}>
-              We look at what you've already measured, what's still unexplained, and what wouldn't
-              collide with a loop you're already running.</div>
-            <div style={{display:'inline-block',background:'var(--yellow)',color:'var(--deep)',
-              fontSize:12.5,fontWeight:700,padding:'9px 16px',borderRadius:11,marginTop:14}}>
-              Find my protocol →</div>
-          </button>
-          <div style={{textAlign:'center',fontSize:11.5,color:'var(--ink-2)',margin:'14px 0 0'}}>
-            …or pick one yourself, below</div>
+        <div style={{padding:'6px 18px 26px'}}>
 
-          {/* ── RUNNING ── */}
+          {/* ══ THE LOOP — hero ══ */}
+          {L && (
+            <button className="lhero" style={{width:'100%',textAlign:'left',marginTop:4}}
+                    onClick={()=>go('T2-9')}>
+              <div className="lhero__row">
+                <div style={{position:'relative',flexShrink:0}}>
+                  <LoopRing size={78} sw={15} phase={L.phase}
+                            fill={Math.min(1,L.day/L.total*1.5)} loops={st.loop-1} dark={true}/>
+                  <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',
+                    justifyContent:'center',fontSize:24}}>{L.ic}</div>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="lhero__k">◈ Loop {st.loop} · {L.phase}</div>
+                  <div className="lhero__t">{L.t}</div>
+                  <div className="lhero__s">Day <b style={{color:'#fff'}}>{L.day}</b> of {L.total} ·
+                    {' '}{L.adh}% adherence · verdict {L.due}</div>
+                </div>
+              </div>
+              <div className="lhero__ph">
+                {PHASES.map((p,i)=>{
+                  const ci = PHASES.indexOf(L.phase);
+                  return <span key={p} className={i<ci?'d':i===ci?'n':''}>{p}{i<ci?' ✓':''}</span>;
+                })}
+              </div>
+              <div style={{marginTop:13,paddingTop:12,borderTop:'1px solid rgba(255,255,255,.13)',
+                fontSize:12,lineHeight:1.5,position:'relative',zIndex:1}}>
+                🔒 <b style={{color:'var(--yellow)'}}>{L.marker}</b>{' '}
+                <span style={{color:'rgba(255,255,255,.72)'}}>{L.from} → {L.target}</span>
+              </div>
+            </button>
+          )}
+
+          {/* loop switcher when more than one is running */}
+          {active.length>1 && (
+            <div style={{display:'flex',gap:8,marginTop:11,overflowX:'auto'}}>
+              {active.map(l=>(
+                <button key={l.id} onClick={()=>dispatch({type:'SET',patch:{focus:l.id}})}
+                  style={{flexShrink:0,padding:'8px 12px',borderRadius:11,fontSize:11.5,fontWeight:700,
+                    background: l.id===(L&&L.id) ? 'var(--deep)' : 'var(--surface-sunken)',
+                    color: l.id===(L&&L.id) ? '#fff' : 'var(--ink-2)'}}>
+                  {l.ic} {l.t}</button>))}
+            </div>
+          )}
+
+          {/* ══ SAVED ══ the swipe output, and where consults get booked ══ */}
+          <div className="kick" style={{margin:'26px 0 4px'}}>Saved · {saved.length}</div>
+          {saved.length===0 && (
+            <div style={{fontSize:12.5,color:'var(--ink-2)',lineHeight:1.55,padding:'10px 0'}}>
+              Nothing saved yet. <b style={{color:'var(--deep)'}}>Swipe in Discover</b> and anything
+              you keep lands here.</div>
+          )}
+          {saved.map(c=>{
+            const isDone = st.consulted.indexOf(c.id)>-1;
+            const T = tierOf(c.tier);
+            return (
+              <div className="prow" key={c.id}>
+                <div className="prow__i" style={{background:T.bg}}>{c.ic}</div>
+                <div style={{flex:1,minWidth:0}} onClick={()=>dispatch({type:'CARD', id:c.id})}>
+                  <div className="prow__t">{c.t}</div>
+                  <div className="prow__s">
+                    {isDone
+                      ? <><b style={{color:'var(--green)'}}>✓ Reviewed with Coach Layla</b> · protocol ready</>
+                      : <>{c.match}% match · {c.wk} wk · scores {c.mk}</>}
+                  </div>
+                </div>
+                <button className={'prow__cta'+(isDone?' prow__cta--done':'')}
+                  onClick={()=> isDone ? go('DS12') : go('DS10')}>
+                  {isDone ? 'View protocol' : 'Book free consult'}</button>
+              </div>);
+          })}
+          {saved.length>0 && (
+            <div style={{display:'flex',gap:10,background:'var(--teal-soft)',borderRadius:16,
+              padding:'13px 14px',marginTop:14}}>
+              <span>🩺</span>
+              <span style={{fontSize:11.5,color:'#1F5C6B',lineHeight:1.55}}>
+                <b style={{color:'var(--deep)'}}>The consult is free and it's where you actually decide.</b>{' '}
+                A coach walks the protocol with you, answers what the card couldn't, and fills in the
+                rest of your twin while you talk.</span>
+            </div>
+          )}
+
+          {/* ══ RUNNING ══ */}
           <div className="kick" style={{margin:'26px 0 10px'}}>Running · {active.length}</div>
           {active.map(l=>(
             <button key={l.id} className="surface" style={{width:'100%',textAlign:'left',
-              marginBottom:11,padding:16,border:st.focus===l.id?'1.5px solid var(--yellow)':'1.5px solid transparent'}}
+              marginBottom:11,padding:16,
+              border:st.focus===l.id?'1.5px solid var(--yellow)':'1.5px solid transparent'}}
               onClick={()=>open(l.id)}>
               <div style={{display:'flex',alignItems:'center',gap:13}}>
                 <div style={{position:'relative',flexShrink:0}}>
@@ -1423,14 +2699,11 @@ function Protocols({st, go, dispatch}){
                   textTransform:'uppercase',background:'var(--yellow)',color:'var(--deep)',
                   padding:'3px 7px',borderRadius:5}}>Focused</span>}
               </div>
-              <div style={{marginTop:12,paddingTop:11,borderTop:'1px solid rgba(27,57,91,.07)',
-                fontSize:12.5,color:'var(--text-primary)',lineHeight:1.5}}>
-                🔒 <b>{l.marker}</b> {l.from} → <b style={{color:'var(--yellow-deep)'}}>{l.target}</b> by {l.due}</div>
-              <div style={{fontSize:11.5,color:'var(--teal)',marginTop:7,fontWeight:600}}>
+              <div style={{fontSize:11.5,color:'var(--teal)',marginTop:10,fontWeight:600}}>
                 Next · {l.next}</div>
             </button>))}
 
-          {/* ── VERIFIED ── */}
+          {/* ══ VERIFIED ══ */}
           <div className="kick" style={{margin:'26px 0 10px'}}>Verified · {done.length}</div>
           {done.map(l=>(
             <div key={l.id} className="surface" style={{padding:16,marginBottom:11,
@@ -1450,28 +2723,9 @@ function Protocols({st, go, dispatch}){
               </div>
               <div style={{fontSize:12,color:'var(--ink-2)',marginTop:11,paddingTop:10,
                 borderTop:'1px solid rgba(27,57,91,.08)',lineHeight:1.5}}>{l.note}</div>
+              <button className="btn btn--ghost" style={{marginTop:11}} onClick={()=>go('DS14')}>
+                What this taught your twin →</button>
             </div>))}
-
-          {/* ── AVAILABLE ── */}
-          <div className="kick" style={{margin:'26px 0 10px'}}>Available · {AVAILABLE.length}</div>
-          {AVAILABLE.map(a=>{
-            const blocked = a.blocks && LOOPS.some(l=>l.id===a.blocks && l.st==='active');
-            return (
-              <button key={a.id} className="qrow" style={{width:'100%',textAlign:'left',
-                opacity:blocked?.62:1}}
-                onClick={()=> blocked ? go('B-conflict') : go('T3-1')}>
-                <div className="qrow__ico" style={{background:blocked?'var(--amber-soft)':'var(--surface-sunken)'}}>{a.ic}</div>
-                <div className="qrow__b">
-                  <div className="qrow__t">{a.t}</div>
-                  <div className="qrow__s">Scores {a.marker} · {a.why}</div>
-                </div>
-                {blocked
-                  ? <span style={{fontSize:9,fontWeight:800,letterSpacing:'.04em',textTransform:'uppercase',
-                      background:'var(--amber-soft)',color:'var(--amber)',padding:'4px 8px',
-                      borderRadius:12,whiteSpace:'nowrap'}}>Would collide</span>
-                  : <span className="qrow__chev">›</span>}
-              </button>);
-          })}
 
           <div style={{display:'flex',gap:10,background:'var(--surface-sunken)',borderRadius:16,
             padding:'13px 14px',marginTop:16}}>
@@ -1481,22 +2735,24 @@ function Protocols({st, go, dispatch}){
               but never two that could move the same number, or neither answer would mean anything.</span>
           </div>
 
-          <button className="qrow" style={{width:'100%',textAlign:'left',marginTop:16,
-            borderTop:'1px solid rgba(27,57,91,.08)'}} onClick={()=>go('T2-7')}>
-            <div className="qrow__ico">🗂</div>
-            <div className="qrow__b"><div className="qrow__t">All data &amp; history</div>
-              <div className="qrow__s">Every marker, every draw, every verdict — exportable</div></div>
+          <button className="qrow" style={{width:'100%',textAlign:'left',marginTop:16}}
+                  onClick={()=>go('DS-DISC')}>
+            <div className="qrow__ico">◇</div>
+            <div className="qrow__b"><div className="qrow__t">Find more protocols</div>
+              <div className="qrow__s">Swipe what your twin has scored for you</div></div>
             <span className="qrow__chev">›</span>
           </button>
         </div>
       </div>
+      {st.card && <CardSheet id={st.card} st={st} go={go} dispatch={dispatch}/>}
       <TabBar active="protocols" go={go}/>
       <div className="home-indicator"></div>
     </div>
   );
 }
 
-const COMPS = {V0:V0Home, Today, Loop:LoopTab, Twin, Protocols};
+const COMPS = {V0:V0Home, Today, Loop:LoopTab, Twin, Protocols, Discover,
+  DsIntro, DsWarm, DsQuiz, DsAssembly, DsConsult, DsConsultDone, DsVerdictTwin};
 
 /* ── iframe fallback for self-contained linear documents ── */
 function IframeScreen({file, onMsg}){
