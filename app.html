@@ -272,6 +272,36 @@ body.mob .meta{width:100%;height:100%;border-radius:0}
   padding:12px 2px;font-size:14px;color:var(--text-primary);font-family:inherit;margin-top:16px}
 .mapin::placeholder{color:var(--ink-2)}
 
+/* ═══════════ COLD OPEN — Apple-style glass, nothing else ═══════════ */
+.open{position:relative;height:100%;display:flex;flex-direction:column;
+  padding:6px 22px calc(var(--safe-bottom) + 18px);overflow:hidden}
+.open::before{content:'';position:absolute;left:50%;top:-6%;width:150%;padding-bottom:150%;
+  transform:translateX(-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(255,185,0,.20),rgba(255,185,0,.05) 55%,transparent 72%)}
+.open__h{font-family:var(--font-display);font-size:40px;font-weight:600;line-height:1.02;
+  letter-spacing:-.025em;text-align:center;color:#fff;position:relative}
+.open__s{font-size:16px;line-height:1.4;text-align:center;color:rgba(255,255,255,.66);
+  margin-top:9px;position:relative}
+.open__n{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;text-align:center;color:rgba(255,255,255,.40);margin-top:13px;
+  position:relative}
+.open__n b{color:var(--yellow)}
+/* the glass rows — one line each, no explanation */
+.gl{display:flex;align-items:center;gap:14px;padding:17px 17px;border-radius:19px;
+  background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.13);
+  backdrop-filter:blur(22px) saturate(150%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 26px -14px rgba(0,0,0,.5);
+  position:relative}
+.gl + .gl{margin-top:10px}
+.gl__i{width:30px;flex-shrink:0;text-align:center;font-size:17px;color:var(--yellow)}
+.gl__t{font-size:15.5px;font-weight:600;line-height:1.32;color:#fff;letter-spacing:-.005em}
+/* the primary CTA on a dark hero must be the brightest object on it —
+   .btn--primary is navy, which disappears here */
+.open__cta{width:100%;height:56px;border-radius:16px;background:var(--yellow);color:var(--deep);
+  font-size:16.5px;font-weight:700;letter-spacing:-.01em;position:relative;
+  box-shadow:0 12px 30px -12px rgba(255,185,0,.6),inset 0 1px 0 rgba(255,255,255,.4)}
+.open__cta:active{transform:translateY(1px)}
+
 /* ═══════════ THE MARK ═══════════ */
 .glyph{margin:0 auto}
 .glyph--live .ring__fill{animation:glyphPulse 3.4s ease-in-out infinite}
@@ -2582,80 +2612,45 @@ function Twin({st, go, dispatch}){
 /* ══════════════════════════════════════════════════════════════
    4b · TWIN ONBOARDING (DS series)
    ══════════════════════════════════════════════════════════════ */
-/* DS1 — cold open. The glyph does the talking: the loop orbiting a body
-   says "this runs on you" before a word is read. The platform claim is
-   explicit — the people who set the protocols are on here, and so are
-   their twins. */
+/* DS1 — the cold open.
+   Bumble/Apple discipline: one mark, one headline, one line of promise,
+   three statements, one button. No stat cards, no explanatory paragraph,
+   no sub-copy under the pointers — each line has to carry itself or it
+   doesn't belong. Sized to fit a 375x812 handset without scrolling,
+   because a hero that scrolls isn't a hero. */
 function DsIntro({st, go, dispatch}){
-  const hub = TWINS.find(t=>t.id==='W4');
+  const LINES = [
+    ['◈', 'Your twin joins the world’s most elite health network'],
+    ['✦', 'Your twin finds the best protocols on earth, matched to you'],
+    ['◎', 'Your twin is a digital copy of your health']
+  ];
   return (
-    <div className="pscreen" style={{background:'linear-gradient(168deg,#1B395B,#16304C 58%,#122A45)'}}>
+    <div className="pscreen" style={{background:'linear-gradient(172deg,#1E3F63,#16304C 52%,#0E2138)'}}>
       <StatusBar dark={true}/>
-      <div className="pbody">
-        <div style={{padding:'20px 22px 26px',color:'#fff'}}>
+      <div className="pbody" style={{overflow:'hidden'}}>
+        <div className="open">
 
-          <TwinGlyph size={186} phase="Read" fill={.72} loops={1} dark={true}/>
-
-          <div style={{fontFamily:'var(--mono)',fontSize:9,fontWeight:700,letterSpacing:'.2em',
-            textTransform:'uppercase',color:'var(--yellow)',textAlign:'center',marginTop:12}}>
-            ◈ Introducing Valeo Twins</div>
-          <h1 style={{fontFamily:'var(--font-display)',fontSize:35,fontWeight:600,lineHeight:1.1,
-            textAlign:'center',margin:'10px 0 0'}}>Meet your twin.</h1>
-          <div style={{fontSize:14.5,color:'rgba(255,255,255,.76)',lineHeight:1.55,textAlign:'center',
-            marginTop:11}}>
-            A glimpse of you — that reads everything you don’t have time to.</div>
-
-          {/* social proof + the platform claim, in one block */}
-          <div style={{marginTop:18,padding:'14px 15px',borderRadius:18,
-            background:'rgba(255,255,255,.07)',border:'1px solid rgba(255,255,255,.13)'}}>
-            <div style={{display:'flex',gap:0}}>
-              <div style={{flex:1}}>
-                <div style={{fontFamily:'var(--mono)',fontSize:21,fontWeight:700,color:'var(--yellow)',
-                  fontVariantNumeric:'tabular-nums'}}>128,400</div>
-                <div style={{fontFamily:'var(--mono)',fontSize:7.5,letterSpacing:'.16em',
-                  textTransform:'uppercase',color:'rgba(255,255,255,.5)',marginTop:4}}>Twins built</div>
-              </div>
-              <div style={{flex:1,borderLeft:'1px solid rgba(255,255,255,.13)',paddingLeft:14}}>
-                <div style={{fontFamily:'var(--mono)',fontSize:21,fontWeight:700,color:'#6FD69B',
-                  fontVariantNumeric:'tabular-nums'}}>412</div>
-                <div style={{fontFamily:'var(--mono)',fontSize:7.5,letterSpacing:'.16em',
-                  textTransform:'uppercase',color:'rgba(255,255,255,.5)',marginTop:4}}>Experts onboard</div>
-              </div>
-            </div>
-            <div style={{fontSize:12.5,lineHeight:1.55,color:'rgba(255,255,255,.82)',marginTop:12,
-              paddingTop:12,borderTop:'1px solid rgba(255,255,255,.13)'}}>
-              <b style={{color:'#fff'}}>The people who set the protocols are on here.</b> Their twins
-              are too — so you can see exactly what they run, and how close their biology sits to yours.
-            </div>
+          <div style={{flex:'0 0 auto',display:'flex',justifyContent:'center',
+            marginTop:6,marginBottom:-14}}>
+            <TwinGlyph size={202} phase="Read" fill={.72} loops={1} dark={true}/>
           </div>
 
-          <div style={{marginTop:18}}>
-            {[['🧬','Your twin is you, in data',
-               'Every order, every marker, every result Valeo has ever run for you — one model.'],
-              ['◈','Twin Match',
-               'Your twin matches with theirs. Scientists, longevity researchers, the people everyone else copies.'],
-              ['🎯','It brings back only what cleared the bar',
-               'Scored against your body — not a general audience, not an average.']].map(([ic,t,s],i)=>(
-              <div key={i} style={{display:'flex',gap:13,padding:'13px 0',
-                borderTop:i>0?'1px solid rgba(255,255,255,.11)':'none'}}>
-                <div style={{width:38,height:38,borderRadius:12,flexShrink:0,fontSize:17,
-                  background: i===1 ? 'var(--yellow)' : 'rgba(255,255,255,.10)',
-                  color: i===1 ? 'var(--deep)' : '#fff',
-                  display:'flex',alignItems:'center',justifyContent:'center'}}>{ic}</div>
-                <div>
-                  <div style={{fontSize:14.5,fontWeight:700}}>{t}</div>
-                  <div style={{fontSize:12,color:'rgba(255,255,255,.62)',marginTop:3,
-                    lineHeight:1.5}}>{s}</div>
-                </div>
+          <h1 className="open__h">Meet Valeo Twins</h1>
+          <div className="open__s">Your twin is a glimpse of you.</div>
+          <div className="open__n"><b>10,000+</b> twins · <b>100+</b> experts</div>
+
+          <div style={{flex:'1 1 auto',minHeight:14}}></div>
+
+          <div style={{position:'relative'}}>
+            {LINES.map(([ic,t],i)=>(
+              <div className="gl" key={i}>
+                <span className="gl__i">{ic}</span>
+                <span className="gl__t">{t}</span>
               </div>))}
           </div>
 
-          <button className="btn btn--primary" style={{marginTop:18}} onClick={()=>go('DS2')}>
-            See who’s already in →</button>
-          {/* desire before signup — lands straight on the blurred marquee card */}
-          <button className="btn btn--ghost" style={{marginTop:9,color:'rgba(255,255,255,.82)'}}
-            onClick={()=>{ dispatch({type:'FOCUSTWIN', id:'W4'}); go('DS-DISC'); }}>
-            Or see {hub? hub.name.split(' ')[1] : 'Huberman'}’s protocol first</button>
+          <button className="open__cta" style={{marginTop:20}}
+                  onClick={()=>go('DS2')}>Launch my twin</button>
         </div>
       </div>
     </div>
