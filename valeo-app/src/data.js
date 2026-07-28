@@ -92,7 +92,7 @@ export const TWINS = [
     img: '/twins/huberman.jpg', mono: 'AH', tone: '#2E4A6B', match: 91, tier: 'adv',
     protocol: 'P_SLEEP', hook: 'The most copied protocol on the internet' },
   { id: 'w5', name: 'Bryan Johnson', role: 'Blueprint', handle: '@bryan_johnson',
-    img: null, mono: 'BJ', tone: '#254A73', match: 93, tier: 'adv',
+    img: '/twins/bryanjohnson.jpg', mono: 'BJ', tone: '#254A73', match: 93, tier: 'adv',
     protocol: 'P_LONG', hook: 'The most measured body on earth',
     blur: true, needs: ['food', 'sleep', 'stress'] },
   { id: 'w6', name: 'Peter Attia',  role: 'Longevity physician', handle: '@peterattiamd',
@@ -127,3 +127,22 @@ export const GROUPS = {
 
 export const GROUP_LABEL = { food: 'Food', sleep: 'Sleep', stress: 'Stress', work: 'Work', move: 'Training' };
 export const SWIPE_TARGET = 20;
+
+/* The doctor who reads your baseline. A result nobody signs off on is just a
+   number — putting a named face on it before the draw is what makes the
+   panel feel like care rather than a data grab. */
+export const DOCTOR = {
+  name: 'Dr. Mahmoud Hassan',
+  img: '/team/mahmoud.jpg',
+  role: 'Internal Medicine · Valeo',
+  reg: 'SCFHS 24-118940',
+  years: '11 years',
+  langs: 'Arabic · English',
+  focus: 'Metabolic health & preventive medicine',
+  does: [
+    'Reads your panel line by line, not just the flagged values',
+    'Calls you the same day if anything needs acting on now',
+    'Signs off every protocol before it starts',
+    'Compares your retest against this baseline at week 12',
+  ],
+};

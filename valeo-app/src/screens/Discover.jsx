@@ -298,7 +298,13 @@ function TwinCard({ tw, blurred, top, onUnlock, onTap }) {
     }} onClick={onTap}>
       {imgOk ? (
         <Box component="img" src={tw.img} alt="" onError={() => setImgOk(false)}
-             sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+             sx={{
+               position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+               /* scale up slightly so the blur has no soft edge against the frame */
+               filter: blurred ? 'blur(17px) saturate(.85)' : 'none',
+               transform: blurred ? 'scale(1.12)' : 'scale(1)',
+               transition: 'filter .55s ease, transform .55s ease',
+             }} />
       ) : (
         <Box sx={{
           position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
