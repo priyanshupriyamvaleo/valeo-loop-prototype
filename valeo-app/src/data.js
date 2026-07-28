@@ -1,14 +1,73 @@
 /* Kept deliberately small — enough to drive the prototype, no schema. */
 
 export const PROTOCOLS = {
-  P_SLEEP: { t: 'Sleep & Recovery', wk: 8,  mk: 'HRV + sleep latency' },
-  P_WEIGHT:{ t: 'Weight Loss',      wk: 12, mk: 'HbA1c' },
-  P_SKIN:  { t: 'Skin & Anti-Ageing', wk: 12, mk: 'Collagen density' },
-  P_ATH:   { t: 'Peak Athlete',     wk: 16, mk: 'VO₂max + lactate' },
-  P_LONG:  { t: 'Longevity',        wk: 24, mk: 'ApoB, hsCRP' },
-  P_TEST:  { t: 'Testosterone',     wk: 16, mk: 'Total + free T' },
-  P_FOCUS: { t: 'Focus & Brain',    wk: 12, mk: 'Reaction time' },
+  P_SLEEP: {
+    t: 'Sleep & Recovery', wk: 8, mk: 'HRV + sleep latency',
+    goal: 'Fall asleep faster and wake up actually recovered',
+    stack: ['Magnesium threonate, 2h before bed', 'Morning light, 10 min within an hour of waking',
+            'Caffeine cut-off 10h before sleep', 'Room to 18°C, blackout'],
+    risk: 'Magnesium can loosen stools for the first week. We start at half dose and step up.',
+    wrongFor: 'Shift workers on rotating nights — the light timing does more harm than good.',
+  },
+  P_WEIGHT: {
+    t: 'Weight Loss', wk: 12, mk: 'HbA1c',
+    goal: 'Drop fasting glucose and lose fat without losing muscle',
+    stack: ['Tirzepatide 2.5 → 5 mg weekly', 'Protein floor 1.6 g/kg bodyweight',
+            'Resistance training 3× a week', 'Iron + vitamin C, mornings'],
+    risk: 'Nausea in weeks 1–3 is common. Muscle loss if you undershoot protein.',
+    wrongFor: 'Anyone with a history of pancreatitis, or planning pregnancy inside a year.',
+  },
+  P_SKIN: {
+    t: 'Skin & Anti-Ageing', wk: 12, mk: 'Collagen density',
+    goal: 'Rebuild collagen density instead of masking the surface',
+    stack: ['Tretinoin 0.05%, nights, buffered', 'Oral collagen peptides 10 g daily',
+            'SPF 50 every morning, non-negotiable', 'Ferritin correction if under 50'],
+    risk: 'Retinoid purge for 4–6 weeks — it gets worse before it gets better.',
+    wrongFor: 'Pregnancy, breastfeeding, or active eczema on the face.',
+  },
+  P_ATH: {
+    t: 'Peak Athlete', wk: 16, mk: 'VO₂max + lactate',
+    goal: 'Add a gear you do not currently have',
+    stack: ['Zone 2 base, 180 min a week', 'One VO₂max interval session weekly',
+            'Creatine monohydrate 5 g daily', 'Sodium + carb intra-workout above 90 min'],
+    risk: 'Overreaching if you add intensity before the base is built. We gate week 5 on HRV.',
+    wrongFor: 'Uncontrolled hypertension, or anyone inside 6 weeks of a soft-tissue injury.',
+  },
+  P_LONG: {
+    t: 'Longevity', wk: 24, mk: 'ApoB, hsCRP',
+    goal: 'Move the markers that actually predict lifespan',
+    stack: ['ApoB target under 60 mg/dL', 'Rapamycin, weekly pulse, physician-supervised',
+            'Zone 2 + resistance, 5 days a week', 'Omega-3 index above 8%'],
+    risk: 'Rapamycin needs monthly bloods. Mouth ulcers and mild immune dip are dose-dependent.',
+    wrongFor: 'Anyone immunosuppressed, or with an active infection.',
+  },
+  P_TEST: {
+    t: 'Testosterone', wk: 16, mk: 'Total + free T',
+    goal: 'Raise free testosterone without shutting down your own production',
+    stack: ['Sleep first — 7h floor before anything else', 'Zinc + vitamin D to sufficiency',
+            'Compound lifts 3× weekly', 'Enclomiphene only if labs justify it'],
+    risk: 'Haematocrit can climb. We retest at week 8 and pull back if it does.',
+    wrongFor: 'Anyone trying to conceive in the next 12 months without a fertility review first.',
+  },
+  P_FOCUS: {
+    t: 'Focus & Brain', wk: 12, mk: 'Reaction time',
+    goal: 'Hold deep focus for longer without the 3pm collapse',
+    stack: ['Creatine 5 g daily — cognitive, not just muscular', 'Zone 2 cardio 150 min a week',
+            'Glucose variability under control', 'Caffeine timed to your chronotype'],
+    risk: 'Nothing here is stimulant-led, so gains are slower and hold longer.',
+    wrongFor: 'Untreated sleep apnoea — fix the airway before anything else.',
+  },
 };
+
+/* What the baseline panel actually measures, by protocol marker. */
+export const PANEL = [
+  { g: 'Metabolic',    n: 'HbA1c, fasting insulin, glucose' },
+  { g: 'Lipids',       n: 'ApoB, Lp(a), full panel' },
+  { g: 'Hormones',     n: 'Total + free T, SHBG, thyroid' },
+  { g: 'Inflammation', n: 'hsCRP, homocysteine' },
+  { g: 'Nutrients',    n: 'Ferritin, B12, vitamin D, omega-3 index' },
+  { g: 'Organ',        n: 'Liver, kidney, full blood count' },
+];
 
 export const TIERS = {
   open: { key: 'open', name: 'Open',         mark: '◆',   headline: 'Your twin matches.' },

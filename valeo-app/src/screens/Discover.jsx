@@ -9,6 +9,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import LockIcon from '@mui/icons-material/Lock';
 import ScienceIcon from '@mui/icons-material/Science';
 import EditNoteIcon from '@mui/icons-material/EditNote';
+import ProtocolSheet from '../components/ProtocolSheet';
 import { TWINS, TIERS, TIER_ORDER, PROTOCOLS, GROUP_LABEL, SWIPE_TARGET } from '../data';
 import { C } from '../theme';
 
@@ -26,6 +27,7 @@ export default function Discover({ st, dispatch, onQuestions, onBlood }) {
   const [d, setD] = useState({ x: 0, y: 0, axis: null });
   const [fly, setFly] = useState(0);
   const [gate, setGate] = useState(null);
+  const [sheet, setSheet] = useState(null);
   const p0 = useRef({ x: 0, y: 0 });
   const drag = useRef(false);
 
@@ -62,6 +64,12 @@ export default function Discover({ st, dispatch, onQuestions, onBlood }) {
     if (d.axis === 'x' && d.x < -88) return commit(-1);
     setD({ x: 0, y: 0, axis: null });
   };
+
+  /* ⓘ and a card tap share one intent: "tell me more". Blurred cards owe us
+     something first, so they route to the doors; everything else opens the
+     protocol. Previously this returned null for unblurred cards, so the
+     button did nothing at all. */
+  const openDetail = (t) => (blurred(t) ? setGate({ twin: t }) : setSheet(t));
 
   const off = fly ? fly * 540 : d.x;
 
@@ -130,6 +138,7 @@ export default function Discover({ st, dispatch, onQuestions, onBlood }) {
               transition: drag.current ? 'none' : 'transform .4s cubic-bezier(.2,.8,.2,1)',
             }}>
               <TwinCard tw={w} blurred={blurred(w)} top
+                        onTap={() => { if (!d.axis) openDetail(w); }}
                         onUnlock={() => setGate({ twin: w })} />
             </Box>
           </>
@@ -157,8 +166,9 @@ export default function Discover({ st, dispatch, onQuestions, onBlood }) {
         <Stack direction="row" spacing={2}
                sx={{ justifyContent: 'center', alignItems: 'center', py: 1.75 }}>
           <RoundBtn dark={dark} onClick={() => commit(-1)}><CloseIcon /></RoundBtn>
-          <RoundBtn dark={dark} small onClick={() =>
-            blurred(w) ? setGate({ twin: w }) : null}><InfoOutlinedIcon /></RoundBtn>
+          <RoundBtn dark={dark} small onClick={() => openDetail(w)}>
+            <InfoOutlinedIcon />
+          </RoundBtn>
           <RoundBtn save onClick={() => commit(1)}><FavoriteIcon /></RoundBtn>
         </Stack>
       )}
@@ -187,9 +197,21 @@ export default function Discover({ st, dispatch, onQuestions, onBlood }) {
         </Box>
       )}
 
+      <ProtocolSheet twin={sheet} open={!!sheet} onClose={() => setSheet(null)}
+        saved={sheet ? st.saved.includes(sheet.protocol) : false}
+        onSave={() => {
+          dispatch({ type: 'save', id: sheet.id, protocol: sheet.protocol });
+          setSheet(null);
+        }} />
+
       {/* unlock — two doors, both feed the flywheel */}
       <Dialog open={!!gate} onClose={() => setGate(null)} fullWidth
-              PaperProps={{ sx: { borderRadius: '22px', m: 2, p: 2.5 } }}>
+              /* kept inside the phone frame, same as the protocol sheet */
+              slotProps={{
+                root: { disablePortal: true, sx: { position: 'absolute' } },
+                backdrop: { sx: { position: 'absolute' } },
+                paper: { sx: { borderRadius: '22px', m: 2, p: 2.5 } },
+              }}>
         {gate && (() => {
           const tw = gate.twin;
           const owed = tw ? tw.needs.filter((g) => st.skipped.includes(g)) : [];
@@ -265,14 +287,15 @@ function Door({ icon, title, sub, tag, hero, onClick }) {
 
 /* Partial blur: photo, name and hook stay sharp — only the match score and
    the protocol are gated. Total blur leaves nothing to want. */
-function TwinCard({ tw, blurred, top, onUnlock }) {
+function TwinCard({ tw, blurred, top, onUnlock, onTap }) {
   const p = PROTOCOLS[tw.protocol];
   const [imgOk, setImgOk] = useState(!!tw.img);
   return (
     <Box sx={{
       position: 'absolute', inset: 0, borderRadius: '26px', overflow: 'hidden',
       bgcolor: tw.tone, boxShadow: '0 22px 52px -18px rgba(18,42,69,.55)',
-    }}>
+      cursor: top ? 'pointer' : 'default',
+    }} onClick={onTap}>
       {imgOk ? (
         <Box component="img" src={tw.img} alt="" onError={() => setImgOk(false)}
              sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />

@@ -5,6 +5,7 @@ import Intro from './screens/Intro';
 import Questions from './screens/Questions';
 import Matching from './screens/Matching';
 import Discover from './screens/Discover';
+import Baseline from './screens/Baseline';
 
 const INIT = {
   saved: [], passed: [], revealed: [], swipes: 0,
@@ -59,7 +60,14 @@ export default function App() {
     }
   };
 
-  const bookBlood = () => { dispatch({ type: 'blood' }); setScreen('discover'); };
+  /* The blood test is a screen, not a flag flip. Confirming it books the
+     baseline AND lands you in Elite — the tier it just opened. */
+  const bookBlood = () => setScreen('baseline');
+  const baselineDone = () => {
+    dispatch({ type: 'blood' });
+    dispatch({ type: 'tier', tier: 'elite' });
+    setScreen('discover');
+  };
 
   let view;
   if (screen === 'intro') {
@@ -71,6 +79,8 @@ export default function App() {
     );
   } else if (screen === 'matching') {
     view = <Matching onDone={() => setScreen('discover')} />;
+  } else if (screen === 'baseline') {
+    view = <Baseline onBack={() => setScreen('discover')} onDone={baselineDone} />;
   } else {
     view = <Discover st={st} dispatch={dispatch}
                      onQuestions={goQuestions} onBlood={bookBlood} />;
@@ -94,7 +104,7 @@ export default function App() {
           </Typography>
           <Stack spacing={0.75} sx={{ mt: 2.5 }}>
             {[['intro', 'Intro'], ['questions', 'Questions'], ['matching', 'Matching'],
-              ['discover', 'Discover']].map(([k, label]) => (
+              ['discover', 'Discover'], ['baseline', 'Blood test']].map(([k, label]) => (
               <Box key={k} onClick={() => { setReveal(null); setScreen(k); }} sx={{
                 px: 1.5, py: 1, borderRadius: '10px', cursor: 'pointer', fontSize: 13,
                 bgcolor: screen === k ? C.yellow : 'rgba(255,255,255,.07)',
