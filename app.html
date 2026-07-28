@@ -134,6 +134,149 @@ body.mob .meta{width:100%;height:100%;border-radius:0}
 .msheet__n.on i{background:#14283F}
 .msheet__n.vis i{background:#6FD69B}
 
+/* ═══════════ TWIN MATCH — glass photo cards ═══════════ */
+/* sized so the swipe controls stay above the fold on a 375x812 handset */
+.tdeck{position:relative;height:min(432px,50vh);margin:4px -2px 0;touch-action:pan-y}
+.tc{position:absolute;inset:0;border-radius:26px;overflow:hidden;will-change:transform;
+  background:#22354C;box-shadow:0 22px 52px -18px rgba(18,42,69,.55),0 0 0 1px rgba(27,57,91,.09)}
+.tc--drag{transition:none}
+.tc--rest{transition:transform .42s cubic-bezier(.2,.8,.2,1)}
+.tc__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.tc__mono{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:74px;font-weight:700;color:rgba(255,255,255,.30);
+  letter-spacing:.04em}
+/* keeps the name legible over any photo */
+.tc__scrim{position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(10,22,38,.42) 0%,rgba(10,22,38,0) 26%,
+    rgba(10,22,38,.20) 52%,rgba(10,22,38,.86) 100%)}
+.tc__match{position:absolute;top:13px;right:13px;padding:8px 11px;border-radius:13px;
+  background:rgba(12,24,40,.52);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.20);text-align:center;z-index:3}
+.tc__mn{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;color:var(--yellow);
+  font-variant-numeric:tabular-nums}
+.tc__mk{font-family:var(--mono);font-size:7px;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.62);margin-top:4px}
+.tc__tier{position:absolute;top:15px;left:13px;z-index:3}
+/* the glass panel — bottom two-thirds, Bumble-style */
+.tc__glass{position:absolute;left:9px;right:9px;bottom:9px;z-index:2;border-radius:19px;
+  padding:13px 14px 12px;background:rgba(16,30,48,.52);backdrop-filter:blur(20px) saturate(140%);
+  border:1px solid rgba(255,255,255,.16);color:#fff}
+.tc__twin{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--yellow)}
+.tc__name{font-family:var(--font-display);font-size:23px;font-weight:600;line-height:1.1;
+  margin-top:4px}
+.tc__role{font-size:11.5px;color:rgba(255,255,255,.68);margin-top:4px}
+.tc__hook{display:flex;gap:7px;align-items:flex-start;margin-top:9px;padding-top:9px;
+  border-top:1px solid rgba(255,255,255,.15);font-size:12.5px;line-height:1.42;
+  color:rgba(255,255,255,.92);font-weight:600}
+.tc__pay{margin-top:9px;padding-top:9px;border-top:1px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;gap:11px;position:relative}
+.tc__pro{font-size:13px;font-weight:700}
+.tc__meta{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.55);margin-top:3px}
+/* PARTIAL blur — identity stays sharp, only the payoff is gated */
+.tc__blurred{filter:blur(7px);user-select:none;pointer-events:none}
+.tc__lockbtn{position:absolute;inset:-6px;border-radius:14px;display:flex;align-items:center;
+  justify-content:center;gap:7px;background:rgba(12,24,40,.34);
+  font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:#fff;z-index:4}
+
+/* learning counter — replaces the pass-reason modal (P18) */
+.learn{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:15px;
+  background:var(--surface-sunken);margin-bottom:11px}
+.learn__i{width:26px;height:26px;border-radius:50%;background:var(--green-soft);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--green)}
+.learn__t{flex:1;font-size:11.5px;color:var(--ink-2);line-height:1.4}
+.learn__t b{color:var(--deep)}
+.learn__bar{display:flex;gap:2px;width:74px;flex-shrink:0}
+.learn__bar i{flex:1;height:5px;border-radius:1px;background:rgba(27,57,91,.13)}
+.learn__bar i.on{background:var(--green)}
+
+/* drum picker */
+.drum{position:relative;height:246px;overflow:hidden;flex:1}
+.drum__s{height:246px;overflow-y:scroll;scroll-snap-type:y mandatory;
+  scrollbar-width:none;-ms-overflow-style:none;padding:98px 0}
+.drum__s::-webkit-scrollbar{display:none}
+.drum__i{height:50px;display:flex;align-items:center;justify-content:center;
+  scroll-snap-align:center;font-size:20px;color:var(--ink-2);opacity:.34;
+  transition:opacity .2s,transform .2s}
+.drum__i.on{opacity:1;font-size:29px;font-weight:700;color:var(--deep)}
+.drum__win{position:absolute;left:0;right:0;top:98px;height:50px;border-radius:14px;
+  background:#fff;box-shadow:0 3px 12px -4px rgba(27,57,91,.18);pointer-events:none;z-index:-1}
+.unit{display:inline-flex;background:rgba(27,57,91,.08);border-radius:11px;padding:3px;margin:0 auto}
+.unit button{padding:7px 17px;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink-2)}
+.unit button.on{background:#fff;color:var(--deep);box-shadow:0 2px 7px -2px rgba(27,57,91,.2)}
+
+/* question chrome */
+.qbar{display:flex;align-items:center;gap:12px;padding:10px 18px 4px}
+.qbar__t{flex:1;height:3px;border-radius:2px;background:rgba(27,57,91,.10);overflow:hidden}
+.qbar__f{height:100%;background:var(--yellow);border-radius:2px;transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.qbar__s{font-size:13px;font-weight:700;color:var(--ink-2)}
+.qh{font-family:var(--font-display);font-size:29px;font-weight:600;color:var(--deep);
+  line-height:1.14;letter-spacing:-.01em}
+.qsub{font-size:13px;color:var(--ink-2);margin-top:8px;line-height:1.5}
+.qgrp + .qgrp{border-top:1px solid rgba(27,57,91,.08);margin-top:18px;padding-top:18px}
+.qgrp__t{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;color:var(--deep);
+  margin-bottom:11px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip2{padding:10px 15px;border-radius:999px;background:rgba(27,57,91,.06);font-size:13px;
+  font-weight:500;color:var(--text-primary);transition:background .15s,color .15s}
+.chip2.on{background:var(--deep);color:#fff;font-weight:600}
+.priv{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-2);
+  padding:12px 0 0}
+.why{font-size:11.5px;color:var(--ink-2);text-align:center;padding-top:10px}
+.why u{color:var(--teal);cursor:pointer}
+.gbtn{width:54px;height:54px;border-radius:50%;background:var(--deep);color:#fff;font-size:20px;
+  display:flex;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0}
+.gbtn:disabled{background:rgba(27,57,91,.22)}
+
+/* goal cards */
+.gcard{width:100%;text-align:left;display:flex;align-items:center;gap:13px;padding:16px;
+  border-radius:18px;background:#fff;box-shadow:var(--shadow-sm);margin-bottom:10px;
+  border:1.5px solid transparent}
+.gcard.on{border-color:var(--deep);background:var(--surface-sunken)}
+.gcard__i{width:44px;height:44px;border-radius:14px;background:var(--surface-sunken);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:20px}
+.gcard.on .gcard__i{background:#fff}
+.gcard__t{font-size:14.5px;font-weight:700;color:var(--deep)}
+.gcard__s{font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.45}
+
+/* celebration interstitial */
+.cheer{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:34px 26px;text-align:center}
+.cheer__h{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--deep);
+  line-height:1.16}
+.glass{border-radius:22px;padding:8px;background:rgba(255,255,255,.62);
+  border:1px solid rgba(255,255,255,.9);backdrop-filter:blur(10px);
+  box-shadow:0 16px 40px -18px rgba(27,57,91,.3);width:100%;margin-top:24px}
+.glass__r{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:15px;
+  background:#fff;margin-bottom:6px;text-align:left}
+.glass__r:last-child{margin-bottom:0}
+.glass__r--dim{background:rgba(255,255,255,.5)}
+.glass__i{width:20px;flex-shrink:0;text-align:center;opacity:.6}
+.glass__v{font-size:13.5px;color:var(--text-primary);font-weight:500}
+
+/* map picker */
+.mapw{position:relative;border-radius:20px;overflow:hidden;height:262px;background:#DCE6EC;
+  box-shadow:inset 0 0 0 1px rgba(27,57,91,.09)}
+.mapw img{width:100%;height:100%;object-fit:cover;display:block}
+.mappin{position:absolute;left:50%;top:46%;transform:translate(-50%,-100%);z-index:2;
+  background:var(--deep);color:#fff;font-size:12.5px;font-weight:700;padding:8px 13px;
+  border-radius:11px;white-space:nowrap;box-shadow:0 6px 16px -5px rgba(0,0,0,.45)}
+.mappin::after{content:'';position:absolute;left:50%;bottom:-5px;width:10px;height:10px;
+  transform:translateX(-50%) rotate(45deg);background:var(--deep)}
+.mapme{position:absolute;right:12px;top:12px;width:42px;height:42px;border-radius:50%;
+  background:var(--deep);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:17px;z-index:2;box-shadow:0 5px 14px -4px rgba(0,0,0,.4)}
+.mapin{width:100%;border:none;border-bottom:1.5px solid var(--deep);background:transparent;
+  padding:12px 2px;font-size:14px;color:var(--text-primary);font-family:inherit;margin-top:16px}
+.mapin::placeholder{color:var(--ink-2)}
+
+/* ═══════════ THE MARK ═══════════ */
+.glyph{margin:0 auto}
+.glyph--live .ring__fill{animation:glyphPulse 3.4s ease-in-out infinite}
+@keyframes glyphPulse{0%,100%{opacity:1}50%{opacity:.55}}
+
 /* ═══════════ TWIN FLOW — deck, tiers, twin meter ═══════════ */
 
 /* — twin completeness meter — */
@@ -195,7 +338,7 @@ body.mob .meta{width:100%;height:100%;border-radius:0}
   background:rgba(255,255,255,.94)}
 
 /* deck controls */
-.dctl{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px}
+.dctl{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:12px}
 .dbtn{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:20px;background:#fff;box-shadow:0 6px 18px -6px rgba(27,57,91,.34),0 0 0 1px rgba(27,57,91,.07)}
 .dbtn--save{width:62px;height:62px;background:var(--green);color:#fff;font-size:24px;
@@ -876,17 +1019,120 @@ const AVAILABLE = [
 ];
 
 /* ── TIER LADDER ────────────────────────────────────────────
-   Virtue signalling is TIERED, not flat. If every card says
-   "used by athletes" it's wallpaper; as a ladder with visible
-   locked rungs it becomes continuous pull. Each tier unlocks on
-   twin completeness, so the climb IS the data collection. */
+   Retiered so every rung is unlocked by something the loop needs
+   ANYWAY (P20): first your data, then a baseline, then a corpus
+   entry. A gate that only extracts is a growth hack; a gate that
+   advances the loop is the product. */
 const TIERS = {
-  pop: {k:'pop', n:'Popular',      at:0,  c:'var(--teal)',   bg:'var(--teal-soft)',   ic:'◆'},
-  adv: {k:'adv', n:'Advanced',     at:55, c:'var(--amber)',  bg:'#FBEEDA',            ic:'◆◆'},
-  eli: {k:'eli', n:'Elite',        at:75, c:'var(--yellow-deep)', bg:'var(--mint)',   ic:'◆◆◆'},
-  inn: {k:'inn', n:'Inner Circle', at:90, c:'var(--deep)',   bg:'#E4EAF2',            ic:'◈'}
+  pop: {k:'pop', n:'Open',         gate:null,    c:'var(--teal)',         bg:'var(--teal-soft)', ic:'◆'},
+  adv: {k:'adv', n:'Advanced',     gate:'blood', c:'var(--amber)',        bg:'#FBEEDA',          ic:'◆◆'},
+  eli: {k:'eli', n:'Elite',        gate:'blood', c:'var(--yellow-deep)',  bg:'var(--mint)',      ic:'◆◆◆'},
+  inn: {k:'inn', n:'Inner Circle', gate:'loop',  c:'var(--deep)',         bg:'#E4EAF2',          ic:'◈'}
 };
 const TIER_ORDER = ['pop','adv','eli','inn'];
+const GATE_COPY = {
+  blood: {t:'Book a blood test to unlock',  s:'Advanced twins are scored against real bloodwork. Without a baseline the number would be a guess.'},
+  loop:  {t:'Finish one loop to unlock',    s:'Inner Circle opens once you have a verified result of your own.'}
+};
+
+/* ── THE SUPPLY SIDE ────────────────────────────────────────
+   The card is a PERSON; the payload is a protocol. `protocol` is a
+   foreign key into CATALOG, so everything downstream — save →
+   consult → baseline → loop → verdict — keeps working untouched.
+
+   `needs` lists the question groups that unlock a blurred card, so
+   the blur routes the user to exactly the debt they owe rather than
+   to a generic form.
+
+   PORTRAITS: drop files at assets/twins/<img>. Until they exist the
+   card renders a monogram on tinted glass — same layout, so photos
+   swap in with no reflow. */
+const TWINS = [
+  /* Open tier — no gate. These three carry photos and sell the idea. */
+  {id:'W1', name:'Lilly Sabri', handle:'@lillysabri', role:'Physiotherapist · 4.9M subscribers',
+   img:'lillysabri.jpg', mono:'LS', tone:'#E94F5F', match:84, tier:'pop', protocol:'K1',
+   hook:'4.9M follow her fat-loss protocol', blur:false, needs:[]},
+  {id:'W2', name:'Hamza Salah', handle:'@hamzasalah', role:'Model & trainer · Dubai',
+   img:'hamzasalah.jpg', mono:'HS', tone:'#C97A1F', match:79, tier:'pop', protocol:'K8',
+   hook:'Top 1% of Dubai run this before shoots', blur:false, needs:[]},
+  {id:'W3', name:'IShowSpeed', handle:'@ishowspeed', role:'Streamer · 40M+ following',
+   img:'ishowspeed.jpg', mono:'IS', tone:'#27995B', match:71, tier:'pop', protocol:'K9',
+   hook:'What the next generation actually trains like', blur:false, needs:[]},
+
+  /* THE MARQUEE BLUR — identity sharp, payoff gated (P17). Photo, name and
+     hook stay legible; the match score and the protocol are behind the blur.
+     Tapping routes to exactly the question groups in `needs`. */
+  {id:'W4', name:'Andrew Huberman', handle:'@hubermanlab', role:'Neuroscientist · Stanford',
+   img:'huberman.jpg', mono:'AH', tone:'#2E4A6B', match:91, tier:'pop', protocol:'K2',
+   hook:'The most copied protocol on the internet', blur:true, needs:['sleep','stress']},
+  {id:'W5', name:'Bryan Johnson', handle:'@bryan_johnson', role:'Blueprint',
+   img:null, mono:'BJ', tone:'#254A73', match:93, tier:'pop', protocol:'K10',
+   hook:'The most measured body on earth', blur:true, needs:['diet']},
+
+  /* Advanced + Elite sit behind the blood test — the gate buys us the
+     baseline the loop needs anyway (P20). */
+  {id:'W6', name:'Peter Attia', handle:'@peterattiamd', role:'Longevity physician',
+   img:null, mono:'PA', tone:'#3A4E63', match:88, tier:'adv', protocol:'K6',
+   hook:'The protocol the top 1% pay $8k for', blur:false, needs:[]},
+  {id:'W7', name:'Dr. Omar Rashid', handle:'@omarrashidmd', role:'Endocrinologist · Dubai',
+   img:null, mono:'OR', tone:'#408FA4', match:86, tier:'adv', protocol:'K7',
+   hook:'The stack behind two Olympic lifting squads', blur:false, needs:[]},
+  {id:'W8', name:'Rhonda Patrick', handle:'@foundmyfitness', role:'Biochemist',
+   img:null, mono:'RP', tone:'#4A5A72', match:82, tier:'eli', protocol:'K13',
+   hook:'What researchers run on themselves', blur:false, needs:[]},
+  {id:'W9', name:'Marcus Vidal', handle:'@marcusvidal', role:'Tour de France support team',
+   img:null, mono:'MV', tone:'#1F5C6B', match:87, tier:'eli', protocol:'K11',
+   hook:'Recovery protocol from two Tour teams', blur:false, needs:[]},
+  {id:'W10', name:'The Inner Circle', handle:'referral only', role:'12 members',
+   img:null, mono:'◈', tone:'#1B395B', match:96, tier:'inn', protocol:'K14',
+   hook:'12 members. Referral only.', blur:false, needs:[]}
+];
+
+/* Which question groups the user skipped, mapped to labels for the
+   blur-reveal prompt. */
+const GROUP_LABEL = {basic:'Basic info', lifestyle:'Lifestyle',
+  sleep:'Sleep', stress:'Stress', diet:'Food', goals:'Goals', activity:'Training'};
+const SWIPE_TARGET = 20;
+
+/* ══════════════════════════════════════════════════════════════
+   QUESTION GROUPS — addressable so a blurred card can route to
+   exactly the debt owed, rather than to a generic form.
+   ══════════════════════════════════════════════════════════════ */
+const QGROUPS = {
+  work:      {ic:'💼', t:'What do you do all day?', pct:2,
+              o:['Desk-bound','On my feet','Shift work','Travel constantly','Physical labour']},
+  smoke:     {ic:'🚬', t:'Where do you land on smoking?', pct:2,
+              o:['Non-smoker','Socially','Only when drinking','Daily','Trying to quit']},
+  drink:     {ic:'🍷', t:'And drinking?', pct:2,
+              o:['Never','Special occasions','Weekends','Most nights']},
+  move:      {ic:'🏃', t:'How much do you actually move?', pct:2,
+              o:['Barely','Some weeks','3–4× a week','Most days','Twice a day']},
+  moveType:  {ic:'⚡', t:'What kind?', pct:2, multi:true,
+              o:['Lifting','Running','Padel','Football','Yoga','Walking','Swimming','Cycling']},
+  diet:      {ic:'🍽', t:'What food do you actually love?', pct:3, multi:true,
+              sub:'Not what you think you should eat.',
+              o:['Grilled meat','Rice & carbs','Bread & pastry','Salads & greens','Seafood',
+                 'Sweets','Fried food','Dairy heavy','I eat anything']},
+  sleep:     {ic:'😴', t:'How much sleep do you get?', pct:3,
+              o:['Under 5 h','5–6 h','7–8 h','9 h+']},
+  stress:    {ic:'🌊', t:'How loud is life right now?', pct:3,
+              o:['Quiet','Manageable','High','Relentless']},
+  stressSrc: {ic:'🔥', t:'Where’s it coming from?', pct:2, multi:true,
+              o:['Work','Money','Family','My health','Travel','Not sure']}
+};
+
+/* Primary goal gets weight — it drives the whole deck. */
+const GOALS = [
+  {k:'fat',   ic:'⚖️', t:'Lose fat, keep muscle',   s:'The most-run goal on Valeo'},
+  {k:'energy',ic:'⚡', t:'Energy through the day',   s:'No 3pm collapse'},
+  {k:'sleep', ic:'😴', t:'Sleep and recovery',       s:'Fall asleep faster, wake up recovered'},
+  {k:'long',  ic:'🧬', t:'Live longer, healthier',   s:'Move the markers that predict lifespan'},
+  {k:'looks', ic:'✨', t:'Skin, hair, how I look',   s:'Measured, not eyeballed'},
+  {k:'perf',  ic:'🏆', t:'Perform — sport or work',  s:'Add a gear you don’t have'}
+];
+const GOALS2 = ['Better sleep','Less stress','Sharper focus','Stronger lifts','Better digestion',
+  'Fewer sick days','Fertility','Blood sugar','Cholesterol'];
+
 
 /* ── THE CATALOG ────────────────────────────────────────────
    Deck inventory. A swipe deck with 5 cards dies in 20 seconds,
@@ -997,10 +1243,8 @@ const CATALOG = [
    which is a fundamentally easier request than STARTING. */
 const TWIN_SEED = 34;
 const TWIN_KNOWN = [
-  {ic:'📦', t:'3 previous orders',        s:'Lab panel · supplements · IV drip', src:'Valeo history'},
-  {ic:'🩸', t:'Ferritin 18 ng/mL',        s:'From your panel in March',          src:'Valeo lab'},
-  {ic:'👤', t:'Age band, sex, city',      s:'34–40 · male · Riyadh',             src:'Your account'},
-  {ic:'🧲', t:'One closed loop',          s:'Iron correction — refuted',         src:'Your loop history'}
+  {ic:'🧪', t:'Blood tests, supplements & peptides', s:'Everything you\'ve ordered from Valeo', src:'Your order history'},
+  {ic:'👤', t:'Age, weight & city',                  s:'34 · 96 kg · Riyadh',                   src:'Your account'}
 ];
 /* Each trigger is a data-capture ping: what it costs, what it pays. */
 const TRIGGERS = [
@@ -1011,21 +1255,16 @@ const TRIGGERS = [
   {id:'G5', ic:'🧬', t:'Family history',        q:5, pct:10, mins:'50 sec', un:'Unlocks Elite tier'},
   {id:'G6', ic:'🏋️', t:'Training load',        q:4, pct:7,  mins:'40 sec', un:'Unlocks Endurance + Recovery'}
 ];
-/* Left-swipe reasons. A rejection is free structured data at the
-   exact moment of rejection — and it tells us why the deck is wrong. */
-const PASS_REASONS = [
-  {k:'hard',  t:'Too demanding for me right now'},
-  {k:'goal',  t:'Not what I\'m trying to fix'},
-  {k:'doing', t:'Already doing something like this'},
-  {k:'doubt', t:'I don\'t buy that it works'},
-  {k:'later', t:'Interesting, but not yet'}
-];
+
 
 const INIT = {node:'B-start', focus:'L1', history:[], visited:{'B-start':1},
   day:28, adherence:86, loop:1, phase:'Act', dayState:'ordinary', sheet:null, mode:'walk',
   /* twin-flow state */
-  twinPct:TWIN_SEED, deck:0, saved:['K2'], passed:[], passWhy:{}, consulted:[],
-  answered:[], card:null, landed:false};
+  twinPct:TWIN_SEED, deck:0, saved:[], passed:[], consulted:[],
+  answered:[], card:null, landed:false,
+  /* twin-match state */
+  swipes:0, skipped:['sleep','stress','diet'], revealed:[], bloodBooked:false, focusTwin:null,
+  qa:{}, twinCard:null, returnTo:null};
 
 function reducer(s, a){
   switch(a.type){
@@ -1051,14 +1290,39 @@ function reducer(s, a){
     case 'MODE':  return {...s, mode:a.mode};
 
     /* ── twin flow ─────────────────────────────────────────── */
-    case 'SAVE':                       /* right swipe → saved, never bought */
-      return {...s, deck:s.deck+1, card:null,
-        saved: s.saved.indexOf(a.id)>-1 ? s.saved : [...s.saved, a.id]};
-    case 'PASS':                       /* left swipe → reason captured */
-      return {...s, deck:s.deck+1, card:null, passed:[...s.passed, a.id],
-        passWhy: a.why ? {...s.passWhy, [a.id]:a.why} : s.passWhy};
-    case 'DECKRESET': return {...s, deck:0, card:null};
+    /* Right swipe saves the TWIN's protocol — the card is a person, the
+       payload is a protocol, so the whole downstream flow is unchanged. */
+    case 'SAVE': {
+      const w = TWINS.find(t=>t.id===a.id);
+      const pid = w ? w.protocol : a.id;
+      return {...s, deck:s.deck+1, twinCard:null, swipes:s.swipes+1,
+        matched: undefined,
+        saved: s.saved.indexOf(pid)>-1 ? s.saved : [...s.saved, pid],
+        passed: s.passed.indexOf(a.id)>-1 ? s.passed : s.passed};
+    }
+    /* Left swipe is never interrupted (P18) — no modal, no reason picker.
+       The counter converts the intent into forward motion instead. */
+    case 'PASS':
+      return {...s, deck:s.deck+1, twinCard:null, swipes:s.swipes+1,
+        passed:[...s.passed, a.id]};
+    case 'DECKRESET': return {...s, deck:0, twinCard:null, passed:[], swipes:0};
     case 'CARD':      return {...s, card:a.id};
+    case 'TWINCARD':  return {...s, twinCard:a.id};
+    /* Blur reveal: answering the owed groups reveals the card. */
+    case 'REVEAL':
+      return {...s, revealed:[...s.revealed, a.id],
+        skipped:s.skipped.filter(g=>(a.groups||[]).indexOf(g)<0)};
+    case 'ANSWERQ': {
+      const qa = {...s.qa, ...a.patch};
+      const gained = a.pct||0;
+      return {...s, qa, twinPct: Math.min(100, s.twinPct+gained),
+        skipped: a.group ? s.skipped.filter(g=>g!==a.group) : s.skipped};
+    }
+    case 'SKIPQ':
+      return {...s, skipped: s.skipped.indexOf(a.group)>-1 ? s.skipped : [...s.skipped, a.group]};
+    case 'BLOOD':     return {...s, bloodBooked:true, twinPct:Math.min(100,s.twinPct+8)};
+    case 'RETURNTO':  return {...s, returnTo:a.to};
+    case 'FOCUSTWIN': return {...s, focusTwin:a.id};
     case 'TWIN': {                     /* a trigger answered → twin grows */
       if(s.answered.indexOf(a.id)>-1) return s;
       const g = TRIGGERS.find(t=>t.id===a.id);
@@ -1180,59 +1444,145 @@ function landing(st){
 function tierOf(k){ return TIERS[k]; }
 function unlocked(k, twinPct){ return twinPct >= TIERS[k].at; }
 /* The deck only serves cards whose tier the twin has earned. */
-function deckFor(st){
-  return CATALOG.filter(c=>unlocked(c.tier, st.twinPct)
-    && st.saved.indexOf(c.id)<0 && st.passed.indexOf(c.id)<0);
-}
-function nextLockedTier(twinPct){
-  return TIER_ORDER.map(k=>TIERS[k]).find(t=>twinPct < t.at) || null;
+
+/* ══════════════════════════════════════════════════════════════
+   3c · THE MARK — loop + twin as one glyph
+   ══════════════════════════════════════════════════════════════
+   The Loop Ring and the body have been two separate visual languages
+   in two separate tabs all along. Merging them says the whole thesis
+   in one object: THE LOOP RUNS ON YOUR BIOLOGY.
+
+   Rules that keep it working rather than decorative:
+   · the ring ENCIRCLES — the body reads as inside it, never behind
+   · phase arcs stay on the ring, so the glyph still tells you where
+     you are (Measure · Read · Commit · Act · Prove)
+   · completed loops nest inward as tree rings
+   · the figurine stays androgynous, abstract and shape-invariant —
+     it is an index, not a picture of the patient (MOH Art.20, R6)
+   · one accent: the ring carries colour, the body is a silhouette   */
+function TwinGlyph({size=150, phase='Read', fill=.6, loops=0, dark=true, pulse=true}){
+  const idx = PHASES.indexOf(phase);
+  const ARC=101.58, GAP=451.34, C=552.92;
+  const cls = i => i<idx ? 'ring__arc--done' : i===idx ? 'ring__arc--now' : 'ring__arc--todo';
+  const trees=[]; for(let i=0;i<loops;i++) trees.push(74-i*11);
+  const bodyFill = dark ? 'url(#glyphBodyD)' : 'url(#glyphBodyL)';
+  return (
+    <svg className={'glyph'+(dark?' ring--on-dark':'')+(pulse?' glyph--live':'')}
+         width={size} height={size} viewBox="0 0 260 260" style={{display:'block'}}>
+      <defs>
+        <linearGradient id="glyphBodyD" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity=".95"/>
+          <stop offset="100%" stopColor="#BFD2E6" stopOpacity=".55"/>
+        </linearGradient>
+        <linearGradient id="glyphBodyL" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#2C4F76"/><stop offset="100%" stopColor="#1B395B"/>
+        </linearGradient>
+        <radialGradient id="glyphAura">
+          <stop offset="0%" stopColor="#FFB900" stopOpacity=".26"/>
+          <stop offset="100%" stopColor="#FFB900" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+
+      {/* aura sits behind everything so the body reads as lit from within */}
+      <circle cx="130" cy="130" r="96" fill="url(#glyphAura)"/>
+
+      {/* ── the body, INSIDE the ring ── */}
+      <g transform="translate(130,130) scale(.40) translate(-100,-215)">
+        <g stroke={bodyFill} strokeLinecap="round" fill="none">
+          <path d="M72,92 C58,104 52,130 49,158 L45,196" strokeWidth="17"/>
+          <path d="M128,92 C142,104 148,130 151,158 L155,196" strokeWidth="17"/>
+          <path d="M88,206 C86,258 84,320 83,392" strokeWidth="22"/>
+          <path d="M112,206 C114,258 116,320 117,392" strokeWidth="22"/>
+        </g>
+        <ellipse cx="100" cy="40" rx="20" ry="24" fill={bodyFill}/>
+        <rect x="91" y="58" width="18" height="18" rx="8" fill={bodyFill}/>
+        <path d="M69,80 C67,75 73,71 80,71 L120,71 C127,71 133,75 131,80
+                 L127,142 C126,168 121,190 117,206 L83,206 C79,190 74,168 73,142 Z"
+              fill={bodyFill}/>
+      </g>
+
+      {/* ── the loop, ORBITING it ── */}
+      <g transform="translate(130,130)">
+        {trees.map((r,i)=>(
+          <circle key={i} className="ring__tree" r={r} strokeWidth="3" fill="none"
+                  opacity={.4-i*.1}/>))}
+        {PHASES.map((p,i)=>(
+          <circle key={p} className={cls(i)} r="112" strokeWidth="9" fill="none"
+                  strokeDasharray={ARC*1.272+' '+GAP*1.272}
+                  transform={'rotate('+(i*72-90)+')'}/>))}
+        {idx>=0 && <circle className="ring__fill" r="112" strokeWidth="9" fill="none"
+                  strokeDasharray={(ARC*1.272*Math.max(0,Math.min(1,fill)))+' '+C*1.272}
+                  transform={'rotate('+(idx*72-90)+')'}/>}
+      </g>
+    </svg>
+  );
 }
 
 /* ══════════════════════════════════════════════════════════════
    4 · NATIVE SCREENS
    ══════════════════════════════════════════════════════════════ */
-/* ── DISCOVER ──────────────────────────────────────────────────
-   Swipe deck. Right = save (never a purchase — saving is a low-stakes
-   signal, the commitment happens on the coach call). Left = pass, and
-   we capture WHY, because a rejection reason is free structured data
-   at the exact moment of rejection and it tells us why the deck is
-   wrong. Tap = detail. */
-function Discover({st, go, dispatch}){
-  const pool = deckFor(st);
-  const card = pool[0];
-  const [dx, setDx] = React.useState(0);
-  const [drag, setDrag] = React.useState(false);
-  const [fly, setFly] = React.useState(0);          /* commit animation */
-  const [why, setWhy] = React.useState(null);       /* pending pass → reason sheet */
-  const start = useRef(0);
-  const TH = 88;                                     /* commit threshold */
+/* ── DISCOVER · TWIN MATCHES ────────────────────────────────────
+   The card is a PERSON; the payload is their protocol. Right swipe
+   saves the protocol, so everything downstream is unchanged.
 
-  const reset = () => { setDx(0); setDrag(false); };
-  /* `fly` guards re-entry — a second commit mid-flight used to leave the
-     card stranded off-screen with the empty stack showing through. */
+   Three deliberate departures from the old deck:
+   · A left swipe is never interrupted (P18). No modal, no reason
+     picker — the learning counter converts the intent forward.
+   · Blur is PARTIAL (P17). Photo, name and hook stay sharp; only the
+     match score and the protocol are gated. You have to know exactly
+     whose door is shut or there's nothing to want.
+   · Every detail sheet closes on the verdict promise, which is what
+     keeps a celebrity-led deck honest (P19). */
+function twinPool(st){
+  return TWINS.filter(w=>{
+    const g = TIERS[w.tier].gate;
+    if(g==='blood' && !st.bloodBooked) return false;
+    if(g==='loop'  && !LOOPS.some(l=>l.st==='done')) return false;
+    return st.saved.indexOf(w.protocol)<0 && st.passed.indexOf(w.id)<0;
+  }).sort((x,y)=> (y.id===st.focusTwin?1:0) - (x.id===st.focusTwin?1:0));
+}
+function isBlurred(w, st){ return w.blur && st.revealed.indexOf(w.id)<0; }
+function nextGate(st){
+  if(!st.bloodBooked) return {tier:TIERS.adv, ...GATE_COPY.blood};
+  if(!LOOPS.some(l=>l.st==='done')) return {tier:TIERS.inn, ...GATE_COPY.loop};
+  return null;
+}
+
+function Discover({st, go, dispatch}){
+  const pool = twinPool(st);
+  const w = pool[0];
+  const [dx, setDx]   = React.useState(0);
+  const [drag, setDrag] = React.useState(false);
+  const [fly, setFly] = React.useState(0);
+  const [taught, setTaught] = React.useState(false);
+  const start = useRef(0);
+  const TH = 88;
+
   const commit = (dir) => {
-    if(!card || fly) return;
+    if(!w || fly) return;
     setFly(dir); setDrag(false);
     setTimeout(()=>{
       setFly(0); setDx(0);
-      if(dir>0) dispatch({type:'SAVE', id:card.id});
-      else setWhy(card.id);                          /* ask why before recording */
-    }, 260);
+      dispatch({type: dir>0 ? 'SAVE' : 'PASS', id:w.id});
+      /* B16 — 20 swipes was a promise; this is the payoff. */
+      if(st.swipes+1 === SWIPE_TARGET) setTaught(true);
+    }, 250);
   };
-
-  const down = e => { if(!card || fly) return; start.current = e.clientX; setDrag(true);
-                      e.currentTarget.setPointerCapture&&e.currentTarget.setPointerCapture(e.pointerId); };
+  const down = e => { if(!w || fly) return; start.current=e.clientX; setDrag(true);
+    e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId); };
   const move = e => { if(!drag || fly) return; setDx(e.clientX - start.current); };
   const up   = () => { if(!drag) return;
-                       if(dx >  TH) return commit(1);
-                       if(dx < -TH) return commit(-1);
-                       reset(); };
+    if(dx> TH) return commit(1); if(dx< -TH) return commit(-1); setDx(0); setDrag(false); };
 
-  const off = fly ? fly*520 : dx;
-  const rot = off/26;
-  const saveOp = Math.max(0, Math.min(1, off/TH));
-  const passOp = Math.max(0, Math.min(1, -off/TH));
-  const locked = nextLockedTier(st.twinPct);
+  /* blurred card → route to exactly the groups owed, then come back */
+  const unlock = (tw) => {
+    dispatch({type:'RETURNTO', to:{node:'DS-DISC', reveal:tw.id, groups:tw.needs}});
+    go('DS3');
+  };
+
+  const off = fly ? fly*540 : dx;
+  const gate = nextGate(st);
+  const filled = Math.min(SWIPE_TARGET, st.swipes);
 
   return (
     <div className="pscreen">
@@ -1241,184 +1591,201 @@ function Discover({st, go, dispatch}){
         <button className="appbar__back" onClick={()=>go('V0')}>‹ Valeo</button>
         <span className="appbar__spacer"></span>
         <button className="appbar__ring" onClick={()=>go('T2-7')}>
-          <span className="appbar__ringlabel">
-            <b>Twin {st.twinPct}%</b><span>{pool.length} matches left</span></span>
+          <span className="appbar__ringlabel"><b>Twin {st.twinPct}%</b>
+            <span>{pool.length} matches</span></span>
         </button>
       </div>
 
       <div className="pbody">
         <div style={{padding:'8px 18px 24px'}}>
           <div className="kick">Discover</div>
-          <h1 className="lede" style={{marginBottom:12}}>Your twin found these.</h1>
+          <h1 className="lede" style={{marginBottom:10}}>Your twin matches.</h1>
 
-          {card ? (<>
-            <div className="deck"
-                 onPointerDown={down} onPointerMove={move}
+          {/* learning counter — the only thing a left swipe produces */}
+          <div className="learn">
+            <div className="learn__i">◍</div>
+            <div className="learn__t">{st.swipes >= SWIPE_TARGET
+              ? <><b>Your twin knows your type.</b> Matches are re-ordered for you.</>
+              : <>Your twin is learning your type · <b>{st.swipes} of {SWIPE_TARGET}</b> swipes</>}</div>
+            <span className="learn__bar">
+              {Array.from({length:10}).map((_,i)=>(
+                <i key={i} className={i < Math.round(filled/SWIPE_TARGET*10) ? 'on':''}/>))}
+            </span>
+          </div>
+
+          {w ? (<>
+            <div className="tdeck" onPointerDown={down} onPointerMove={move}
                  onPointerUp={up} onPointerCancel={up}>
-              {/* Real cards behind, not blank placeholders — otherwise a card
-                  in flight reveals an empty white rectangle. */}
               {pool.slice(1,3).reverse().map((c,i)=>{
-                const back = pool.slice(1,3);
-                const d = back.length - i;                 /* 2 = further back */
+                const d = pool.slice(1,3).length - i;
                 return <div key={c.id} style={{position:'absolute',inset:0,zIndex:1,
-                  pointerEvents:'none',
-                  transform:'scale('+(1-d*.035)+') translateY('+(d*10)+'px)',
-                  opacity:1-d*.22}}>
-                  <DeckCard card={c} cls="dcard--rest" style={{}} saveOp={0} passOp={0}/>
-                </div>;
+                  pointerEvents:'none',transform:'scale('+(1-d*.03)+') translateY('+(d*9)+'px)',
+                  opacity:1-d*.24}}>
+                  <TwinCard tw={c} st={st} cls="tc--rest" style={{}}/></div>;
               })}
-              <DeckCard card={card} onTap={()=>dispatch({type:'CARD', id:card.id})}
-                cls={drag?'dcard--drag':'dcard--rest'}
-                style={{transform:'translateX('+off+'px) rotate('+rot+'deg)', zIndex:5}}
-                saveOp={saveOp} passOp={passOp}/>
+              <TwinCard tw={w} st={st} top={true} cls={drag?'tc--drag':'tc--rest'}
+                style={{transform:'translateX('+off+'px) rotate('+(off/28)+'deg)', zIndex:5}}
+                onTap={()=> isBlurred(w,st) ? unlock(w) : dispatch({type:'TWINCARD', id:w.id})}
+                onUnlock={()=>unlock(w)}/>
             </div>
 
             <div className="dctl">
-              <button className="dbtn" onClick={()=>commit(-1)} title="Pass">✕</button>
-              <button className="dbtn dbtn--info" onClick={()=>dispatch({type:'CARD', id:card.id})}>ⓘ</button>
-              <button className="dbtn dbtn--save" onClick={()=>commit(1)} title="Save">♥</button>
+              <button className="dbtn" onClick={()=>commit(-1)}>✕</button>
+              <button className="dbtn dbtn--info"
+                onClick={()=> isBlurred(w,st) ? unlock(w) : dispatch({type:'TWINCARD', id:w.id})}>ⓘ</button>
+              <button className="dbtn dbtn--save" onClick={()=>commit(1)}>♥</button>
             </div>
-            <div className="dcard__hint">Drag the card, or use the buttons. Saving costs nothing —
-              you commit on the coach call.</div>
+            <div className="dcard__hint">Saving costs nothing — you commit on the coach call.</div>
           </>) : (
-            <div className="q" style={{textAlign:'center',padding:'30px 18px'}}>
-              <div style={{fontSize:30}}>◍</div>
-              <div className="q__t" style={{marginTop:8}}>That's every protocol your twin can score.</div>
+            <div className="q" style={{textAlign:'center',padding:'28px 18px'}}>
+              <div style={{fontSize:28}}>◍</div>
+              <div className="q__t" style={{marginTop:8}}>That's everyone your twin can reach today.</div>
               <div style={{fontSize:12.5,color:'var(--ink-2)',marginTop:9,lineHeight:1.55}}>
-                {locked ? 'Feed it more and it reaches deeper into the catalog.'
-                        : 'You\'ve seen the whole catalog. Check your saved list.'}</div>
-              <button className="btn btn--primary" style={{marginTop:16}}
-                      onClick={()=>go('T2-P')}>Go to my protocols →</button>
+                {gate ? gate.s : 'You’ve seen every twin on the platform.'}</div>
+              <button className="btn btn--primary" style={{marginTop:15}} onClick={()=>go('T2-P')}>
+                Go to my matches →</button>
               <button className="btn btn--ghost" style={{marginTop:8}}
-                      onClick={()=>dispatch({type:'DECKRESET'})}>Replay the deck</button>
+                onClick={()=>dispatch({type:'DECKRESET'})}>Replay the deck</button>
             </div>
           )}
 
-          {/* ── the tier ladder: locked rungs are visible, not hidden ── */}
-          {locked && (
-            <div className="lock">
-              <div style={{display:'flex',alignItems:'center',gap:8,position:'relative',zIndex:1}}>
-                <span className="tpill" style={{background:'rgba(255,255,255,.13)',color:'#fff'}}>
-                  {locked.ic} {locked.n}</span>
-                <span style={{marginLeft:'auto',fontFamily:'var(--mono)',fontSize:9,
-                  letterSpacing:'.14em',color:'rgba(255,255,255,.5)'}}>LOCKED</span>
+          {/* ── locked tier: a real face behind the blur, not a category ── */}
+          {gate && (()=> {
+            const teaser = TWINS.find(t=>t.tier===gate.tier.k) || TWINS[TWINS.length-1];
+            return (
+              <div className="lock" style={{marginTop:18}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,position:'relative',zIndex:1}}>
+                  <span className="tpill" style={{background:'rgba(255,255,255,.13)',color:'#fff'}}>
+                    {gate.tier.ic} {gate.tier.n}</span>
+                  <span style={{marginLeft:'auto',fontFamily:'var(--mono)',fontSize:9,
+                    letterSpacing:'.14em',color:'rgba(255,255,255,.5)'}}>LOCKED</span>
+                </div>
+                <div style={{display:'flex',gap:12,alignItems:'center',marginTop:13,
+                  position:'relative',zIndex:1}}>
+                  <div style={{width:60,height:74,borderRadius:14,flexShrink:0,overflow:'hidden',
+                    background:teaser.tone,display:'flex',alignItems:'center',justifyContent:'center',
+                    filter:'blur(3px)'}}>
+                    <span style={{fontFamily:'var(--mono)',fontSize:22,fontWeight:700,
+                      color:'rgba(255,255,255,.5)'}}>{teaser.mono}</span>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:15,fontWeight:700,filter:'blur(4.5px)',
+                      userSelect:'none'}}>{teaser.name}</div>
+                    <div style={{fontSize:11.5,color:'rgba(255,255,255,.66)',marginTop:5,
+                      lineHeight:1.45}}>{teaser.hook}</div>
+                  </div>
+                </div>
+                <div style={{fontSize:12.5,lineHeight:1.5,marginTop:13,position:'relative',zIndex:1,
+                  color:'rgba(255,255,255,.82)'}}>{gate.s}</div>
+                <button className="lock__cta" onClick={()=>go('T2-7')}>
+                  {gate.t} {gate.tier.n} →</button>
               </div>
-              <div style={{fontSize:13.5,lineHeight:1.5,marginTop:11,position:'relative',zIndex:1}}>
-                <b style={{color:'var(--yellow)'}}>{CATALOG.filter(c=>c.tier===locked.k).length} protocols</b>{' '}
-                sit in {locked.n}. Your twin needs <b style={{color:'var(--yellow)'}}>{locked.at}%</b> to
-                score them — you're at {st.twinPct}%.
-              </div>
-              <div className="lock__blur">
-                {CATALOG.filter(c=>c.tier===locked.k).slice(0,3).map(c=>(
-                  <div className="lock__c" key={c.id}>
-                    <div className="lock__cn">{c.t}</div>
-                    <div className="lock__cs">{c.soc.split(' ').slice(0,3).join(' ')}…</div>
-                  </div>))}
-              </div>
-              <button className="lock__cta" onClick={()=>go('T2-7')}>
-                Complete your twin → unlock {locked.n}</button>
-            </div>
-          )}
-
-          <div className="tm" style={{marginTop:18}}>
-            <TwinMeter pct={st.twinPct} ceil={locked?locked.at:100}
-                       label={locked?('→ '+locked.n+' at '+locked.at+'%'):'fully unlocked'}/>
-          </div>
+            );
+          })()}
         </div>
       </div>
 
-      {/* pass-reason capture */}
-      {why && <Sheet title="Why not this one?"
-        sub="One tap. It stops us showing you the same kind of thing again."
-        onClose={()=>{dispatch({type:'PASS', id:why}); setWhy(null);}}
-        cta="Skip" onCta={()=>{dispatch({type:'PASS', id:why}); setWhy(null);}}>
-        {PASS_REASONS.map(r=>(
-          <button className="qo" key={r.k}
-            onClick={()=>{dispatch({type:'PASS', id:why, why:r.k}); setWhy(null);}}>
-            <span className="qo__k">›</span>{r.t}</button>))}
+      {taught && <Sheet title="Your twin learned your type"
+        sub={'From '+SWIPE_TARGET+' swipes, without you filling in a single form.'}
+        onClose={()=>setTaught(false)} cta="Show me better matches">
+        {[['You lean toward','protocols under 12 weeks'],
+          ['You skip','anything needing daily injections'],
+          ['You open','strength and recovery every time'],
+          ['You ignore','aesthetic protocols entirely']].map(([k,v],i)=>(
+          <div key={i} style={{display:'flex',gap:9,padding:'9px 0',
+            borderTop:i>0?'1px solid rgba(27,57,91,.07)':'none',fontSize:13,lineHeight:1.45}}>
+            <span style={{color:'var(--ink-2)',minWidth:88}}>{k}</span>
+            <b style={{color:'var(--deep)',flex:1}}>{v}</b></div>))}
+        <div style={{marginTop:14,padding:'12px 13px',borderRadius:14,background:'var(--green-soft)',
+          fontSize:12,lineHeight:1.55,color:'#1c6b41'}}>
+          Every swipe from here is scored against this. It gets sharper, not noisier.</div>
       </Sheet>}
 
-      {/* detail */}
-      {st.card && <CardSheet id={st.card} st={st} go={go} dispatch={dispatch}/>}
-
+      {st.twinCard && <TwinSheet id={st.twinCard} st={st} go={go} dispatch={dispatch}/>}
       <TabBar active="discover" go={go}/>
       <div className="home-indicator"></div>
     </div>
   );
 }
 
-function DeckCard({card, style, cls, saveOp, passOp, onTap}){
-  const T = tierOf(card.tier);
+function TwinCard({tw, st, style, cls, onTap, onUnlock, top}){
+  const T = tierOf(tw.tier);
+  const p = CATALOG.find(c=>c.id===tw.protocol) || {};
+  const blurred = isBlurred(tw, st);
+  const [imgOk, setImgOk] = React.useState(!!tw.img);
   return (
-    <div className={'dcard '+cls} style={style} onClick={onTap}>
-      {saveOp>0.06 && <div className="stamp stamp--save" style={{opacity:saveOp}}>Save</div>}
-      {passOp>0.06 && <div className="stamp stamp--pass" style={{opacity:passOp}}>Pass</div>}
-      <div className="dcard__top">
-        <div className="dcard__tierrow">
-          <span className="tpill" style={{background:T.bg,color:T.c}}>{T.ic} {T.n}</span>
-          <span className="dcard__mt">
-            <span className="dcard__mn">{card.match}</span>
-            <div className="dcard__mk">Match</div>
-          </span>
-        </div>
-        <div className="dcard__ic">{card.ic}</div>
-        <div className="dcard__t">{card.t}</div>
-        <div className="dcard__soc">
-          <span style={{color:'var(--yellow)',fontSize:12}}>★</span>
-          <span className="dcard__socx"><b>{card.soc}</b><br/>{card.by}</span>
-        </div>
+    <div className={'tc '+cls} style={style} onClick={onTap}>
+      {imgOk
+        ? <img className="tc__img" src={'assets/twins/'+tw.img} alt=""
+               onError={()=>setImgOk(false)}/>
+        : <div style={{position:'absolute',inset:0,
+            background:'linear-gradient(158deg,'+tw.tone+',#101E30)'}}>
+            <div className="tc__mono">{tw.mono}</div>
+          </div>}
+      <div className="tc__scrim"></div>
+
+      <span className="tc__tier">
+        <span className="tpill" style={{background:'rgba(12,24,40,.5)',color:'#fff',
+          backdropFilter:'blur(12px)'}}>{T.ic} {T.n}</span></span>
+
+      {/* match score is part of the payoff — gated with the protocol */}
+      <div className="tc__match">
+        <div className="tc__mn" style={blurred?{filter:'blur(8px)'}:{}}>{tw.match}</div>
+        <div className="tc__mk">Match</div>
       </div>
-      <div className="dcard__body">
-        <div className="dcard__use">{card.use}</div>
-        {/* stack preview — a swipe decision needs more than a headline */}
-        <div style={{marginTop:12}}>
-          {card.stack.slice(0,3).map((x,i)=>(
-            <div key={i} style={{display:'flex',gap:8,padding:'5px 0',fontSize:12,
-              lineHeight:1.4,color:'var(--ink-2)'}}>
-              <span style={{color:'var(--green)',flexShrink:0,fontSize:11}}>✓</span>
-              <span>{x}</span></div>))}
-        </div>
-        <div className="dcard__meta">
-          <div className="dcard__m"><div className="dcard__mv">{card.wk} wk</div>
-            <div className="dcard__ml">Duration</div></div>
-          <div className="dcard__m"><div className="dcard__mv" style={{fontSize:11.5}}>{card.mk}</div>
-            <div className="dcard__ml">Scored on</div></div>
-          <div className="dcard__m"><div className="dcard__mv">+{card.ceil-card.match}</div>
-            <div className="dcard__ml">If twin full</div></div>
+
+      <div className="tc__glass">
+        <div className="tc__twin">◈ Twin</div>
+        <div className="tc__name">{tw.name}</div>
+        <div className="tc__role">{tw.role} · {tw.handle}</div>
+        <div className="tc__hook"><span style={{color:'var(--yellow)'}}>★</span>{tw.hook}</div>
+
+        <div className="tc__pay">
+          <div className={blurred?'tc__blurred':''} style={{flex:1,minWidth:0}}>
+            <div className="tc__pro">{p.t}</div>
+            <div className="tc__meta">{p.wk} weeks · {p.mk}</div>
+          </div>
+          {/* only the interactive top card carries the unlock affordance —
+              the stack behind it must not be clickable or findable */}
+          {blurred && top && (
+            <button className="tc__lockbtn"
+              onClick={e=>{e.stopPropagation(); onUnlock && onUnlock();}}>
+              🔒 {tw.needs.length} questions to reveal</button>)}
         </div>
       </div>
     </div>
   );
 }
 
-/* Detail sheet — the Bumble tap-through. Deliberately includes what
-   could go wrong and who it's wrong for; a protocol you can't refuse
-   is a protocol nobody believes. */
-function CardSheet({id, st, go, dispatch}){
-  const c = CATALOG.find(x=>x.id===id); if(!c) return null;
-  const T = tierOf(c.tier);
-  const isSaved = st.saved.indexOf(id)>-1;
+/* Detail sheet. Ends on the verdict promise — the line that stops a
+   celebrity-led deck from being a fan-merch store (P19). */
+function TwinSheet({id, st, go, dispatch}){
+  const tw = TWINS.find(t=>t.id===id); if(!tw) return null;
+  const c = CATALOG.find(x=>x.id===tw.protocol) || {};
+  const T = tierOf(tw.tier);
+  const saved = st.saved.indexOf(tw.protocol)>-1;
   return (
-    <Sheet title={c.t} sub={c.use} onClose={()=>dispatch({type:'CARD', id:null})}
-      cta={isSaved?'Already saved — see my protocols':'Save this protocol'}
-      onCta={()=>{ if(isSaved){dispatch({type:'CARD',id:null}); go('T2-P'); }
-                   else { dispatch({type:'SAVE', id}); dispatch({type:'CARD', id:null}); }}}>
+    <Sheet title={tw.name} sub={tw.role+' · '+tw.handle}
+      onClose={()=>dispatch({type:'TWINCARD', id:null})}
+      cta={saved?'Saved — see my matches':'Save '+(tw.name.split(' ')[0])+'’s protocol'}
+      onCta={()=>{ if(saved){dispatch({type:'TWINCARD',id:null}); go('T2-P');}
+                   else {dispatch({type:'SAVE', id:tw.id}); dispatch({type:'TWINCARD', id:null});}}}>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
         <span className="tpill" style={{background:T.bg,color:T.c}}>{T.ic} {T.n}</span>
         <span style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,color:'var(--deep)'}}>
-          {c.match}% match</span>
-        <span style={{marginLeft:'auto',fontSize:11,color:'var(--ink-2)'}}>{c.wk} weeks · {c.mk}</span>
+          {tw.match}% match</span>
+        <span style={{marginLeft:'auto',fontSize:11,color:'var(--ink-2)'}}>
+          {c.wk} weeks · {c.mk}</span>
       </div>
 
-      <div style={{display:'flex',gap:8,padding:'12px 13px',borderRadius:14,
-        background:'var(--mint)',border:'1px solid var(--yellow)',marginBottom:16}}>
+      <div style={{display:'flex',gap:8,padding:'12px 13px',borderRadius:14,background:'var(--mint)',
+        border:'1px solid var(--yellow)',marginBottom:16}}>
         <span style={{color:'var(--yellow-deep)'}}>★</span>
-        <span style={{fontSize:12,lineHeight:1.5,color:'#7A6320'}}>
-          <b style={{color:'var(--deep)'}}>{c.soc}</b> — {c.by}</span>
+        <span style={{fontSize:12,lineHeight:1.5,color:'#7A6320'}}>{tw.hook}</span>
       </div>
 
-      <div className="kick" style={{marginBottom:7}}>What's in it</div>
-      {c.stack.map((s,i)=>(
+      <div className="kick" style={{marginBottom:7}}>What {tw.name.split(' ')[0]} runs</div>
+      {(c.stack||[]).map((s,i)=>(
         <div key={i} style={{display:'flex',gap:9,padding:'7px 0',fontSize:13,lineHeight:1.45}}>
           <span style={{color:'var(--green)',flexShrink:0}}>✓</span><span>{s}</span></div>))}
 
@@ -1428,17 +1795,18 @@ function CardSheet({id, st, go, dispatch}){
       <div className="kick" style={{margin:'16px 0 7px'}}>Who it's wrong for</div>
       <div style={{fontSize:12.5,lineHeight:1.55,color:'var(--ink-2)'}}>{c.wrong}</div>
 
-      <div style={{marginTop:16,padding:'12px 13px',borderRadius:14,
-        background:'var(--surface-sunken)'}}>
-        <div style={{fontSize:11.5,color:'var(--ink-2)',lineHeight:1.5}}>
-          Match is <b style={{color:'var(--deep)'}}>{c.match}%</b> on what your twin knows today.
-          It reaches <b style={{color:'var(--deep)'}}>{c.ceil}%</b> once your twin is complete.</div>
-        <div style={{marginTop:9}}><TwinMeter pct={c.match} ceil={c.ceil}/></div>
+      <div style={{marginTop:16,padding:'13px 14px',borderRadius:16,
+        background:'linear-gradient(152deg,#1B395B,#122A45)',color:'#fff'}}>
+        <div style={{fontFamily:'var(--mono)',fontSize:8.5,fontWeight:700,letterSpacing:'.18em',
+          textTransform:'uppercase',color:'var(--yellow)'}}>◈ The part he can't give you</div>
+        <div style={{fontSize:12.5,lineHeight:1.55,marginTop:8,color:'rgba(255,255,255,.86)'}}>
+          In <b style={{color:'#fff'}}>{c.wk} weeks</b> we retest {c.mk} and tell you whether this
+          worked <b style={{color:'var(--yellow)'}}>on you</b> — not on {tw.name.split(' ')[0]}.
+        </div>
       </div>
     </Sheet>
   );
 }
-
 
 function V0Home({st, go}){
   const fill = Math.min(1, st.day/84*1.5);
@@ -1967,6 +2335,16 @@ function BodyMap({systems, sel, onSel}){
    (2) LIVE MATCH MOVEMENT — you watch a real card climb from its
        current match to its ceiling as answers land. A live before/
        after on one object is far more persuasive than a bar. */
+
+/* ── TWIN ──────────────────────────────────────────────────────
+   Per spec: explains what the twin DOES, and carries the data
+   capture triggers. Two things make this ours rather than generic:
+   (1) WARM START — the twin opens already part-built from Valeo's
+       existing orders and lab history, so the ask is "continue",
+       not "start". No new entrant can copy that.
+   (2) LIVE MATCH MOVEMENT — you watch a real card climb from its
+       current match to its ceiling as answers land. A live before/
+       after on one object is far more persuasive than a bar. */
 function Twin({st, go, dispatch}){
   const [sel, setSel] = React.useState(null);
   const [demo, setDemo] = React.useState(false);
@@ -1983,7 +2361,7 @@ function Twin({st, go, dispatch}){
      x:100, y:74,  path:'M2,12 L62,12', note:'Dr. Sara added TSH to your retest panel — so if the protocol returns a null, thyroid is already ruled out.'}
   ];
   const cur = SYS.find(x=>x.id===sel);
-  const locked = nextLockedTier(st.twinPct);
+  const locked = nextGate(st);
   const todo = TRIGGERS.filter(t=>st.answered.indexOf(t.id)<0);
   const gain = todo.reduce((n,t)=>n+t.pct,0);
   /* the demo card — a real catalog item the user hasn't seen yet */
@@ -1995,6 +2373,38 @@ function Twin({st, go, dispatch}){
       <AppBar st={st} go={go}/>
       <div className="pbody">
         <div style={{padding:'6px 18px 26px'}}>
+
+          {/* ══ THE GATE — landed on straight from the deck, so there must be
+                 something fillable RIGHT HERE, not a tour of the page ══ */}
+          {!st.bloodBooked && (
+            <div style={{background:'linear-gradient(150deg,#FFF6DC,#FDEDC4)',
+              border:'1.5px solid var(--yellow)',borderRadius:20,padding:17,marginTop:4,
+              boxShadow:'0 14px 30px -14px rgba(224,164,0,.5)'}}>
+              <div style={{fontSize:9.5,fontWeight:800,letterSpacing:'.14em',textTransform:'uppercase',
+                color:'var(--yellow-deep)'}}>🔒 Unlock Advanced twins</div>
+              <div style={{fontFamily:'var(--font-display)',fontSize:21,fontWeight:600,
+                color:'var(--deep)',marginTop:8,lineHeight:1.2}}>
+                Book a blood test to unlock {TWINS.filter(t=>TIERS[t.tier].gate==='blood').length} more twins.</div>
+              <div style={{fontSize:12,color:'#7A6320',marginTop:8,lineHeight:1.55}}>
+                Advanced protocols are scored against real bloodwork. Without a baseline the match
+                number would be a guess — and there'd be nothing to compare your retest against.</div>
+              <div style={{display:'flex',gap:7,marginTop:12}}>
+                {TWINS.filter(t=>TIERS[t.tier].gate==='blood').slice(0,3).map(t=>(
+                  <div key={t.id} style={{flex:1,borderRadius:11,padding:'9px 7px',textAlign:'center',
+                    background:'rgba(27,57,91,.07)'}}>
+                    <div style={{fontSize:10.5,fontWeight:700,color:'var(--deep)',filter:'blur(3.5px)',
+                      userSelect:'none'}}>{t.name}</div>
+                    <div style={{fontFamily:'var(--mono)',fontSize:8,letterSpacing:'.1em',
+                      color:'var(--yellow-deep)',marginTop:5}}>{t.match}% MATCH</div>
+                  </div>))}
+              </div>
+              <button className="btn btn--primary" style={{marginTop:14}}
+                onClick={()=>{ dispatch({type:'BLOOD'}); go('T3-3'); }}>
+                Book my blood test →</button>
+              <div style={{textAlign:'center',fontSize:11,color:'#7A6320',marginTop:9}}>
+                Half price if booked this week</div>
+            </div>
+          )}
 
           {/* ══ WHAT IT DOES ══ */}
           <div className="kick">Your twin</div>
@@ -2016,7 +2426,7 @@ function Twin({st, go, dispatch}){
                   paddingBottom:4}}>%</div>
                 <div style={{marginLeft:'auto',textAlign:'right',fontSize:11,
                   color:'rgba(255,255,255,.6)',lineHeight:1.4,paddingBottom:2}}>
-                  {locked ? <>next unlock<br/><b style={{color:'var(--yellow)'}}>{locked.n} at {locked.at}%</b></>
+                  {locked ? <>next unlock<br/><b style={{color:'var(--yellow)'}}>{locked.tier.n}</b></>
                           : <b style={{color:'#6FD69B'}}>every tier unlocked</b>}</div>
               </div>
               <div style={{marginTop:12}}>
@@ -2168,52 +2578,84 @@ function Twin({st, go, dispatch}){
    4b · TWIN ONBOARDING (DS series)
    ══════════════════════════════════════════════════════════════ */
 /* DS1 — cold open. The twin DOES something before asking for anything. */
-function DsIntro({st, go}){
+
+/* ══════════════════════════════════════════════════════════════
+   4b · TWIN ONBOARDING (DS series)
+   ══════════════════════════════════════════════════════════════ */
+/* DS1 — cold open. The glyph does the talking: the loop orbiting a body
+   says "this runs on you" before a word is read. The platform claim is
+   explicit — the people who set the protocols are on here, and so are
+   their twins. */
+function DsIntro({st, go, dispatch}){
+  const hub = TWINS.find(t=>t.id==='W4');
   return (
     <div className="pscreen" style={{background:'linear-gradient(168deg,#1B395B,#16304C 58%,#122A45)'}}>
       <StatusBar dark={true}/>
       <div className="pbody">
-        <div style={{padding:'28px 22px 26px',color:'#fff'}}>
-          <div style={{position:'relative',width:118,height:118,margin:'6px auto 0'}}>
-            <LoopRing size={118} sw={13} phase="Read" fill={.7} loops={1} dark={true}/>
-            <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',
-              justifyContent:'center',fontSize:38}}>◎</div>
-          </div>
+        <div style={{padding:'20px 22px 26px',color:'#fff'}}>
+
+          <TwinGlyph size={186} phase="Read" fill={.72} loops={1} dark={true}/>
 
           <div style={{fontFamily:'var(--mono)',fontSize:9,fontWeight:700,letterSpacing:'.2em',
-            textTransform:'uppercase',color:'var(--yellow)',textAlign:'center',marginTop:20}}>
+            textTransform:'uppercase',color:'var(--yellow)',textAlign:'center',marginTop:12}}>
             ◈ Introducing Valeo Twins</div>
-          <h1 style={{fontFamily:'var(--font-display)',fontSize:34,fontWeight:600,lineHeight:1.12,
-            textAlign:'center',margin:'11px 0 0'}}>Meet your twin.</h1>
-          <div style={{fontSize:14,color:'rgba(255,255,255,.72)',lineHeight:1.6,textAlign:'center',
-            marginTop:12}}>
-            The stack a full-time optimiser would build for you — without you becoming one.</div>
+          <h1 style={{fontFamily:'var(--font-display)',fontSize:35,fontWeight:600,lineHeight:1.1,
+            textAlign:'center',margin:'10px 0 0'}}>Meet your twin.</h1>
+          <div style={{fontSize:14.5,color:'rgba(255,255,255,.76)',lineHeight:1.55,textAlign:'center',
+            marginTop:11}}>
+            A glimpse of you — that reads everything you don’t have time to.</div>
 
-          <div style={{marginTop:26}}>
-            {[['🧬','Your twin is you, in data','Every marker, every order, every result Valeo has ever run for you — in one model.'],
-              ['📚','It reads what the top 1% read','Trials, protocols, and what actually worked for people built like you. Continuously.'],
-              ['🎯','It goes and finds, so you don\'t','It brings back only what clears the bar — scored for you, not for everyone.']].map(([ic,t,s],i)=>(
-              <div key={i} style={{display:'flex',gap:13,padding:'14px 0',
+          {/* social proof + the platform claim, in one block */}
+          <div style={{marginTop:18,padding:'14px 15px',borderRadius:18,
+            background:'rgba(255,255,255,.07)',border:'1px solid rgba(255,255,255,.13)'}}>
+            <div style={{display:'flex',gap:0}}>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:'var(--mono)',fontSize:21,fontWeight:700,color:'var(--yellow)',
+                  fontVariantNumeric:'tabular-nums'}}>128,400</div>
+                <div style={{fontFamily:'var(--mono)',fontSize:7.5,letterSpacing:'.16em',
+                  textTransform:'uppercase',color:'rgba(255,255,255,.5)',marginTop:4}}>Twins built</div>
+              </div>
+              <div style={{flex:1,borderLeft:'1px solid rgba(255,255,255,.13)',paddingLeft:14}}>
+                <div style={{fontFamily:'var(--mono)',fontSize:21,fontWeight:700,color:'#6FD69B',
+                  fontVariantNumeric:'tabular-nums'}}>412</div>
+                <div style={{fontFamily:'var(--mono)',fontSize:7.5,letterSpacing:'.16em',
+                  textTransform:'uppercase',color:'rgba(255,255,255,.5)',marginTop:4}}>Experts onboard</div>
+              </div>
+            </div>
+            <div style={{fontSize:12.5,lineHeight:1.55,color:'rgba(255,255,255,.82)',marginTop:12,
+              paddingTop:12,borderTop:'1px solid rgba(255,255,255,.13)'}}>
+              <b style={{color:'#fff'}}>The people who set the protocols are on here.</b> Their twins
+              are too — so you can see exactly what they run, and how close their biology sits to yours.
+            </div>
+          </div>
+
+          <div style={{marginTop:18}}>
+            {[['🧬','Your twin is you, in data',
+               'Every order, every marker, every result Valeo has ever run for you — one model.'],
+              ['◈','Twin Match',
+               'Your twin matches with theirs. Scientists, longevity researchers, the people everyone else copies.'],
+              ['🎯','It brings back only what cleared the bar',
+               'Scored against your body — not a general audience, not an average.']].map(([ic,t,s],i)=>(
+              <div key={i} style={{display:'flex',gap:13,padding:'13px 0',
                 borderTop:i>0?'1px solid rgba(255,255,255,.11)':'none'}}>
-                <div style={{width:40,height:40,borderRadius:13,flexShrink:0,fontSize:18,
-                  background:'rgba(255,255,255,.10)',display:'flex',alignItems:'center',
-                  justifyContent:'center'}}>{ic}</div>
+                <div style={{width:38,height:38,borderRadius:12,flexShrink:0,fontSize:17,
+                  background: i===1 ? 'var(--yellow)' : 'rgba(255,255,255,.10)',
+                  color: i===1 ? 'var(--deep)' : '#fff',
+                  display:'flex',alignItems:'center',justifyContent:'center'}}>{ic}</div>
                 <div>
                   <div style={{fontSize:14.5,fontWeight:700}}>{t}</div>
-                  <div style={{fontSize:12,color:'rgba(255,255,255,.6)',marginTop:3,lineHeight:1.5}}>{s}</div>
+                  <div style={{fontSize:12,color:'rgba(255,255,255,.62)',marginTop:3,
+                    lineHeight:1.5}}>{s}</div>
                 </div>
               </div>))}
           </div>
 
-          <div style={{padding:'14px 15px',borderRadius:16,background:'rgba(255,185,0,.13)',
-            border:'1px solid rgba(255,185,0,.34)',marginTop:14}}>
-            <div style={{fontSize:12.5,lineHeight:1.55,color:'rgba(255,255,255,.88)'}}>
-              <b style={{color:'var(--yellow)'}}>Yours is already part-built.</b> You've ordered from
-              Valeo before, so your twin starts warm — not from zero.</div>
-          </div>
-
           <button className="btn btn--primary" style={{marginTop:18}} onClick={()=>go('DS2')}>
-            See what it already knows →</button>
+            See who’s already in →</button>
+          {/* desire before signup — lands straight on the blurred marquee card */}
+          <button className="btn btn--ghost" style={{marginTop:9,color:'rgba(255,255,255,.82)'}}
+            onClick={()=>{ dispatch({type:'FOCUSTWIN', id:'W4'}); go('DS-DISC'); }}>
+            Or see {hub? hub.name.split(' ')[1] : 'Huberman'}’s protocol first</button>
         </div>
       </div>
     </div>
@@ -2231,12 +2673,7 @@ function DsWarm({st, go}){
         <div style={{padding:'8px 20px 26px'}}>
           <div className="kick">Your twin, before you type anything</div>
           <h1 className="lede">You're already <em>{TWIN_SEED}%</em> of the way in.</h1>
-          <div style={{fontSize:13,color:'var(--ink-2)',lineHeight:1.6,marginTop:8}}>
-            Most people start a health app at zero and fill in forms for twenty minutes. You've been
-            a Valeo customer — so we already have this.
-          </div>
-
-          <div style={{marginTop:16}}><TwinMeter pct={TWIN_SEED} ceil={48} label="→ 48% after 5 questions"/></div>
+          <div style={{marginTop:18}}><TwinMeter pct={TWIN_SEED} ceil={TWIN_SEED}/></div>
 
           <div style={{marginTop:18}}>
             {TWIN_KNOWN.map((k,i)=>(
@@ -2250,73 +2687,317 @@ function DsWarm({st, go}){
               </div>))}
           </div>
 
-          <div style={{display:'flex',gap:10,background:'var(--green-soft)',borderRadius:16,
-            padding:'13px 14px',marginTop:16}}>
-            <span>✓</span>
-            <span style={{fontSize:12,color:'#1c6b41',lineHeight:1.55}}>
-              <b>Nothing here is new to us.</b> Confirm it's still right, answer five short questions,
-              and your twin starts searching.</span>
-          </div>
-
-          <button className="btn btn--primary" style={{marginTop:18}} onClick={()=>go('DS3')}>
-            Looks right — continue →</button>
-          <button className="btn btn--ghost" style={{marginTop:9}} onClick={()=>go('DS3')}>
-            Something's changed</button>
+          <button className="btn btn--primary" style={{marginTop:20}} onClick={()=>go('DS3')}>
+            Make my twin smarter →</button>
         </div>
       </div>
     </div>
   );
 }
 
-/* DS3 — the mandatory 20%. Five questions, twin climbs per answer. */
-const CORE_Q = [
-  {k:'goal', t:'What are you actually trying to change?',
-   o:['Lose fat, keep muscle','Sleep and recovery','Energy through the day','Hair','Live longer, healthier']},
-  {k:'hard', t:'What\'s been hardest so far?',
-   o:['Staying consistent','Not knowing if it works','Too many conflicting opinions','Cost','Nothing — I\'m starting fresh']},
-  {k:'stack', t:'What are you taking right now?',
-   o:['Nothing','A multivitamin or two','A real stack, 3+ things','Prescription medication','Prefer to discuss on a call']},
-  {k:'time', t:'Realistically, how much time per week?',
-   o:['Under 1 hour','1–3 hours','3–6 hours','6+ hours — I train seriously']},
-  {k:'horizon', t:'How soon do you need to see something?',
-   o:['Weeks','A few months','I\'m playing a long game']}
-];
-function DsQuiz({st, go, dispatch}){
-  const [i, setI]   = React.useState(0);
-  const [ans, setA] = React.useState({});
-  const q   = CORE_Q[i];
-  const pct = TWIN_SEED + Math.round((i/CORE_Q.length)*14);
-  const pick = (o)=>{
-    setA({...ans,[q.k]:o});
-    if(i < CORE_Q.length-1) setTimeout(()=>setI(i+1), 190);
-    else setTimeout(()=>go('DS4'), 230);
+/* ══════════════════════════════════════════════════════════════
+   Drum picker — the dating-app wheel. Scroll-snap does the physics;
+   we just read which row is centred.
+   ══════════════════════════════════════════════════════════════ */
+function Drum({from, to, value, onChange, suffix, step=1}){
+  const ref = useRef(null);
+  const vals = []; for(let v=from; v<=to; v+=step) vals.push(v);
+  const ROW = 50;
+  useEffect(()=>{
+    const el = ref.current; if(!el) return;
+    const i = vals.indexOf(value);
+    if(i>=0) el.scrollTop = i*ROW;
+  },[]);
+  const onScroll = () => {
+    const el = ref.current; if(!el) return;
+    const i = Math.max(0, Math.min(vals.length-1, Math.round(el.scrollTop/ROW)));
+    if(vals[i] !== value) onChange(vals[i]);
   };
   return (
-    <div className="pscreen">
-      <StatusBar/>
-      <div className="appbar">
-        <button className="appbar__back" onClick={()=> i>0 ? setI(i-1) : go('DS2')}>‹ Back</button>
-        <span className="appbar__spacer"></span>
-        <span style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,color:'var(--deep)'}}>
-          {i+1} / {CORE_Q.length}</span>
+    <div className="drum">
+      <div className="drum__win"></div>
+      <div className="drum__s" ref={ref} onScroll={onScroll}>
+        {vals.map(v=>(
+          <div key={v} className={'drum__i'+(v===value?' on':'')}>
+            {v}{suffix ? <span style={{fontSize:14,fontWeight:500,color:'var(--ink-2)',
+              marginLeft:5}}>{suffix}</span> : null}
+          </div>))}
       </div>
-      <div className="pbody">
-        <div style={{padding:'10px 20px 26px'}}>
-          <TwinMeter pct={pct} ceil={48} label="twin"/>
-          <div className="q" style={{marginTop:18}}>
-            <div className="q__k">Question {i+1}</div>
-            <div className="q__t">{q.t}</div>
-            <div style={{marginTop:14}}>
-              {q.o.map((o,n)=>(
-                <button className={'qo'+(ans[q.k]===o?' on':'')} key={o} onClick={()=>pick(o)}>
-                  <span className="qo__k">{n+1}</span>{o}</button>))}
-            </div>
-          </div>
-          <div style={{textAlign:'center',fontSize:11.5,color:'var(--ink-2)',marginTop:16,lineHeight:1.55}}>
-            Five now. The rest we'll ask a little at a time — or your coach will, on the call.
+    </div>
+  );
+}
+
+function ChipRow({group, value, onPick}){
+  const g = QGROUPS[group];
+  const sel = value || (g.multi ? [] : null);
+  const on = o => g.multi ? sel.indexOf(o)>-1 : sel===o;
+  const pick = o => onPick(g.multi
+    ? (sel.indexOf(o)>-1 ? sel.filter(x=>x!==o) : [...sel, o])
+    : o);
+  return (
+    <div className="qgrp">
+      <div className="qgrp__t"><span style={{fontSize:16}}>{g.ic}</span>{g.t}</div>
+      {g.sub && <div style={{fontSize:11.5,color:'var(--ink-2)',margin:'-6px 0 10px'}}>{g.sub}</div>}
+      <div className="chips">
+        {g.o.map(o=>(
+          <button key={o} className={'chip2'+(on(o)?' on':'')} onClick={()=>pick(o)}>{o}</button>))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DS3 · The questions
+   ══════════════════════════════════════════════════════════════
+   Two modes:
+   · full   — the three sets, with celebration interstitials
+   · reveal — only the groups a blurred card is waiting on, then it
+              reveals the card and returns to the deck (the tight loop)
+   Trust primitives lifted from the references and upgraded for health:
+   "Visible on profile" becomes "Only your clinician sees this", and the
+   "why we ask" link is kept verbatim — on health data it earns more
+   than it costs. */
+function DsQuiz({st, go, dispatch}){
+  const ret  = st.returnTo;
+  const mode = ret && ret.groups && ret.groups.length ? 'reveal' : 'full';
+  const [i, setI] = React.useState(0);
+  const [a, setA] = React.useState({});
+  const set = (k,v)=> setA(prev=>({...prev,[k]:v}));
+
+  const STEPS = mode==='reveal'
+    ? [{type:'multi', q:'Two quick ones', sub:'Then the card is yours.', groups:ret.groups}]
+    : [
+      {type:'drum',   k:'age',    q:'How old are you?',  from:18, to:80, def:34},
+      {type:'chips',  k:'sex',    q:'Sex at birth',      sub:'It sets your reference ranges. Nothing else.',
+        o:['Male','Female']},
+      {type:'map',    k:'loc',    q:'Where should the nurse come?',
+        sub:'We only ever show the area, never the address.'},
+      {type:'height', k:'height', q:'What’s your height?'},
+      {type:'weight', k:'weight', q:'And your weight?'},
+      {type:'cheer',  h:'Off to a good start, Faisal.'},
+      {type:'multi',  q:'Let’s talk lifestyle', sub:'No judgement — it changes what we’d put you on.',
+        groups:['work','smoke','drink']},
+      {type:'multi',  q:'And how you move', sub:'Be honest, not aspirational.',
+        groups:['move','moveType']},
+      {type:'multi',  q:'Food, sleep and stress', sub:'The three that move the most markers.',
+        groups:['diet','sleep','stress','stressSrc']},
+      {type:'goal',   k:'goal',   q:'What are you actually trying to change?'},
+      {type:'goal2',  k:'goal2',  q:'And anything else?', sub:'Pick as many as apply.'},
+      {type:'summary',h:'Your twin has what it needs.'}
+    ];
+
+  const step = STEPS[i];
+  const total = STEPS.filter(x=>x.type!=='cheer' && x.type!=='summary').length;
+  const doneN = STEPS.slice(0,i).filter(x=>x.type!=='cheer' && x.type!=='summary').length;
+  const pct = Math.round(doneN/total*100);
+
+  const finish = () => {
+    if(mode==='reveal'){
+      dispatch({type:'REVEAL', id:ret.reveal, groups:ret.groups});
+      dispatch({type:'ANSWERQ', patch:a, pct:6});
+      dispatch({type:'RETURNTO', to:null});
+      go(ret.node || 'DS-DISC');
+    } else {
+      dispatch({type:'ANSWERQ', patch:a, pct:14});
+      go('DS4');
+    }
+  };
+  const next = () => { if(i < STEPS.length-1) setI(i+1); else finish(); };
+  const skip = () => {
+    if(step.groups) step.groups.forEach(g=>dispatch({type:'SKIPQ', group:g}));
+    next();
+  };
+
+  /* how many groups on a multi screen are answered → the Next N/M counter */
+  const gCount = step.groups
+    ? step.groups.filter(g=>{ const v=a[g]; return QGROUPS[g].multi ? (v&&v.length) : !!v; }).length
+    : 0;
+
+  const canNext = step.type==='multi'  ? gCount>0
+                : step.type==='chips'  ? !!a[step.k]
+                : step.type==='goal'   ? !!a.goal
+                : true;
+
+  /* ── celebration + summary are full-bleed, no chrome ── */
+  if(step.type==='cheer' || step.type==='summary'){
+    return (
+      <div className="pscreen">
+        <StatusBar/>
+        <div className="pbody" style={{display:'flex'}}>
+          <div className="cheer">
+            <div className="cheer__h">{step.h}</div>
+            {step.type==='summary' && (
+              <div className="glass">
+                {[['🎂', a.age||34], ['⚧', a.sex||'Male'], ['📍', a.loc||'Al Olaya, Riyadh'],
+                  ['📐', (a.height||'175')+' cm'], ['⚖️', (a.weight||96)+' kg'],
+                  ['🎯', (GOALS.find(g=>g.k===a.goal)||GOALS[0]).t],
+                  ['🍽', (a.diet&&a.diet.length? a.diet.slice(0,2).join(', ') : 'Grilled meat, rice')]
+                ].map(([ic,v],n)=>(
+                  <div className="glass__r" key={n}>
+                    <span className="glass__i">{ic}</span>
+                    <span className="glass__v">{v}</span></div>))}
+              </div>)}
+            <button className="btn btn--primary" style={{marginTop:26,maxWidth:280}}
+                    onClick={next}>
+              {step.type==='summary' ? 'Show me my twin matches →' : 'Continue'}</button>
           </div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="pscreen">
+      <StatusBar/>
+      <div className="qbar">
+        <button className="appbar__back" style={{padding:0}}
+                onClick={()=> i>0 ? setI(i-1) : go(mode==='reveal'?'DS-DISC':'DS2')}>‹</button>
+        <span className="qbar__t"><span className="qbar__f" style={{width:pct+'%'}}></span></span>
+        <button className="qbar__s" onClick={skip}>Skip</button>
+      </div>
+
+      <div className="pbody">
+        <div style={{padding:'14px 18px 22px'}}>
+          <div className="qh">{step.q}</div>
+          {step.sub && <div className="qsub">{step.sub}</div>}
+
+          {/* ── drum: age ── */}
+          {step.type==='drum' && (
+            <div style={{marginTop:20}}>
+              <Drum from={step.from} to={step.to} value={a[step.k]||step.def}
+                    onChange={v=>set(step.k,v)}/>
+            </div>)}
+
+          {/* ── height: two drums + unit toggle ── */}
+          {step.type==='height' && (()=>{
+            const cm = a.hUnit==='cm';
+            return (<div style={{marginTop:14}}>
+              {cm
+                ? <Drum from={140} to={210} value={a.height||175} onChange={v=>set('height',v)} suffix="cm"/>
+                : <div style={{display:'flex',gap:10}}>
+                    <Drum from={4} to={7}  value={a.ft||5} onChange={v=>set('ft',v)} suffix="feet"/>
+                    <Drum from={0} to={11} value={a.in!=null?a.in:9} onChange={v=>set('in',v)} suffix="inches"/>
+                  </div>}
+              <div style={{display:'flex',justifyContent:'center',marginTop:16}}>
+                <div className="unit">
+                  <button className={!cm?'on':''} onClick={()=>set('hUnit','ft')}>FT</button>
+                  <button className={cm?'on':''}  onClick={()=>set('hUnit','cm')}>CM</button>
+                </div>
+              </div>
+            </div>);
+          })()}
+
+          {/* ── weight ── */}
+          {step.type==='weight' && (()=>{
+            const lb = a.wUnit==='lb';
+            return (<div style={{marginTop:14}}>
+              {lb ? <Drum from={90} to={400} value={a.wlb||210} onChange={v=>set('wlb',v)} suffix="lb"/>
+                  : <Drum from={40} to={180} value={a.weight||96} onChange={v=>set('weight',v)} suffix="kg"/>}
+              <div style={{display:'flex',justifyContent:'center',marginTop:16}}>
+                <div className="unit">
+                  <button className={!lb?'on':''} onClick={()=>set('wUnit','kg')}>KG</button>
+                  <button className={lb?'on':''}  onClick={()=>set('wUnit','lb')}>LB</button>
+                </div>
+              </div>
+            </div>);
+          })()}
+
+          {/* ── chips (single question) ── */}
+          {step.type==='chips' && (
+            <div className="chips" style={{marginTop:18}}>
+              {step.o.map(o=>(
+                <button key={o} className={'chip2'+(a[step.k]===o?' on':'')}
+                        onClick={()=>set(step.k,o)}>{o}</button>))}
+            </div>)}
+
+          {/* ── map ── */}
+          {step.type==='map' && (
+            <div style={{marginTop:16}}>
+              <MapPick label={a.loc||'Al Olaya'}/>
+              <input className="mapin" placeholder="Enter your area or district"
+                     defaultValue="Al Olaya, Riyadh" onChange={e=>set('loc',e.target.value)}/>
+            </div>)}
+
+          {/* ── multi: several chip groups on one scrolling screen ── */}
+          {step.type==='multi' && (
+            <div style={{marginTop:16}}>
+              {step.groups.map(g=>(
+                <ChipRow key={g} group={g} value={a[g]} onPick={v=>set(g,v)}/>))}
+            </div>)}
+
+          {/* ── primary goal ── */}
+          {step.type==='goal' && (
+            <div style={{marginTop:18}}>
+              {GOALS.map(g=>(
+                <button key={g.k} className={'gcard'+(a.goal===g.k?' on':'')}
+                        onClick={()=>set('goal',g.k)}>
+                  <div className="gcard__i">{g.ic}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div className="gcard__t">{g.t}</div>
+                    <div className="gcard__s">{g.s}</div></div>
+                  {a.goal===g.k && <span style={{color:'var(--deep)',fontSize:17}}>✓</span>}
+                </button>))}
+            </div>)}
+
+          {step.type==='goal2' && (
+            <div className="chips" style={{marginTop:18}}>
+              {GOALS2.map(o=>{
+                const sel=(a.goal2||[]);
+                return <button key={o} className={'chip2'+(sel.indexOf(o)>-1?' on':'')}
+                  onClick={()=>set('goal2', sel.indexOf(o)>-1?sel.filter(x=>x!==o):[...sel,o])}>{o}</button>;
+              })}
+            </div>)}
+
+          <div className="priv"><span>👁</span>
+            <span>Only your clinician sees this. Never your profile, never a partner.</span></div>
+          <div className="why">Wondering why we ask? <u>Learn more</u></div>
+        </div>
+      </div>
+
+      {/* bottom bar: counter CTA on multi screens, circular next elsewhere */}
+      <div style={{padding:'10px 18px calc(var(--safe-bottom) + 12px)',borderTop:'1px solid var(--line)',
+        background:'var(--surface-app)',display:'flex',alignItems:'center',gap:12}}>
+        {step.type==='multi'
+          ? <button className="btn btn--primary" style={{margin:0}} disabled={!canNext} onClick={next}>
+              Next {gCount} / {step.groups.length}</button>
+          : <>
+              <span style={{fontSize:11.5,color:'var(--ink-2)',flex:1}}>
+                {step.type==='goal' ? 'Pick the one that matters most' : ''}</span>
+              <button className="gbtn" disabled={!canNext} onClick={next}>›</button>
+            </>}
+      </div>
+    </div>
+  );
+}
+
+/* Map picker. Uses assets/map.jpg when present; falls back to a stylised
+   SVG so the screen is complete without the asset. */
+function MapPick({label}){
+  const [ok, setOk] = React.useState(true);
+  return (
+    <div className="mapw">
+      {ok
+        ? <img src="assets/map.jpg" alt="" onError={()=>setOk(false)}/>
+        : <svg viewBox="0 0 340 262" style={{width:'100%',height:'100%',display:'block'}}>
+            <rect width="340" height="262" fill="#E8EEF1"/>
+            <path d="M0,196 C60,182 120,206 180,190 C240,174 300,192 340,180 L340,262 L0,262 Z"
+                  fill="#CFE3EC"/>
+            <g stroke="#fff" strokeWidth="7" fill="none" opacity=".95">
+              <path d="M-10,120 C70,112 130,140 210,128 C270,119 320,132 350,126"/>
+              <path d="M120,-10 C132,60 118,140 138,272"/>
+              <path d="M232,-10 C226,70 244,150 232,272"/>
+            </g>
+            <g stroke="#DCE6EA" strokeWidth="3" fill="none">
+              <path d="M0,64 L340,58"/><path d="M0,166 L340,172"/><path d="M62,0 L58,262"/>
+              <path d="M300,0 L306,262"/>
+            </g>
+            <g fill="#D9E7D4">
+              <rect x="252" y="74" width="58" height="38" rx="7"/>
+              <rect x="26" y="196" width="46" height="30" rx="6"/>
+            </g>
+          </svg>}
+      <div className="mappin">{label}</div>
+      <div className="mapme">◎</div>
     </div>
   );
 }
@@ -2324,12 +3005,12 @@ function DsQuiz({st, go, dispatch}){
 /* DS4 — assembly. Honest computation theatre: show the real work. */
 function DsAssembly({st, go}){
   const STEPS = [
-    'Reading your Valeo history · 3 orders, 1 panel',
-    'Matching your 8 known signals',
-    'Scanning 1,240 trials and protocol records',
-    'Filtering for people built like you',
+    'Reading your twin · 14 signals',
+    'Finding verified twins near you · Riyadh, Dubai, London',
+    'Comparing your biology to theirs',
+    'Pulling their current protocols',
     'Removing anything that collides with a running loop',
-    'Scoring what\'s left'
+    'Scoring what would transfer to you'
   ];
   const [n, setN] = React.useState(0);
   useEffect(()=>{
@@ -2342,14 +3023,14 @@ function DsAssembly({st, go}){
       <StatusBar dark={true}/>
       <div className="pbody">
         <div style={{padding:'40px 22px 26px',color:'#fff'}}>
-          <div style={{position:'relative',width:104,height:104,margin:'0 auto'}}>
-            <LoopRing size={104} sw={13} phase="Read" fill={n/STEPS.length} loops={0} dark={true}/>
+          <div style={{position:'relative',width:132,height:132,margin:'0 auto'}}>
+            <TwinGlyph size={132} phase="Read" fill={n/STEPS.length} loops={0} dark={true}/>
             <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',
               justifyContent:'center',fontFamily:'var(--mono)',fontSize:19,fontWeight:700,
               color:'var(--yellow)'}}>{Math.round(n/STEPS.length*100)}%</div>
           </div>
           <h1 style={{fontFamily:'var(--font-display)',fontSize:26,fontWeight:600,lineHeight:1.18,
-            textAlign:'center',margin:'22px 0 4px'}}>Building your twin.</h1>
+            textAlign:'center',margin:'22px 0 4px'}}>Finding your matches.</h1>
           <div style={{fontSize:12.5,color:'rgba(255,255,255,.6)',textAlign:'center',lineHeight:1.55}}>
             This is the actual work, not a loading bar.</div>
 
@@ -2366,8 +3047,9 @@ function DsAssembly({st, go}){
             <div style={{padding:'14px 15px',borderRadius:16,background:'rgba(255,185,0,.14)',
               border:'1px solid rgba(255,185,0,.36)',marginTop:16}}>
               <div style={{fontSize:13,lineHeight:1.55}}>
-                <b style={{color:'var(--yellow)'}}>{CATALOG.filter(c=>c.tier==='pop').length} protocols
-                cleared the bar</b> at your twin's current depth. More unlock as it learns.</div>
+                <b style={{color:'var(--yellow)'}}>{TWINS.filter(t=>TIERS[t.tier].gate===null).length} twins
+                matched.</b> {TWINS.filter(t=>t.blur).length} are behind a blur until your twin knows
+                a little more.</div>
             </div>)}
         </div>
       </div>
@@ -2640,11 +3322,11 @@ function Protocols({st, go, dispatch}){
           )}
 
           {/* ══ SAVED ══ the swipe output, and where consults get booked ══ */}
-          <div className="kick" style={{margin:'26px 0 4px'}}>Saved · {saved.length}</div>
+          <div className="kick" style={{margin:'26px 0 4px'}}>Matches · {saved.length}</div>
           {saved.length===0 && (
             <div style={{fontSize:12.5,color:'var(--ink-2)',lineHeight:1.55,padding:'10px 0'}}>
-              Nothing saved yet. <b style={{color:'var(--deep)'}}>Swipe in Discover</b> and anything
-              you keep lands here.</div>
+              No matches yet. <b style={{color:'var(--deep)'}}>Swipe in Discover</b> and every twin you
+              keep lands here with their protocol.</div>
           )}
           {saved.map(c=>{
             const isDone = st.consulted.indexOf(c.id)>-1;
@@ -2744,7 +3426,9 @@ function Protocols({st, go, dispatch}){
           </button>
         </div>
       </div>
-      {st.card && <CardSheet id={st.card} st={st} go={go} dispatch={dispatch}/>}
+      {st.card && (()=>{ const tw=TWINS.find(t=>t.protocol===st.card);
+        return tw ? <TwinSheet id={tw.id} st={st} go={go}
+          dispatch={a=>dispatch(a.type==='TWINCARD'?{type:'CARD',id:null}:a)}/> : null; })()}
       <TabBar active="protocols" go={go}/>
       <div className="home-indicator"></div>
     </div>
