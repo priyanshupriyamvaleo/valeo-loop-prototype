@@ -175,7 +175,7 @@ body.mob .meta{width:100%;height:100%;border-radius:0}
 .tc__meta{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
   color:rgba(255,255,255,.55);margin-top:3px}
 /* PARTIAL blur — identity stays sharp, only the payoff is gated */
-.tc__blurred{filter:blur(7px);user-select:none;pointer-events:none}
+.tc__blurred{filter:blur(5px);opacity:.8;user-select:none;pointer-events:none}
 .tc__lockbtn{position:absolute;inset:-6px;border-radius:14px;display:flex;align-items:center;
   justify-content:center;gap:7px;background:rgba(12,24,40,.34);
   font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.12em;
@@ -193,7 +193,6 @@ body.mob .meta{width:100%;height:100%;border-radius:0}
 .learn__bar i.on{background:var(--green)}
 
 /* drum picker */
-.drum{position:relative;height:246px;overflow:hidden;flex:1}
 .drum__s{height:246px;overflow-y:scroll;scroll-snap-type:y mandatory;
   scrollbar-width:none;-ms-overflow-style:none;padding:98px 0}
 .drum__s::-webkit-scrollbar{display:none}
@@ -201,19 +200,31 @@ body.mob .meta{width:100%;height:100%;border-radius:0}
   scroll-snap-align:center;font-size:20px;color:var(--ink-2);opacity:.34;
   transition:opacity .2s,transform .2s}
 .drum__i.on{opacity:1;font-size:29px;font-weight:700;color:var(--deep)}
+.drum{position:relative;height:246px;overflow:hidden;flex:0 0 246px;width:100%}
 .drum__win{position:absolute;left:0;right:0;top:98px;height:50px;border-radius:14px;
-  background:#fff;box-shadow:0 3px 12px -4px rgba(27,57,91,.18);pointer-events:none;z-index:-1}
+  background:#fff;box-shadow:0 4px 14px -5px rgba(27,57,91,.20);pointer-events:none;z-index:0}
+.drum__s{position:relative;z-index:1}
 .unit{display:inline-flex;background:rgba(27,57,91,.08);border-radius:11px;padding:3px;margin:0 auto}
 .unit button{padding:7px 17px;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink-2)}
 .unit button.on{background:#fff;color:var(--deep);box-shadow:0 2px 7px -2px rgba(27,57,91,.2)}
 
 /* question chrome */
-.qbar{display:flex;align-items:center;gap:12px;padding:10px 18px 4px}
-.qbar__t{flex:1;height:3px;border-radius:2px;background:rgba(27,57,91,.10);overflow:hidden}
+/* back left, Skip right, and a SHORT bar optically centred between them —
+   matching the reference rather than stretching edge to edge */
+.qbar{display:flex;align-items:center;padding:12px 18px 4px}
+.qbar__l,.qbar__r{flex:1 1 0;min-width:0;display:flex;align-items:center}
+.qbar__r{justify-content:flex-end}
+.qbar__t{flex:0 0 132px;height:3px;border-radius:2px;background:rgba(27,57,91,.12);overflow:hidden}
 .qbar__f{height:100%;background:var(--yellow);border-radius:2px;transition:width .45s cubic-bezier(.2,.8,.2,1)}
 .qbar__s{font-size:13px;font-weight:700;color:var(--ink-2)}
 .qh{font-family:var(--font-display);font-size:29px;font-weight:600;color:var(--deep);
   line-height:1.14;letter-spacing:-.01em}
+.qwrap{min-height:100%;display:flex;flex-direction:column;padding:14px 18px 22px}
+.qwrap--mid{text-align:center}
+.qwrap--mid .qsub{max-width:300px;margin-left:auto;margin-right:auto}
+.qmid{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;
+  padding:14px 0 22px;text-align:left}
+.qwrap--mid .qmid{text-align:center}
 .qsub{font-size:13px;color:var(--ink-2);margin-top:8px;line-height:1.5}
 .qgrp + .qgrp{border-top:1px solid rgba(27,57,91,.08);margin-top:18px;padding-top:18px}
 .qgrp__t{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;color:var(--deep);
@@ -278,7 +289,10 @@ body.mob .meta{width:100%;height:100%;border-radius:0}
 .open::before{content:'';position:absolute;left:50%;top:-6%;width:150%;padding-bottom:150%;
   transform:translateX(-50%);border-radius:50%;pointer-events:none;
   background:radial-gradient(closest-side,rgba(255,185,0,.20),rgba(255,185,0,.05) 55%,transparent 72%)}
-.open__h{font-family:var(--font-display);font-size:40px;font-weight:600;line-height:1.02;
+.open__k{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.22em;
+  text-transform:uppercase;text-align:center;color:var(--yellow);position:relative;
+  margin-bottom:9px}
+.open__h{font-family:var(--font-display);font-size:38px;font-weight:600;line-height:1.02;
   letter-spacing:-.025em;text-align:center;color:#fff;position:relative}
 .open__s{font-size:16px;line-height:1.4;text-align:center;color:rgba(255,255,255,.66);
   margin-top:9px;position:relative}
@@ -301,6 +315,42 @@ body.mob .meta{width:100%;height:100%;border-radius:0}
   font-size:16.5px;font-weight:700;letter-spacing:-.01em;position:relative;
   box-shadow:0 12px 30px -12px rgba(255,185,0,.6),inset 0 1px 0 rgba(255,255,255,.4)}
 .open__cta:active{transform:translateY(1px)}
+
+/* ═══════════ TIER ASCENT — the tickle, the wall, the doors ═══════════ */
+.disc--adv{background:linear-gradient(178deg,#0E1B2C,#0A1522 60%,#070F1A)!important}
+.disc--adv .learn{background:rgba(255,255,255,.06)}
+.disc--adv .dbtn{background:rgba(255,255,255,.10);box-shadow:none;color:#fff}
+.disc--adv .dbtn--save{background:var(--green);color:#fff}
+.disc--adv .kick{color:var(--yellow)}
+.nudge{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;
+  padding:13px;border-radius:16px;background:rgba(27,57,91,.055);font-size:13px;
+  color:var(--ink-2);border:1px dashed rgba(27,57,91,.18)}
+.nudge b{color:var(--deep)}
+.nudge--d{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16);color:rgba(255,255,255,.66)}
+.nudge--d b{color:#fff}
+.nudge__ar{font-size:15px;color:var(--yellow);animation:tickle 1.7s ease-in-out infinite;line-height:1}
+@keyframes tickle{0%,100%{transform:translateY(2px);opacity:.55}50%{transform:translateY(-3px);opacity:1}}
+.nudge__n{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 7px;border-radius:6px;
+  background:var(--yellow);color:var(--deep)}
+.wall{text-align:center;padding:30px 20px;border-radius:22px;background:#fff;
+  box-shadow:var(--shadow-sm)}
+.wall--d{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12)}
+.wall__ic{font-size:30px}
+.wall__h{font-family:var(--font-display);font-size:23px;font-weight:600;color:var(--deep);
+  margin-top:11px;line-height:1.22}
+.wall--d .wall__h{color:#fff}
+.wall__s{font-size:12.5px;color:var(--ink-2);margin-top:10px;line-height:1.6}
+.wall--d .wall__s{color:rgba(255,255,255,.62)}
+.door{width:100%;display:flex;align-items:center;gap:13px;text-align:left;padding:15px;
+  border-radius:17px;background:var(--surface-sunken);margin-bottom:10px}
+.door--hero{background:linear-gradient(150deg,#FFF6DC,#FDEDC4);border:1.5px solid var(--yellow)}
+.door__i{width:42px;height:42px;border-radius:13px;background:#fff;flex-shrink:0;font-size:19px;
+  display:flex;align-items:center;justify-content:center}
+.door__t{font-size:14px;font-weight:700;color:var(--deep)}
+.door__s{font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.45}
+.door__c{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-2);flex-shrink:0}
+.door__c--hero{color:var(--yellow-deep)}
 
 /* ═══════════ THE MARK ═══════════ */
 .glyph{margin:0 auto}
@@ -889,11 +939,11 @@ const FLOW = {
   back:'V0', exits:['T2-1','T2-7','T3-2','B-conflict','T3-1','T3-9']},
 
 'B-conflict':{type:'branch', stage:'Journey', title:'That protocol would collide', icon:'🔬',
-  q:'Longevity scores <b>HbA1c</b>. Metabolic Reset is already testing HbA1c, and metformin moves it.',
+  q:'Longevity scores <b>HbA1c</b>. Weight Loss is already testing HbA1c, and metformin moves it.',
   why:'This is the multi-loop rule doing real work. Running both would leave you unable to attribute any change to either intervention — you would have paid for two protocols and bought zero answers. Refusing, and saying exactly why, is the same move as the assay-mismatch refusal: rigor as a feature rather than fine print.',
-  options:[{label:'Queue it for after 7 Feb', sub:'Starts the day Metabolic Reset closes — nothing lost', to:'T2-P', tone:'go'},
+  options:[{label:'Queue it for after 7 Feb', sub:'Starts the day Weight Loss closes — nothing lost', to:'T2-P', tone:'go'},
            {label:'Run the non-colliding arm only', sub:'ApoB arm now, HbA1c arm later — a real experiment either way', to:'T3-1', tone:'alt'},
-           {label:'Stop Metabolic Reset and switch', sub:'Loop 1 closes as inconclusive — the honest cost, stated', to:'P6d', tone:'warn'}]},
+           {label:'Stop Weight Loss and switch', sub:'Loop 1 closes as inconclusive — the honest cost, stated', to:'P6d', tone:'warn'}]},
 
 'T2-9':{stage:'Journey', comp:'Loop', title:'Loop detail (focused)', hero:true, phase:'Act',
   note:'<b>The tab that was missing.</b> The whole thesis is a closed loop and there wasn\'t a pixel of it anywhere.<br><br>Five arcs — Measure · Read · Commit · Act · Prove. Apple\'s rings work because closing one feels good, but 500 calories is arbitrary. <b>This ring closes when a sealed prediction actually gets a verdict.</b><br><br>Completed loops stack inward as tree rings — a record that cannot be bought, faked or reset.<br><br>This tab also <b>absorbs the old Timeline screen</b>: phase strip, Ramadan band and dose ladder live here, because "where am I in the arc" and "where am I in the loop" are the same question and deserved one answer, not two mediocre tabs.',
@@ -993,13 +1043,10 @@ const FLOW = {
 'DS1':{stage:'Discover', comp:'DsIntro', title:'Meet your twin', phase:'Measure',
   headline:'Introducing Valeo Twins',
   note:'The cold open shows the twin <b>doing something</b> before it asks for anything. Ends on the warm-start promise — the twin is already part-built, which makes the next screen a continuation rather than a signup.',
-  primary:'DS2'},
-'DS2':{stage:'Discover', comp:'DsWarm', title:'Your twin starts warm', phase:'Measure',
-  note:'<b>The thing no new entrant can copy.</b> Valeo already holds orders and lab results for existing users, so the twin opens at 34%, not 0%. "Confirm this" is a fundamentally easier ask than "fill this in".',
-  primary:'DS3', back:'DS1'},
+  primary:'DS3'},
 'DS3':{stage:'Discover', comp:'DsQuiz', title:'Core 5 questions', phase:'Measure',
   note:'The mandatory 20%. Five questions, ~40 seconds, twin climbs visibly per answer. The other 80% is harvested later by pings and by the coach on the call — never as one long form.',
-  primary:'DS4', back:'DS2'},
+  primary:'DS4', back:'DS1'},
 'DS4':{stage:'Discover', comp:'DsAssembly', title:'Twin assembly', phase:'Read',
   note:'Honest computation theatre (M36). It names the real work — history read, signals matched, trials scanned, collisions removed — instead of a fake spinner. Auto-advances into the deck.',
   primary:'DS-DISC'},
@@ -1030,19 +1077,19 @@ const PHASES = ['Measure','Read','Commit','Act','Prove'];
    that could move the same number cannot run at the same time,
    or neither result means anything. `blocks` encodes that. */
 const LOOPS = [
-  {id:'L1', t:'Metabolic Reset', ic:'⚖️', st:'active', day:28, total:84, phase:'Act',
+  {id:'L1', t:'Weight Loss', ic:'⚖️', st:'active', day:28, total:84, phase:'Act',
    adh:86, marker:'HbA1c', from:'5.9%', target:'below 5.7%', due:'7 Feb',
    next:'Log tonight’s dose', drug:'Tirzepatide 5 mg'},
-  {id:'L2', t:'Hair Density', ic:'💇', st:'active', day:9, total:112, phase:'Act',
+  {id:'L2', t:'Hair Loss', ic:'💇', st:'active', day:9, total:112, phase:'Act',
    adh:94, marker:'Terminal hair count', from:'118/cm²', target:'above 135/cm²', due:'2 May',
    next:'Apply topical, evening', drug:'Topical minoxidil 5%'},
-  {id:'L0', t:'Iron Correction', ic:'🧲', st:'done', verdict:'refuted',
+  {id:'L0', t:'Iron & Fatigue', ic:'🧲', st:'done', verdict:'refuted',
    marker:'Ferritin', from:'18 ng/mL', to:'21 ng/mL', when:'Closed 4 Sep',
    note:'Oral iron didn’t move it — absorption issue found and now being treated'}
 ];
 const AVAILABLE = [
   {id:'A1', t:'Longevity', ic:'🧬', marker:'HbA1c + ApoB', why:'Metformin arm',
-   blocks:'L1', reason:'Metformin moves HbA1c — the exact marker Metabolic Reset is testing. Running both would make neither result attributable.'},
+   blocks:'L1', reason:'Metformin moves HbA1c — the exact marker Weight Loss is testing. Running both would make neither result attributable.'},
   {id:'A2', t:'Sleep & Recovery', ic:'😴', marker:'HRV, sleep latency', why:'Magnesium + light protocol', blocks:null},
   {id:'A3', t:'Fertility', ic:'👪', marker:'AMH, testosterone', why:'Hormone panel + protocol', blocks:null},
   {id:'A4', t:'Gut', ic:'🦠', marker:'Microbiome diversity', why:'Fibre + strain protocol', blocks:null}
@@ -1055,7 +1102,7 @@ const AVAILABLE = [
    advances the loop is the product. */
 const TIERS = {
   pop: {k:'pop', n:'Open',         gate:null,    c:'var(--teal)',         bg:'var(--teal-soft)', ic:'◆'},
-  adv: {k:'adv', n:'Advanced',     gate:'blood', c:'var(--amber)',        bg:'#FBEEDA',          ic:'◆◆'},
+  adv: {k:'adv', n:'Advanced',     gate:null,    c:'var(--amber)',        bg:'#FBEEDA',          ic:'◆◆'},
   eli: {k:'eli', n:'Elite',        gate:'blood', c:'var(--yellow-deep)',  bg:'var(--mint)',      ic:'◆◆◆'},
   inn: {k:'inn', n:'Inner Circle', gate:'loop',  c:'var(--deep)',         bg:'#E4EAF2',          ic:'◈'}
 };
@@ -1096,8 +1143,8 @@ const TWINS = [
    img:'huberman.jpg', mono:'AH', tone:'#2E4A6B', match:91, tier:'pop', protocol:'K2',
    hook:'The most copied protocol on the internet', blur:true, needs:['sleep','stress']},
   {id:'W5', name:'Bryan Johnson', handle:'@bryan_johnson', role:'Blueprint',
-   img:null, mono:'BJ', tone:'#254A73', match:93, tier:'pop', protocol:'K10',
-   hook:'The most measured body on earth', blur:true, needs:['diet']},
+   img:null, mono:'BJ', tone:'#254A73', match:93, tier:'adv', protocol:'K10',
+   hook:'The most measured body on earth', blur:true, needs:['diet','sleep','stress']},
 
   /* Advanced + Elite sit behind the blood test — the gate buys us the
      baseline the loop needs anyway (P20). */
@@ -1171,88 +1218,88 @@ const GOALS2 = ['Better sleep','Less stress','Sharper focus','Stronger lifts','B
    yet. `match` is the headline number; `ceil` is what it could
    reach with a fuller twin, which is what drives data capture. */
 const CATALOG = [
-  {id:'K1', t:'Metabolic Reset', ic:'⚖️', tier:'pop', match:88, ceil:94, wk:12,
+  {id:'K1', t:'Weight Loss', ic:'⚖️', tier:'pop', match:88, ceil:94, wk:12,
    mk:'HbA1c', use:'Drop fasting glucose and lose fat without losing muscle',
    soc:'Run by 40k+ members worldwide', by:'The most-run protocol on Valeo',
    stack:['Tirzepatide 2.5 → 5 mg weekly','Iron + vitamin C, mornings','Protein floor 1.6 g/kg'],
    risk:'Nausea peaks around day 2 after each dose, then settles.',
    wrong:'Not for you if you\'re pregnant, planning to be, or have a personal history of MTC.'},
-  {id:'K2', t:'Deep Sleep Protocol', ic:'😴', tier:'pop', match:81, ceil:93, wk:8,
+  {id:'K2', t:'Sleep & Recovery', ic:'😴', tier:'pop', match:81, ceil:93, wk:8,
    mk:'HRV + sleep latency', use:'Fall asleep faster and wake up with a higher HRV',
    soc:'Standard in two Premier League medical rooms', by:'Adapted from pro football recovery programmes',
    stack:['Magnesium glycinate 400 mg, 90 min pre-bed','Morning light 10 min within 30 min of waking','Last caffeine 10 h before bed'],
    risk:'Week one often feels worse before it feels better as your rhythm shifts.',
    wrong:'Skip if you work rotating night shifts — we\'d be measuring noise.'},
-  {id:'K3', t:'Hair Density', ic:'💇', tier:'pop', match:76, ceil:88, wk:16,
+  {id:'K3', t:'Hair Loss', ic:'💇', tier:'pop', match:76, ceil:88, wk:16,
    mk:'Terminal hair count', use:'Stop the shed and thicken what\'s still there',
    soc:'Used by on-camera talent before shoot cycles', by:'The dermatology stack, minus the clinic markup',
    stack:['Topical minoxidil 5%, evenings','Ketoconazole shampoo 2×/week','Ferritin correction if below 40'],
    risk:'A temporary shed at weeks 3–6 is expected and means it\'s working.',
    wrong:'Won\'t rebuild follicles that are already gone — this holds and thickens.'},
-  {id:'K4', t:'Gut Reset', ic:'🦠', tier:'pop', match:72, ceil:86, wk:10,
+  {id:'K4', t:'Gut Health', ic:'🦠', tier:'pop', match:72, ceil:86, wk:10,
    mk:'Microbiome diversity', use:'Fix the bloating and stop guessing which food did it',
    soc:'Run by 12k members this year', by:'Built on stool-sequencing data, not elimination guesswork',
    stack:['30 g fibre from 20+ plant sources weekly','Targeted strain, 8 weeks','Two-week trigger log'],
    risk:'More gas in week one as the fibre load climbs. It passes.',
    wrong:'If you have IBD, this needs your gastroenterologist first.'},
-  {id:'K5', t:'Stress Load', ic:'🌊', tier:'pop', match:69, ceil:84, wk:8,
+  {id:'K5', t:'Stress & Burnout', ic:'🌊', tier:'pop', match:69, ceil:84, wk:8,
    mk:'Cortisol curve', use:'Flatten the 4pm crash and the 2am wake-up',
    soc:'Adapted from military selection recovery programmes', by:'Cortisol slope, not a vibe',
    stack:['Ashwagandha 600 mg, evenings','Breath protocol, 6 min daily','Caffeine cutoff moved earlier'],
    risk:'Sedating for some people at the evening dose — we\'ll move it if so.',
    wrong:'Not with thyroid medication until your clinician clears the interaction.'},
 
-  {id:'K6', t:'Cognitive Edge', ic:'🧠', tier:'adv', match:84, ceil:95, wk:12,
+  {id:'K6', t:'Focus & Brain', ic:'🧠', tier:'adv', match:84, ceil:95, wk:12,
    mk:'Reaction time + ApoB', use:'Hold focus through a 10-hour day without the 3pm collapse',
    soc:'Standard in F1 driver preparation programmes', by:'What race teams run for reaction time under load',
    stack:['Creatine 5 g daily','Omega-3, 2 g EPA+DHA','Zone-2 cardio, 150 min/week'],
    risk:'Creatine adds 1–2 kg of water weight in week one. It\'s not fat.',
    wrong:'If your eGFR is flagged, we test kidney function before starting.'},
-  {id:'K7', t:'Testosterone Optimisation', ic:'⚡', tier:'adv', match:79, ceil:92, wk:16,
+  {id:'K7', t:'Testosterone', ic:'⚡', tier:'adv', match:79, ceil:92, wk:16,
    mk:'Total + free T, SHBG', use:'Rebuild drive, strength and morning energy',
    soc:'The stack behind a Mr. Olympia prep coach', by:'Endocrine-led, not a bro-science protocol',
    stack:['Full hormone panel, then decide','Resistance training, 4×/week','Sleep floor of 7 h — non-negotiable'],
    risk:'We will not start anything until the panel is in. That is the point.',
    wrong:'If you\'re trying to conceive in the next year, tell us — this changes.'},
-  {id:'K8', t:'Skin Longevity', ic:'✨', tier:'adv', match:74, ceil:89, wk:12,
+  {id:'K8', t:'Skin & Anti-Ageing', ic:'✨', tier:'adv', match:74, ceil:89, wk:12,
    mk:'Collagen density', use:'Firmer skin and fewer fine lines, measured not eyeballed',
    soc:'Used by A-list actors before shirtless roles', by:'The pre-shoot protocol, made repeatable',
    stack:['Tretinoin 0.05%, nightly ramp','SPF 50 daily, no exceptions','Collagen 15 g + vitamin C'],
    risk:'Weeks 2–4 bring purging and peeling. Everyone wants to quit here.',
    wrong:'Not during pregnancy — tretinoin is out.'},
-  {id:'K9', t:'Endurance Base', ic:'🏃', tier:'adv', match:71, ceil:90, wk:16,
+  {id:'K9', t:'Peak Athlete', ic:'🏃', tier:'adv', match:71, ceil:90, wk:16,
    mk:'VO₂max + lactate', use:'Add a gear you don\'t currently have',
    soc:'Run by three Olympic middle-distance squads', by:'Lactate-guided, the way actual athletes train',
    stack:['80/20 volume split','Iron + B12 correction','Fuelling protocol, 60 g carb/h'],
    risk:'It is boring. Most of it is deliberately, unglamorously easy.',
    wrong:'Needs a cardiac clearance if you\'re over 45 and new to volume.'},
 
-  {id:'K10', t:'Longevity Stack', ic:'🧬', tier:'eli', match:91, ceil:97, wk:24,
+  {id:'K10', t:'Longevity', ic:'🧬', tier:'eli', match:91, ceil:97, wk:24,
    mk:'ApoB, hsCRP, biological age', use:'Move the markers that actually predict how long you get',
    soc:'What Zurich longevity clinics charge $8,000 for', by:'The full panel, quarterly, with a clinician reading it',
    stack:['Metformin or rapamycin — panel decides','ApoB target under 60','Zone-2 + resistance, 5×/week'],
    risk:'This is a 24-week loop. The first verdict is half a year out.',
-   wrong:'Blocked while Metabolic Reset is running — both move HbA1c.'},
-  {id:'K11', t:'Elite Recovery', ic:'🧊', tier:'eli', match:86, ceil:96, wk:12,
+   wrong:'Blocked while Weight Loss is running — both move HbA1c.'},
+  {id:'K11', t:'Recovery', ic:'🧊', tier:'eli', match:86, ceil:96, wk:12,
    mk:'HRV, sleep architecture, CK', use:'Train harder by recovering like it\'s your job',
    soc:'The protocol behind two Tour de France support teams', by:'Load management with actual load data',
    stack:['Cold exposure, 11 min/week total','Sleep extension to 8.5 h','Protein timing around sessions'],
    risk:'Cold immediately post-lifting blunts hypertrophy. Timing matters.',
    wrong:'Not with Raynaud\'s or uncontrolled hypertension.'},
-  {id:'K12', t:'Fertility Window', ic:'👪', tier:'eli', match:83, ceil:95, wk:16,
+  {id:'K12', t:'Fertility', ic:'👪', tier:'eli', match:83, ceil:95, wk:16,
    mk:'AMH, sperm parameters', use:'Improve the odds before you start trying',
    soc:'Used by IVF clinics as a pre-cycle protocol', by:'Both partners measured, not just one',
    stack:['Full panel, both partners','CoQ10 200 mg + antioxidant stack','Heat and alcohol exposure audit'],
    risk:'Sperm parameters take a full 74-day cycle to respond. Patience is structural.',
    wrong:'If you\'re already in an IVF cycle, your clinic leads and we support.'},
-  {id:'K13', t:'Immune Resilience', ic:'🛡', tier:'eli', match:78, ceil:93, wk:12,
+  {id:'K13', t:'Immunity', ic:'🛡', tier:'eli', match:78, ceil:93, wk:12,
    mk:'Vitamin D, hsCRP, NK activity', use:'Stop losing two weeks a year to being ill',
    soc:'Run by an Everest expedition medical team', by:'Built for people who cannot afford downtime',
    stack:['Vitamin D to 40–60 ng/mL','Zinc 15 mg + selenium','Sleep and training load ceilings'],
    risk:'Vitamin D needs re-testing — over-correction is a real thing.',
    wrong:'Sarcoidosis or hypercalcaemia rules this out.'},
 
-  {id:'K14', t:'Full Biological Rebuild', ic:'◈', tier:'inn', match:96, ceil:99, wk:52,
+  {id:'K14', t:'Full Body Rebuild', ic:'◈', tier:'inn', match:96, ceil:99, wk:52,
    mk:'62 markers, quarterly', use:'One year, every system, measured end to end',
    soc:'12 members. Referral only.', by:'A dedicated clinician, quarterly panels, everything sequenced',
    stack:['62-marker panel every 90 days','Sequenced protocol stack, one variable at a time','Named clinician on call'],
@@ -1293,7 +1340,7 @@ const INIT = {node:'B-start', focus:'L1', history:[], visited:{'B-start':1},
   twinPct:TWIN_SEED, deck:0, saved:[], passed:[], consulted:[],
   answered:[], card:null, landed:false,
   /* twin-match state */
-  swipes:0, skipped:['sleep','stress','diet'], revealed:[], bloodBooked:false, focusTwin:null,
+  swipes:0, skipped:['sleep','stress','diet'], revealed:[], bloodBooked:false, focusTwin:null, deckTier:'pop',
   qa:{}, twinCard:null, returnTo:null};
 
 function reducer(s, a){
@@ -1353,6 +1400,7 @@ function reducer(s, a){
     case 'BLOOD':     return {...s, bloodBooked:true, twinPct:Math.min(100,s.twinPct+8)};
     case 'RETURNTO':  return {...s, returnTo:a.to};
     case 'FOCUSTWIN': return {...s, focusTwin:a.id};
+    case 'DECKTIER':  return {...s, deckTier:a.tier, twinCard:null};
     case 'TWIN': {                     /* a trigger answered → twin grows */
       if(s.answered.indexOf(a.id)>-1) return s;
       const g = TRIGGERS.find(t=>t.id===a.id);
@@ -1552,96 +1600,128 @@ function TwinGlyph({size=150, phase='Read', fill=.6, loops=0, dark=true, pulse=t
    4 · NATIVE SCREENS
    ══════════════════════════════════════════════════════════════ */
 /* ── DISCOVER · TWIN MATCHES ────────────────────────────────────
-   The card is a PERSON; the payload is their protocol. Right swipe
-   saves the protocol, so everything downstream is unchanged.
+   Two axes, two meanings — that's the whole interaction model:
+     · HORIZONTAL swipe = accept or reject this person
+     · VERTICAL swipe up = ascend a tier
+   Ascending is free; the goods inside are not. Advanced can be
+   entered on a swipe, Huberman leads it as a taste, and the next
+   card is blurred with the ask sitting on the card itself.
 
-   Three deliberate departures from the old deck:
-   · A left swipe is never interrupted (P18). No modal, no reason
-     picker — the learning counter converts the intent forward.
-   · Blur is PARTIAL (P17). Photo, name and hook stay sharp; only the
-     match score and the protocol are gated. You have to know exactly
-     whose door is shut or there's nothing to want.
-   · Every detail sheet closes on the verdict promise, which is what
-     keeps a celebrity-led deck honest (P19). */
-function twinPool(st){
-  return TWINS.filter(w=>{
-    const g = TIERS[w.tier].gate;
-    if(g==='blood' && !st.bloodBooked) return false;
-    if(g==='loop'  && !LOOPS.some(l=>l.st==='done')) return false;
-    return st.saved.indexOf(w.protocol)<0 && st.passed.indexOf(w.id)<0;
-  }).sort((x,y)=> (y.id===st.focusTwin?1:0) - (x.id===st.focusTwin?1:0));
+   THE FLYWHEEL (P20). Every unlock offers two doors and both feed
+   the corpus: give us data (the questions you skipped) or give us a
+   baseline (a blood test). There is no door that costs us nothing. */
+const TIER_FLOW = ['pop','adv','eli'];
+function tierPool(st, tk){
+  return TWINS.filter(w=> w.tier===tk
+    && st.saved.indexOf(w.protocol)<0 && st.passed.indexOf(w.id)<0);
 }
 function isBlurred(w, st){ return w.blur && st.revealed.indexOf(w.id)<0; }
+/* used by the Twin tab's gate card */
 function nextGate(st){
-  if(!st.bloodBooked) return {tier:TIERS.adv, ...GATE_COPY.blood};
+  if(!st.bloodBooked) return {tier:TIERS.eli, ...GATE_COPY.blood};
   if(!LOOPS.some(l=>l.st==='done')) return {tier:TIERS.inn, ...GATE_COPY.loop};
   return null;
 }
+function tierOpen(tk, st){
+  if(tk==='eli') return st.bloodBooked;
+  return true;                       /* pop + adv are enterable */
+}
 
 function Discover({st, go, dispatch}){
-  const pool = twinPool(st);
-  const w = pool[0];
-  const [dx, setDx]   = React.useState(0);
-  const [drag, setDrag] = React.useState(false);
-  const [fly, setFly] = React.useState(0);
-  const [taught, setTaught] = React.useState(false);
-  const start = useRef(0);
-  const TH = 88;
+  const tk    = st.deckTier || 'pop';
+  const T     = TIERS[tk];
+  const pool  = tierPool(st, tk);
+  const w     = pool[0];
+  const ti    = TIER_FLOW.indexOf(tk);
+  const upTk  = TIER_FLOW[ti+1];
+  const dark  = tk !== 'pop';        /* the palette shift */
 
-  const commit = (dir) => {
+  const [dx,setDx]     = React.useState(0);
+  const [dy,setDy]     = React.useState(0);
+  const [axis,setAxis] = React.useState(null);
+  const [drag,setDrag] = React.useState(false);
+  const [fly,setFly]   = React.useState(0);
+  const [rise,setRise] = React.useState(false);
+  const [gateFor,setGateFor] = React.useState(null);
+  const [taught,setTaught]   = React.useState(false);
+  const p0 = useRef({x:0,y:0});
+  const TH = 88, VTH = 90;
+
+  const commit = dir => {
     if(!w || fly) return;
     setFly(dir); setDrag(false);
     setTimeout(()=>{
-      setFly(0); setDx(0);
+      setFly(0); setDx(0); setDy(0); setAxis(null);
       dispatch({type: dir>0 ? 'SAVE' : 'PASS', id:w.id});
-      /* B16 — 20 swipes was a promise; this is the payoff. */
       if(st.swipes+1 === SWIPE_TARGET) setTaught(true);
     }, 250);
   };
-  const down = e => { if(!w || fly) return; start.current=e.clientX; setDrag(true);
-    e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId); };
-  const move = e => { if(!drag || fly) return; setDx(e.clientX - start.current); };
-  const up   = () => { if(!drag) return;
-    if(dx> TH) return commit(1); if(dx< -TH) return commit(-1); setDx(0); setDrag(false); };
-
-  /* blurred card → route to exactly the groups owed, then come back */
-  const unlock = (tw) => {
-    dispatch({type:'RETURNTO', to:{node:'DS-DISC', reveal:tw.id, groups:tw.needs}});
-    go('DS3');
+  const ascend = () => {
+    if(!upTk) return;
+    if(!tierOpen(upTk, st)) { setGateFor({tier:upTk}); setDx(0); setDy(0); setAxis(null); setDrag(false); return; }
+    setRise(true);
+    setTimeout(()=>{ dispatch({type:'DECKTIER', tier:upTk});
+      setRise(false); setDx(0); setDy(0); setAxis(null); }, 300);
   };
 
-  const off = fly ? fly*540 : dx;
-  const gate = nextGate(st);
-  const filled = Math.min(SWIPE_TARGET, st.swipes);
+  const down = e => { if(fly) return; p0.current={x:e.clientX,y:e.clientY};
+    setDrag(true); setAxis(null);
+    e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId); };
+  const move = e => {
+    if(!drag || fly) return;
+    const ax=e.clientX-p0.current.x, ay=e.clientY-p0.current.y;
+    let a=axis;
+    if(!a && (Math.abs(ax)>10 || Math.abs(ay)>10)) { a = Math.abs(ay)>Math.abs(ax)?'y':'x'; setAxis(a); }
+    if(a==='y') setDy(Math.min(0, ay)); else if(a==='x') setDx(ax);
+  };
+  const up = () => {
+    if(!drag) return;
+    if(axis==='y' && dy < -VTH) return ascend();
+    if(axis==='x' && dx >  TH)  return commit(1);
+    if(axis==='x' && dx < -TH)  return commit(-1);
+    setDx(0); setDy(0); setAxis(null); setDrag(false);
+  };
+
+  const off  = fly ? fly*540 : dx;
+  const lift = rise ? -640 : dy;
+  const unlockPaths = tw => setGateFor({twin:tw});
 
   return (
-    <div className="pscreen">
-      <StatusBar/>
-      <div className="appbar">
-        <button className="appbar__back" onClick={()=>go('V0')}>‹ Valeo</button>
+    <div className={'pscreen'+(dark?' disc--adv':'')}>
+      <StatusBar dark={dark}/>
+      <div className="appbar" style={dark?{background:'#0E1B2C',color:'#fff',
+        borderBottom:'1px solid rgba(255,255,255,.09)'}:{}}>
+        <button className="appbar__back" onClick={()=> ti>0
+            ? dispatch({type:'DECKTIER', tier:TIER_FLOW[ti-1]}) : go('V0')}
+          style={dark?{color:'rgba(255,255,255,.8)'}:{}}>
+          {ti>0 ? '‹ '+TIERS[TIER_FLOW[ti-1]].n : '‹ Valeo'}</button>
         <span className="appbar__spacer"></span>
         <button className="appbar__ring" onClick={()=>go('T2-7')}>
-          <span className="appbar__ringlabel"><b>Twin {st.twinPct}%</b>
-            <span>{pool.length} matches</span></span>
+          <span className="appbar__ringlabel">
+            <b style={dark?{color:'#fff'}:{}}>Twin {st.twinPct}%</b>
+            <span style={dark?{color:'rgba(255,255,255,.5)'}:{}}>{pool.length} in {T.n}</span></span>
         </button>
       </div>
 
       <div className="pbody">
         <div style={{padding:'8px 18px 24px'}}>
-          <div className="kick">Discover</div>
-          <h1 className="lede" style={{marginBottom:10}}>Your twin matches.</h1>
+          <div className="kick" style={dark?{color:'var(--yellow)'}:{}}>
+            {tk==='pop' ? 'Discover' : T.ic+' '+T.n}</div>
+          <h1 className="lede" style={{marginBottom:10, ...(dark?{color:'#fff'}:{})}}>
+            {tk==='pop' ? 'Your twin matches.'
+             : tk==='adv' ? 'Where it gets serious.' : 'The inner circle.'}</h1>
 
-          {/* learning counter — the only thing a left swipe produces */}
-          <div className="learn">
-            <div className="learn__i">◍</div>
-            <div className="learn__t">{st.swipes >= SWIPE_TARGET
-              ? <><b>Your twin knows your type.</b> Matches are re-ordered for you.</>
-              : <>Your twin is learning your type · <b>{st.swipes} of {SWIPE_TARGET}</b> swipes</>}</div>
-            <span className="learn__bar">
-              {Array.from({length:10}).map((_,i)=>(
-                <i key={i} className={i < Math.round(filled/SWIPE_TARGET*10) ? 'on':''}/>))}
-            </span>
-          </div>
+          {tk==='pop' && (
+            <div className="learn">
+              <div className="learn__i">◍</div>
+              <div className="learn__t">{st.swipes >= SWIPE_TARGET
+                ? <><b>Your twin knows your type.</b> Matches are re-ordered for you.</>
+                : <>Your twin is learning your type · <b>{st.swipes} of {SWIPE_TARGET}</b></>}</div>
+              <span className="learn__bar">
+                {Array.from({length:10}).map((_,i)=>(
+                  <i key={i} className={i<Math.round(Math.min(SWIPE_TARGET,st.swipes)/SWIPE_TARGET*10)?'on':''}/>))}
+              </span>
+            </div>)}
 
           {w ? (<>
             <div className="tdeck" onPointerDown={down} onPointerMove={move}
@@ -1654,66 +1734,88 @@ function Discover({st, go, dispatch}){
                   <TwinCard tw={c} st={st} cls="tc--rest" style={{}}/></div>;
               })}
               <TwinCard tw={w} st={st} top={true} cls={drag?'tc--drag':'tc--rest'}
-                style={{transform:'translateX('+off+'px) rotate('+(off/28)+'deg)', zIndex:5}}
-                onTap={()=> isBlurred(w,st) ? unlock(w) : dispatch({type:'TWINCARD', id:w.id})}
-                onUnlock={()=>unlock(w)}/>
+                style={{transform:'translate('+off+'px,'+lift+'px) rotate('+(axis==='x'?off/28:0)+'deg)',
+                        zIndex:5, opacity: rise?0:1}}
+                onTap={()=> isBlurred(w,st) ? unlockPaths(w) : dispatch({type:'TWINCARD', id:w.id})}
+                onUnlock={()=>unlockPaths(w)}/>
             </div>
 
             <div className="dctl">
               <button className="dbtn" onClick={()=>commit(-1)}>✕</button>
               <button className="dbtn dbtn--info"
-                onClick={()=> isBlurred(w,st) ? unlock(w) : dispatch({type:'TWINCARD', id:w.id})}>ⓘ</button>
+                onClick={()=> isBlurred(w,st) ? unlockPaths(w) : dispatch({type:'TWINCARD', id:w.id})}>ⓘ</button>
               <button className="dbtn dbtn--save" onClick={()=>commit(1)}>♥</button>
             </div>
-            <div className="dcard__hint">Saving costs nothing — you commit on the coach call.</div>
           </>) : (
-            <div className="q" style={{textAlign:'center',padding:'28px 18px'}}>
-              <div style={{fontSize:28}}>◍</div>
-              <div className="q__t" style={{marginTop:8}}>That's everyone your twin can reach today.</div>
-              <div style={{fontSize:12.5,color:'var(--ink-2)',marginTop:9,lineHeight:1.55}}>
-                {gate ? gate.s : 'You’ve seen every twin on the platform.'}</div>
-              <button className="btn btn--primary" style={{marginTop:15}} onClick={()=>go('T2-P')}>
-                Go to my matches →</button>
-              <button className="btn btn--ghost" style={{marginTop:8}}
-                onClick={()=>dispatch({type:'DECKRESET'})}>Replay the deck</button>
+            /* terminal wall — the tier is spent, the next one has a price */
+            <div className={'wall'+(dark?' wall--d':'')}>
+              <div className="wall__ic">🧪</div>
+              <div className="wall__h">{tk==='pop'
+                ? 'That’s everyone in Open.'
+                : 'Get a blood test to unlock the most elite protocols.'}</div>
+              <div className="wall__s">{tk==='pop'
+                ? 'Swipe up to see who’s in Advanced.'
+                : 'Elite twins are scored against real bloodwork. Without a baseline the match is a guess — and there’s nothing to compare your retest against.'}</div>
+              {tk==='pop'
+                ? <button className="open__cta" style={{marginTop:16}} onClick={ascend}>
+                    Swipe up to Advanced ↑</button>
+                : <button className="open__cta" style={{marginTop:16}}
+                    onClick={()=>{ dispatch({type:'BLOOD'}); go('T3-3'); }}>
+                    Book my blood test →</button>}
             </div>
           )}
 
-          {/* ── locked tier: a real face behind the blur, not a category ── */}
-          {gate && (()=> {
-            const teaser = TWINS.find(t=>t.tier===gate.tier.k) || TWINS[TWINS.length-1];
-            return (
-              <div className="lock" style={{marginTop:18}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,position:'relative',zIndex:1}}>
-                  <span className="tpill" style={{background:'rgba(255,255,255,.13)',color:'#fff'}}>
-                    {gate.tier.ic} {gate.tier.n}</span>
-                  <span style={{marginLeft:'auto',fontFamily:'var(--mono)',fontSize:9,
-                    letterSpacing:'.14em',color:'rgba(255,255,255,.5)'}}>LOCKED</span>
-                </div>
-                <div style={{display:'flex',gap:12,alignItems:'center',marginTop:13,
-                  position:'relative',zIndex:1}}>
-                  <div style={{width:60,height:74,borderRadius:14,flexShrink:0,overflow:'hidden',
-                    background:teaser.tone,display:'flex',alignItems:'center',justifyContent:'center',
-                    filter:'blur(3px)'}}>
-                    <span style={{fontFamily:'var(--mono)',fontSize:22,fontWeight:700,
-                      color:'rgba(255,255,255,.5)'}}>{teaser.mono}</span>
-                  </div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:15,fontWeight:700,filter:'blur(4.5px)',
-                      userSelect:'none'}}>{teaser.name}</div>
-                    <div style={{fontSize:11.5,color:'rgba(255,255,255,.66)',marginTop:5,
-                      lineHeight:1.45}}>{teaser.hook}</div>
-                  </div>
-                </div>
-                <div style={{fontSize:12.5,lineHeight:1.5,marginTop:13,position:'relative',zIndex:1,
-                  color:'rgba(255,255,255,.82)'}}>{gate.s}</div>
-                <button className="lock__cta" onClick={()=>go('T2-7')}>
-                  {gate.t} {gate.tier.n} →</button>
-              </div>
-            );
-          })()}
+          {/* ── the tickle: a nudge from the bottom, not a menu ── */}
+          {upTk && w && (
+            <button className={'nudge'+(dark?' nudge--d':'')} onClick={ascend}>
+              <span className="nudge__ar">︿</span>
+              <span>Swipe up for <b>{TIERS[upTk].n}</b></span>
+              <span className="nudge__n">{tierPool(st,upTk).length}</span>
+            </button>)}
         </div>
       </div>
+
+      {/* ── UNLOCK: two doors, both feed the flywheel ── */}
+      {gateFor && (()=> {
+        const tw = gateFor.twin;
+        const skipped = tw ? tw.needs.filter(g=>st.skipped.indexOf(g)>-1) : [];
+        return (
+          <Sheet title={tw ? tw.name+' is in Advanced' : TIERS[gateFor.tier].n+' is locked'}
+            sub={tw ? 'Two ways in. Both make your twin sharper.'
+                    : 'Elite needs a baseline before we’ll score it.'}
+            onClose={()=>setGateFor(null)} cta="Not now">
+            {skipped.length>0 && (
+              <button className="door" onClick={()=>{
+                  dispatch({type:'RETURNTO', to:{node:'DS-DISC', reveal:tw.id, groups:skipped}});
+                  setGateFor(null); go('DS3');
+                }}>
+                <div className="door__i">✍️</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="door__t">Answer {skipped.length} skipped question{skipped.length>1?'s':''}</div>
+                  <div className="door__s">
+                    {skipped.map(g=>GROUP_LABEL[g]||g).join(' · ')} · about 30 seconds</div>
+                </div>
+                <span className="door__c">Free</span>
+              </button>)}
+            <button className="door door--hero" onClick={()=>{
+                dispatch({type:'BLOOD'});
+                if(tw) dispatch({type:'REVEAL', id:tw.id, groups:[]});
+                setGateFor(null); go('T3-3');
+              }}>
+              <div className="door__i">🧪</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div className="door__t">Take a blood test</div>
+                <div className="door__s">Unlocks every Advanced twin, and Elite after it</div>
+              </div>
+              <span className="door__c door__c--hero">Half price</span>
+            </button>
+            <div style={{fontSize:11.5,color:'var(--ink-2)',lineHeight:1.55,marginTop:14}}>
+              A blood test does more than unlock a card — it’s the baseline your first verdict is
+              measured against.
+            </div>
+          </Sheet>
+        );
+      })()}
 
       {taught && <Sheet title="Your twin learned your type"
         sub={'From '+SWIPE_TARGET+' swipes, without you filling in a single form.'}
@@ -1726,9 +1828,6 @@ function Discover({st, go, dispatch}){
             borderTop:i>0?'1px solid rgba(27,57,91,.07)':'none',fontSize:13,lineHeight:1.45}}>
             <span style={{color:'var(--ink-2)',minWidth:88}}>{k}</span>
             <b style={{color:'var(--deep)',flex:1}}>{v}</b></div>))}
-        <div style={{marginTop:14,padding:'12px 13px',borderRadius:14,background:'var(--green-soft)',
-          fontSize:12,lineHeight:1.55,color:'#1c6b41'}}>
-          Every swipe from here is scored against this. It gets sharper, not noisier.</div>
       </Sheet>}
 
       {st.twinCard && <TwinSheet id={st.twinCard} st={st} go={go} dispatch={dispatch}/>}
@@ -1760,7 +1859,7 @@ function TwinCard({tw, st, style, cls, onTap, onUnlock, top}){
 
       {/* match score is part of the payoff — gated with the protocol */}
       <div className="tc__match">
-        <div className="tc__mn" style={blurred?{filter:'blur(8px)'}:{}}>{tw.match}</div>
+        <div className="tc__mn" style={blurred?{filter:'blur(4.5px)',opacity:.75}:{}}>{tw.match}</div>
         <div className="tc__mk">Match</div>
       </div>
 
@@ -2635,6 +2734,7 @@ function DsIntro({st, go, dispatch}){
             <TwinGlyph size={202} phase="Read" fill={.72} loops={1} dark={true}/>
           </div>
 
+          <div className="open__k">◈ Introducing Valeo Twins</div>
           <h1 className="open__h">Meet Valeo Twins</h1>
           <div className="open__s">Your twin is a glimpse of you.</div>
           <div className="open__n"><b>10,000+</b> twins · <b>100+</b> experts</div>
@@ -2650,40 +2750,7 @@ function DsIntro({st, go, dispatch}){
           </div>
 
           <button className="open__cta" style={{marginTop:20}}
-                  onClick={()=>go('DS2')}>Launch my twin</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* DS2 — the warm start. Continuing beats starting. */
-function DsWarm({st, go}){
-  return (
-    <div className="pscreen">
-      <StatusBar/>
-      <div className="appbar"><button className="appbar__back" onClick={()=>go('DS1')}>‹ Back</button>
-        <span className="appbar__spacer"></span></div>
-      <div className="pbody">
-        <div style={{padding:'8px 20px 26px'}}>
-          <div className="kick">Your twin, before you type anything</div>
-          <h1 className="lede">You're already <em>{TWIN_SEED}%</em> of the way in.</h1>
-          <div style={{marginTop:18}}><TwinMeter pct={TWIN_SEED} ceil={TWIN_SEED}/></div>
-
-          <div style={{marginTop:18}}>
-            {TWIN_KNOWN.map((k,i)=>(
-              <div className="trg trg--done" key={i}>
-                <div className="trg__i" style={{background:'var(--green-soft)'}}>{k.ic}</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div className="trg__t">{k.t}</div>
-                  <div className="trg__s">{k.s} · from {k.src}</div>
-                </div>
-                <span style={{color:'var(--green)',fontSize:15}}>✓</span>
-              </div>))}
-          </div>
-
-          <button className="btn btn--primary" style={{marginTop:20}} onClick={()=>go('DS3')}>
-            Make my twin smarter →</button>
+                  onClick={()=>go('DS3')}>Build my twin</button>
         </div>
       </div>
     </div>
@@ -2749,9 +2816,7 @@ function ChipRow({group, value, onPick}){
    · reveal — only the groups a blurred card is waiting on, then it
               reveals the card and returns to the deck (the tight loop)
    Trust primitives lifted from the references and upgraded for health:
-   "Visible on profile" becomes "Only your clinician sees this", and the
-   "why we ask" link is kept verbatim — on health data it earns more
-   than it costs. */
+   Two modes only; no disclaimers on the page. */
 function DsQuiz({st, go, dispatch}){
   const ret  = st.returnTo;
   const mode = ret && ret.groups && ret.groups.length ? 'reveal' : 'full';
@@ -2763,8 +2828,7 @@ function DsQuiz({st, go, dispatch}){
     ? [{type:'multi', q:'Two quick ones', sub:'Then the card is yours.', groups:ret.groups}]
     : [
       {type:'drum',   k:'age',    q:'How old are you?',  from:18, to:80, def:34},
-      {type:'chips',  k:'sex',    q:'Sex at birth',      sub:'It sets your reference ranges. Nothing else.',
-        o:['Male','Female']},
+      {type:'chips',  k:'sex',    q:'Gender', o:['Male','Female']},
       {type:'map',    k:'loc',    q:'Where should the nurse come?',
         sub:'We only ever show the area, never the address.'},
       {type:'height', k:'height', q:'What’s your height?'},
@@ -2845,23 +2909,26 @@ function DsQuiz({st, go, dispatch}){
     <div className="pscreen">
       <StatusBar/>
       <div className="qbar">
-        <button className="appbar__back" style={{padding:0}}
-                onClick={()=> i>0 ? setI(i-1) : go(mode==='reveal'?'DS-DISC':'DS2')}>‹</button>
+        <span className="qbar__l">
+          <button className="appbar__back" style={{padding:0}}
+                  onClick={()=> i>0 ? setI(i-1) : go(mode==='reveal'?'DS-DISC':'DS1')}>‹</button>
+        </span>
         <span className="qbar__t"><span className="qbar__f" style={{width:pct+'%'}}></span></span>
-        <button className="qbar__s" onClick={skip}>Skip</button>
+        <span className="qbar__r">
+          <button className="qbar__s" onClick={skip}>Skip</button>
+        </span>
       </div>
 
       <div className="pbody">
-        <div style={{padding:'14px 18px 22px'}}>
+        <div className={'qwrap'+(['drum','height','weight','chips','map'].indexOf(step.type)>-1?' qwrap--mid':'')}>
           <div className="qh">{step.q}</div>
           {step.sub && <div className="qsub">{step.sub}</div>}
+          <div className="qmid">
 
           {/* ── drum: age ── */}
           {step.type==='drum' && (
-            <div style={{marginTop:20}}>
-              <Drum from={step.from} to={step.to} value={a[step.k]||step.def}
-                    onChange={v=>set(step.k,v)}/>
-            </div>)}
+            <Drum from={step.from} to={step.to} value={a[step.k]||step.def}
+                  onChange={v=>set(step.k,v)}/>)}
 
           {/* ── height: two drums + unit toggle ── */}
           {step.type==='height' && (()=>{
@@ -2943,9 +3010,7 @@ function DsQuiz({st, go, dispatch}){
               })}
             </div>)}
 
-          <div className="priv"><span>👁</span>
-            <span>Only your clinician sees this. Never your profile, never a partner.</span></div>
-          <div className="why">Wondering why we ask? <u>Learn more</u></div>
+          </div>
         </div>
       </div>
 
@@ -3027,7 +3092,7 @@ function DsAssembly({st, go}){
           <h1 style={{fontFamily:'var(--font-display)',fontSize:26,fontWeight:600,lineHeight:1.18,
             textAlign:'center',margin:'22px 0 4px'}}>Finding your matches.</h1>
           <div style={{fontSize:12.5,color:'rgba(255,255,255,.6)',textAlign:'center',lineHeight:1.55}}>
-            This is the actual work, not a loading bar.</div>
+            Comparing you to 10,000 twins.</div>
 
           <div style={{marginTop:24}}>
             {STEPS.map((s,i)=>(
@@ -3193,9 +3258,9 @@ function DsConsultDone({st, go}){
    commodity marketplace: your own outcomes score your next cards. */
 function DsVerdictTwin({st, go}){
   const changed = [
-    {ic:'🧲', t:'Iron Correction', d:'refuted for you', c:'var(--slate)',
+    {ic:'🧲', t:'Iron & Fatigue', d:'refuted for you', c:'var(--slate)',
      s:'Oral iron didn\'t move your ferritin — absorption flagged, not dosing.'},
-    {ic:'🩸', t:'Gut Reset', d:'92% ↑ from 72%', c:'var(--green)',
+    {ic:'🩸', t:'Gut Health', d:'92% ↑ from 72%', c:'var(--green)',
      s:'Absorption issues make this newly relevant to you specifically.'},
     {ic:'💊', t:'Oral iron protocols', d:'dropped off your deck', c:'var(--coral)',
      s:'We won\'t show you the same mechanism that already failed.'}
@@ -3431,7 +3496,7 @@ function Protocols({st, go, dispatch}){
 }
 
 const COMPS = {V0:V0Home, Today, Loop:LoopTab, Twin, Protocols, Discover,
-  DsIntro, DsWarm, DsQuiz, DsAssembly, DsConsult, DsConsultDone, DsVerdictTwin};
+  DsIntro, DsQuiz, DsAssembly, DsConsult, DsConsultDone, DsVerdictTwin};
 
 /* ── iframe fallback for self-contained linear documents ── */
 function IframeScreen({file, onMsg}){
