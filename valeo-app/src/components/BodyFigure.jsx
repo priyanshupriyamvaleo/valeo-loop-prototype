@@ -5,6 +5,15 @@ import { C } from '../theme';
 const BODY = `M69,82 C67,77 73,73 80,73 L120,73 C127,73 133,77 131,82
               L127,148 C126,176 121,198 117,214 L83,214 C79,198 74,176 73,148 Z`;
 
+/* Interpolate two hexes, so a grade change is a movement rather than a cut.
+   A cut reads as a different body; a morph reads as the same body improving. */
+function mix(a, b, t) {
+  const h = (x) => [1, 3, 5].map((i) => parseInt(x.slice(i, i + 2), 16));
+  const [r1, g1, b1] = h(a), [r2, g2, b2] = h(b);
+  const c = (x, y) => Math.round(x + (y - x) * t);
+  return `rgb(${c(r1, r2)},${c(g1, g2)},${c(b1, b2)})`;
+}
+
 /**
  * The body as an index, not a portrait.
  *
@@ -20,7 +29,7 @@ const BODY = `M69,82 C67,77 73,73 80,73 L120,73 C127,73 133,77 131,82
  * Unlit is not unhealthy. Unknown zones are grey, never red, and the copy says
  * "not measured" — the deficiency belongs to the model, not the person.
  */
-export default function BodyFigure({ zones, sel, onSel, focus, height = 300 }) {
+export default function BodyFigure({ zones, sel, onSel, focus, anim, height = 300 }) {
   return (
     <Box sx={{ position: 'relative', height, display: 'flex', justifyContent: 'center' }}>
       <svg viewBox="0 0 200 390" style={{ height: '100%', display: 'block', overflow: 'visible' }}>
@@ -44,13 +53,19 @@ export default function BodyFigure({ zones, sel, onSel, focus, height = 300 }) {
               stays neutral and highlights ONE zone — the one worth looking at.
               Severity belongs in the list, where it arrives with its move. */}
           {zones.map((z) => {
+            const playing = anim && anim.zone === z.k;
             const lit = z.k === focus || z.k === sel;
+            /* While a zone plays, it carries its real grade colour and moves
+               from where it was to where it is. Everywhere else stays neutral,
+               so the eye has exactly one thing to follow. */
+            const col = playing ? mix(GRADE_C[anim.from], GRADE_C[anim.to], anim.t)
+              : lit ? C.yellow : '#9DB4CE';
+            const top = playing ? 0.72 : lit ? 0.42 : z.known ? 0.15 : 0.06;
+            const bot = playing ? 0.34 : lit ? 0.16 : z.known ? 0.09 : 0.04;
             return (
               <linearGradient key={z.k} id={`bfZ${z.k}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={lit ? C.yellow : '#9DB4CE'}
-                      stopOpacity={lit ? 0.42 : z.known ? 0.15 : 0.06} />
-                <stop offset="100%" stopColor={lit ? C.yellow : '#9DB4CE'}
-                      stopOpacity={lit ? 0.16 : z.known ? 0.09 : 0.04} />
+                <stop offset="0%" stopColor={col} stopOpacity={top} />
+                <stop offset="100%" stopColor={col} stopOpacity={bot} />
               </linearGradient>
             );
           })}
@@ -74,7 +89,8 @@ export default function BodyFigure({ zones, sel, onSel, focus, height = 300 }) {
             return (
               <rect key={z.k} x="0" y={z.y0} width="200" height={z.y1 - z.y0}
                     fill={`url(#bfZ${z.k})`}
-                    opacity={sel && !active ? 0.3 : 1}
+                    opacity={anim ? (anim.zone === z.k ? 1 : 0.25)
+                      : sel && !active ? 0.3 : 1}
                     style={{ transition: 'opacity .3s' }} />
             );
           })}
@@ -88,7 +104,7 @@ export default function BodyFigure({ zones, sel, onSel, focus, height = 300 }) {
         </g>
 
         {/* "look here" — one soft ring, on the zone that owns the constraint */}
-        {zones.filter((z) => z.k === focus && z.k !== sel).map((z) => (
+        {!anim && zones.filter((z) => z.k === focus && z.k !== sel).map((z) => (
           <rect key={`f${z.k}`} x="30" y={z.y0 + 2} width="140" height={z.y1 - z.y0 - 4}
                 rx="14" fill="none" stroke={C.yellow} strokeWidth="1.25"
                 strokeDasharray="4 4" opacity=".55" pointerEvents="none" />
@@ -110,7 +126,7 @@ export default function BodyFigure({ zones, sel, onSel, focus, height = 300 }) {
         ))}
 
         {/* grade chip, only where a grade exists */}
-        {zones.map((z) => (
+        {!anim && zones.map((z) => (
           z.grade ? (
             <g key={`g${z.k}`} pointerEvents="none"
                opacity={sel && sel !== z.k ? 0.35 : 1}

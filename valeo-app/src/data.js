@@ -531,55 +531,71 @@ export const REGIONS = [
 ];
 
 export const SYSTEMS = [
-  { k: 'nutri', t: 'Nutrients', region: 'chest', needs: ['blood'], lever: 1,
+  { k: 'nutri', t: 'Nutrients', mk: 'Ferritin', tgt: 'target 50–150', whyOk: 'Ferritin is back in range. Oxygen transport is no longer your limiter, but 90+ is where it stops being a factor at all.', fix: { kind: 'supp', t: 'Iron + vitamin C, mornings', sub: 'Needs a prescriber to add it' }, region: 'chest', needs: ['blood'], lever: 1,
     g: 'D', src: 'Panel · 12 Mar', ref: 'Ferritin 38 µg/L · target 50–150',
     why: 'Under 50 limits oxygen transport, which caps VO₂max and stalls collagen.',
     move: 'Iron with vitamin C, mornings' },
-  { k: 'inflam', t: 'Inflammation', region: 'chest', needs: ['blood'], lever: 2,
+  { k: 'inflam', t: 'Inflammation', mk: 'hsCRP', tgt: 'optimal under 1.0', whyOk: 'Inflammation is optimal now. Correcting iron is what moved it.', fix: { kind: 'supp', t: 'Omega-3 to an index above 8%', sub: 'Added to your next protocol' }, region: 'chest', needs: ['blood'], lever: 2,
     g: 'B', src: 'Panel · 12 Mar', ref: 'hsCRP 1.4 mg/L · optimal under 1.0',
     why: 'Low-grade inflammation slows recovery from everything else you do.',
     move: 'Ferritin first — iron deficiency raises hsCRP' },
-  { k: 'sleep', t: 'Sleep & recovery', region: 'headneck', needs: ['sleep'], lever: 3,
+  { k: 'sleep', t: 'Sleep & recovery', fix: { kind: 'device', t: 'Pair a ring or a watch', sub: 'Stops this being a guess' }, region: 'headneck', needs: ['sleep'], lever: 3,
     reported: true, sayKey: 'sleep',
     why: 'Short sleep blunts every other lever you pull.',
     move: 'Wear a ring for two weeks so this stops being a guess' },
-  { k: 'thyroid', t: 'Thyroid', region: 'headneck', needs: ['blood'], lever: 4,
+  { k: 'thyroid', t: 'Thyroid', mk: 'TSH', tgt: 'range 0.4–4.0', whyOk: 'TSH came back into range. Worth confirming it holds rather than assuming it.', fix: { kind: 'test', t: 'Recheck TSH with free T4', sub: 'Added to your next draw' }, region: 'headneck', needs: ['blood'], lever: 4,
     g: 'C', src: 'Panel · 12 Mar', ref: 'TSH 4.2 mIU/L · range 0.4–4.0',
     why: 'TSH sits just above range, so your metabolic rate runs slightly low.',
     move: 'Recheck TSH with free T4 at your next draw' },
-  { k: 'hormone', t: 'Sex hormones', region: 'core', needs: ['blood', 'basic'], lever: 5,
+  { k: 'hormone', t: 'Sex hormones', mk: 'Free T', tgt: 'range 8.7–25', whyOk: 'Free testosterone climbed out of the bottom of range. Sleep did most of that.', fix: { kind: 'protocol', t: 'Run the Testosterone protocol', sub: 'Sleep-first, 16 weeks', protocol: 'P_TEST' }, region: 'core', needs: ['blood', 'basic'], lever: 5,
     g: 'C', src: 'Panel · 12 Mar', ref: 'Free T 9.1 ng/dL · range 8.7–25',
     why: 'Free testosterone sits at the bottom of range for your age.',
     move: 'A 7h sleep floor does more here than any supplement' },
-  { k: 'heart', t: 'Heart & vascular', region: 'chest', needs: ['blood'], lever: 6,
+  { k: 'heart', t: 'Heart & vascular', mk: 'ApoB', tgt: 'target under 60', fix: { kind: 'protocol', t: 'Run the Longevity protocol', sub: 'ApoB is its primary marker', protocol: 'P_LONG' }, region: 'chest', needs: ['blood'], lever: 6,
     g: 'B', src: 'Panel · 12 Mar', ref: 'ApoB 78 mg/dL · target under 60',
     why: 'ApoB is the number that predicts arterial risk. Yours is mid-range.',
     move: 'Omega-3 to an index above 8%' },
-  { k: 'stress', t: 'Stress load', region: 'headneck', needs: ['stress'], lever: 7,
+  { k: 'stress', t: 'Stress load', fix: { kind: 'answer', t: 'Answer the weekly check-in', sub: 'Four questions, thirty seconds' }, region: 'headneck', needs: ['stress'], lever: 7,
     reported: true, sayKey: 'stress',
     why: 'Sustained load keeps cortisol high, which holds visceral fat in place.',
     move: 'Answer the weekly check-in' },
-  { k: 'comp', t: 'Body composition', region: 'limbs', needs: ['basic'], lever: 8,
+  { k: 'comp', t: 'Body composition', fix: { kind: 'log', t: 'Log a body snapshot', sub: 'Weight, waist, one photo' }, region: 'limbs', needs: ['basic'], lever: 8,
     reported: true, sayKey: 'weight', unit: ' kg',
     why: 'We only have what you typed. A body snapshot would make this real.',
     move: 'Log a body snapshot this week' },
-  { k: 'fitness', t: 'Fitness', region: 'limbs', needs: ['life'], lever: 9,
+  { k: 'fitness', t: 'Fitness', fix: { kind: 'device', t: 'Pair a watch', sub: 'Then this measures itself' }, region: 'limbs', needs: ['life'], lever: 9,
     reported: true, sayKey: 'move',
     why: 'Self-reported activity is the weakest signal we hold.',
     move: 'Pair a watch and this measures itself' },
-  { k: 'metab', t: 'Metabolic', region: 'core', needs: ['blood'], lever: 10,
+  { k: 'metab', t: 'Metabolic', mk: 'HbA1c', tgt: 'optimal under 5.4', fix: null, region: 'core', needs: ['blood'], lever: 10,
     g: 'B', src: 'Panel · 12 Mar', ref: 'HbA1c 5.4% · optimal under 5.4',
     why: 'Glucose handling is sound. Nothing here is holding you back.', move: null },
-  { k: 'kidney', t: 'Kidney', region: 'core', needs: ['blood'], lever: 11,
+  { k: 'kidney', t: 'Kidney', mk: 'eGFR', tgt: 'range above 90', fix: null, region: 'core', needs: ['blood'], lever: 11,
     g: 'B', src: 'Panel · 12 Mar', ref: 'eGFR 98 · range above 90',
     why: 'Filtration is normal, which is why creatine is safe for you.', move: null },
-  { k: 'liver', t: 'Liver', region: 'core', needs: ['blood'], lever: 12,
+  { k: 'liver', t: 'Liver', mk: 'ALT', tgt: 'range 7–56', fix: null, region: 'core', needs: ['blood'], lever: 12,
     g: 'A', src: 'Panel · 12 Mar', ref: 'ALT 22 U/L · range 7–56',
     why: 'Clean. No action needed.', move: null },
 ];
 
 export const GRADE_C = { A: '#27995B', B: '#408FA4', C: '#E0A400', D: '#E94F5F' };
 
+/* Two panels, so "over time" has a line instead of a dot. */
+export const PANELS = [
+  { date: '12 Mar', label: 'Baseline' },
+  { date: '04 Jun', label: 'Retest' },
+];
+/* per-system movement between those two draws */
+export const MOVES = {
+  nutri:   { from: 38,  to: 71,   unit: ' µg/L', better: 'up',   was: 'D', now: 'B' },
+  inflam:  { from: 1.4, to: 0.8,  unit: ' mg/L', better: 'down', was: 'B', now: 'A' },
+  heart:   { from: 78,  to: 64,   unit: ' mg/dL',better: 'down', was: 'B', now: 'B' },
+  thyroid: { from: 4.2, to: 3.1,  unit: ' mIU/L',better: 'down', was: 'C', now: 'B' },
+  hormone: { from: 9.1, to: 12.4, unit: ' ng/dL',better: 'up',   was: 'C', now: 'B' },
+  metab:   { from: 5.4, to: 5.2,  unit: '%',     better: 'down', was: 'B', now: 'A' },
+  kidney:  { from: 98,  to: 99,   unit: '',      better: 'up',   was: 'B', now: 'B' },
+  liver:   { from: 22,  to: 21,   unit: ' U/L',  better: 'down', was: 'A', now: 'A' },
+};
 /* A system resolves only when every signal it depends on exists. Measured
    systems return a grade; reported ones return the user's own words, never a
    grade we invented. */
@@ -589,6 +605,23 @@ export function gradeFor(sys, st) {
   if (sys.reported) {
     const v = (st.qa || {})[sys.sayKey];
     return { grade: null, said: v ? String(v) + (sys.unit || '') : null, missing: [] };
+  }
+  /* Where a second panel exists, everything reads from it. The screen showing a
+     baseline value beside an animation that ends somewhere else is how a twin
+     stops being believable — one surface, one truth, and the baseline appears
+     only inside Over time. */
+  const mv = MOVES[sys.k];
+  if (mv) {
+    const grade = mv.now;
+    return {
+      grade, said: null, missing: [],
+      ref: sys.mk ? `${sys.mk} ${mv.to}${mv.unit} · ${sys.tgt}` : sys.ref,
+      /* an explanation written for a deficiency is wrong once it is corrected */
+      why: grade === 'A' || grade === 'B' ? (sys.whyOk || sys.why) : sys.why,
+      /* nothing left to fix at A — a card that invents an action gets ignored */
+      fix: grade === 'A' ? null : sys.fix,
+      src: `Panel · ${PANELS[1].date}`,
+    };
   }
   return { grade: sys.g, said: null, missing: [] };
 }
@@ -771,23 +804,32 @@ export const ASK_VERDICT = {
    Nothing here is inferred — it is written down so the screens can be judged
    before the pipeline that would produce them exists.                        */
 
-/* Two panels, so "over time" has a line instead of a dot. */
-export const PANELS = [
-  { date: '12 Mar', label: 'Baseline' },
-  { date: '04 Jun', label: 'Retest' },
-];
-/* per-system movement between those two draws */
-export const MOVES = {
-  nutri:   { from: 38,  to: 71,   unit: ' µg/L', better: 'up',   was: 'D', now: 'B' },
-  inflam:  { from: 1.4, to: 0.8,  unit: ' mg/L', better: 'down', was: 'B', now: 'A' },
-  heart:   { from: 78,  to: 64,   unit: ' mg/dL',better: 'down', was: 'B', now: 'B' },
-  thyroid: { from: 4.2, to: 3.1,  unit: ' mIU/L',better: 'down', was: 'C', now: 'B' },
-  hormone: { from: 9.1, to: 12.4, unit: ' ng/dL',better: 'up',   was: 'C', now: 'B' },
-  metab:   { from: 5.4, to: 5.2,  unit: '%',     better: 'down', was: 'B', now: 'A' },
-  kidney:  { from: 98,  to: 99,   unit: '',      better: 'up',   was: 'B', now: 'B' },
-  liver:   { from: 22,  to: 21,   unit: ' U/L',  better: 'down', was: 'A', now: 'A' },
-};
 export function moveOf(k) { return MOVES[k] || null; }
+
+/* Grade before and after, for the played transition. A zone that has not been
+   measured twice has nothing to play, and says so rather than faking motion. */
+export function arcOfZone(zoneKey, st) {
+  const { rows } = systemsState(st);
+  const inside = rows.filter((r) => r.region === zoneKey && MOVES[r.k]);
+  if (!inside.length) return null;
+  const rank = { D: 0, C: 1, B: 2, A: 3 };
+  const worstWas = inside.slice().sort((a, b) => rank[MOVES[a.k].was] - rank[MOVES[b.k].was])[0];
+  const worstNow = inside.slice().sort((a, b) => rank[MOVES[a.k].now] - rank[MOVES[b.k].now])[0];
+  return {
+    from: MOVES[worstWas.k].was,
+    to: MOVES[worstNow.k].now,
+    markers: inside.map((r) => ({ t: r.t, ...MOVES[r.k] })),
+    gained: inside.filter((r) => MOVES[r.k].was !== MOVES[r.k].now).length,
+  };
+}
+/* Which zone moved most — the one worth auto-playing. */
+export function bestMovedZone(st) {
+  const scored = REGIONS.map((rg) => {
+    const a = arcOfZone(rg.k, st);
+    return { k: rg.k, n: a ? a.gained : -1 };
+  }).sort((x, y) => y.n - x.n);
+  return scored[0] && scored[0].n > 0 ? scored[0].k : null;
+}
 
 /* ── CLOSEST TWINS ──
    Matched on measured biology, not on a questionnaire, and the delta is the

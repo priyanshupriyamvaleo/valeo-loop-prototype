@@ -1,17 +1,17 @@
-import { useState } from 'react';
-import { Box, Button, Stack, Typography, Collapse, Divider } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Stack, Typography } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ScienceIcon from '@mui/icons-material/Science';
 import BodyFigure from '../components/BodyFigure';
 import TwinChat from '../components/TwinChat';
 import SimSheet from '../components/SimSheet';
 import PeersSheet from '../components/PeersSheet';
 import PeakSheet from '../components/PeakSheet';
+import ZoneCard from '../components/ZoneCard';
 import {
   regionsState, systemsState, constraintOf, verdictOf, noticings, nextGap,
-  twinPct, GRADE_C, SIGNALS, moveOf, PANELS, DANGERS, LADDER, PEERS,
+  twinPct, GRADE_C, PANELS, LADDER, PEERS, arcOfZone, bestMovedZone,
 } from '../data';
 import { C } from '../theme';
 
@@ -38,14 +38,13 @@ import { C } from '../theme';
  */
 export default function Twin({ st, onGo, onBlood, onQuestions }) {
   const [sel, setSel] = useState(null);          /* selected zone */
-  const [openSys, setOpenSys] = useState(null);  /* expanded system row */
-  const [showAll, setShowAll] = useState(false);
   const [chat, setChat] = useState(false);
   const [sim, setSim] = useState(false);
   const [lens, setLens] = useState('now');       /* now | time */
   const [peers, setPeers] = useState(false);
   const [peak, setPeak] = useState(false);
-  const [dangersOpen, setDangersOpen] = useState(false);
+  const [t, setT] = useState(1);                 /* playback 0 → 1 */
+  const raf = useRef(0);
 
   const zones = regionsState(st);
   const { rows, known, total } = systemsState(st);
@@ -56,10 +55,41 @@ export default function Twin({ st, onGo, onBlood, onQuestions }) {
   const gap = nextGap(st);
 
   const zone = zones.find((z) => z.k === sel);
-  /* selecting a zone filters the list — one selection, two surfaces */
-  const listed = zone ? zone.inside : rows;
-  const visible = showAll || zone ? listed : listed.slice(0, 3);
+  /* The card shows the worst thing in the selected zone, or the overall
+     biggest lever when nothing is selected. One component, both states. */
+  const worst = zone
+    ? zone.inside.find((r) => (r.grade || r.said) && r.fix)
+      || zone.inside.find((r) => r.grade || r.said)
+    : constraint;
 
+  /* ── the played transition ──
+     Switching to Over time picks the zone that moved most and plays it, so the
+     feature demonstrates itself instead of waiting to be discovered. */
+  const arc = lens === 'time' && sel ? arcOfZone(sel, st) : null;
+  const anim = arc ? { zone: sel, from: arc.from, to: arc.to, t } : null;
+
+  useEffect(() => {
+    if (lens !== 'time') return undefined;
+    if (!sel) { setSel(bestMovedZone(st) || zones[1].k); return undefined; }
+    setT(0);
+    const start = performance.now();
+    const step = (now) => {
+      const p = Math.min(1, (now - start) / 2200);
+      /* ease-out, so the last third settles rather than snapping */
+      setT(1 - Math.pow(1 - p, 3));
+      if (p < 1) raf.current = requestAnimationFrame(step);
+    };
+    raf.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf.current);
+  }, [lens, sel]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* Routing for the card's action — the CTA knows what kind of thing it is. */
+  const act = (fix) => {
+    if (!fix || fix.kind === 'test') return onBlood();
+    if (fix.kind === 'answer') return onQuestions();
+    if (fix.kind === 'device' || fix.kind === 'log') return onGo('today');
+    return onGo('protocols');            /* supp and protocol both need a doctor */
+  };
   const improve = () => {
     if (!gap) return onGo('today');
     return gap.k === 'blood' ? onBlood() : onQuestions();
@@ -101,59 +131,73 @@ export default function Twin({ st, onGo, onBlood, onQuestions }) {
           borderRadius: '26px', pt: 1.5, pb: 1.25, position: 'relative',
           background: `linear-gradient(168deg,#1E3F63,${C.night})`,
         }}>
-          <BodyFigure zones={zones} sel={sel} onSel={setSel} height={300}
-                      focus={constraint ? constraint.region : null} />
+          {/* In Over time the figure moves left and the markers count on the
+              right, so the change and its evidence are read together. */}
+          <Stack direction="row" sx={{ alignItems: 'center', px: arc ? 1.5 : 0 }}>
+            <Box sx={{ flex: arc ? '0 0 46%' : '1 1 auto' }}>
+              <BodyFigure zones={zones} sel={sel} onSel={setSel} height={arc ? 268 : 300}
+                          anim={anim} focus={constraint ? constraint.region : null} />
+            </Box>
+
+            {arc && (
+              <Box sx={{ flex: 1, minWidth: 0, pl: 1 }}>
+                <Typography sx={{
+                  fontSize: 8.5, fontWeight: 800, letterSpacing: '.14em',
+                  textTransform: 'uppercase', color: C.yellow, mb: 1.25,
+                }}>{PANELS[0].date} → {PANELS[1].date}</Typography>
+                <Stack spacing={1.5}>
+                  {arc.markers.map((m) => {
+                    const v = (m.from + (m.to - m.from) * t);
+                    const dp = Math.abs(m.to) < 10 ? 1 : 0;
+                    const good = (m.better === 'up') === (m.to > m.from);
+                    return (
+                      <Box key={m.t}>
+                        <Typography sx={{
+                          fontSize: 10.5, color: 'rgba(255,255,255,.55)',
+                        }}>{m.t}</Typography>
+                        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'baseline' }}>
+                          <Typography sx={{
+                            fontSize: 19, fontWeight: 800, lineHeight: 1.1,
+                            color: good ? '#6FD69B' : C.coral,
+                            fontVariantNumeric: 'tabular-nums',
+                          }}>{v.toFixed(dp)}</Typography>
+                          <Typography sx={{
+                            fontSize: 10, color: 'rgba(255,255,255,.45)',
+                          }}>{m.unit.trim()}</Typography>
+                        </Stack>
+                        {m.was !== m.now && (
+                          <Typography sx={{
+                            fontSize: 9.5, fontWeight: 800, mt: 0.2,
+                            color: t > 0.85 ? '#6FD69B' : 'rgba(255,255,255,.35)',
+                          }}>{m.was} → {m.now}</Typography>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Stack>
+              </Box>
+            )}
+          </Stack>
 
           {/* lens · two, not three. Comparison needs a cohort we don't have. */}
-          <Stack direction="row" spacing={0.5} sx={{
-            justifyContent: 'center', mt: 0.5,
-          }}>
-            {[['now', 'Now'], ['time', 'Over time']].map(([k, t]) => (
+          <Stack direction="row" spacing={0.5} sx={{ justifyContent: 'center', mt: 0.5 }}>
+            {[['now', 'Now'], ['time', 'Over time']].map(([k, label]) => (
               <Box key={k} onClick={() => setLens(k)} sx={{
                 px: 1.75, py: 0.8, borderRadius: '10px', cursor: 'pointer',
                 fontSize: 11.5, fontWeight: lens === k ? 700 : 500,
                 bgcolor: lens === k ? 'rgba(255,255,255,.14)' : 'transparent',
                 color: lens === k ? '#fff' : 'rgba(255,255,255,.5)',
-              }}>{t}</Box>
+              }}>{label}</Box>
             ))}
           </Stack>
 
           {lens === 'time' && (
-            <Box sx={{ px: 2, pt: 1.25, pb: 0.5 }}>
-              <Typography sx={{
-                fontSize: 11, color: 'rgba(255,255,255,.55)', textAlign: 'center', mb: 1.25,
-              }}>{PANELS[0].date} → {PANELS[1].date}</Typography>
-              <Stack spacing={0.6}>
-                {rows.filter((r) => moveOf(r.k)).slice(0, 4).map((r) => {
-                  const mv = moveOf(r.k);
-                  const up = mv.to > mv.from;
-                  const good = (mv.better === 'up') === up;
-                  return (
-                    <Stack key={r.k} direction="row" spacing={1} sx={{ alignItems: 'baseline' }}>
-                      <Typography sx={{
-                        flex: 1, fontSize: 11.5, color: 'rgba(255,255,255,.7)',
-                      }}>{r.t}</Typography>
-                      <Typography sx={{
-                        fontSize: 11.5, color: 'rgba(255,255,255,.45)',
-                      }}>{mv.from}{mv.unit}</Typography>
-                      <Typography sx={{
-                        fontSize: 11.5, color: 'rgba(255,255,255,.35)',
-                      }}>→</Typography>
-                      <Typography sx={{
-                        fontSize: 12, fontWeight: 800,
-                        color: good ? '#6FD69B' : C.coral,
-                      }}>{mv.to}{mv.unit}</Typography>
-                      {mv.was !== mv.now && (
-                        <Box sx={{
-                          px: 0.6, borderRadius: '4px', fontSize: 9, fontWeight: 800,
-                          bgcolor: 'rgba(111,214,155,.2)', color: '#6FD69B',
-                        }}>{mv.was}→{mv.now}</Box>
-                      )}
-                    </Stack>
-                  );
-                })}
-              </Stack>
-            </Box>
+            <Typography sx={{
+              fontSize: 10.5, color: 'rgba(255,255,255,.4)', textAlign: 'center',
+              pt: 0.75, pb: 0.25,
+            }}>
+              {arc ? 'Tap another region to replay it' : 'This region was only measured once'}
+            </Typography>
           )}
         </Box>
 
@@ -163,154 +207,20 @@ export default function Twin({ st, onGo, onBlood, onQuestions }) {
           color: C.deep, lineHeight: 1.15, mt: 2.5,
         }}>{verdict}</Typography>
 
-        {/* ═══ ENTRY 3 · THE CONSTRAINT + THE MOVE, fused ═══ */}
-        {constraint && (
-          <Box sx={{
-            mt: 1.75, borderRadius: '20px', bgcolor: '#fff', overflow: 'hidden',
-            boxShadow: '0 2px 14px -6px rgba(27,57,91,.32)',
-            borderLeft: `3px solid ${constraint.grade ? GRADE_C[constraint.grade] : C.ink2}`,
-          }}>
-            <Box sx={{ px: 1.9, pt: 1.75, pb: 1.5 }}>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline' }}>
-                <Typography sx={{
-                  flex: 1, fontSize: 9, fontWeight: 800, letterSpacing: '.14em',
-                  textTransform: 'uppercase', color: C.ink2,
-                }}>Biggest lever</Typography>
-                {constraint.src && (
-                  <Typography sx={{ fontSize: 10, color: C.ink2 }}>{constraint.src}</Typography>
-                )}
-              </Stack>
-              <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: C.deep, mt: 0.75 }}>
-                {constraint.ref || `${constraint.t} · ${constraint.said}`}
-              </Typography>
-              <Typography sx={{ fontSize: 13, color: C.ink2, mt: 0.6, lineHeight: 1.5 }}>
-                {constraint.why}
-              </Typography>
-            </Box>
-            <Divider />
-            <Stack direction="row" spacing={1.25} onClick={improve} sx={{
-              alignItems: 'center', px: 1.9, py: 1.5, cursor: 'pointer',
-              bgcolor: 'rgba(255,185,0,.12)',
-            }}>
-              <Typography sx={{ flex: 1, fontSize: 13.5, fontWeight: 700, color: C.deep }}>
-                {constraint.move}
-              </Typography>
-              <ChevronRightIcon sx={{ fontSize: 19, color: C.yellowDeep, flexShrink: 0 }} />
-            </Stack>
-          </Box>
+        {/* ═══ ENTRY 3 · ONE CARD, REWRITTEN ON EVERY ZONE TAP ═══
+            This replaced three lists — systems, levers, dangers. All three
+            answered a question the body answers better: where is it, and what
+            do I do about it. */}
+        <ZoneCard zone={zone} worst={worst} onAct={act} />
+
+        {zone && (
+          <Typography onClick={() => setSel(null)} sx={{
+            fontSize: 12, fontWeight: 700, color: C.teal, cursor: 'pointer',
+            textAlign: 'center', pt: 1.5,
+          }}>Back to the whole body</Typography>
         )}
 
-        {/* ═══ ENTRY 4 · SYSTEMS ═══ */}
-        <Stack direction="row" sx={{ alignItems: 'baseline', mt: 3, mb: 1.25 }}>
-          <Typography sx={{
-            flex: 1, fontSize: 9, fontWeight: 800, letterSpacing: '.16em',
-            textTransform: 'uppercase', color: C.ink2,
-          }}>{zone ? zone.t : 'Systems'}</Typography>
-          {zone ? (
-            <Typography onClick={() => setSel(null)} sx={{
-              fontSize: 11, fontWeight: 700, color: C.teal, cursor: 'pointer',
-            }}>Show all</Typography>
-          ) : (
-            <Typography sx={{ fontSize: 11, color: C.ink2 }}>{known} of {total} known</Typography>
-          )}
-        </Stack>
-
-        <Stack spacing={0.75}>
-          {visible.map((r) => {
-            const open = openSys === r.k;
-            const isKnown = !!(r.grade || r.said);
-            return (
-              <Box key={r.k} sx={{
-                borderRadius: '16px', overflow: 'hidden',
-                bgcolor: isKnown ? '#fff' : 'rgba(27,57,91,.03)',
-                boxShadow: isKnown ? '0 2px 10px -6px rgba(27,57,91,.24)' : 'none',
-                border: `1.5px solid ${open ? C.deep : 'transparent'}`,
-              }}>
-                <Stack direction="row" spacing={1.5} onClick={() => setOpenSys(open ? null : r.k)}
-                       sx={{ alignItems: 'center', px: 1.75, py: 1.4, cursor: 'pointer' }}>
-                  {/* two visual languages: a grade is a lab value, never a self-report */}
-                  {r.grade ? (
-                    <Box sx={{
-                      width: 26, height: 26, borderRadius: '8px', flexShrink: 0,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      bgcolor: GRADE_C[r.grade], color: '#fff', fontSize: 12.5, fontWeight: 800,
-                    }}>{r.grade}</Box>
-                  ) : r.said ? (
-                    <Box sx={{
-                      width: 26, height: 26, borderRadius: '8px', flexShrink: 0,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      bgcolor: 'rgba(64,143,164,.14)', color: C.teal,
-                      fontSize: 13, fontWeight: 700,
-                    }}>”</Box>
-                  ) : (
-                    <Box sx={{
-                      width: 26, height: 26, borderRadius: '8px', flexShrink: 0,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      bgcolor: 'rgba(27,57,91,.06)', color: C.ink2,
-                    }}><LockOutlinedIcon sx={{ fontSize: 13 }} /></Box>
-                  )}
-
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{
-                      fontSize: 13.5, fontWeight: isKnown ? 600 : 500,
-                      color: isKnown ? C.deep : C.ink2,
-                    }}>{r.t}</Typography>
-                    {r.said && (
-                      <Typography sx={{ fontSize: 11, color: C.teal, mt: 0.15 }}>
-                        You said: {r.said}
-                      </Typography>
-                    )}
-                  </Box>
-
-                  {!isKnown && (
-                    <Typography sx={{ fontSize: 10.5, fontWeight: 700, color: C.ink2 }}>
-                      Not measured
-                    </Typography>
-                  )}
-                </Stack>
-
-                {/* CAUSE lives inline, attached to its effect. A separate screen
-                    would sever the link that makes it worth reading. */}
-                <Collapse in={open}>
-                  <Divider />
-                  <Box sx={{ px: 1.75, py: 1.5 }}>
-                    <Typography sx={{ fontSize: 12.5, color: C.ink, lineHeight: 1.5 }}>
-                      {isKnown ? r.why : `Needs ${r.missing.map(
-                        (m) => (SIGNALS.find((x) => x.k === m) || {}).t || m
-                      ).join(' and ').toLowerCase()}.`}
-                    </Typography>
-                    {r.src && (
-                      <Typography sx={{ fontSize: 10.5, color: C.ink2, mt: 0.75 }}>
-                        Source · {r.src}
-                      </Typography>
-                    )}
-                    {/* never a finding without a move */}
-                    {(r.move || !isKnown) && (
-                      <Stack direction="row" spacing={1} onClick={improve} sx={{
-                        alignItems: 'center', mt: 1.25, px: 1.4, py: 1.1, borderRadius: '12px',
-                        cursor: 'pointer', bgcolor: 'rgba(255,185,0,.12)',
-                      }}>
-                        <Typography sx={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: C.deep }}>
-                          {r.move || 'Fill this in'}
-                        </Typography>
-                        <ChevronRightIcon sx={{ fontSize: 17, color: C.yellowDeep }} />
-                      </Stack>
-                    )}
-                  </Box>
-                </Collapse>
-              </Box>
-            );
-          })}
-        </Stack>
-
-        {!zone && listed.length > 3 && (
-          <Typography onClick={() => setShowAll(!showAll)} sx={{
-            fontSize: 12.5, fontWeight: 700, color: C.teal, cursor: 'pointer',
-            textAlign: 'center', pt: 1.75,
-          }}>{showAll ? 'Show fewer' : `See all ${listed.length}`}</Typography>
-        )}
-
-        {/* ═══ ENTRY 5 · WHAT THE TWIN NOTICED — the feed seed ═══ */}
+        {/* ═══ ENTRY 4 · WHAT THE TWIN NOTICED — the feed seed ═══ */}
         {notes.length > 0 && (
           <>
             <Typography sx={{
@@ -336,7 +246,7 @@ export default function Twin({ st, onGo, onBlood, onQuestions }) {
           </>
         )}
 
-        {/* ═══ ENTRY 6 · SIMULATION ═══ */}
+        {/* ═══ ENTRY 5 · SIMULATION ═══ */}
         <Box onClick={() => setSim(true)} sx={{
           mt: 3, px: 1.9, py: 1.9, borderRadius: '20px', cursor: 'pointer',
           background: `linear-gradient(150deg,${C.deep},#12283F)`, color: '#fff',
@@ -355,76 +265,7 @@ export default function Twin({ st, onGo, onBlood, onQuestions }) {
           </Stack>
         </Box>
 
-        {/* ═══ ENTRY 7 · LEVERS — the ranked list, not three cards ═══
-            Dangers are negative-leverage entries on the same list, which is why
-            they live here rather than in a section of their own. */}
-        <Typography sx={{
-          fontSize: 9, fontWeight: 800, letterSpacing: '.16em', textTransform: 'uppercase',
-          color: C.ink2, mt: 3, mb: 1.25,
-        }}>Your levers, in order</Typography>
-        <Stack spacing={0.75}>
-          {rows.filter((r) => (r.grade || r.said) && r.move).slice(0, 4).map((r, i) => (
-            <Stack key={r.k} direction="row" spacing={1.5} onClick={improve} sx={{
-              alignItems: 'center', px: 1.75, py: 1.4, borderRadius: '15px', cursor: 'pointer',
-              bgcolor: '#fff', boxShadow: '0 2px 10px -6px rgba(27,57,91,.24)',
-            }}>
-              <Box sx={{
-                width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                bgcolor: i === 0 ? C.yellow : 'rgba(27,57,91,.07)',
-                color: i === 0 ? C.deep : C.ink2, fontSize: 11, fontWeight: 800,
-              }}>{i + 1}</Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 600, color: C.deep }}>{r.move}</Typography>
-                <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.15 }}>{r.t}</Typography>
-              </Box>
-              <ChevronRightIcon sx={{ fontSize: 17, color: C.ink2, flexShrink: 0 }} />
-            </Stack>
-          ))}
-        </Stack>
-
-        {/* ═══ ENTRY 8 · DANGERS — conditional rules, not warnings ═══ */}
-        <Stack direction="row" sx={{ alignItems: 'baseline', mt: 3, mb: 1.25 }}>
-          <Typography sx={{
-            flex: 1, fontSize: 9, fontWeight: 800, letterSpacing: '.16em',
-            textTransform: 'uppercase', color: C.ink2,
-          }}>What we watch for you</Typography>
-          <Typography onClick={() => setDangersOpen(!dangersOpen)} sx={{
-            fontSize: 11, fontWeight: 700, color: C.teal, cursor: 'pointer',
-          }}>{dangersOpen ? 'Fewer' : `All ${DANGERS.length}`}</Typography>
-        </Stack>
-        <Stack spacing={0.75}>
-          {DANGERS.slice(0, dangersOpen ? DANGERS.length : 2).map((d) => (
-            <Box key={d.k} sx={{
-              px: 1.75, py: 1.5, borderRadius: '15px',
-              bgcolor: d.armed ? 'rgba(233,79,95,.05)' : 'rgba(27,57,91,.03)',
-              border: `1px solid ${d.armed ? 'rgba(233,79,95,.22)' : 'rgba(27,57,91,.09)'}`,
-            }}>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                <Box sx={{
-                  width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
-                  bgcolor: d.armed ? C.coral : C.ink2,
-                }} />
-                <Typography sx={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: C.deep }}>
-                  If {d.t.charAt(0).toLowerCase() + d.t.slice(1)}
-                </Typography>
-                {!d.armed && (
-                  <Typography sx={{ fontSize: 9.5, fontWeight: 800, color: C.ink2 }}>
-                    NOT ARMED
-                  </Typography>
-                )}
-              </Stack>
-              <Typography sx={{ fontSize: 12, color: C.ink, mt: 0.6, lineHeight: 1.45 }}>
-                → {d.act}
-              </Typography>
-              <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.5, lineHeight: 1.45 }}>
-                {d.why}
-              </Typography>
-            </Box>
-          ))}
-        </Stack>
-
-        {/* ═══ ENTRY 9 · REFERENCE + TRAJECTORY — one row each ═══ */}
+        {/* ═══ ENTRY 6 · REFERENCE + TRAJECTORY — one row each ═══ */}
         <Stack spacing={0.75} sx={{ mt: 3 }}>
           <Stack direction="row" spacing={1.5} onClick={() => setPeers(true)} sx={{
             alignItems: 'center', px: 1.9, py: 1.6, borderRadius: '16px', cursor: 'pointer',
