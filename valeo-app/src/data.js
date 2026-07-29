@@ -13,11 +13,11 @@ export const PROTOCOLS = {
     ],
     price: 1850, blood: 'maybe',
     items: [
-      { k: 'pep', t: 'DSIP',                 d: '100 mcg, nights, 5 on 2 off' },
-      { k: 'sup', t: 'Magnesium threonate',  d: '400 mg, 2h before bed' },
-      { k: 'sup', t: 'Apigenin',             d: '50 mg, nights' },
-      { k: 'hab', t: 'Morning light',        d: '10 min within an hour of waking' },
-      { k: 'hab', t: 'Caffeine cut-off',     d: '10h before sleep' },
+      { k: 'pep', t: 'DSIP',                 d: '100 mcg, nights, 5 on 2 off', w: 'pm' },
+      { k: 'sup', t: 'Magnesium threonate',  d: '400 mg, 2h before bed', w: 'pm' },
+      { k: 'sup', t: 'Apigenin',             d: '50 mg, nights', w: 'pm' },
+      { k: 'hab', t: 'Morning light',        d: '10 min within an hour of waking', w: 'am' },
+      { k: 'hab', t: 'Caffeine cut-off',     d: '10h before sleep', w: 'pm' },
     ],
     amend: {
       changed: ['DSIP held back to week 3 — sleep hygiene first'],
@@ -43,11 +43,11 @@ export const PROTOCOLS = {
     ],
     price: 3400, blood: 'maybe',
     items: [
-      { k: 'glp', t: 'Tirzepatide',          d: '2.5 → 5 mg, weekly injection' },
+      { k: 'glp', t: 'Tirzepatide',          d: '2.5 → 5 mg, weekly injection', w: 'wk' },
       { k: 'iv',  t: 'B-complex + carnitine',d: '250 ml, fortnightly' },
-      { k: 'sup', t: 'Iron + vitamin C',     d: 'Mornings, empty stomach' },
-      { k: 'hab', t: 'Protein floor',        d: '1.6 g per kg bodyweight, daily' },
-      { k: 'hab', t: 'Resistance training',  d: '3× a week, compound lifts' },
+      { k: 'sup', t: 'Iron + vitamin C',     d: 'Mornings, empty stomach', w: 'am' },
+      { k: 'hab', t: 'Protein floor',        d: '1.6 g per kg bodyweight, daily', w: 'food' },
+      { k: 'hab', t: 'Resistance training',  d: '3× a week, compound lifts', w: 'wk' },
     ],
     amend: {
       changed: ['Tirzepatide starts at 2.5 mg for 4 weeks, not 2'],
@@ -64,11 +64,11 @@ export const PROTOCOLS = {
   P_SKIN: {
     price: 2100, blood: 'no',
     items: [
-      { k: 'pep', t: 'GHK-Cu topical',       d: 'Nights, after cleansing' },
-      { k: 'sup', t: 'Tretinoin 0.05%',      d: 'Nights, buffered, alternate days first month' },
-      { k: 'sup', t: 'Collagen peptides',    d: '10 g daily' },
+      { k: 'pep', t: 'GHK-Cu topical',       d: 'Nights, after cleansing', w: 'pm' },
+      { k: 'sup', t: 'Tretinoin 0.05%',      d: 'Nights, buffered, alternate days first month', w: 'pm' },
+      { k: 'sup', t: 'Collagen peptides',    d: '10 g daily', w: 'am' },
       { k: 'iv',  t: 'Glutathione',          d: '600 mg, monthly' },
-      { k: 'hab', t: 'SPF 50',               d: 'Every morning, non-negotiable' },
+      { k: 'hab', t: 'SPF 50',               d: 'Every morning, non-negotiable', w: 'am' },
     ],
     amend: {
       changed: ['Tretinoin every third night to week 4 — your skin is reactive'],
@@ -95,11 +95,11 @@ export const PROTOCOLS = {
     ],
     price: 2750, blood: 'no',
     items: [
-      { k: 'pep', t: 'BPC-157',              d: '250 mcg daily, 6 week block' },
+      { k: 'pep', t: 'BPC-157',              d: '250 mcg daily, 6 week block', w: 'am' },
       { k: 'iv',  t: 'Recovery drip',        d: 'Saline, magnesium, B12 — weekly' },
-      { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily' },
-      { k: 'hab', t: 'Zone 2 base',          d: '180 min a week' },
-      { k: 'hab', t: 'VO₂max intervals',     d: '1 session weekly, from week 5' },
+      { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily', w: 'am' },
+      { k: 'hab', t: 'Zone 2 base',          d: '180 min a week', w: 'wk' },
+      { k: 'hab', t: 'VO₂max intervals',     d: '1 session weekly, from week 5', w: 'wk' },
     ],
     amend: {
       changed: ['Intervals held to week 5 — base first'],
@@ -116,11 +116,11 @@ export const PROTOCOLS = {
   P_LONG: {
     price: 5200, blood: 'maybe',
     items: [
-      { k: 'glp', t: 'Rapamycin',            d: '5 mg, weekly pulse, supervised' },
-      { k: 'pep', t: 'NAD+ precursor',       d: '500 mg daily' },
+      { k: 'glp', t: 'Rapamycin',            d: '5 mg, weekly pulse, supervised', w: 'wk' },
+      { k: 'pep', t: 'NAD+ precursor',       d: '500 mg daily', w: 'am' },
       { k: 'iv',  t: 'NAD+ infusion',        d: '250 mg, monthly' },
-      { k: 'sup', t: 'Omega-3',              d: 'To an index above 8%' },
-      { k: 'hab', t: 'Zone 2 + resistance',  d: '5 days a week' },
+      { k: 'sup', t: 'Omega-3',              d: 'To an index above 8%', w: 'food' },
+      { k: 'hab', t: 'Zone 2 + resistance',  d: '5 days a week', w: 'wk' },
     ],
     amend: {
       changed: ['Rapamycin deferred to month 2 — ApoB first'],
@@ -137,11 +137,11 @@ export const PROTOCOLS = {
   P_TEST: {
     price: 2400, blood: 'maybe',
     items: [
-      { k: 'glp', t: 'Enclomiphene',         d: '12.5 mg, alternate days — only if labs justify it' },
-      { k: 'sup', t: 'Zinc + vitamin D',     d: 'To sufficiency, retested at week 8' },
-      { k: 'sup', t: 'Boron',                d: '6 mg daily' },
-      { k: 'hab', t: 'Compound lifts',       d: '3× weekly' },
-      { k: 'hab', t: 'Sleep floor',          d: '7 hours — this one does most of the work' },
+      { k: 'glp', t: 'Enclomiphene',         d: '12.5 mg, alternate days — only if labs justify it', w: 'am' },
+      { k: 'sup', t: 'Zinc + vitamin D',     d: 'To sufficiency, retested at week 8', w: 'food' },
+      { k: 'sup', t: 'Boron',                d: '6 mg daily', w: 'am' },
+      { k: 'hab', t: 'Compound lifts',       d: '3× weekly', w: 'wk' },
+      { k: 'hab', t: 'Sleep floor',          d: '7 hours — this one does most of the work', w: 'pm' },
     ],
     amend: {
       changed: ['Enclomiphene held pending SHBG'],
@@ -158,11 +158,11 @@ export const PROTOCOLS = {
   P_FOCUS: {
     price: 1950, blood: 'no',
     items: [
-      { k: 'pep', t: 'Semax',                d: '300 mcg, mornings, 4 week block' },
-      { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily — cognitive, not just muscular' },
-      { k: 'sup', t: 'Omega-3 (high DHA)',   d: '2 g daily' },
-      { k: 'hab', t: 'Zone 2 cardio',        d: '150 min a week' },
-      { k: 'hab', t: 'Caffeine timing',      d: 'Matched to your chronotype' },
+      { k: 'pep', t: 'Semax',                d: '300 mcg, mornings, 4 week block', w: 'am' },
+      { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily — cognitive, not just muscular', w: 'am' },
+      { k: 'sup', t: 'Omega-3 (high DHA)',   d: '2 g daily', w: 'food' },
+      { k: 'hab', t: 'Zone 2 cardio',        d: '150 min a week', w: 'wk' },
+      { k: 'hab', t: 'Caffeine timing',      d: 'Matched to your chronotype', w: 'am' },
     ],
     amend: {
       changed: ['Semax to a 4 week block, then reassess'],
@@ -406,8 +406,98 @@ export const LOG_KINDS = {
             o: ['Fine', 'Mild', 'Rough', 'Bad'] },
   proxy:  { t: 'Weight this morning', sub: 'Same time, same scale' },
 };
+/* Weight lives in the weekly Body capture now, so the daily log asks only
+   what the day can answer: how it sat, or whether you took it. Two captures
+   competing for the same number is how people stop trusting either. */
 export function logKindFor(day) {
-  if (day % 7 === 1) return 'proxy';        /* weekly weigh-in */
   if (day <= 21) return 'felt';             /* the quitting window */
   return 'taken';
+}
+
+/* ── WHEN ──
+   "What do I take in the morning" is the question people actually ask, so the
+   day is grouped by time rather than by drug class. */
+export const WHEN = {
+  am:   { t: 'Morning',    s: 'On waking',        ic: '☀️', o: 1 },
+  food: { t: 'With food',  s: 'Any main meal',    ic: '🍽', o: 2 },
+  pm:   { t: 'Evening',    s: 'Before bed',       ic: '🌙', o: 3 },
+  wk:   { t: 'This week',  s: 'Not tied to a time', ic: '📅', o: 4 },
+};
+export const WHEN_ORDER = ['am', 'food', 'pm', 'wk'];
+
+/* ── PASSIVE CAPTURE ──
+   The best log is the one nobody has to do. Pairing a device should visibly
+   take work off the daily list, not add a settings screen — so each one
+   declares what it replaces. */
+export const DEVICES = {
+  oura:  { t: 'Oura Ring',      ic: '💍', gives: 'Sleep, HRV, temperature', drops: ['sleep'],
+           metric: { k: 'hrv', t: 'HRV', unit: 'ms' } },
+  watch: { t: 'Apple Watch',    ic: '⌚', gives: 'Steps, heart rate, workouts', drops: [],
+           metric: { k: 'rhr', t: 'Resting HR', unit: 'bpm' } },
+  whoop: { t: 'Whoop',          ic: '🎽', gives: 'Strain, recovery, sleep', drops: ['sleep'],
+           metric: { k: 'hrv', t: 'HRV', unit: 'ms' } },
+  cgm:   { t: 'FreeStyle Libre',ic: '🩸', gives: 'Continuous glucose', drops: ['meals'],
+           metric: { k: 'glucose', t: 'Glucose', unit: 'mmol/L' } },
+};
+export const DEVICE_ORDER = ['oura', 'watch', 'whoop', 'cgm'];
+
+/* ── MEALS ──
+   Chips, not a food diary. A diary gets abandoned in a week; fifteen seconds
+   of "roughly what was it" survives twelve. */
+export const MEAL_SLOTS = [
+  { k: 'b', t: 'Breakfast' },
+  { k: 'l', t: 'Lunch' },
+  { k: 'd', t: 'Dinner' },
+];
+export const MEAL_CHIPS = ['Eggs', 'Bread', 'Rice', 'Kabsa', 'Grilled meat', 'Chicken',
+  'Fish', 'Salad', 'Yoghurt', 'Dates', 'Fruit', 'Nuts', 'Coffee', 'Protein shake',
+  'Fried', 'Sweets', 'Skipped it'];
+
+/* ── WEEKLY CHECK-IN ── the questions a clinician would ask at review */
+export const CHECKIN = [
+  { k: 'energy', t: 'Energy this week', o: ['Better', 'Same', 'Worse'] },
+  { k: 'sleep',  t: 'Sleep',            o: ['Better', 'Same', 'Worse'] },
+  { k: 'side',   t: 'Side effects',     o: ['None', 'Mild', 'Noticeable', 'Bad'] },
+  { k: 'stick',  t: 'Hardest to stick to', o: ['Nothing', 'The injection', 'Training', 'Food'] },
+];
+
+/* ── BODY ── weekly, and the only capture with a photo */
+export const BODY_FIELDS = [
+  { k: 'kg',    t: 'Weight', unit: 'kg', from: 60, to: 140, def: 95 },
+  { k: 'waist', t: 'Waist',  unit: 'cm', from: 60, to: 130, def: 96 },
+];
+
+/* Which captures are due today, and what a paired device has taken over. */
+export function capturesFor(rx, day) {
+  const dropped = (rx.devices || []).flatMap((d) => DEVICES[d].drops);
+  const weekly = day % 7 === 1 || day === 1;
+  return [
+    { k: 'doses', t: 'Doses',    ic: '💊', due: true },
+    { k: 'meals', t: 'Meals',    ic: '🍽', due: !dropped.includes('meals'),
+      auto: dropped.includes('meals') },
+    { k: 'body',  t: 'Body',     ic: '⚖️', due: weekly },
+    { k: 'checkin', t: 'Check-in', ic: '◈', due: weekly },
+  ];
+}
+/* Count back from today if today is already logged, otherwise from yesterday —
+   an unlogged morning shouldn't read as a broken streak before the day is out. */
+export function streakOf(rx) {
+  if (!rx || !rx.logs) return 0;
+  const from = rx.logs.some((l) => l.day === rx.day) ? rx.day : rx.day - 1;
+  let n = 0;
+  for (let d = from; d >= 1; d -= 1) {
+    if (rx.logs.some((l) => l.day === d)) n += 1; else break;
+  }
+  return n;
+}
+/* Plausible device series so the second chart has something in it. */
+export function deviceSeries(rx, dev) {
+  const m = DEVICES[dev].metric;
+  const base = { hrv: 48, rhr: 62, glucose: 5.6 }[m.k];
+  const drift = { hrv: 0.28, rhr: -0.12, glucose: -0.012 }[m.k];
+  const pts = [];
+  for (let d = 1; d <= rx.day; d += 7) {
+    pts.push({ d, v: Math.round((base + drift * d) * 10) / 10 });
+  }
+  return { pts, ...m };
 }

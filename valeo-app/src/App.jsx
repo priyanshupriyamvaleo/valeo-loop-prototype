@@ -55,6 +55,7 @@ function reducer(s, a) {
           ...s.rx, status: 'running', day: 1,
           total: PROTOCOLS[s.rx.protocol].wk * 7,
           logs: [], doneItems: [],
+          meals: [], body: [], checkin: [], devices: [],
         },
       } : s;
     case 'toggleItem':
@@ -72,18 +73,34 @@ function reducer(s, a) {
         ...s,
         rx: { ...s.rx, logs: [...s.rx.logs, { day: s.rx.day, kind: a.kind, v: a.v }] },
       } : s;
+    /* the other three captures */
+    case 'meals':
+      return s.rx ? { ...s, rx: { ...s.rx,
+        meals: [...s.rx.meals.filter((m) => m.day !== s.rx.day), { day: s.rx.day, v: a.v }] } } : s;
+    case 'body':
+      return s.rx ? { ...s, rx: { ...s.rx,
+        body: [...s.rx.body.filter((b) => b.day !== s.rx.day), { day: s.rx.day, ...a.v }] } } : s;
+    case 'checkin':
+      return s.rx ? { ...s, rx: { ...s.rx,
+        checkin: [...s.rx.checkin.filter((c) => c.day !== s.rx.day), { day: s.rx.day, v: a.v }] } } : s;
+    /* pairing is the only capture that pays forward — it removes future work */
+    case 'pair':
+      return s.rx ? { ...s, rx: { ...s.rx,
+        devices: [...new Set([...(s.rx.devices || []), a.dev])] } } : s;
     /* Demo affordance — jump a week so the loop can be walked in a sitting. */
     case 'advance': {
       if (!s.rx || !s.rx.day) return s;
       const day = Math.min(s.rx.total, s.rx.day + 7);
       const logs = [...s.rx.logs];
+      const body = [...s.rx.body];
       for (let d = s.rx.day; d < day; d += 1) {
-        if (d % 7 === 1) logs.push({ day: d, kind: 'proxy', v: 96 - Math.round((d / 7) * 0.9 * 10) / 10 });
-        else logs.push({ day: d, kind: d <= 21 ? 'felt' : 'taken', v: true });
+        logs.push({ day: d, kind: d <= 21 ? 'felt' : 'taken', v: true });
+        if (d % 7 === 1) body.push({ day: d, kg: 96 - Math.round((d / 7) * 0.9 * 10) / 10, waist: 96 });
       }
       return {
         ...s,
-        rx: { ...s.rx, day, logs, doneItems: [], status: day >= s.rx.total ? 'verdict' : 'running' },
+        rx: { ...s.rx, day, logs, body, doneItems: [],
+              status: day >= s.rx.total ? 'verdict' : 'running' },
       };
     }
     case 'retest': return s;

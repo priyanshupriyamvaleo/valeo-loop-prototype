@@ -14,7 +14,7 @@ import { C } from '../theme';
  * The week strip below it is Whoop's consistency calendar: gaps are as
  * informative as streaks, so they're shown rather than hidden.
  */
-export default function RunHero({ day, total, week, weeks, arc, logs, milestone }) {
+export default function RunHero({ day, total, week, weeks, arc, logs, milestone, streak }) {
   /* last seven days, oldest first */
   const strip = Array.from({ length: 7 }, (_, i) => {
     const d = day - 6 + i;
@@ -45,13 +45,26 @@ export default function RunHero({ day, total, week, weeks, arc, logs, milestone 
             fontFamily: '"Fraunces", serif', fontSize: 23, fontWeight: 600, mt: 0.6,
           }}>Week {week} of {weeks}</Typography>
         </Box>
-        <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-          <Typography sx={{ fontSize: 24, fontWeight: 800, lineHeight: 1 }}>{day}</Typography>
-          <Typography sx={{
-            fontSize: 7.5, fontWeight: 800, letterSpacing: '.14em',
-            textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', mt: 0.4,
-          }}>of {total}</Typography>
-        </Box>
+        <Stack direction="row" spacing={2} sx={{ flexShrink: 0, alignItems: 'baseline' }}>
+          {streak > 1 && (
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography sx={{
+                fontSize: 24, fontWeight: 800, lineHeight: 1, color: '#6FD69B',
+              }}>{streak}</Typography>
+              <Typography sx={{
+                fontSize: 7.5, fontWeight: 800, letterSpacing: '.14em',
+                textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', mt: 0.4,
+              }}>day streak</Typography>
+            </Box>
+          )}
+          <Box sx={{ textAlign: 'right' }}>
+            <Typography sx={{ fontSize: 24, fontWeight: 800, lineHeight: 1 }}>{day}</Typography>
+            <Typography sx={{
+              fontSize: 7.5, fontWeight: 800, letterSpacing: '.14em',
+              textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', mt: 0.4,
+            }}>of {total}</Typography>
+          </Box>
+        </Stack>
       </Stack>
 
       {/* the line that earns the daily open */}

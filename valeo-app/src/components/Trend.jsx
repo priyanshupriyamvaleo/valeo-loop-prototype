@@ -10,7 +10,8 @@ import { C } from '../theme';
  * marker data, and implying otherwise would be the dishonest version of this
  * chart — hence the reference line at the retest day, labelled for what it is.
  */
-export default function Trend({ points, total, unit = 'kg', caption }) {
+export default function Trend({ points, total, unit = 'kg', caption, color = C.teal,
+                               tail = ' — the retest is what decides.' }) {
   const W = 320, H = 118, PAD_L = 6, PAD_R = 34, PAD_T = 10, PAD_B = 20;
   if (!points.length) return null;
 
@@ -37,11 +38,11 @@ export default function Trend({ points, total, unit = 'kg', caption }) {
         <line x1={x(total)} y1={PAD_T - 4} x2={x(total)} y2={H - PAD_B}
               stroke="rgba(255,185,0,.55)" strokeWidth="1.5" strokeDasharray="3 3" />
 
-        <path d={path} fill="none" stroke={C.teal} strokeWidth="2"
+        <path d={path} fill="none" stroke={color} strokeWidth="2"
               strokeLinecap="round" strokeLinejoin="round" />
 
         {/* one marker, on the latest point, with a 2px surface ring */}
-        <circle cx={x(last.d)} cy={y(last.v)} r="5" fill={C.teal}
+        <circle cx={x(last.d)} cy={y(last.v)} r="5" fill={color}
                 stroke={C.cream} strokeWidth="2" />
 
         {/* direct label — on this point only, never on every point */}
@@ -58,7 +59,7 @@ export default function Trend({ points, total, unit = 'kg', caption }) {
         <Box component="span" sx={{ color: down ? C.green : C.ink, fontWeight: 700 }}>
           {down ? delta : `+${delta}`}{unit} so far
         </Box>
-        {' — the retest is what decides.'}
+        {tail}
       </Typography>
     </Box>
   );
