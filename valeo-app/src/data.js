@@ -501,3 +501,89 @@ export function deviceSeries(rx, dev) {
   }
   return { pts, ...m };
 }
+
+/* ══════════════════════════════════════════════════════════════
+   BODY SYSTEMS
+   ══════════════════════════════════════════════════════════════
+   Each system declares what it needs before it can be graded. A system we
+   have not measured shows as unmeasured rather than as a guess — the blanks
+   are the honest sales pitch, and they're what the single CTA exists to fill.
+   Grading everything on thin data is how a twin stops being believable.   */
+export const SYSTEMS = [
+  { k: 'metab',  t: 'Metabolic',        x: 100, y: 176, needs: ['blood'],           g: 'B' },
+  { k: 'heart',  t: 'Heart & vascular', x: 100, y: 132, needs: ['blood'],           g: 'B' },
+  { k: 'thyroid',t: 'Thyroid',          x: 100, y: 96,  needs: ['blood'],           g: 'C' },
+  { k: 'inflam', t: 'Inflammation',     x: 128, y: 158, needs: ['blood'],           g: 'B' },
+  { k: 'liver',  t: 'Liver',            x: 118, y: 190, needs: ['blood'],           g: 'A' },
+  { k: 'kidney', t: 'Kidney',           x: 78,  y: 196, needs: ['blood'],           g: 'B' },
+  { k: 'hormone',t: 'Sex hormones',     x: 100, y: 214, needs: ['blood', 'basic'],  g: 'C' },
+  { k: 'nutri',  t: 'Nutrients',        x: 72,  y: 158, needs: ['blood', 'food'],   g: 'B' },
+  { k: 'sleep',  t: 'Sleep & recovery', x: 100, y: 62,  needs: ['sleep'],           g: 'C' },
+  { k: 'stress', t: 'Stress load',      x: 128, y: 96,  needs: ['stress'],          g: 'B' },
+  { k: 'comp',   t: 'Body composition', x: 100, y: 248, needs: ['basic'],           g: 'B' },
+  { k: 'fitness',t: 'Fitness',          x: 100, y: 300, needs: ['life'],            g: 'B' },
+];
+export const GRADE_C = { A: '#27995B', B: '#408FA4', C: '#E0A400', D: '#E94F5F' };
+
+/* A system is graded only when every signal it depends on exists. */
+export function gradeFor(sys, st) {
+  const missing = sys.needs.filter((n) => !signalDone(n, st));
+  return missing.length ? { grade: null, missing } : { grade: sys.g, missing: [] };
+}
+export function systemsState(st) {
+  const rows = SYSTEMS.map((s) => ({ ...s, ...gradeFor(s, st) }));
+  return {
+    rows,
+    measured: rows.filter((r) => r.grade).length,
+    total: rows.length,
+  };
+}
+/* What the single CTA should do next: the cheapest unmet signal first. */
+export function nextGap(st) {
+  const order = ['basic', 'life', 'food', 'sleep', 'stress', 'goal', 'blood'];
+  const k = order.find((x) => !signalDone(x, st));
+  if (!k) return null;
+  const s = SIGNALS.find((x) => x.k === k);
+  return { k, ...s, blocks: SYSTEMS.filter((y) => y.needs.includes(k)).length };
+}
+
+/* ── ASK YOUR TWIN ──
+   Real questions with real answers, including the answer people never get from
+   a search engine: no, not you, and here's the number that says so. */
+export const TWIN_ASKS = [
+  {
+    q: 'Can I take creatine?',
+    v: 'yes',
+    a: ['Nothing in your panel argues against it. Kidney markers are clean — creatinine 84 µmol/L, eGFR 98.',
+        'It is already in two of the protocols your twin scored highly, so it fits the direction you are going.'],
+    marker: { t: 'eGFR', v: 98, lo: 90, hi: 120, unit: '', good: true },
+  },
+  {
+    q: 'Can I take ashwagandha?',
+    v: 'no',
+    a: ['Not for you. Your last panel put TSH at 4.2 mIU/L — that is above range and your thyroid is already working hard.',
+        'Ashwagandha pushes thyroid output. On a borderline TSH that is the wrong direction.',
+        'If you want the stress effect, magnesium and breathwork do it without touching the thyroid.'],
+    marker: { t: 'TSH', v: 4.2, lo: 0.4, hi: 4.0, unit: ' mIU/L', good: false },
+  },
+  {
+    q: 'Can I drink this weekend?',
+    v: 'careful',
+    a: ['One or two will not undo twelve weeks. But you are on day 22 and alcohol blunts sleep depth for about 48 hours.',
+        'Your HRV drops 8–11 ms the day after drinking, going by your own Oura data.',
+        'If you drink, log it. An unexplained dip in the retest is worse than a logged one.'],
+    marker: { t: 'HRV after alcohol', v: 43, lo: 50, hi: 70, unit: ' ms', good: false },
+  },
+  {
+    q: 'Why is this protocol right for me?',
+    v: 'yes',
+    a: ['You said skin was the goal, and your ferritin came back at 38 µg/L — under 50 stalls collagen synthesis.',
+        'That is why the protocol corrects iron before anything topical. Most plans skip it.'],
+    marker: { t: 'Ferritin', v: 38, lo: 50, hi: 150, unit: ' µg/L', good: false },
+  },
+];
+export const ASK_VERDICT = {
+  yes:     { t: 'Fits you',        c: 'green' },
+  no:      { t: 'Not for you',    c: 'coral' },
+  careful: { t: 'Careful',        c: 'yellowDeep' },
+};

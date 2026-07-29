@@ -5,6 +5,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import ScienceIcon from '@mui/icons-material/Science';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import RunHero from '../components/RunHero';
 import TwinChat from '../components/TwinChat';
 import Trend from '../components/Trend';
@@ -248,29 +249,113 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail }) {
         : 'Consistency is high enough that the retest will be attributable to the protocol.'}`
     : null;
 
+  /* ── retest day ──
+     The last day of a twelve-week run is the biggest moment in the loop, so it
+     gets the run's whole story rather than a lone button: what you did, what
+     moved, and what the retest is about to read. And it books the review with
+     it, because a result nobody reads back to you is just a number. */
   if (rx.status === 'verdict') {
+    const adherence = Math.round((rx.logs.length / rx.day) * 100);
+    const kgFrom = rx.body.length ? rx.body[0].kg : null;
+    const kgTo = rx.body.length ? rx.body[rx.body.length - 1].kg : null;
+    const moved = kgFrom != null ? Math.round((kgTo - kgFrom) * 10) / 10 : null;
+
     return (
       <Shell coach={coach} setCoach={setCoach}>
-        <Head sub={`Day ${rx.day}`} title="Retest day." onTwin={() => setCoach(true)} />
+        <Head sub={`Day ${rx.day} · ${p.t}`} title="You finished it."
+              onTwin={() => setCoach(true)} />
         <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
+          {/* what you did — stated first, because they earned it */}
           <Box sx={{
-            p: 2.25, borderRadius: '20px', textAlign: 'center',
-            background: `linear-gradient(152deg,${C.deep},#12283F)`, color: '#fff',
+            p: 2.25, borderRadius: '22px', color: '#fff',
+            background: `linear-gradient(152deg,${C.deep},#12283F)`,
           }}>
-            <ScienceIcon sx={{ fontSize: 30, color: C.yellow }} />
             <Typography sx={{
-              fontFamily: '"Fraunces", serif', fontSize: 21, fontWeight: 600, mt: 1.25,
+              fontSize: 8.5, fontWeight: 800, letterSpacing: '.18em',
+              textTransform: 'uppercase', color: C.yellow,
+            }}>◈ {p.wk} weeks done</Typography>
+            <Typography sx={{
+              fontFamily: '"Fraunces", serif', fontSize: 22, fontWeight: 600, mt: 0.75,
             }}>Time to find out.</Typography>
+
+            <Stack direction="row" sx={{ mt: 2 }}
+                   divider={<Divider orientation="vertical" flexItem
+                                     sx={{ borderColor: 'rgba(255,255,255,.15)' }} />}>
+              {[['Adherence', `${adherence}%`],
+                ['Days logged', `${rx.logs.length}`],
+                ['Best streak', `${streak}`]].map(([k, v], i) => (
+                <Box key={k} sx={{ flex: 1, minWidth: 0, pl: i ? 1.5 : 0, pr: 1.5 }}>
+                  <Typography sx={{ fontSize: 19, fontWeight: 800, lineHeight: 1 }}>{v}</Typography>
+                  <Typography sx={{
+                    fontSize: 7.5, fontWeight: 800, letterSpacing: '.14em',
+                    textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', mt: 0.5,
+                  }}>{k}</Typography>
+                </Box>
+              ))}
+            </Stack>
+
             <Typography sx={{
-              fontSize: 12.5, color: 'rgba(255,255,255,.7)', mt: 1, lineHeight: 1.55,
+              fontSize: 12, lineHeight: 1.55, color: 'rgba(255,255,255,.78)', mt: 2,
+              pt: 1.75, borderTop: '1px solid rgba(255,255,255,.13)',
             }}>
-              {rx.logs.length} days logged out of {rx.day}. Enough for the verdict to hold.
+              {rx.logs.length >= rx.day * 0.7
+                ? 'Enough of the run is logged that the result is attributable to the protocol.'
+                : 'Coverage is thin, so read the result with some caution.'}
             </Typography>
-            <Button fullWidth variant="contained" color="secondary" sx={{ mt: 2.25 }}
-                    onClick={() => dispatch({ type: 'retest' })}>
-              Book the retest
-            </Button>
           </Box>
+
+          {/* the proxy moved — but say plainly that it is not the verdict */}
+          {moved != null && (
+            <>
+              <Label sx={{ mt: 3 }}>What moved so far</Label>
+              <Stack spacing={1}>
+                <Stat t="Weight" from={`${kgFrom} kg`} to={`${kgTo} kg`}
+                      delta={`${moved > 0 ? '+' : ''}${moved} kg`} good={moved < 0} />
+                {rx.devices.map((d) => {
+                  const ds = deviceSeries(rx, d);
+                  const a = ds.pts[0].v, b = ds.pts[ds.pts.length - 1].v;
+                  const dl = Math.round((b - a) * 10) / 10;
+                  return (
+                    <Stat key={d} t={ds.t} from={`${a} ${ds.unit}`} to={`${b} ${ds.unit}`}
+                          delta={`${dl > 0 ? '+' : ''}${dl} ${ds.unit}`} good={dl > 0} />
+                  );
+                })}
+              </Stack>
+              <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 1.5, lineHeight: 1.55 }}>
+                None of these is the verdict. {p.mk} is, and that needs blood.
+              </Typography>
+            </>
+          )}
+
+          {/* what happens next, in order */}
+          <Label sx={{ mt: 3 }}>What happens next</Label>
+          <Stack spacing={1.1}>
+            <Step n="1" t={`Retest ${p.mk}`} s="A nurse draws it at home, same as your baseline" />
+            <Step n="2" t="Dr. Mahmoud reads it against day one"
+                  s="Same doctor, same numbers, side by side" />
+            <Step n="3" t="You get a verdict"
+                  s="It worked, it did not, or it needs longer — plainly" />
+          </Stack>
+
+          <Box sx={{
+            mt: 2.25, px: 1.9, py: 1.75, borderRadius: '17px',
+            bgcolor: 'rgba(255,185,0,.10)', border: `1px solid rgba(255,185,0,.4)`,
+          }}>
+            <Typography sx={{ fontSize: 12.5, color: C.ink, lineHeight: 1.55 }}>
+              If it did not work, we say so and stop selling it to you. That is the whole point of
+              running a loop instead of a subscription.
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ px: 2.25, pb: 1.5, flexShrink: 0 }}>
+          <Button fullWidth variant="contained" color="secondary"
+                  onClick={() => dispatch({ type: 'retest' })}>
+            Book retest and review consultation
+          </Button>
+          <Typography sx={{ fontSize: 11, color: C.ink2, textAlign: 'center', mt: 1.1 }}>
+            Blood draw at home, then a 30 minute call to read it
+          </Typography>
         </Box>
       </Shell>
     );
@@ -538,11 +623,29 @@ function Head({ sub, title, onTwin }) {
             width: 42, height: 42, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: `linear-gradient(150deg,${C.deep},#12283F)`, color: C.yellow,
-            fontSize: 17, boxShadow: '0 6px 16px -6px rgba(27,57,91,.45)',
-          }}>◎</Box>
+            boxShadow: '0 6px 16px -6px rgba(27,57,91,.45)',
+          }}><ChatBubbleOutlineIcon sx={{ fontSize: 19 }} /></Box>
         )}
       </Stack>
     </Box>
+  );
+}
+
+/* A before/after pair with the change called out — the shape people read fastest. */
+function Stat({ t, from, to, delta, good }) {
+  return (
+    <Stack direction="row" spacing={1.5} sx={{
+      alignItems: 'center', px: 1.9, py: 1.6, borderRadius: '16px', bgcolor: '#fff',
+      boxShadow: '0 2px 10px -6px rgba(27,57,91,.28)',
+    }}>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>{t}</Typography>
+        <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.2 }}>{from} → {to}</Typography>
+      </Box>
+      <Typography sx={{
+        fontSize: 14, fontWeight: 800, flexShrink: 0, color: good ? C.green : C.ink2,
+      }}>{delta}</Typography>
+    </Stack>
   );
 }
 
