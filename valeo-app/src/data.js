@@ -763,3 +763,139 @@ export const ASK_VERDICT = {
   no:      { t: 'Not for you',    c: 'coral' },
   careful: { t: 'Careful',        c: 'yellowDeep' },
 };
+
+/* ══════════════════════════════════════════════════════════════
+   EVERYTHING BELOW EXISTS SO THE FULL TWIN CAN BE SEEN WORKING
+   ══════════════════════════════════════════════════════════════
+   These are demo fixtures, clearly separated from the computed model above.
+   Nothing here is inferred — it is written down so the screens can be judged
+   before the pipeline that would produce them exists.                        */
+
+/* Two panels, so "over time" has a line instead of a dot. */
+export const PANELS = [
+  { date: '12 Mar', label: 'Baseline' },
+  { date: '04 Jun', label: 'Retest' },
+];
+/* per-system movement between those two draws */
+export const MOVES = {
+  nutri:   { from: 38,  to: 71,   unit: ' µg/L', better: 'up',   was: 'D', now: 'B' },
+  inflam:  { from: 1.4, to: 0.8,  unit: ' mg/L', better: 'down', was: 'B', now: 'A' },
+  heart:   { from: 78,  to: 64,   unit: ' mg/dL',better: 'down', was: 'B', now: 'B' },
+  thyroid: { from: 4.2, to: 3.1,  unit: ' mIU/L',better: 'down', was: 'C', now: 'B' },
+  hormone: { from: 9.1, to: 12.4, unit: ' ng/dL',better: 'up',   was: 'C', now: 'B' },
+  metab:   { from: 5.4, to: 5.2,  unit: '%',     better: 'down', was: 'B', now: 'A' },
+  kidney:  { from: 98,  to: 99,   unit: '',      better: 'up',   was: 'B', now: 'B' },
+  liver:   { from: 22,  to: 21,   unit: ' U/L',  better: 'down', was: 'A', now: 'A' },
+};
+export function moveOf(k) { return MOVES[k] || null; }
+
+/* ── CLOSEST TWINS ──
+   Matched on measured biology, not on a questionnaire, and the delta is the
+   point: the gap is what a protocol is designed to close. Similarity is stated
+   as "systems apart" rather than a percentage, because a percentage implies a
+   precision this matching does not have. */
+export const PEERS = [
+  {
+    id: 'p_hub', name: 'Andrew Huberman', role: 'Neuroscientist · Stanford',
+    img: '/twins/huberman.jpg', apart: 2, why: 'Sleep architecture and ApoB sit close to yours.',
+    diverge: 'He runs ferritin near 90. Yours is the gap.',
+    rows: [
+      { sys: 'Sleep & recovery', you: 'B', them: 'A' },
+      { sys: 'Heart & vascular', you: 'B', them: 'B' },
+      { sys: 'Nutrients',        you: 'B', them: 'A' },
+      { sys: 'Inflammation',     you: 'A', them: 'A' },
+    ],
+  },
+  {
+    id: 'p_att', name: 'Peter Attia', role: 'Longevity physician',
+    img: null, mono: 'PA', tone: '#3A4E63', apart: 3,
+    why: 'Similar lipid profile and training load.',
+    diverge: 'His ApoB is under 50. That is a two-year project, not a quarter.',
+    rows: [
+      { sys: 'Heart & vascular', you: 'B', them: 'A' },
+      { sys: 'Metabolic',        you: 'A', them: 'A' },
+      { sys: 'Fitness',          you: 'B', them: 'A' },
+      { sys: 'Thyroid',          you: 'B', them: 'B' },
+    ],
+  },
+  {
+    id: 'p_sabri', name: 'Lilly Sabri', role: 'Physiotherapist',
+    img: '/twins/lillysabri.jpg', apart: 4,
+    why: 'Comparable body composition trajectory.',
+    diverge: 'Her training volume is roughly double yours.',
+    rows: [
+      { sys: 'Body composition', you: 'B', them: 'A' },
+      { sys: 'Fitness',          you: 'B', them: 'A' },
+      { sys: 'Inflammation',     you: 'A', them: 'A' },
+      { sys: 'Sleep & recovery', you: 'B', them: 'B' },
+    ],
+  },
+];
+/* Where you sit in the corpus — the moat, stated as a distribution rather
+   than a promise. */
+export const COHORT = {
+  n: 1240, startedLike: 312,
+  after12: [
+    { band: 'Moved two grades', pct: 18 },
+    { band: 'Moved one grade',  pct: 47 },
+    { band: 'No change',        pct: 26 },
+    { band: 'Went backwards',   pct: 9 },
+  ],
+  note: 'Of 312 twins who started with ferritin under 50, most moved one grade in twelve weeks. Nine per cent got worse — usually adherence, occasionally the wrong protocol.',
+};
+
+/* ── THE LADDER ──
+   Deliberately a SHAPE and not a rung. A single "you are level 4 of 7" hides
+   the only useful information, which is where the gap actually is. */
+export const LADDER = [
+  { sys: 'Heart & vascular', you: 72, peak: 96, unit: 'ApoB 64 → under 50' },
+  { sys: 'Metabolic',        you: 88, peak: 98, unit: 'HbA1c 5.2 → under 5.0' },
+  { sys: 'Nutrients',        you: 74, peak: 95, unit: 'Ferritin 71 → 90–120' },
+  { sys: 'Fitness',          you: 54, peak: 97, unit: 'VO₂max 42 → 55+' },
+  { sys: 'Sleep & recovery', you: 66, peak: 94, unit: 'HRV 54 → 70+' },
+  { sys: 'Sex hormones',     you: 61, peak: 92, unit: 'Free T 12.4 → 18+' },
+];
+export const LADDER_FIXED = [
+  'Height, frame and bone structure',
+  'ACTN3 — your sprint/endurance bias',
+  'APOE genotype',
+  'Age, which only moves one way',
+];
+
+/* ── TRAJECTORY ──
+   Sourced from the cohort, never from a model prediction. "People like you who
+   ran this got here" is a comparison; "you will reach X" is a clinical claim. */
+export const TRAJECTORY = [
+  { sys: 'Nutrients', marker: 'Ferritin', now: 71, target: 95, weeks: 9,
+    basis: '312 twins with your starting value', spread: '6–14 weeks' },
+  { sys: 'Heart & vascular', marker: 'ApoB', now: 64, target: 50, weeks: 28,
+    basis: '198 twins on a comparable protocol', spread: '20–40 weeks' },
+  { sys: 'Sex hormones', marker: 'Free T', now: 12.4, target: 18, weeks: 16,
+    basis: '84 twins, sleep-first protocol', spread: '12–26 weeks' },
+];
+
+/* ── DANGERS ──
+   Conditional rules, not warnings. "Watch your ApoB" is advice; "if ApoB
+   crosses 90 we stop this protocol" is what a clinician actually holds in
+   their head, and it is the thing worth productizing. */
+export const DANGERS = [
+  { k: 'hct', t: 'Haematocrit above 52%', act: 'We pause the testosterone protocol and retest in two weeks',
+    why: 'Rising haematocrit thickens blood. It is the main reason T protocols get stopped.', armed: true },
+  { k: 'apob', t: 'ApoB crosses 90 mg/dL', act: 'Protocol stops and you see a prescriber inside 48 hours',
+    why: 'Above 90 the arterial risk outweighs anything the current protocol is buying you.', armed: true },
+  { k: 'hrv', t: 'HRV drops two weeks running', act: 'Hard sessions come off the plan automatically',
+    why: 'A sustained HRV fall on a training block means you are digging a hole.', armed: true },
+  { k: 'iron', t: 'Coffee within 2h of iron', act: 'A reminder moves your coffee, not your dose',
+    why: 'Polyphenols cut iron absorption by roughly half. Timing is free; a wasted dose is not.', armed: true },
+  { k: 'preg', t: 'Pregnancy intent inside 12 months', act: 'Enclomiphene comes off and you get a fertility review first',
+    why: 'Fertility planning changes what is safe to run.', armed: false },
+];
+
+/* A full twin, so every feature can be judged before the pipeline exists. */
+export const DEMO_QA = {
+  age: 34, gender: 'Male', place: 'Al Olaya, Riyadh', cm: 178, weight: 91,
+  work: 'Desk-bound', smoke: 'Non-smoker', drink: 'Special occasions',
+  move: '3–4× a week', train: ['Lifting', 'Padel'],
+  food: ['Grilled meat', 'Rice', 'Salads'], sleep: '7–8 h', stress: 'Manageable',
+  goal: 'long', goal2: ['Better sleep', 'Sharper focus'],
+};

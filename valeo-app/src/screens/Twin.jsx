@@ -7,9 +7,11 @@ import ScienceIcon from '@mui/icons-material/Science';
 import BodyFigure from '../components/BodyFigure';
 import TwinChat from '../components/TwinChat';
 import SimSheet from '../components/SimSheet';
+import PeersSheet from '../components/PeersSheet';
+import PeakSheet from '../components/PeakSheet';
 import {
   regionsState, systemsState, constraintOf, verdictOf, noticings, nextGap,
-  twinPct, GRADE_C, SIGNALS,
+  twinPct, GRADE_C, SIGNALS, moveOf, PANELS, DANGERS, LADDER, PEERS,
 } from '../data';
 import { C } from '../theme';
 
@@ -41,6 +43,9 @@ export default function Twin({ st, onGo, onBlood, onQuestions }) {
   const [chat, setChat] = useState(false);
   const [sim, setSim] = useState(false);
   const [lens, setLens] = useState('now');       /* now | time */
+  const [peers, setPeers] = useState(false);
+  const [peak, setPeak] = useState(false);
+  const [dangersOpen, setDangersOpen] = useState(false);
 
   const zones = regionsState(st);
   const { rows, known, total } = systemsState(st);
@@ -114,14 +119,41 @@ export default function Twin({ st, onGo, onBlood, onQuestions }) {
           </Stack>
 
           {lens === 'time' && (
-            <Typography sx={{
-              fontSize: 11.5, color: 'rgba(255,255,255,.6)', textAlign: 'center',
-              px: 3, pt: 1, pb: 0.5, lineHeight: 1.5,
-            }}>
-              {st.blood
-                ? 'One panel so far. A second draw is what makes this a line instead of a dot.'
-                : 'Nothing to compare yet. Your first panel becomes the baseline.'}
-            </Typography>
+            <Box sx={{ px: 2, pt: 1.25, pb: 0.5 }}>
+              <Typography sx={{
+                fontSize: 11, color: 'rgba(255,255,255,.55)', textAlign: 'center', mb: 1.25,
+              }}>{PANELS[0].date} → {PANELS[1].date}</Typography>
+              <Stack spacing={0.6}>
+                {rows.filter((r) => moveOf(r.k)).slice(0, 4).map((r) => {
+                  const mv = moveOf(r.k);
+                  const up = mv.to > mv.from;
+                  const good = (mv.better === 'up') === up;
+                  return (
+                    <Stack key={r.k} direction="row" spacing={1} sx={{ alignItems: 'baseline' }}>
+                      <Typography sx={{
+                        flex: 1, fontSize: 11.5, color: 'rgba(255,255,255,.7)',
+                      }}>{r.t}</Typography>
+                      <Typography sx={{
+                        fontSize: 11.5, color: 'rgba(255,255,255,.45)',
+                      }}>{mv.from}{mv.unit}</Typography>
+                      <Typography sx={{
+                        fontSize: 11.5, color: 'rgba(255,255,255,.35)',
+                      }}>→</Typography>
+                      <Typography sx={{
+                        fontSize: 12, fontWeight: 800,
+                        color: good ? '#6FD69B' : C.coral,
+                      }}>{mv.to}{mv.unit}</Typography>
+                      {mv.was !== mv.now && (
+                        <Box sx={{
+                          px: 0.6, borderRadius: '4px', fontSize: 9, fontWeight: 800,
+                          bgcolor: 'rgba(111,214,155,.2)', color: '#6FD69B',
+                        }}>{mv.was}→{mv.now}</Box>
+                      )}
+                    </Stack>
+                  );
+                })}
+              </Stack>
+            </Box>
           )}
         </Box>
 
@@ -323,22 +355,114 @@ export default function Twin({ st, onGo, onBlood, onQuestions }) {
           </Stack>
         </Box>
 
-        {/* ═══ ENTRY 7 · REFERENCE — honestly locked ═══
-            Closest-twin comparison needs a cohort. At launch N is nearly zero,
-            so this states the condition rather than faking the feature. */}
-        <Stack direction="row" spacing={1.5} sx={{
-          alignItems: 'center', mt: 1.1, px: 1.9, py: 1.6, borderRadius: '16px',
-          bgcolor: 'rgba(27,57,91,.03)', border: '1.5px dashed rgba(27,57,91,.16)',
-        }}>
-          <LockOutlinedIcon sx={{ fontSize: 17, color: C.ink2, flexShrink: 0 }} />
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.ink2 }}>
-              Closest twins
-            </Typography>
-            <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.2, lineHeight: 1.45 }}>
-              Opens once we can match you on real bloodwork, not a questionnaire
-            </Typography>
-          </Box>
+        {/* ═══ ENTRY 7 · LEVERS — the ranked list, not three cards ═══
+            Dangers are negative-leverage entries on the same list, which is why
+            they live here rather than in a section of their own. */}
+        <Typography sx={{
+          fontSize: 9, fontWeight: 800, letterSpacing: '.16em', textTransform: 'uppercase',
+          color: C.ink2, mt: 3, mb: 1.25,
+        }}>Your levers, in order</Typography>
+        <Stack spacing={0.75}>
+          {rows.filter((r) => (r.grade || r.said) && r.move).slice(0, 4).map((r, i) => (
+            <Stack key={r.k} direction="row" spacing={1.5} onClick={improve} sx={{
+              alignItems: 'center', px: 1.75, py: 1.4, borderRadius: '15px', cursor: 'pointer',
+              bgcolor: '#fff', boxShadow: '0 2px 10px -6px rgba(27,57,91,.24)',
+            }}>
+              <Box sx={{
+                width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                bgcolor: i === 0 ? C.yellow : 'rgba(27,57,91,.07)',
+                color: i === 0 ? C.deep : C.ink2, fontSize: 11, fontWeight: 800,
+              }}>{i + 1}</Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: 13, fontWeight: 600, color: C.deep }}>{r.move}</Typography>
+                <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.15 }}>{r.t}</Typography>
+              </Box>
+              <ChevronRightIcon sx={{ fontSize: 17, color: C.ink2, flexShrink: 0 }} />
+            </Stack>
+          ))}
+        </Stack>
+
+        {/* ═══ ENTRY 8 · DANGERS — conditional rules, not warnings ═══ */}
+        <Stack direction="row" sx={{ alignItems: 'baseline', mt: 3, mb: 1.25 }}>
+          <Typography sx={{
+            flex: 1, fontSize: 9, fontWeight: 800, letterSpacing: '.16em',
+            textTransform: 'uppercase', color: C.ink2,
+          }}>What we watch for you</Typography>
+          <Typography onClick={() => setDangersOpen(!dangersOpen)} sx={{
+            fontSize: 11, fontWeight: 700, color: C.teal, cursor: 'pointer',
+          }}>{dangersOpen ? 'Fewer' : `All ${DANGERS.length}`}</Typography>
+        </Stack>
+        <Stack spacing={0.75}>
+          {DANGERS.slice(0, dangersOpen ? DANGERS.length : 2).map((d) => (
+            <Box key={d.k} sx={{
+              px: 1.75, py: 1.5, borderRadius: '15px',
+              bgcolor: d.armed ? 'rgba(233,79,95,.05)' : 'rgba(27,57,91,.03)',
+              border: `1px solid ${d.armed ? 'rgba(233,79,95,.22)' : 'rgba(27,57,91,.09)'}`,
+            }}>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                <Box sx={{
+                  width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                  bgcolor: d.armed ? C.coral : C.ink2,
+                }} />
+                <Typography sx={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: C.deep }}>
+                  If {d.t.charAt(0).toLowerCase() + d.t.slice(1)}
+                </Typography>
+                {!d.armed && (
+                  <Typography sx={{ fontSize: 9.5, fontWeight: 800, color: C.ink2 }}>
+                    NOT ARMED
+                  </Typography>
+                )}
+              </Stack>
+              <Typography sx={{ fontSize: 12, color: C.ink, mt: 0.6, lineHeight: 1.45 }}>
+                → {d.act}
+              </Typography>
+              <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.5, lineHeight: 1.45 }}>
+                {d.why}
+              </Typography>
+            </Box>
+          ))}
+        </Stack>
+
+        {/* ═══ ENTRY 9 · REFERENCE + TRAJECTORY — one row each ═══ */}
+        <Stack spacing={0.75} sx={{ mt: 3 }}>
+          <Stack direction="row" spacing={1.5} onClick={() => setPeers(true)} sx={{
+            alignItems: 'center', px: 1.9, py: 1.6, borderRadius: '16px', cursor: 'pointer',
+            bgcolor: '#fff', boxShadow: '0 2px 10px -6px rgba(27,57,91,.26)',
+          }}>
+            <Box component="img" src={PEERS[0].img} alt="" sx={{
+              width: 34, height: 34, borderRadius: '11px', objectFit: 'cover', flexShrink: 0,
+            }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>
+                Closest twins
+              </Typography>
+              <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.15 }}>
+                {PEERS[0].name.split(' ')[1]} is {PEERS[0].apart} systems away
+              </Typography>
+            </Box>
+            <ChevronRightIcon sx={{ fontSize: 19, color: C.ink2, flexShrink: 0 }} />
+          </Stack>
+
+          <Stack direction="row" spacing={1.5} onClick={() => setPeak(true)} sx={{
+            alignItems: 'center', px: 1.9, py: 1.6, borderRadius: '16px', cursor: 'pointer',
+            bgcolor: '#fff', boxShadow: '0 2px 10px -6px rgba(27,57,91,.26)',
+          }}>
+            <Box sx={{
+              width: 34, height: 34, borderRadius: '11px', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              bgcolor: 'rgba(64,143,164,.14)', color: C.teal, fontSize: 15,
+            }}>▲</Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>
+                Distance to peak
+              </Typography>
+              <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.15 }}>
+                Biggest gap is {LADDER.slice().sort((a, b) => (a.peak - a.you) < (b.peak - b.you) ? 1 : -1)[0].sys.toLowerCase()}
+              </Typography>
+            </Box>
+            <ChevronRightIcon sx={{ fontSize: 19, color: C.ink2, flexShrink: 0 }} />
+          </Stack>
         </Stack>
 
         <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 2.5, lineHeight: 1.55 }}>
@@ -349,6 +473,8 @@ export default function Twin({ st, onGo, onBlood, onQuestions }) {
 
       <TwinChat open={chat} onClose={() => setChat(false)} />
       <SimSheet open={sim} onClose={() => setSim(false)} />
+      <PeersSheet open={peers} onClose={() => setPeers(false)} />
+      <PeakSheet open={peak} onClose={() => setPeak(false)} />
     </Box>
   );
 }

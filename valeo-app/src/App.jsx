@@ -14,7 +14,7 @@ import Consult from './screens/Consult';
 import BuyScreen from './screens/Buy';
 import BottomNav from './components/BottomNav';
 import PushToast from './components/PushToast';
-import { PROTOCOLS } from './data';
+import { PROTOCOLS, DEMO_QA } from './data';
 
 const INIT = {
   qa: {},          /* answers — the single source of truth for the twin */
@@ -39,6 +39,19 @@ function reducer(s, a) {
     case 'reveal':  return { ...s, revealed: [...new Set([...s.revealed, a.id])] };
     case 'answers': return { ...s, qa: { ...s.qa, ...a.qa } };
     case 'blood':   return { ...s, blood: true };
+    /* Demo affordance: fill the twin so every feature can be judged at once. */
+    case 'demoFull':
+      return {
+        ...s, qa: { ...s.qa, ...DEMO_QA }, blood: true, tier: 'elite',
+        saved: [...new Set([...s.saved, 'P_LONG', 'P_SLEEP'])],
+        rx: s.rx || {
+          protocol: 'P_LONG', status: 'running', slot: 'Today 6:30 pm',
+          day: 43, total: 168, adherence: 96,
+          logs: Array.from({ length: 41 }, (_, i) => ({ day: i + 1, kind: 'taken', v: true })),
+          body: Array.from({ length: 7 }, (_, i) => ({ day: i * 7 + 1, kg: 96 - i * 0.7, waist: 96 - i * 0.4 })),
+          meals: [], checkin: [], doneItems: [], devices: ['oura', 'cgm'],
+        },
+      };
     /* One loop at a time. Two running protocols mean neither verdict is
        attributable, which makes the whole product a guess. */
     case 'book':
@@ -254,6 +267,19 @@ export default function App() {
             ['protocols', 'Protocols'], ['twin', 'Twin']]}
             active={chrome ? tab : null}
             onGo={(k) => { setFlow('app'); setTab(k); }} />
+
+          <Box onClick={() => { dispatch({ type: 'demoFull' }); setFlow('app'); setTab('twin'); }}
+               sx={{
+            mt: 2.5, px: 1.5, py: 1.1, borderRadius: '10px', cursor: 'pointer',
+            fontSize: 12.5, fontWeight: 700, textAlign: 'center',
+            bgcolor: st.blood && Object.keys(st.qa).length > 6 ? 'rgba(39,153,91,.22)' : C.green,
+            color: '#fff',
+          }}>
+            {st.blood && Object.keys(st.qa).length > 6 ? '✓ Full twin loaded' : 'Load a full twin'}
+          </Box>
+          <Typography sx={{ fontSize: 11, color: '#5D7793', mt: 1, lineHeight: 1.5 }}>
+            Fills every signal so all six layers render.
+          </Typography>
         </Box>
       </Box>
     </ThemeProvider>
