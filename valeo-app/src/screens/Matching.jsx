@@ -4,15 +4,25 @@ import CheckIcon from '@mui/icons-material/Check';
 import TwinGlyph from '../components/TwinGlyph';
 import { C } from '../theme';
 
-const STEPS = [
+const FIRST = [
   'Reading your twin · 14 signals',
   'Finding verified twins near you',
   'Comparing your biology to theirs',
   'Pulling their current protocols',
   'Scoring what would transfer to you',
 ];
+/* Re-scoring after a baseline lands. Same theatre, different work — because
+   it genuinely is different work: real bloods change every score. */
+const UNLOCK = [
+  'Baseline received · 24 markers',
+  'Re-scoring every twin against your bloods',
+  'Opening Advanced',
+  'Opening Elite',
+  'Re-ordering your deck',
+];
 
-export default function Matching({ onDone }) {
+export default function Matching({ onDone, mode = 'first' }) {
+  const STEPS = mode === 'unlock' ? UNLOCK : FIRST;
   const [n, setN] = useState(0);
   useEffect(() => {
     if (n >= STEPS.length) { const t = setTimeout(onDone, 750); return () => clearTimeout(t); }
@@ -35,7 +45,7 @@ export default function Matching({ onDone }) {
       </Box>
 
       <Typography variant="h2" sx={{ mt: 3, textAlign: 'center' }}>
-        Finding your matches.
+        {mode === 'unlock' ? 'Everything just moved.' : 'Finding your matches.'}
       </Typography>
 
       <Stack spacing={0.5} sx={{ mt: 3, width: '100%', maxWidth: 320 }}>

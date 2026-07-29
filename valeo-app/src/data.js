@@ -2,6 +2,19 @@
 
 export const PROTOCOLS = {
   P_SLEEP: {
+    price: 1850, bloodFirst: false,
+    items: [
+      { k: 'pep', t: 'DSIP',                 d: '100 mcg, nights, 5 on 2 off' },
+      { k: 'sup', t: 'Magnesium threonate',  d: '400 mg, 2h before bed' },
+      { k: 'sup', t: 'Apigenin',             d: '50 mg, nights' },
+      { k: 'hab', t: 'Morning light',        d: '10 min within an hour of waking' },
+      { k: 'hab', t: 'Caffeine cut-off',     d: '10h before sleep' },
+    ],
+    amend: {
+      changed: ['DSIP held back to week 3 — sleep hygiene first'],
+      added:   ['Ferritin check — low iron mimics poor sleep'],
+      flagged: ['If HRV drops two weeks running, stop and call'],
+    },
     t: 'Sleep & Recovery', wk: 8, mk: 'HRV + sleep latency',
     goal: 'Fall asleep faster and wake up actually recovered',
     stack: ['Magnesium threonate, 2h before bed', 'Morning light, 10 min within an hour of waking',
@@ -10,6 +23,19 @@ export const PROTOCOLS = {
     wrongFor: 'Shift workers on rotating nights — the light timing does more harm than good.',
   },
   P_WEIGHT: {
+    price: 3400, bloodFirst: true,
+    items: [
+      { k: 'glp', t: 'Tirzepatide',          d: '2.5 → 5 mg, weekly injection' },
+      { k: 'iv',  t: 'B-complex + carnitine',d: '250 ml, fortnightly' },
+      { k: 'sup', t: 'Iron + vitamin C',     d: 'Mornings, empty stomach' },
+      { k: 'hab', t: 'Protein floor',        d: '1.6 g per kg bodyweight, daily' },
+      { k: 'hab', t: 'Resistance training',  d: '3× a week, compound lifts' },
+    ],
+    amend: {
+      changed: ['Tirzepatide starts at 2.5 mg for 4 weeks, not 2'],
+      added:   ['Anti-nausea cover for weeks 1–3'],
+      flagged: ['Muscle loss if protein slips — we retest body composition'],
+    },
     t: 'Weight Loss', wk: 12, mk: 'HbA1c',
     goal: 'Drop fasting glucose and lose fat without losing muscle',
     stack: ['Tirzepatide 2.5 → 5 mg weekly', 'Protein floor 1.6 g/kg bodyweight',
@@ -18,6 +44,19 @@ export const PROTOCOLS = {
     wrongFor: 'Anyone with a history of pancreatitis, or planning pregnancy inside a year.',
   },
   P_SKIN: {
+    price: 2100, bloodFirst: false,
+    items: [
+      { k: 'pep', t: 'GHK-Cu topical',       d: 'Nights, after cleansing' },
+      { k: 'sup', t: 'Tretinoin 0.05%',      d: 'Nights, buffered, alternate days first month' },
+      { k: 'sup', t: 'Collagen peptides',    d: '10 g daily' },
+      { k: 'iv',  t: 'Glutathione',          d: '600 mg, monthly' },
+      { k: 'hab', t: 'SPF 50',               d: 'Every morning, non-negotiable' },
+    ],
+    amend: {
+      changed: ['Tretinoin every third night to week 4 — your skin is reactive'],
+      added:   ['Ferritin correction — under 50 stalls collagen'],
+      flagged: ['Purge for 4–6 weeks. It gets worse before better.'],
+    },
     t: 'Skin & Anti-Ageing', wk: 12, mk: 'Collagen density',
     goal: 'Rebuild collagen density instead of masking the surface',
     stack: ['Tretinoin 0.05%, nights, buffered', 'Oral collagen peptides 10 g daily',
@@ -26,6 +65,19 @@ export const PROTOCOLS = {
     wrongFor: 'Pregnancy, breastfeeding, or active eczema on the face.',
   },
   P_ATH: {
+    price: 2750, bloodFirst: true,
+    items: [
+      { k: 'pep', t: 'BPC-157',              d: '250 mcg daily, 6 week block' },
+      { k: 'iv',  t: 'Recovery drip',        d: 'Saline, magnesium, B12 — weekly' },
+      { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily' },
+      { k: 'hab', t: 'Zone 2 base',          d: '180 min a week' },
+      { k: 'hab', t: 'VO₂max intervals',     d: '1 session weekly, from week 5' },
+    ],
+    amend: {
+      changed: ['Intervals held to week 5 — base first'],
+      added:   ['Weekly HRV gate before hard sessions'],
+      flagged: ['Ferritin is borderline. It caps aerobic gains.'],
+    },
     t: 'Peak Athlete', wk: 16, mk: 'VO₂max + lactate',
     goal: 'Add a gear you do not currently have',
     stack: ['Zone 2 base, 180 min a week', 'One VO₂max interval session weekly',
@@ -34,6 +86,19 @@ export const PROTOCOLS = {
     wrongFor: 'Uncontrolled hypertension, or anyone inside 6 weeks of a soft-tissue injury.',
   },
   P_LONG: {
+    price: 5200, bloodFirst: true,
+    items: [
+      { k: 'glp', t: 'Rapamycin',            d: '5 mg, weekly pulse, supervised' },
+      { k: 'pep', t: 'NAD+ precursor',       d: '500 mg daily' },
+      { k: 'iv',  t: 'NAD+ infusion',        d: '250 mg, monthly' },
+      { k: 'sup', t: 'Omega-3',              d: 'To an index above 8%' },
+      { k: 'hab', t: 'Zone 2 + resistance',  d: '5 days a week' },
+    ],
+    amend: {
+      changed: ['Rapamycin deferred to month 2 — ApoB first'],
+      added:   ['Monthly bloods while on rapamycin'],
+      flagged: ['Stop immediately if you get an infection'],
+    },
     t: 'Longevity', wk: 24, mk: 'ApoB, hsCRP',
     goal: 'Move the markers that actually predict lifespan',
     stack: ['ApoB target under 60 mg/dL', 'Rapamycin, weekly pulse, physician-supervised',
@@ -42,6 +107,19 @@ export const PROTOCOLS = {
     wrongFor: 'Anyone immunosuppressed, or with an active infection.',
   },
   P_TEST: {
+    price: 2400, bloodFirst: true,
+    items: [
+      { k: 'glp', t: 'Enclomiphene',         d: '12.5 mg, alternate days — only if labs justify it' },
+      { k: 'sup', t: 'Zinc + vitamin D',     d: 'To sufficiency, retested at week 8' },
+      { k: 'sup', t: 'Boron',                d: '6 mg daily' },
+      { k: 'hab', t: 'Compound lifts',       d: '3× weekly' },
+      { k: 'hab', t: 'Sleep floor',          d: '7 hours — this one does most of the work' },
+    ],
+    amend: {
+      changed: ['Enclomiphene held pending SHBG'],
+      added:   ['Haematocrit at week 8'],
+      flagged: ['Not while trying to conceive without a fertility review'],
+    },
     t: 'Testosterone', wk: 16, mk: 'Total + free T',
     goal: 'Raise free testosterone without shutting down your own production',
     stack: ['Sleep first — 7h floor before anything else', 'Zinc + vitamin D to sufficiency',
@@ -50,6 +128,19 @@ export const PROTOCOLS = {
     wrongFor: 'Anyone trying to conceive in the next 12 months without a fertility review first.',
   },
   P_FOCUS: {
+    price: 1950, bloodFirst: false,
+    items: [
+      { k: 'pep', t: 'Semax',                d: '300 mcg, mornings, 4 week block' },
+      { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily — cognitive, not just muscular' },
+      { k: 'sup', t: 'Omega-3 (high DHA)',   d: '2 g daily' },
+      { k: 'hab', t: 'Zone 2 cardio',        d: '150 min a week' },
+      { k: 'hab', t: 'Caffeine timing',      d: 'Matched to your chronotype' },
+    ],
+    amend: {
+      changed: ['Semax to a 4 week block, then reassess'],
+      added:   ['Sleep apnoea screen — fix the airway first'],
+      flagged: ['Nothing here is stimulant-led. Gains are slower, they hold.'],
+    },
     t: 'Focus & Brain', wk: 12, mk: 'Reaction time',
     goal: 'Hold deep focus for longer without the 3pm collapse',
     stack: ['Creatine 5 g daily — cognitive, not just muscular', 'Zone 2 cardio 150 min a week',
@@ -216,3 +307,58 @@ export const COACH = [
   { me: false, t: 'Week 2 nausea is expected on tirzepatide and usually settles by week 4. You logged it on 4 of 6 days.' },
   { me: false, t: "I'm not going to change your dose — that's a prescriber decision. Sending this to Dr. Mahmoud with your logs.", esc: true },
 ];
+
+/* ── WHAT'S IN THE BOX ──
+   Typed so the detail page can say plainly what is a prescription and what
+   isn't. People are about to spend real money; "stack" is not an answer. */
+export const KINDS = {
+  glp: { t: 'Prescription', ic: '💉', rx: true },
+  pep: { t: 'Peptide',      ic: '🧬', rx: true },
+  iv:  { t: 'IV drip',      ic: '💧', rx: true },
+  sup: { t: 'Supplement',   ic: '💊', rx: false },
+  hab: { t: 'Habit',        ic: '🏋️', rx: false },
+};
+export const KIND_ORDER = ['glp', 'pep', 'iv', 'sup', 'hab'];
+
+/* ── PROTOCOL LIFECYCLE ──
+   saved   — kept from the deck, nothing committed
+   booked  — consult booked; under doctor review until the call happens
+   ready   — call done, protocol amended, buyable
+   shipping— paid; nurse and package on the way
+   running — day 1 onward
+   verdict — retest due
+*/
+export const RX = ['saved', 'booked', 'ready', 'shipping', 'running', 'verdict'];
+export const RX_LABEL = {
+  saved:    { t: 'Not started',        c: 'ink2' },
+  booked:   { t: 'Under doctor review',c: 'yellowDeep' },
+  ready:    { t: 'Ready to buy',       c: 'green' },
+  shipping: { t: 'On the way',         c: 'teal' },
+  running:  { t: 'Running',            c: 'green' },
+  verdict:  { t: 'Retest due',         c: 'yellowDeep' },
+};
+
+/* Consult slots. Same-day is the point — the call is what unblocks everything. */
+export const CONSULT_SLOTS = [
+  { d: 'Today',    t: '6:30 pm', note: 'Next available' },
+  { d: 'Tomorrow', t: '9:00 am' },
+  { d: 'Tomorrow', t: '7:00 pm' },
+  { d: 'Thursday', t: '11:00 am' },
+];
+
+/* ── DAILY LOG ──
+   Three kinds, asked when they're actually useful rather than at random.
+   Side effects in the first three weeks, because that's when they happen and
+   when people quit. The proxy measure later, because that's what fills the
+   gap between two blood draws. */
+export const LOG_KINDS = {
+  taken:  { t: 'Did you take it?',   sub: 'Everything prescribed today' },
+  felt:   { t: 'How did it sit?',    sub: 'Side effects, honestly',
+            o: ['Fine', 'Mild', 'Rough', 'Bad'] },
+  proxy:  { t: 'Weight this morning', sub: 'Same time, same scale' },
+};
+export function logKindFor(day) {
+  if (day % 7 === 1) return 'proxy';        /* weekly weigh-in */
+  if (day <= 21) return 'felt';             /* the quitting window */
+  return 'taken';
+}

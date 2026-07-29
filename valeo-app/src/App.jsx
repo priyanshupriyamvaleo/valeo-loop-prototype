@@ -9,7 +9,11 @@ import Baseline from './screens/Baseline';
 import Today from './screens/Today';
 import Protocols from './screens/Protocols';
 import Twin from './screens/Twin';
+import ProtocolDetail from './screens/ProtocolDetail';
+import Consult from './screens/Consult';
+import BuyScreen from './screens/Buy';
 import BottomNav from './components/BottomNav';
+import PushToast from './components/PushToast';
 import { PROTOCOLS } from './data';
 
 const INIT = {
@@ -20,8 +24,9 @@ const INIT = {
   swipes: 0,
   tier: 'open',
   blood: false,
-  active: null,    /* { protocol, day, total, adherence, items[] } */
-  done: [],        /* indices of today's completed items */
+  /* One protocol moves through the loop at a time:
+     saved → booked → ready → shipping → running → verdict */
+  rx: null,
 };
 
 function reducer(s, a) {
@@ -36,20 +41,52 @@ function reducer(s, a) {
     case 'blood':   return { ...s, blood: true };
     /* One loop at a time. Two running protocols mean neither verdict is
        attributable, which makes the whole product a guess. */
-    case 'start':
-      if (s.active) return s;
-      return {
-        ...s, done: [],
-        active: {
-          protocol: a.protocol, day: 1, total: PROTOCOLS[a.protocol].wk * 7,
-          adherence: 100, items: PROTOCOLS[a.protocol].stack,
+    case 'book':
+      return { ...s, rx: { protocol: a.protocol, status: 'booked', slot: a.slot } };
+    /* The consult is what unblocks everything — and what amends the protocol. */
+    case 'reviewed':
+      return s.rx ? { ...s, rx: { ...s.rx, status: 'ready' } } : s;
+    case 'paid':
+      return s.rx ? { ...s, rx: { ...s.rx, status: 'shipping' } } : s;
+    case 'deliver':
+      return s.rx ? {
+        ...s,
+        rx: {
+          ...s.rx, status: 'running', day: 1,
+          total: PROTOCOLS[s.rx.protocol].wk * 7,
+          logs: [], doneItems: [],
         },
-      };
-    case 'toggleDone':
+      } : s;
+    case 'toggleItem':
+      return s.rx ? {
+        ...s,
+        rx: {
+          ...s.rx,
+          doneItems: s.rx.doneItems.includes(a.i)
+            ? s.rx.doneItems.filter((x) => x !== a.i)
+            : [...s.rx.doneItems, a.i],
+        },
+      } : s;
+    case 'log':
+      return s.rx ? {
+        ...s,
+        rx: { ...s.rx, logs: [...s.rx.logs, { day: s.rx.day, kind: a.kind, v: a.v }] },
+      } : s;
+    /* Demo affordance — jump a week so the loop can be walked in a sitting. */
+    case 'advance': {
+      if (!s.rx || !s.rx.day) return s;
+      const day = Math.min(s.rx.total, s.rx.day + 7);
+      const logs = [...s.rx.logs];
+      for (let d = s.rx.day; d < day; d += 1) {
+        if (d % 7 === 1) logs.push({ day: d, kind: 'proxy', v: 96 - Math.round((d / 7) * 0.9 * 10) / 10 });
+        else logs.push({ day: d, kind: d <= 21 ? 'felt' : 'taken', v: true });
+      }
       return {
         ...s,
-        done: s.done.includes(a.i) ? s.done.filter((x) => x !== a.i) : [...s.done, a.i],
+        rx: { ...s.rx, day, logs, doneItems: [], status: day >= s.rx.total ? 'verdict' : 'running' },
       };
+    }
+    case 'retest': return s;
     default: return s;
   }
 }
@@ -85,15 +122,35 @@ export default function App() {
   };
 
   const bookBlood = () => setFlow('baseline');
+  /* Fresh bloods change every score, so the loader runs again in unlock mode
+     and drops you into the tier it just opened. */
   const baselineDone = () => {
     dispatch({ type: 'blood' });
     dispatch({ type: 'tier', tier: 'elite' });
-    setFlow('app'); setTab('discover');
+    setFlow('unlock');
   };
 
-  /* Landing follows state, not habit: with a protocol running the only
-     question that matters is "what do I do today". */
-  const enterApp = () => { setFlow('app'); setTab(st.active ? 'today' : 'discover'); };
+  /* ── protocol lifecycle ── */
+  const [detail, setDetail] = useState(null);
+  const [push, setPush] = useState(null);
+
+  const openDetail = (pk) => { setDetail(pk); setFlow('detail'); };
+  const bookConsult = (slot) => {
+    dispatch({ type: 'book', protocol: detail, slot });
+    setFlow('app'); setTab('today');
+    /* the call happens, the doctor amends, the phone buzzes */
+    setTimeout(() => {
+      dispatch({ type: 'reviewed' });
+      setPush({
+        t: 'Your protocol is ready',
+        s: 'Dr. Mahmoud reviewed it and changed 2 things',
+      });
+    }, 4200);
+  };
+
+  /* Landing follows state, not habit: with a protocol in flight the only
+     question that matters is "what happens next". */
+  const enterApp = () => { setFlow('app'); setTab(st.rx ? 'today' : 'discover'); };
 
   const dark = tab === 'discover' && st.tier !== 'open';
 
@@ -104,6 +161,22 @@ export default function App() {
                onBack={() => (reveal ? (setReveal(null), setFlow('app')) : setFlow('intro'))} />
   );
   else if (flow === 'matching') view = <Matching onDone={enterApp} />;
+  else if (flow === 'unlock') view = (
+    <Matching mode="unlock" onDone={() => { setFlow('app'); setTab('discover'); }} />
+  );
+  else if (flow === 'detail') view = (
+    <ProtocolDetail st={st} pKey={detail}
+      onBack={() => { setFlow('app'); setTab('protocols'); }}
+      onConsult={() => setFlow('consult')}
+      onBuy={() => setFlow('buy')} />
+  );
+  else if (flow === 'consult') view = (
+    <Consult pKey={detail} onBack={() => setFlow('detail')} onBooked={bookConsult} />
+  );
+  else if (flow === 'buy') view = (
+    <BuyScreen pKey={detail} onBack={() => setFlow('detail')}
+      onPaid={() => { dispatch({ type: 'paid' }); setFlow('app'); setTab('today'); }} />
+  );
   else if (flow === 'baseline') view = (
     <Baseline onBack={() => { setFlow('app'); setTab('discover'); }} onDone={baselineDone} />
   );
@@ -118,6 +191,9 @@ export default function App() {
         gap: 5, p: 4, bgcolor: '#0E1D2E',
       }}>
         <Phone>
+          <PushToast push={push} onOpen={() => {
+            setPush(null); setFlow('app'); setTab('today');
+          }} onDismiss={() => setPush(null)} />
           {chrome ? (
             <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ flex: '1 1 auto', minHeight: 0, position: 'relative' }}>
@@ -126,10 +202,12 @@ export default function App() {
                             onBlood={bookBlood} />
                 )}
                 {tab === 'today' && (
-                  <Today st={st} dispatch={dispatch} onGo={setTab} />
+                  <Today st={st} dispatch={dispatch} onGo={setTab}
+                         onBuy={() => { setDetail(st.rx.protocol); setFlow('buy'); }}
+                         onDetail={() => openDetail(st.rx.protocol)} />
                 )}
                 {tab === 'protocols' && (
-                  <Protocols st={st} dispatch={dispatch} onGo={setTab} onBlood={bookBlood} />
+                  <Protocols st={st} onGo={setTab} onDetail={openDetail} />
                 )}
                 {tab === 'twin' && (
                   <Twin st={st} onGo={setTab} onBlood={bookBlood}

@@ -15,11 +15,19 @@ export default function Drum({ from, to, value, onChange, suffix, height = 260 }
   for (let v = from; v <= to; v += 1) vals.push(v);
   const pad = (height - ROW) / 2;
 
+  /* Set the initial scroll after layout. Inside an animating Drawer the
+     element has no scroll height on the first frame, so a synchronous
+     scrollTop is silently dropped and the wheel opens on its lowest value. */
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
     const i = vals.indexOf(value);
-    if (i >= 0) el.scrollTop = i * ROW;
+    if (i < 0) return;
+    let raf2;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        if (ref.current) ref.current.scrollTop = i * ROW;
+      });
+    });
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onScroll = () => {

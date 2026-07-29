@@ -7,8 +7,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import { PANEL, TWINS, DOCTOR } from '../data';
+import { PANEL, TWINS } from '../data';
 import { C } from '../theme';
 
 const SLOTS = [
@@ -78,119 +77,14 @@ export default function Baseline({ onBack, onDone }) {
 
         <Box sx={{ px: 2.75, pb: 3 }}>
           <Button fullWidth variant="contained" color="secondary"
-                  endIcon={<ArrowForwardIcon />} onClick={() => setStep('doctor')}>
-            Meet the doctor reading it
+                  endIcon={<ArrowForwardIcon />} onClick={onDone}>
+            See who you unlocked
           </Button>
         </Box>
       </Box>
     );
   }
 
-
-  /* ── who reads the panel ──
-     A result nobody signs off on is just a number. Naming the clinician
-     before the draw is what turns the panel from a data grab into care —
-     and it's the same person the verdict comes from at week 12. */
-  if (step === 'doctor') {
-    return (
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: C.cream }}>
-        <Box sx={{ flex: '1 1 auto', overflowY: 'auto' }}>
-          {/* portrait band */}
-          <Box sx={{
-            position: 'relative', height: 268,
-            background: `linear-gradient(160deg,${C.deep},#12283F)`,
-          }}>
-            <Box component="img" src={DOCTOR.img} alt=""
-                 sx={{
-                   position: 'absolute', inset: 0, width: '100%', height: '100%',
-                   objectFit: 'cover', objectPosition: 'center 22%',
-                 }} />
-            {/* deep enough that the eyebrow holds against a bright sky */}
-            <Box sx={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(to bottom,rgba(10,22,38,0) 22%,rgba(10,22,38,.55) 62%,rgba(10,22,38,.94) 100%)',
-            }} />
-            <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 0, px: 2.25, pb: 2 }}>
-              <Typography sx={{
-                fontSize: 8.5, fontWeight: 800, letterSpacing: '.2em',
-                textTransform: 'uppercase', color: C.yellow,
-              }}>◈ Your Valeo doctor</Typography>
-              <Typography sx={{
-                fontFamily: '"Fraunces", serif', fontSize: 26, fontWeight: 600,
-                color: '#fff', lineHeight: 1.12, mt: 0.6,
-              }}>{DOCTOR.name}</Typography>
-              <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', mt: 0.7 }}>
-                <VerifiedIcon sx={{ fontSize: 14, color: '#6FD69B' }} />
-                <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,.8)' }}>
-                  {DOCTOR.role}
-                </Typography>
-              </Stack>
-            </Box>
-          </Box>
-
-          <Box sx={{ px: 2.25, pt: 2.25 }}>
-            {/* credentials as a strip, not prose */}
-            <Stack direction="row" sx={{
-              borderRadius: '16px', bgcolor: '#fff', overflow: 'hidden',
-              boxShadow: '0 2px 12px -6px rgba(27,57,91,.3)',
-            }} divider={<Divider orientation="vertical" flexItem />}>
-              {[['Licence', DOCTOR.reg], ['Practising', DOCTOR.years], ['Speaks', DOCTOR.langs]]
-                .map(([k, v]) => (
-                  <Box key={k} sx={{ flex: 1, minWidth: 0, px: 1.25, py: 1.5 }}>
-                    <Typography sx={{
-                      fontSize: 7.5, fontWeight: 800, letterSpacing: '.14em',
-                      textTransform: 'uppercase', color: C.ink2,
-                    }}>{k}</Typography>
-                    <Typography sx={{
-                      fontSize: 11, fontWeight: 700, color: C.deep, mt: 0.5, lineHeight: 1.3,
-                    }}>{v}</Typography>
-                  </Box>
-                ))}
-            </Stack>
-
-            <Typography sx={{ fontSize: 13.5, color: C.ink2, mt: 2.25, lineHeight: 1.55 }}>
-              {DOCTOR.name.split(' ')[1]} focuses on {DOCTOR.focus.toLowerCase()}. He'll have your
-              panel before you do.
-            </Typography>
-
-            <Typography sx={{
-              fontSize: 9, fontWeight: 800, letterSpacing: '.16em', textTransform: 'uppercase',
-              color: C.ink2, mt: 2.75, mb: 1.25,
-            }}>What he does with it</Typography>
-            <Stack spacing={1.1}>
-              {DOCTOR.does.map((d) => (
-                <Stack key={d} direction="row" spacing={1.5} sx={{
-                  alignItems: 'flex-start', px: 1.9, py: 1.6, borderRadius: '15px', bgcolor: '#fff',
-                  boxShadow: '0 2px 10px -6px rgba(27,57,91,.28)',
-                }}>
-                  <CheckIcon sx={{ fontSize: 16, color: C.green, mt: '2px', flexShrink: 0 }} />
-                  <Typography sx={{ fontSize: 13, lineHeight: 1.45, color: C.ink }}>{d}</Typography>
-                </Stack>
-              ))}
-            </Stack>
-
-            <Box sx={{
-              mt: 2.5, mb: 1, p: 2, borderRadius: '18px',
-              bgcolor: 'rgba(64,143,164,.10)', border: '1px solid rgba(64,143,164,.3)',
-            }}>
-              <Typography sx={{ fontSize: 12.5, color: C.ink, lineHeight: 1.55 }}>
-                Nothing starts without his sign-off. If the panel says a protocol is wrong for you,
-                he tells you that instead.
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        <Box sx={{
-          px: 2.25, pt: 1.5, pb: 3, borderTop: `1px solid ${C.line}`, bgcolor: C.cream,
-        }}>
-          <Button fullWidth variant="contained" color="secondary" onClick={onDone}>
-            See who just unlocked
-          </Button>
-        </Box>
-      </Box>
-    );
-  }
 
   /* ── booking ── */
   return (

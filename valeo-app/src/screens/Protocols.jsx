@@ -1,10 +1,7 @@
-import { useState } from 'react';
-import { Box, Button, Stack, Typography, Divider } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ScienceIcon from '@mui/icons-material/Science';
 import LoopRing from '../components/LoopRing';
-import ProtocolSheet from '../components/ProtocolSheet';
-import { PROTOCOLS, PHASES, PHASE_NOTE, phaseOf, TWINS, matchFor } from '../data';
+import { PROTOCOLS, PHASES, phaseOf, TWINS, matchFor, RX_LABEL } from '../data';
 import { C } from '../theme';
 
 /**
@@ -14,9 +11,9 @@ import { C } from '../theme';
  * baseline has nothing to be measured against at week 12, so starting one
  * would quietly break the only promise the product makes.
  */
-export default function Protocols({ st, dispatch, onGo, onBlood }) {
-  const [sheet, setSheet] = useState(null);
-  const a = st.active;
+export default function Protocols({ st, onGo, onDetail }) {
+  const rx = st.rx;
+  const a = rx && ['running', 'verdict'].includes(rx.status) ? rx : null;
   const savedTwins = TWINS.filter((t) => st.saved.includes(t.protocol));
 
   return (
@@ -116,77 +113,50 @@ export default function Protocols({ st, dispatch, onGo, onBlood }) {
           <Stack spacing={1.1}>
             {savedTwins.map((tw) => {
               const p = PROTOCOLS[tw.protocol];
-              const running = a && a.protocol === tw.protocol;
+              const status = rx && rx.protocol === tw.protocol ? rx.status : 'saved';
+              const L = RX_LABEL[status];
               return (
-                <Box key={tw.id} sx={{
-                  borderRadius: '18px', bgcolor: '#fff', overflow: 'hidden',
-                  boxShadow: '0 2px 12px -6px rgba(27,57,91,.3)',
+                <Stack key={tw.id} direction="row" spacing={1.5} onClick={() => onDetail(tw.protocol)}
+                       sx={{
+                  alignItems: 'center', p: 1.75, borderRadius: '18px', bgcolor: '#fff',
+                  cursor: 'pointer', boxShadow: '0 2px 12px -6px rgba(27,57,91,.3)',
                 }}>
-                  <Stack direction="row" spacing={1.5} onClick={() => setSheet(tw)} sx={{
-                    alignItems: 'center', p: 1.75, cursor: 'pointer',
+                  <Box sx={{
+                    width: 46, height: 46, borderRadius: '14px', flexShrink: 0, overflow: 'hidden',
+                    bgcolor: tw.tone, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', fontSize: 15, fontWeight: 800,
+                    color: 'rgba(255,255,255,.85)',
                   }}>
-                    <Box sx={{
-                      width: 46, height: 46, borderRadius: '14px', flexShrink: 0, overflow: 'hidden',
-                      bgcolor: tw.tone, display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', fontSize: 15, fontWeight: 800,
-                      color: 'rgba(255,255,255,.85)',
-                    }}>
-                      {tw.img
-                        ? <Box component="img" src={tw.img} alt=""
-                               sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : tw.mono}
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: C.deep }}>
-                        {p.t}
+                    {tw.img
+                      ? <Box component="img" src={tw.img} alt=""
+                             sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : tw.mono}
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: C.deep }}>
+                      {p.t}
+                    </Typography>
+                    <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', mt: 0.4 }}>
+                      <Box sx={{
+                        width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                        bgcolor: C[L.c],
+                      }} />
+                      <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: C[L.c] }}>
+                        {L.t}
                       </Typography>
-                      <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.2 }}>
-                        {tw.name} · {matchFor(tw, st)}% · {p.wk} wk
-                      </Typography>
-                    </Box>
-                    <ChevronRightIcon sx={{ fontSize: 19, color: C.ink2, flexShrink: 0 }} />
-                  </Stack>
-
-                  <Divider />
-                  {running ? (
-                    <Box sx={{ px: 1.75, py: 1.4, bgcolor: 'rgba(39,153,91,.08)' }}>
-                      <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: C.green }}>
-                        Running · day {a.day}
-                      </Typography>
-                    </Box>
-                  ) : a ? (
-                    <Box sx={{ px: 1.75, py: 1.4 }}>
                       <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>
-                        Queued — one loop at a time, so a verdict means something
+                        · {matchFor(tw, st)}% · {p.wk} wk
                       </Typography>
-                    </Box>
-                  ) : st.blood ? (
-                    <Button fullWidth onClick={() => dispatch({ type: 'start', protocol: tw.protocol })}
-                            sx={{
-                              minHeight: 0, py: 1.4, borderRadius: 0, fontSize: 13, fontWeight: 700,
-                              color: C.deep, bgcolor: 'rgba(255,185,0,.16)',
-                              '&:hover': { bgcolor: 'rgba(255,185,0,.26)' },
-                            }}>
-                      Start this protocol
-                    </Button>
-                  ) : (
-                    <Button fullWidth startIcon={<ScienceIcon sx={{ fontSize: 16 }} />}
-                            onClick={onBlood} sx={{
-                              minHeight: 0, py: 1.4, borderRadius: 0, fontSize: 12.5, fontWeight: 700,
-                              color: C.ink2, '&:hover': { bgcolor: 'rgba(27,57,91,.04)' },
-                            }}>
-                      Baseline needed to start
-                    </Button>
-                  )}
-                </Box>
+                    </Stack>
+                  </Box>
+                  <ChevronRightIcon sx={{ fontSize: 19, color: C.ink2, flexShrink: 0 }} />
+                </Stack>
               );
             })}
           </Stack>
         )}
       </Box>
 
-      <ProtocolSheet twin={sheet} open={!!sheet} onClose={() => setSheet(null)} saved
-                     onSave={() => setSheet(null)} />
     </Box>
   );
 }
