@@ -509,38 +509,214 @@ export function deviceSeries(rx, dev) {
    have not measured shows as unmeasured rather than as a guess — the blanks
    are the honest sales pitch, and they're what the single CTA exists to fill.
    Grading everything on thin data is how a twin stops being believable.   */
-export const SYSTEMS = [
-  { k: 'metab',  t: 'Metabolic',        x: 100, y: 176, needs: ['blood'],           g: 'B' },
-  { k: 'heart',  t: 'Heart & vascular', x: 100, y: 132, needs: ['blood'],           g: 'B' },
-  { k: 'thyroid',t: 'Thyroid',          x: 100, y: 96,  needs: ['blood'],           g: 'C' },
-  { k: 'inflam', t: 'Inflammation',     x: 128, y: 158, needs: ['blood'],           g: 'B' },
-  { k: 'liver',  t: 'Liver',            x: 118, y: 190, needs: ['blood'],           g: 'A' },
-  { k: 'kidney', t: 'Kidney',           x: 78,  y: 196, needs: ['blood'],           g: 'B' },
-  { k: 'hormone',t: 'Sex hormones',     x: 100, y: 214, needs: ['blood', 'basic'],  g: 'C' },
-  { k: 'nutri',  t: 'Nutrients',        x: 72,  y: 158, needs: ['blood', 'food'],   g: 'B' },
-  { k: 'sleep',  t: 'Sleep & recovery', x: 100, y: 62,  needs: ['sleep'],           g: 'C' },
-  { k: 'stress', t: 'Stress load',      x: 128, y: 96,  needs: ['stress'],          g: 'B' },
-  { k: 'comp',   t: 'Body composition', x: 100, y: 248, needs: ['basic'],           g: 'B' },
-  { k: 'fitness',t: 'Fitness',          x: 100, y: 300, needs: ['life'],            g: 'B' },
+/* ── SYSTEMS, grouped into six body regions ──────────────────
+   Twelve tap targets on a 270px body gives ~20px hit areas against a 44px
+   minimum, which is a hard accessibility failure. Six regions fix that and
+   add a real hierarchy: the body carries regions, a region carries systems.
+
+   Two kinds of statement live here and they must never look alike:
+   · measured  — a lab value, so it earns a letter grade and a provenance date
+   · reported  — something you told us, so we show WHAT YOU SAID, never a
+                 grade we invented. Grading self-report is the same offence as
+                 an unfalsifiable biological age.                            */
+/* Four zones, not six dots. Six markers on a 380-unit body cannot give 44px
+   targets without overlapping — the arithmetic simply does not work at 390px.
+   Four y-bands do, and painting the grade ONTO the body reads better than
+   pinning a dot beside it. */
+export const REGIONS = [
+  { k: 'headneck', t: 'Head & neck', y0: 18,  y1: 112, cy: 66  },
+  { k: 'chest',    t: 'Chest',       y0: 112, y1: 176, cy: 144 },
+  { k: 'core',     t: 'Core',        y0: 176, y1: 250, cy: 212 },
+  { k: 'limbs',    t: 'Limbs',       y0: 250, y1: 374, cy: 300 },
 ];
+
+export const SYSTEMS = [
+  { k: 'nutri', t: 'Nutrients', region: 'chest', needs: ['blood'], lever: 1,
+    g: 'D', src: 'Panel · 12 Mar', ref: 'Ferritin 38 µg/L · target 50–150',
+    why: 'Under 50 limits oxygen transport, which caps VO₂max and stalls collagen.',
+    move: 'Iron with vitamin C, mornings' },
+  { k: 'inflam', t: 'Inflammation', region: 'chest', needs: ['blood'], lever: 2,
+    g: 'B', src: 'Panel · 12 Mar', ref: 'hsCRP 1.4 mg/L · optimal under 1.0',
+    why: 'Low-grade inflammation slows recovery from everything else you do.',
+    move: 'Ferritin first — iron deficiency raises hsCRP' },
+  { k: 'sleep', t: 'Sleep & recovery', region: 'headneck', needs: ['sleep'], lever: 3,
+    reported: true, sayKey: 'sleep',
+    why: 'Short sleep blunts every other lever you pull.',
+    move: 'Wear a ring for two weeks so this stops being a guess' },
+  { k: 'thyroid', t: 'Thyroid', region: 'headneck', needs: ['blood'], lever: 4,
+    g: 'C', src: 'Panel · 12 Mar', ref: 'TSH 4.2 mIU/L · range 0.4–4.0',
+    why: 'TSH sits just above range, so your metabolic rate runs slightly low.',
+    move: 'Recheck TSH with free T4 at your next draw' },
+  { k: 'hormone', t: 'Sex hormones', region: 'core', needs: ['blood', 'basic'], lever: 5,
+    g: 'C', src: 'Panel · 12 Mar', ref: 'Free T 9.1 ng/dL · range 8.7–25',
+    why: 'Free testosterone sits at the bottom of range for your age.',
+    move: 'A 7h sleep floor does more here than any supplement' },
+  { k: 'heart', t: 'Heart & vascular', region: 'chest', needs: ['blood'], lever: 6,
+    g: 'B', src: 'Panel · 12 Mar', ref: 'ApoB 78 mg/dL · target under 60',
+    why: 'ApoB is the number that predicts arterial risk. Yours is mid-range.',
+    move: 'Omega-3 to an index above 8%' },
+  { k: 'stress', t: 'Stress load', region: 'headneck', needs: ['stress'], lever: 7,
+    reported: true, sayKey: 'stress',
+    why: 'Sustained load keeps cortisol high, which holds visceral fat in place.',
+    move: 'Answer the weekly check-in' },
+  { k: 'comp', t: 'Body composition', region: 'limbs', needs: ['basic'], lever: 8,
+    reported: true, sayKey: 'weight', unit: ' kg',
+    why: 'We only have what you typed. A body snapshot would make this real.',
+    move: 'Log a body snapshot this week' },
+  { k: 'fitness', t: 'Fitness', region: 'limbs', needs: ['life'], lever: 9,
+    reported: true, sayKey: 'move',
+    why: 'Self-reported activity is the weakest signal we hold.',
+    move: 'Pair a watch and this measures itself' },
+  { k: 'metab', t: 'Metabolic', region: 'core', needs: ['blood'], lever: 10,
+    g: 'B', src: 'Panel · 12 Mar', ref: 'HbA1c 5.4% · optimal under 5.4',
+    why: 'Glucose handling is sound. Nothing here is holding you back.', move: null },
+  { k: 'kidney', t: 'Kidney', region: 'core', needs: ['blood'], lever: 11,
+    g: 'B', src: 'Panel · 12 Mar', ref: 'eGFR 98 · range above 90',
+    why: 'Filtration is normal, which is why creatine is safe for you.', move: null },
+  { k: 'liver', t: 'Liver', region: 'core', needs: ['blood'], lever: 12,
+    g: 'A', src: 'Panel · 12 Mar', ref: 'ALT 22 U/L · range 7–56',
+    why: 'Clean. No action needed.', move: null },
+];
+
 export const GRADE_C = { A: '#27995B', B: '#408FA4', C: '#E0A400', D: '#E94F5F' };
 
-/* A system is graded only when every signal it depends on exists. */
+/* A system resolves only when every signal it depends on exists. Measured
+   systems return a grade; reported ones return the user's own words, never a
+   grade we invented. */
 export function gradeFor(sys, st) {
   const missing = sys.needs.filter((n) => !signalDone(n, st));
-  return missing.length ? { grade: null, missing } : { grade: sys.g, missing: [] };
+  if (missing.length) return { grade: null, said: null, missing };
+  if (sys.reported) {
+    const v = (st.qa || {})[sys.sayKey];
+    return { grade: null, said: v ? String(v) + (sys.unit || '') : null, missing: [] };
+  }
+  return { grade: sys.g, said: null, missing: [] };
 }
 export function systemsState(st) {
-  const rows = SYSTEMS.map((s) => ({ ...s, ...gradeFor(s, st) }));
-  return {
-    rows,
-    measured: rows.filter((r) => r.grade).length,
-    total: rows.length,
-  };
+  const rows = SYSTEMS.map((x) => ({ ...x, ...gradeFor(x, st) }))
+    .sort((a, b) => a.lever - b.lever);
+  return { rows, known: rows.filter((r) => r.grade || r.said).length, total: rows.length };
 }
+
+/* A region shows the WORST thing inside it, because a region is a warning
+   light and not an average. Averaging hides the one row that matters. */
+const GRADE_RANK = { D: 0, C: 1, B: 2, A: 3 };
+export function regionsState(st) {
+  const { rows } = systemsState(st);
+  return REGIONS.map((rg) => {
+    const inside = rows.filter((r) => r.region === rg.k);
+    const graded = inside.filter((r) => r.grade)
+      .sort((a, b) => GRADE_RANK[a.grade] - GRADE_RANK[b.grade]);
+    return {
+      ...rg,
+      inside,
+      grade: graded.length ? graded[0].grade : null,
+      known: inside.some((r) => r.grade || r.said),
+      unknown: inside.filter((r) => !r.grade && !r.said).length,
+    };
+  });
+}
+
+/* The one thing worth saying and the one thing worth doing, ranked by our own
+   lever order rather than by severity: a bad number you cannot move is not
+   the most important number. */
+export function constraintOf(st) {
+  const { rows } = systemsState(st);
+  return rows.find((r) => (r.grade || r.said) && r.move) || null;
+}
+
+/* One sentence for the top of the screen. When the twin is thin the sentence
+   blames the model, never the person. */
+export function verdictOf(st) {
+  const { rows, known, total } = systemsState(st);
+  if (known === 0) return 'I don’t know you yet.';
+  if (known < total / 2) return 'Reading ' + known + ' of ' + total + ' systems.';
+  const bad = rows.filter((r) => r.grade === 'D' || r.grade === 'C').length;
+  if (bad === 0) return 'Nothing is holding you back.';
+  return bad === 1 ? 'One system is holding you back.'
+                   : bad + ' systems are holding you back.';
+}
+
+/* Things the twin noticed. Derived from real state, never canned — this is the
+   seed of a feed architecture, and it degrades to nothing rather than filler. */
+export function noticings(st) {
+  const out = [];
+  const rx = st.rx;
+  if (rx && rx.devices && rx.devices.length) {
+    out.push({ k: 'dev', t: DEVICES[rx.devices[0]].t + ' is covering sleep now',
+      s: 'That is one fewer thing you log by hand.' });
+  }
+  if (rx && rx.day && rx.logs) {
+    const gaps = rx.day - rx.logs.length;
+    if (gaps > 2) out.push({ k: 'gap', t: gaps + ' days unlogged',
+      s: 'Confidence in your reported systems is decaying. Data has a half-life.' });
+  }
+  if (rx && rx.body && rx.body.length > 1) {
+    const a = rx.body[0].kg, b = rx.body[rx.body.length - 1].kg;
+    const dl = Math.round((b - a) * 10) / 10;
+    if (dl !== 0) {
+      out.push({ k: 'body', t: 'Weight ' + (dl > 0 ? 'up ' : 'down ') + Math.abs(dl) + ' kg',
+        s: 'A proxy, not the verdict. The retest still decides.' });
+    }
+  }
+  if (!st.blood) {
+    out.push({ k: 'blood', t: 'Six systems are waiting on one blood draw',
+      s: 'It is the single biggest jump available to you.' });
+  }
+  return out.slice(0, 3);
+}
+
+/* ── SIMULATION ──
+   Two kinds of no, which is the thing nobody else offers: "this is not real"
+   and "this is real but not for you". Collapsing them is how trust is lost. */
+export const SIM_EXAMPLES = [
+  {
+    label: 'A reel about ashwagandha for cortisol',
+    src: 'instagram.com/reel/…',
+    claim: 'Lowers cortisol and improves recovery',
+    verdict: 'no',
+    evidence: 'Small trials show a modest cortisol reduction. The recovery claim is extrapolated from that, not measured.',
+    onYou: [
+      { sys: 'Thyroid', dir: 'worse', t: 'TSH is already 4.2. Ashwagandha pushes thyroid output.' },
+      { sys: 'Stress load', dir: 'better', t: 'Plausible small benefit.' },
+    ],
+    collides: 'Nothing in your protocol, but it works against your thyroid finding.',
+    instead: 'Magnesium and breathwork get the stress effect without touching the thyroid.',
+  },
+  {
+    label: 'Creatine + beta-alanine stack',
+    src: 'Sent by a friend',
+    claim: 'Adds strength and delays fatigue',
+    verdict: 'yes',
+    evidence: 'Creatine is among the best-evidenced supplements that exist. Beta-alanine holds up for efforts over 60 seconds.',
+    onYou: [
+      { sys: 'Fitness', dir: 'better', t: 'eGFR 98 means creatine is safe for you.' },
+      { sys: 'Nutrients', dir: 'flat', t: 'No interaction with your iron correction.' },
+    ],
+    collides: 'Nothing. It sits alongside your current protocol.',
+    instead: null,
+  },
+  {
+    label: 'A 7-day liver cleanse',
+    src: 'tiktok.com/@…',
+    claim: 'Flushes toxins and resets the liver',
+    verdict: 'bunk',
+    evidence: 'There is no mechanism. Livers are not cleansed by diets, and "toxins" is never specified.',
+    onYou: [
+      { sys: 'Liver', dir: 'flat', t: 'Your ALT is 22. There is nothing here to fix.' },
+    ],
+    collides: 'The fasting component would interrupt your iron dosing.',
+    instead: 'Nothing. This is not a wrong-for-you question, it is a not-real question.',
+  },
+];
+export const SIM_VERDICT = {
+  yes:  { t: 'Worth doing', c: 'green',      s: 'Evidence holds and it fits you' },
+  no:   { t: 'Not for you', c: 'coral',      s: 'Real effect, wrong person' },
+  bunk: { t: 'Not real',    c: 'ink2',       s: 'The claim does not hold for anyone' },
+};
 /* What the single CTA should do next: the cheapest unmet signal first. */
 export function nextGap(st) {
-  const order = ['basic', 'life', 'food', 'sleep', 'stress', 'goal', 'blood'];
+  const order = ['blood', 'basic', 'life', 'sleep', 'stress', 'food', 'goal'];
   const k = order.find((x) => !signalDone(x, st));
   if (!k) return null;
   const s = SIGNALS.find((x) => x.k === k);
