@@ -25,33 +25,37 @@ export default function ProtocolDetail({ st, pKey, onBack, onConsult, onBuy }) {
   const status = st.rx && st.rx.protocol === pKey ? st.rx.status : 'saved';
   const reviewed = status === 'ready';
   const booked = status === 'booked';
-  const bloods = reviewed ? p.bloodFirst : null;   /* null = doctor decides */
+  const first = tw ? tw.name.split(' ')[0] : null;
 
-  /* The sequence. Bloods sit in it either way — resolved after the call. */
+  /* Some protocols never need bloods — a consult is enough — so that step is
+     absent rather than crossed out. Where the doctor has to decide, the step
+     is present and undecided, then resolves on the call. */
+  const needsBloods = p.blood !== 'no';
+
   const steps = [
     {
-      n: 1, t: 'Consultation with a Valeo doctor',
+      t: 'Consultation with a Valeo doctor',
       s: booked ? `Booked · ${st.rx.slot}` : reviewed ? 'Done' : '30 min video call · required',
       state: reviewed ? 'done' : booked ? 'now' : 'next',
     },
+    ...(needsBloods ? [{
+      t: 'Blood baseline',
+      s: reviewed
+        ? 'Needed first — included in your package'
+        : `${DOCTOR.name.split(' ')[1]} decides on the call`,
+      state: reviewed ? 'next' : 'maybe',
+    }] : []),
     {
-      n: 2, t: 'Blood baseline',
-      s: bloods === null
-        ? `${DOCTOR.name.split(' ')[1]} decides on the call`
-        : bloods ? 'Needed first — included in your package' : 'Not needed for this one',
-      state: bloods === null ? 'maybe' : bloods ? (reviewed ? 'next' : 'later') : 'skip',
-    },
-    {
-      n: 3, t: `Run it for ${p.wk} weeks`,
+      t: `Run it for ${p.wk} weeks`,
       s: `${p.items.length} things, delivered to you`,
       state: 'later',
     },
     {
-      n: 4, t: `Retest ${p.mk}`,
+      t: `Retest ${p.mk}`,
       s: 'The number that decides whether it worked',
       state: 'later',
     },
-  ];
+  ].map((x, i) => ({ ...x, n: i + 1 }));
 
   const grouped = KIND_ORDER
     .map((k) => ({ k, list: p.items.filter((i) => i.k === k) }))
@@ -75,8 +79,15 @@ export default function ProtocolDetail({ st, pKey, onBack, onConsult, onBuy }) {
         }}>
           {reviewed ? '◈ Reviewed and amended' : '◈ Protocol'}
         </Typography>
+        {/* whose protocol this is — the reason they swiped right */}
+        {first && (
+          <Typography sx={{
+            fontSize: 12.5, fontWeight: 700, color: 'rgba(255,255,255,.6)', mt: 0.9,
+          }}>{first}’s</Typography>
+        )}
         <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 27, fontWeight: 600, lineHeight: 1.12, mt: 0.75,
+          fontFamily: '"Fraunces", serif', fontSize: 27, fontWeight: 600, lineHeight: 1.12,
+          mt: first ? 0.2 : 0.75,
         }}>{p.t}</Typography>
         <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,.66)', mt: 0.9, lineHeight: 1.45 }}>
           {p.goal}
@@ -247,7 +258,7 @@ export default function ProtocolDetail({ st, pKey, onBack, onConsult, onBuy }) {
               Buy protocol · SAR {p.price.toLocaleString()}
             </Button>
             <Typography sx={{ fontSize: 11, color: C.ink2, textAlign: 'center', mt: 1.25 }}>
-              {p.bloodFirst ? 'Bloods and ' : ''}first month, delivered. Cancel any time.
+    {p.blood !== 'no' ? 'Blood test and ' : ''}first month, delivered. Cancel any time.
             </Typography>
           </>
         ) : (

@@ -5,11 +5,11 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import ScienceIcon from '@mui/icons-material/Science';
-import LoopRing from '../components/LoopRing';
-import CoachSheet from '../components/CoachSheet';
+import RunHero from '../components/RunHero';
+import TwinChat from '../components/TwinChat';
 import Trend from '../components/Trend';
 import LogSheet from '../components/LogSheet';
-import { PROTOCOLS, KINDS, DOCTOR, logKindFor, LOG_KINDS } from '../data';
+import { PROTOCOLS, KINDS, DOCTOR, logKindFor, LOG_KINDS, arcFor, nextMilestone } from '../data';
 import { C } from '../theme';
 
 /**
@@ -126,9 +126,9 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail }) {
 
           <Label sx={{ mt: 3 }}>Then it starts</Label>
           <Stack spacing={1.25}>
-            <Step n="1" t={p.bloodFirst ? 'Bloods first' : 'Package arrives'}
-                  s={p.bloodFirst ? 'A nurse draws your baseline at home'
-                                  : 'A nurse brings it and stays for the first dose'} />
+            <Step n="1" t={p.blood !== 'no' ? 'Blood test first' : 'Package arrives'}
+                  s={p.blood !== 'no' ? 'A nurse draws your baseline at home'
+                                      : 'A nurse brings it and stays for the first dose'} />
             <Step n="2" t={`Run it ${p.wk} weeks`} s={`${p.items.length} things, logged daily`} />
             <Step n="3" t={`Retest ${p.mk}`} s="Verdict day" />
           </Stack>
@@ -147,7 +147,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail }) {
     return (
       <Shell coach={coach} setCoach={setCoach}>
         <Head sub="Tuesday 28 July"
-              title={p.bloodFirst ? 'Nurse comes Thursday.' : 'Arriving tomorrow, 9–11am.'} />
+              title={p.blood !== 'no' ? 'Blood test on Thursday.' : 'Arriving tomorrow, 9–11am.'} />
         <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
           <Box sx={{
             p: 2.25, borderRadius: '20px', color: '#fff',
@@ -155,7 +155,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail }) {
           }}>
             <LocalShippingIcon sx={{ fontSize: 26 }} />
             <Typography sx={{ fontSize: 15.5, fontWeight: 700, mt: 1.25 }}>
-              {p.bloodFirst ? 'Baseline draw, then your package' : 'Nadia is bringing it'}
+              {p.blood !== 'no' ? 'Blood draw, then your package' : 'Nadia is bringing it'}
             </Typography>
             <Typography sx={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)', mt: 0.6, lineHeight: 1.5 }}>
               She stays for the first dose and shows you how to do the rest.
@@ -213,6 +213,16 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail }) {
   const valid = rx.logs.length >= need;
   const doneCount = rx.doneItems.length;
 
+  const arc = arcFor(p, rx.day);
+  const milestone = nextMilestone(p, rx.day);
+  /* Held back until there is enough to say something true. */
+  const felt = rx.logs.filter((l) => l.kind === 'felt');
+  const insight = rx.logs.length >= 10
+    ? `You have logged ${rx.logs.length} of ${rx.day} days. ${felt.length >= 5
+        ? 'Side effects clustered in week two and have not recurred since day 16.'
+        : 'Consistency is high enough that the retest will be attributable to the protocol.'}`
+    : null;
+
   /* proxy series — a weekly weigh-in, so the chart has something honest in it */
   const series = rx.logs.filter((l) => l.kind === 'proxy').map((l) => ({ d: l.day, v: l.v }));
   const points = [{ d: 1, v: 96 }, ...series].filter((pt, i, arr) =>
@@ -251,26 +261,8 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail }) {
       <Head sub={`Day ${rx.day} · ${p.t}`}
             title={loggedToday ? 'Logged. Nothing else owed.' : `${doneCount} of ${p.items.length} done.`} />
       <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
-        {/* the loop position */}
-        <Stack direction="row" spacing={2} sx={{
-          alignItems: 'center', p: 2, borderRadius: '20px', bgcolor: '#fff',
-          boxShadow: '0 2px 12px -6px rgba(27,57,91,.3)',
-        }}>
-          <LoopRing size={82} phase="Act" fill={rx.day / rx.total}
-                    label={rx.day} sub={`of ${rx.total}`} />
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{
-              fontSize: 8.5, fontWeight: 800, letterSpacing: '.16em',
-              textTransform: 'uppercase', color: C.yellow,
-            }}>◈ Act</Typography>
-            <Typography sx={{ fontSize: 15, fontWeight: 700, color: C.deep, mt: 0.5 }}>
-              {rx.total - rx.day} days to the verdict
-            </Typography>
-            <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.3 }}>
-              Retest {p.mk}
-            </Typography>
-          </Box>
-        </Stack>
+        <RunHero day={rx.day} total={rx.total} week={Math.ceil(rx.day / 7)} weeks={p.wk}
+                 arc={arc} logs={rx.logs} milestone={milestone} />
 
         {/* today's log — the one thing that keeps the verdict valid */}
         <Label sx={{ mt: 3 }}>Today's log</Label>
@@ -317,8 +309,28 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail }) {
             sx={{ '& .MuiLinearProgress-bar': { background: valid ? C.green : C.yellow } }} />
         </Box>
 
+        {/* The reward for logging is an insight, not a badge. Whoop holds this
+            back until it has enough yes/no logs to say something true — so do we. */}
+        {insight && (
+          <Stack direction="row" spacing={1.5} sx={{
+            alignItems: 'flex-start', mt: 1.5, px: 1.9, py: 1.75, borderRadius: '17px',
+            bgcolor: 'rgba(64,143,164,.09)', border: '1px solid rgba(64,143,164,.28)',
+          }}>
+            <Box sx={{ fontSize: 15, flexShrink: 0, mt: '1px' }}>◈</Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{
+                fontSize: 9, fontWeight: 800, letterSpacing: '.14em',
+                textTransform: 'uppercase', color: C.teal,
+              }}>What your logs show</Typography>
+              <Typography sx={{ fontSize: 12.5, color: C.ink, mt: 0.6, lineHeight: 1.5 }}>
+                {insight}
+              </Typography>
+            </Box>
+          </Stack>
+        )}
+
         {/* what to actually do */}
-        <Label sx={{ mt: 3 }}>Doing</Label>
+        <Label sx={{ mt: 3 }}>Doing today</Label>
         <Stack spacing={1}>
           {p.items.map((it, i) => {
             const on = rx.doneItems.includes(i);
@@ -338,11 +350,20 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail }) {
                 }}>{on && <CheckIcon sx={{ fontSize: 13, color: '#fff' }} />}</Box>
                 <Box sx={{ fontSize: 14, flexShrink: 0 }}>{KINDS[it.k].ic}</Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{
-                    fontSize: 13.5, fontWeight: 600,
-                    color: on ? C.ink2 : C.deep,
-                    textDecoration: on ? 'line-through' : 'none',
-                  }}>{it.t}</Typography>
+                  <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center' }}>
+                    <Typography sx={{
+                      fontSize: 13.5, fontWeight: 600,
+                      color: on ? C.ink2 : C.deep,
+                      textDecoration: on ? 'line-through' : 'none',
+                    }}>{it.t}</Typography>
+                    {KINDS[it.k].rx && !on && (
+                      <Typography sx={{
+                        fontSize: 8, fontWeight: 800, letterSpacing: '.1em', flexShrink: 0,
+                        textTransform: 'uppercase', color: C.yellowDeep,
+                        px: 0.6, py: '2px', borderRadius: '4px', bgcolor: 'rgba(255,185,0,.16)',
+                      }}>Rx</Typography>
+                    )}
+                  </Stack>
                   <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.15 }}>{it.d}</Typography>
                 </Box>
               </Stack>
@@ -362,6 +383,37 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail }) {
             </Box>
           </>
         )}
+
+        <Label sx={{ mt: 3 }}>The whole run</Label>
+        <Stack spacing={0.9}>
+          {arc.all.map((a, i) => {
+            const done = i < arc.idx;
+            const now = i === arc.idx;
+            return (
+              <Stack key={a.t} direction="row" spacing={1.5} sx={{
+                alignItems: 'center', px: 1.75, py: 1.4, borderRadius: '14px',
+                bgcolor: now ? 'rgba(255,185,0,.12)' : '#fff',
+                border: `1px solid ${now ? 'rgba(255,185,0,.45)' : 'transparent'}`,
+                boxShadow: now ? 'none' : '0 2px 10px -6px rgba(27,57,91,.24)',
+                opacity: done ? 0.55 : 1,
+              }}>
+                <Box sx={{
+                  width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  bgcolor: done ? C.green : now ? C.yellow : 'rgba(27,57,91,.08)',
+                }}>
+                  {done && <CheckIcon sx={{ fontSize: 12, color: '#fff' }} />}
+                </Box>
+                <Typography sx={{
+                  flex: 1, fontSize: 13, fontWeight: now ? 700 : 500, color: C.deep,
+                }}>{a.t}</Typography>
+                <Typography sx={{ fontSize: 11, color: C.ink2, flexShrink: 0 }}>
+                  to week {a.to}
+                </Typography>
+              </Stack>
+            );
+          })}
+        </Stack>
 
         <Button fullWidth variant="text" onClick={() => dispatch({ type: 'advance' })}
                 sx={{ mt: 2, fontSize: 12.5, color: C.ink2 }}>
@@ -391,15 +443,15 @@ function Shell({ children, coach, setCoach }) {
             bgcolor: 'rgba(255,255,255,.12)', color: C.yellow,
           }}>◎</Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: 13.5, fontWeight: 700 }}>Ask your coach</Typography>
+            <Typography sx={{ fontSize: 13.5, fontWeight: 700 }}>Ask your twin</Typography>
             <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,.6)', mt: 0.2 }}>
-              Escalates to {DOCTOR.name.split(' ')[1]} when it matters
+              It knows your protocol, your logs and your panel
             </Typography>
           </Box>
           <ChevronRightIcon sx={{ fontSize: 19, color: 'rgba(255,255,255,.5)', flexShrink: 0 }} />
         </Stack>
       </Box>
-      <CoachSheet open={coach} onClose={() => setCoach(false)} />
+      <TwinChat open={coach} onClose={() => setCoach(false)} />
     </Box>
   );
 }

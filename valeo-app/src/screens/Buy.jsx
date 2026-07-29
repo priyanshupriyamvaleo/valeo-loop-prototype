@@ -18,7 +18,7 @@ export default function Buy({ pKey, onBack, onPaid }) {
   const p = PROTOCOLS[pKey];
   const [paid, setPaid] = useState(false);
 
-  const bloods = p.bloodFirst ? 449 : 0;
+  const bloods = p.blood !== 'no' ? 449 : 0;
   const total = p.price + bloods;
 
   if (paid) {
@@ -33,17 +33,17 @@ export default function Buy({ pKey, onBack, onPaid }) {
         }}>
           <CheckCircleIcon sx={{ fontSize: 62, color: '#6FD69B' }} />
           <Typography variant="overline" sx={{ color: C.yellow, mt: 2.5, display: 'block' }}>
-            ◈ Loop 1 begins
+            ◈ Protocol 1 begins
           </Typography>
           <Typography variant="h1" sx={{ mt: 1.25 }}>
-            {p.bloodFirst ? 'Bloods Thursday.' : 'It ships tonight.'}
+            {p.blood !== 'no' ? 'Blood test on Thursday.' : 'It ships tonight.'}
           </Typography>
           <Typography sx={{
             fontSize: 14.5, color: 'rgba(255,255,255,.66)', mt: 1.75, lineHeight: 1.5,
           }}>
-            {p.bloodFirst
-              ? 'A nurse draws your baseline, then the package follows.'
-              : 'A nurse brings it to you tomorrow and walks you through the first dose.'}
+            {p.blood !== 'no'
+              ? 'A nurse draws your baseline at home, then your package follows.'
+              : 'A nurse brings it tomorrow and walks you through the first dose.'}
           </Typography>
 
           <Stack direction="row" spacing={1.5} sx={{
@@ -112,7 +112,7 @@ export default function Buy({ pKey, onBack, onPaid }) {
           mt: 2.5, borderRadius: '18px', bgcolor: 'rgba(27,57,91,.035)', p: 2,
         }}>
           <Row k={`${p.t} · first month`} v={`SAR ${p.price.toLocaleString()}`} />
-          {p.bloodFirst && <Row k="Blood baseline (half price)" v={`SAR ${bloods}`} />}
+          {p.blood !== 'no' && <Row k="Blood test (half price)" v={`SAR ${bloods}`} />}
           <Row k="Nurse visits & delivery" v="Included" muted />
           <Row k={`${DOCTOR.name.split(' ')[1]}'s review`} v="Free" muted />
           <Divider sx={{ my: 1.5 }} />

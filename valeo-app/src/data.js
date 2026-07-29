@@ -2,7 +2,16 @@
 
 export const PROTOCOLS = {
   P_SLEEP: {
-    price: 1850, bloodFirst: false,
+    arc: [
+      { to: 3,  t: 'Hygiene first', b: 'Light and caffeine timing do most of the work. Nothing injectable yet.' },
+      { to: 6,  t: 'DSIP added', b: 'Deep sleep should lengthen before total sleep does. Watch latency, not hours.' },
+      { to: 8,  t: 'Consolidate', b: 'HRV is the read-out. A rising baseline means recovery is catching up.' },
+    ],
+    milestones: [
+      { d: 21, t: 'DSIP starts' },
+      { d: 56, t: 'Retest HRV' },
+    ],
+    price: 1850, blood: 'maybe',
     items: [
       { k: 'pep', t: 'DSIP',                 d: '100 mcg, nights, 5 on 2 off' },
       { k: 'sup', t: 'Magnesium threonate',  d: '400 mg, 2h before bed' },
@@ -23,7 +32,16 @@ export const PROTOCOLS = {
     wrongFor: 'Shift workers on rotating nights — the light timing does more harm than good.',
   },
   P_WEIGHT: {
-    price: 3400, bloodFirst: true,
+    arc: [
+      { to: 4,  t: 'Titration', b: 'Your gut is adapting to tirzepatide. Nausea peaks around day 10 and settles by week 3.' },
+      { to: 8,  t: 'Steady state', b: 'Appetite signalling has reset. This is where fat loss starts outpacing water loss.' },
+      { to: 12, t: 'Final stretch', b: 'HbA1c reflects your last 90 days, so the retest is now reading the whole run.' },
+    ],
+    milestones: [
+      { d: 28, t: 'Dose goes to 5 mg' },
+      { d: 56, t: 'Body composition check' },
+    ],
+    price: 3400, blood: 'maybe',
     items: [
       { k: 'glp', t: 'Tirzepatide',          d: '2.5 → 5 mg, weekly injection' },
       { k: 'iv',  t: 'B-complex + carnitine',d: '250 ml, fortnightly' },
@@ -44,7 +62,7 @@ export const PROTOCOLS = {
     wrongFor: 'Anyone with a history of pancreatitis, or planning pregnancy inside a year.',
   },
   P_SKIN: {
-    price: 2100, bloodFirst: false,
+    price: 2100, blood: 'no',
     items: [
       { k: 'pep', t: 'GHK-Cu topical',       d: 'Nights, after cleansing' },
       { k: 'sup', t: 'Tretinoin 0.05%',      d: 'Nights, buffered, alternate days first month' },
@@ -65,7 +83,17 @@ export const PROTOCOLS = {
     wrongFor: 'Pregnancy, breastfeeding, or active eczema on the face.',
   },
   P_ATH: {
-    price: 2750, bloodFirst: true,
+    arc: [
+      { to: 4,  t: 'Base', b: 'You are building mitochondrial density. It will not feel like progress yet — that is expected.' },
+      { to: 8,  t: 'Load', b: 'Intervals are in. HRV decides whether you go hard on any given day.' },
+      { to: 12, t: 'Sharpen', b: 'Lactate clearance improves before VO₂max does. Pace at threshold should feel easier.' },
+      { to: 16, t: 'Peak', b: 'Adaptations consolidate. Volume drops, quality holds.' },
+    ],
+    milestones: [
+      { d: 35, t: 'Intervals begin' },
+      { d: 84, t: 'Mid-point lactate test' },
+    ],
+    price: 2750, blood: 'no',
     items: [
       { k: 'pep', t: 'BPC-157',              d: '250 mcg daily, 6 week block' },
       { k: 'iv',  t: 'Recovery drip',        d: 'Saline, magnesium, B12 — weekly' },
@@ -86,7 +114,7 @@ export const PROTOCOLS = {
     wrongFor: 'Uncontrolled hypertension, or anyone inside 6 weeks of a soft-tissue injury.',
   },
   P_LONG: {
-    price: 5200, bloodFirst: true,
+    price: 5200, blood: 'maybe',
     items: [
       { k: 'glp', t: 'Rapamycin',            d: '5 mg, weekly pulse, supervised' },
       { k: 'pep', t: 'NAD+ precursor',       d: '500 mg daily' },
@@ -107,7 +135,7 @@ export const PROTOCOLS = {
     wrongFor: 'Anyone immunosuppressed, or with an active infection.',
   },
   P_TEST: {
-    price: 2400, bloodFirst: true,
+    price: 2400, blood: 'maybe',
     items: [
       { k: 'glp', t: 'Enclomiphene',         d: '12.5 mg, alternate days — only if labs justify it' },
       { k: 'sup', t: 'Zinc + vitamin D',     d: 'To sufficiency, retested at week 8' },
@@ -128,7 +156,7 @@ export const PROTOCOLS = {
     wrongFor: 'Anyone trying to conceive in the next 12 months without a fertility review first.',
   },
   P_FOCUS: {
-    price: 1950, bloodFirst: false,
+    price: 1950, blood: 'no',
     items: [
       { k: 'pep', t: 'Semax',                d: '300 mcg, mornings, 4 week block' },
       { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily — cognitive, not just muscular' },
@@ -300,13 +328,34 @@ export function phaseOf(active) {
   return 'Act';
 }
 
-/* ── AI COACH ── a short, honest exchange that escalates rather than guesses */
-export const COACH = [
-  { me: false, t: 'Ask me anything about your protocol. I escalate to Dr. Mahmoud when it needs a prescriber.' },
+/* ── YOUR TWIN ──
+   It answers from what it knows about you, and it says plainly where its
+   authority ends. Escalation is the user's call, offered — not a scripted
+   hand-off, because an assistant that decides to involve a doctor on your
+   behalf is making a medical decision. */
+export const TWIN_CHAT = [
+  { me: false, t: 'I know your protocol, your logs and your last panel. Ask me anything.' },
   { me: true,  t: 'Nausea is bad this week. Should I drop the dose?' },
-  { me: false, t: 'Week 2 nausea is expected on tirzepatide and usually settles by week 4. You logged it on 4 of 6 days.' },
-  { me: false, t: "I'm not going to change your dose — that's a prescriber decision. Sending this to Dr. Mahmoud with your logs.", esc: true },
+  { me: false, t: 'You logged nausea on 4 of the last 6 days. On tirzepatide that peaks around day 10 and usually settles by week 3 — you are on day 12.' },
+  { me: false, t: 'Two things you can do without changing anything: take it after food, and split your evening meal. Both cut nausea in most people.' },
+  { me: false, t: 'Changing the dose is a prescriber decision and I will not guess at it. If it is not easing by day 18, send this to Dr. Mahmoud.', offer: true },
 ];
+
+/* Any protocol without a written arc still needs a phase name and a line. */
+export function arcFor(p, day) {
+  const wk = Math.ceil(day / 7);
+  const arc = p.arc || [
+    { to: Math.ceil(p.wk / 3), t: 'Starting out', b: 'Early weeks are about consistency, not results.' },
+    { to: Math.ceil((p.wk / 3) * 2), t: 'Steady state', b: 'This is the stretch that moves the marker.' },
+    { to: p.wk, t: 'Final stretch', b: 'The retest is close. Adherence now is what makes it readable.' },
+  ];
+  const i = Math.max(0, arc.findIndex((a) => wk <= a.to));
+  return { ...arc[i === -1 ? arc.length - 1 : i], idx: i, all: arc };
+}
+export function nextMilestone(p, day) {
+  const ms = [...(p.milestones || []), { d: p.wk * 7, t: `Retest ${p.mk}` }];
+  return ms.find((m) => m.d > day) || ms[ms.length - 1];
+}
 
 /* ── WHAT'S IN THE BOX ──
    Typed so the detail page can say plainly what is a prescription and what

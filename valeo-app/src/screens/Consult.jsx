@@ -23,17 +23,17 @@ export default function Consult({ pKey, onBack, onBooked }) {
         <IconButton onClick={onBack} size="small" sx={{ ml: -0.5, color: C.deep }}>
           <ArrowBackIosNewIcon sx={{ fontSize: 17 }} />
         </IconButton>
-        <Box sx={{ flex: 1 }} />
-        <Typography sx={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '.14em',
-          textTransform: 'uppercase', color: C.green,
-        }}>Free</Typography>
       </Stack>
 
       <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pt: 1.5, pb: 2 }}>
-        <Typography variant="h2" sx={{ color: C.deep }}>
-          Talk it through first.
-        </Typography>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'baseline' }}>
+          <Typography variant="h2" sx={{ color: C.deep, flex: 1 }}>
+            Talk it through first.
+          </Typography>
+          <Typography sx={{
+            fontSize: 16, fontWeight: 800, color: C.green, flexShrink: 0,
+          }}>Free</Typography>
+        </Stack>
         <Typography sx={{ fontSize: 14, color: C.ink2, mt: 1.25, lineHeight: 1.5 }}>
           Thirty minutes on video. He'll go through {p.t.toLowerCase()} line by line and change
           whatever doesn't fit you.
