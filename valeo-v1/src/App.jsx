@@ -18,7 +18,9 @@ import Coach from './screens/Coach';
 import Meet from './screens/Meet';
 import BuyScreen from './screens/Buy';
 import BottomNav from './components/BottomNav';
+import Feedback from './components/Feedback';
 import PushToast from './components/PushToast';
+import { screenOf } from './lib/screen';
 import { PROTOCOLS, DEMO_QA, focusRun, activeRuns, synthObserved,
          PHASES_APP, phaseHas, leadFor } from './data';
 
@@ -508,6 +510,11 @@ export default function App() {
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
         gap: 5, p: 4, bgcolor: '#0E1D2E',
       }}>
+        {/* Reviewers on the left, demo controls on the right, the product in
+            the middle. The panel reads the same state the app renders from, so
+            a comment always lands on the screen the reviewer was looking at. */}
+        <Feedback screen={screenOf({ flow, tab, st, booking, detail })} />
+
         <Phone>
           <PushToast push={push} onOpen={() => {
             const go = push && push.go;
