@@ -240,22 +240,34 @@ export const TIERS = {
 export const TIER_ORDER = ['open', 'adv', 'elite'];
 
 /* The card is a person; the payload is their protocol. */
+/* ── ASSET PATHS MUST CARRY THE BASE ──
+   Vite rewrites the asset URLs it can see: real imports, and url() in CSS.
+   These are plain strings in a data file, so it cannot see them, and a leading
+   slash means "the domain root". That is correct on a dev server at / and
+   wrong the moment the app is served from a subpath — on GitHub Pages
+   /team/jamie.jpg resolves to the wrong host directory and 404s, which is why
+   the portraits vanished after the site went live.
+
+   BASE_URL is "/" in development and "/valeo-loop-prototype/v1/" in the build,
+   and it always ends in a slash, so the argument must not start with one. */
+const asset = (p) => `${import.meta.env.BASE_URL}${p}`;
+
 export const TWINS = [
   { id: 'w1', name: 'Lilly Sabri',  role: 'Physiotherapist · 4.9M subs', handle: '@lillysabri',
-    img: '/twins/lillysabri.jpg', mono: 'LS', tone: '#8E3A44', match: 84, tier: 'open',
+    img: asset('twins/lillysabri.jpg'), mono: 'LS', tone: '#8E3A44', match: 84, tier: 'open',
     protocol: 'P_WEIGHT', hook: '4.9M follow her fat-loss protocol' },
   { id: 'w2', name: 'Hamza Salah',  role: 'Model & trainer · Dubai', handle: '@hamzasalah',
-    img: '/twins/hamzasalah.jpg', mono: 'HS', tone: '#9C6A2A', match: 79, tier: 'open',
+    img: asset('twins/hamzasalah.jpg'), mono: 'HS', tone: '#9C6A2A', match: 79, tier: 'open',
     protocol: 'P_SKIN', hook: 'Top 1% of Dubai run this before shoots' },
   { id: 'w3', name: 'IShowSpeed',   role: 'Streamer · 40M+ following', handle: '@ishowspeed',
-    img: '/twins/ishowspeed.jpg', mono: 'IS', tone: '#2C6B45', match: 71, tier: 'open',
+    img: asset('twins/ishowspeed.jpg'), mono: 'IS', tone: '#2C6B45', match: 71, tier: 'open',
     protocol: 'P_ATH', hook: 'What the next generation trains like' },
 
   { id: 'w4', name: 'Andrew Huberman', role: 'Neuroscientist · Stanford', handle: '@hubermanlab',
-    img: '/twins/huberman.jpg', mono: 'AH', tone: '#2E4A6B', match: 91, tier: 'adv',
+    img: asset('twins/huberman.jpg'), mono: 'AH', tone: '#2E4A6B', match: 91, tier: 'adv',
     protocol: 'P_SLEEP', hook: 'The most copied protocol on the internet' },
   { id: 'w5', name: 'Bryan Johnson', role: 'Blueprint', handle: '@bryan_johnson',
-    img: '/twins/bryanjohnson.jpg', mono: 'BJ', tone: '#254A73', match: 93, tier: 'adv',
+    img: asset('twins/bryanjohnson.jpg'), mono: 'BJ', tone: '#254A73', match: 93, tier: 'adv',
     protocol: 'P_LONG', hook: 'The most measured body on earth',
     blur: true, needs: ['food', 'sleep', 'stress'] },
   { id: 'w6', name: 'Peter Attia',  role: 'Longevity physician', handle: '@peterattiamd',
@@ -314,7 +326,7 @@ export const SWIPE_TARGET = 20;
    panel feel like care rather than a data grab. */
 export const DOCTOR = {
   name: 'Dr. Mahmoud Hassan',
-  img: '/team/mahmoud.jpg',
+  img: asset('team/mahmoud.jpg'),
   role: 'Internal Medicine · Valeo',
   reg: 'SCFHS 24-118940',
   years: '11 years',
@@ -1288,7 +1300,7 @@ export function bestMovedZone(st) {
 export const PEERS = [
   {
     id: 'p_hub', name: 'Andrew Huberman', role: 'Neuroscientist · Stanford',
-    img: '/twins/huberman.jpg', apart: 2, why: 'Sleep architecture and ApoB sit close to yours.',
+    img: asset('twins/huberman.jpg'), apart: 2, why: 'Sleep architecture and ApoB sit close to yours.',
     diverge: 'He runs ferritin near 90. Yours is the gap.',
     rows: [
       { sys: 'Sleep & recovery', you: 'B', them: 'A' },
@@ -1311,7 +1323,7 @@ export const PEERS = [
   },
   {
     id: 'p_sabri', name: 'Lilly Sabri', role: 'Physiotherapist',
-    img: '/twins/lillysabri.jpg', apart: 4,
+    img: asset('twins/lillysabri.jpg'), apart: 4,
     why: 'Comparable body composition trajectory.',
     diverge: 'Her training volume is roughly double yours.',
     rows: [
@@ -2335,7 +2347,7 @@ export const PEAK_TO   = '#1C7245';
 export const COACHES = {
   C_MAHMOUD: {
     name: 'Dr. Mahmoud Hassan', short: 'Dr. Mahmoud', mono: 'MH',
-    img: '/team/mahmoud.jpg',
+    img: asset('team/mahmoud.jpg'),
     kind: 'doctor', role: 'Internal Medicine', reg: 'SCFHS 24-118940',
     years: 11, langs: 'Arabic · English',
     focus: 'Metabolic health & preventive medicine',
@@ -2619,7 +2631,7 @@ Object.assign(COACHES, {
     cats: ['test'],
     line: 'Sleep and blood pressure first. Most men arrive wanting a pill and leave with a bedtime.',
     reply: 'Usually replies within 3h', patients: 31, tone: '#2F5D50',
-    img: '/team/jamie.jpg',
+    img: asset('team/jamie.jpg'),
   },
   C_HUDA: {
     name: 'Dr. Huda Al-Amoudi', short: 'Dr. Huda', mono: 'HA',
