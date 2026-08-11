@@ -3540,3 +3540,46 @@ export function goalAim(pKey) {
     post: 'restore your energy after birth',
   }[(PROTOCOLS[pKey] || {}).cat] || 'reach your goal';
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   WHILE THE CONSULTATION IS PREPARED
+
+   The wait before a clinician joins is three to five minutes. The first build
+   of that screen showed the search: "Checking who is free now", a name
+   accepting the request, faces of the team. That is the inside of the routing
+   system, and it makes a clinic look like a marketplace with drivers.
+
+   The patient does not need to know that a clinician is being matched. The
+   patient needs to know that the consultation is being prepared, and roughly
+   how long that takes.
+
+   The wait then has a second use. This is a video consultation, and a patient
+   who takes the call in a corridor with two bars of signal gets a worse
+   consultation. Four short items turn the wait into preparation.
+
+   None of these are instructions for using software. Each one states a reason,
+   because "check your connection" is an order and "so the call does not drop
+   while you are talking" is a reason. */
+export const PREPARE_ITEMS = [
+  { t: 'Find a private space',
+    s: 'So you can speak openly and comfortably.' },
+  { t: 'Check your connection',
+    s: 'Somewhere with stable internet keeps the conversation smooth.' },
+  { t: 'Keep any reports nearby',
+    s: 'If you have had tests done recently and want to discuss them.' },
+  { t: 'Take a moment to think',
+    s: 'What would you most like to get help with today?' },
+];
+
+/* What the system is doing, in words a patient can read. The last line stays
+   open until a clinician accepts.
+
+   "Connecting you with your clinician" is deliberate. Before somebody accepts,
+   the product must not name a person. The promise made to the patient is
+   "meet your care team", and naming Jamie before Jamie has accepted invents a
+   relationship that may not happen. */
+export const PREPARE_STEPS = [
+  'Your information is ready',
+  'Your consultation is being prepared',
+  'Connecting you with your clinician',
+];
