@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import CheckIcon from '@mui/icons-material/Check';
-import { USER, coachOf, CONSULT_FEE } from '../data';
+import { coachOf } from '../data';
 import { C } from '../theme';
 
 /**
@@ -172,9 +172,15 @@ export default function Meet({ pKey, onBook, onBack }) {
         px: 3, pt: 2, pb: 3, flexShrink: 0,
         background: `linear-gradient(180deg,rgba(255,253,245,0) 0%,${C.cream} 40%)`,
       }}>
+        {/* The consultation is free and it starts now. "Continue" used to lead
+            to a slot picker and a SAR 200 charge, both of which sat in front of
+            the relationship rather than in front of the treatment. */}
         <Button fullWidth variant="contained" color="secondary" onClick={() => onBook(pKey)}>
-          Continue
+          Talk to {c.short}’s team
         </Button>
+        <Typography sx={{ fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1.3 }}>
+          Free · someone is available now
+        </Typography>
       </Box>
 
     </Box>

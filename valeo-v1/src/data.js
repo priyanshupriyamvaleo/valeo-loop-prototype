@@ -801,7 +801,7 @@ export const RX_LABEL = {
      before — the demo jumped from "booked" straight to "ready" — which is
      exactly the part of real care the product is meant to carry. */
   consulted:   { t: 'Consultation done',   c: 'teal' },
-  bloodsNeeded:{ t: 'Blood test needed',   c: 'yellowDeep' },
+  programme:   { t: 'Programme active',    c: 'green' },
   bloodsBooked:{ t: 'Blood draw booked',   c: 'teal' },
   bloodsDone:  { t: 'Results with doctor', c: 'teal' },
   followup:    { t: 'Follow-up booked',    c: 'yellowDeep' },
@@ -1912,13 +1912,39 @@ function summarise(d, p) {
    One protocol still owns Today at a time — `st.focus` — because a day has one
    set of things to do and merging two protocols' checklists loses which run any
    given dose belonged to. That is a focus problem, not a storage problem. */
-export const RX_FLOW = ['saved', 'booked', 'consulted',
-                        'bloodsNeeded', 'bloodsBooked', 'bloodsDone', 'followup',
+/* ── THE JOURNEY, REBUILT AROUND ONE PAYMENT ──
+   The old flow charged twice and gated twice. A patient booked a paid first
+   consultation, and then paid again for a blood test before anything that
+   looked like a plan appeared. Both gates sat in front of the relationship
+   rather than in front of the thing that needs them.
+
+   Two facts drove the change.
+
+   First, the clinicians say they cannot write a protocol before they see blood
+   results. So the product must not pretend a protocol exists earlier.
+
+   Second, a patient does not want to buy a blood test. A patient wants help
+   with a goal. The blood test is a step inside that help, not the product.
+
+   The answer is an intermediate document. The Care Brief is the output of the
+   first consultation. It reports what the clinician heard and which clinical
+   questions the blood work must answer. It is not a weak protocol. It is the
+   bridge between the conversation and the treatment.
+
+   So: the consultation is free and immediate, the Care Brief follows it, and
+   one payment starts the programme. Blood work is step one inside the
+   programme, and it is already paid for.
+
+   `booked` is gone because nobody books the first consultation now.
+   `bloodsNeeded` is gone because blood work is no longer a decision taken on
+   the call. It is always the first step. */
+export const RX_FLOW = ['saved', 'consulted', 'programme',
+                        'bloodsBooked', 'bloodsDone', 'followup',
                         'ready', 'shipping',
                         'running', 'verdict', 'reviewing', 'done'];
 
 /* anything with a run that has not yet been read by a clinician */
-export const RX_ACTIVE = ['booked', 'consulted', 'bloodsNeeded', 'bloodsBooked',
+export const RX_ACTIVE = ['consulted', 'programme', 'bloodsBooked',
                           'bloodsDone', 'followup',
                           'ready', 'shipping', 'running', 'verdict', 'reviewing'];
 
@@ -1990,34 +2016,26 @@ export function nextStep(st, pKey) {
   const who = c ? c.short : 'your doctor';
 
   switch (status) {
-    case 'booked': return {
-      kind: 'consult', tag: 'First consultation',
-      when: r && r.slot, cta: 'Join consultation',
-      foot: 'Link opens 10 minutes before', locked: true,
-      /* not a boolean — the same thread is an unread message before it is
-         answered and an open line afterwards */
-      prep: (r && r.prep) === 'done' ? 'done' : 'todo', prepWhen: whenPhrase(r && r.slot),
+    /* The consultation has happened and it was free. What waits for the
+       patient is the Care Brief, not a bill. The card points at the brief and
+       the brief carries the price, because the decision to start belongs on
+       the document that explains what starting means. */
+    case 'consulted': return {
+      kind: 'brief', tag: 'Your care brief is ready',
+      title: `${who} has written up your consultation.`,
+      body: 'It covers what you talked about, what the blood test needs to '
+          + 'answer, and what happens next.',
+      cta: 'Read my care brief', ctaKind: 'brief',
     };
-    case 'consulted': {
-      const sum = CONSULT_SUMMARY[pKey];
-      const route = (r && r.route) || 'direct';
-      /* Two beats in one card, separated by a rule. Running them together made
-         the consultation read as though its purpose was to sell a blood test;
-         split, it reads as a conversation that produced a recommendation. */
-      return {
-        kind: 'summary', tag: 'Consultation complete',
-        said: sum ? sum.said : [],
-        recTag: route === 'bloods' ? 'Next recommendation' : 'What happens next',
-        rec: sum ? sum[route] : `${who} is putting your plan together now.`,
-        cta: route === 'bloods' ? 'Book blood test' : null,
-        ctaKind: 'bookBloods',
-      };
-    }
-    case 'bloodsNeeded': return {
-      kind: 'bookBloods', tag: 'Next step',
-      title: 'A blood test comes next.',
-      body: `${who} would like a few markers before finalising your plan.`,
-      cta: 'Book blood test',
+
+    /* Paid. Blood work is step one and it is already covered, so this card
+       asks for a time and never mentions money again. */
+    case 'programme': return {
+      kind: 'bookBloods', tag: 'Step 1 of your programme',
+      title: 'Your blood test comes first.',
+      body: `${who} needs these results before writing your plan. A nurse `
+          + 'comes to you.',
+      cta: 'Choose a time', free: true,
     };
     case 'bloodsBooked': return {
       kind: 'bloods', tag: 'Blood draw scheduled',
@@ -2049,10 +2067,13 @@ export function nextStep(st, pKey) {
       bts: (r && r.labs) === 'ready' ? 'ready' : 'processing',
 
     };
+    /* No price. The patient bought the programme at the Care Brief, and this
+       plan is what the programme produced. Asking for money twice for one
+       course of care is the thing the new flow exists to remove. */
     case 'ready': return {
       kind: 'plan', tag: 'Your plan is ready',
       title: `${who} built your plan.`,
-      cta: 'View your plan', price: p ? p.price : 0,
+      cta: 'View your plan', price: 0,
     };
 
     /* ── PAYING IS NOT STARTING ──
@@ -2938,79 +2959,50 @@ export function practiceScript(st, pKey) {
 
   /* ── what the practice says when you arrive at each stage ── */
   const S = {
-    booked: {
-      key: 'booked',
-      /* Preparation opens the thread. It is not a separate errand that happens
-         to look like chat — it IS the first thing the practice ever says. */
+    /* The consultation just happened and it was free. The practice speaks
+       first, and it speaks about the brief, not about money. */
+    consulted: {
+      key: 'consulted',
       lines: [`Hi ${USER.first} 👋`,
-              `Before today’s consultation we’d love to understand your story a little better.`,
-              'It’ll only take a few minutes.'],
+              `${first} has written up your consultation.`,
+              'Your care brief is on Today. It says what we heard and what the '
+                + 'blood test needs to answer.'],
       chips: [
+        { ic: '🩸', q: 'Why do I need a blood test?',
+          a: [`${first} cannot write a safe plan without seeing how your body is `
+                + 'working right now.',
+              'The brief lists the exact questions the results answer.'] },
+        { ic: '💰', q: 'What does the programme cost?',
+          a: [`SAR ${PROGRAMME_FEE}, once.`,
+              'It covers the blood work, the review, your plan, follow-ups and '
+                + 'our support. There is nothing to pay later.'] },
         { ic: '📝', q: 'I forgot to mention something.',
-          a: ['Tell us and we’ll add it to your notes.',
-              `${first} reads them before the call, so nothing gets lost.`] },
-        { ic: '🗓', q: 'Can I reschedule?',
-          a: ['Of course — tell us roughly when suits and we’ll move it.',
-              'No charge for changing a first consultation.'] },
-        { ic: '💬', q: 'What happens during the consultation?',
-          a: [`Thirty minutes with ${first} — your history, your goal, and what’s been getting in the way.`,
-              'You’ll leave with a clear direction, and the plan follows from there.'] },
-        { ic: '📍', q: 'Where do I join the call?',
-          a: ['Right here in the app. The Join button on your next-step card turns on ten minutes before.',
-              'No links, no downloads.'] },
+          a: ['Tell us and we will add it to your notes.',
+              `${first} sees it before writing your plan.`] },
+        { ic: '⏳', q: 'How long does all of this take?',
+          a: ['The blood test takes about fifteen minutes at your home.',
+              'Results come back in a day or two, and your plan follows the '
+                + 'review with ' + first + '.'] },
       ],
     },
 
-    /* The consultation ends on one of two roads and the front desk has to know
-       which. Telling someone their plan is being written when they were just
-       asked for bloods contradicts the card they are looking at — and that
-       contradiction is exactly what makes a clinic sound automated. */
-    consulted: (r && r.route) === 'bloods' ? {
-      key: 'consulted-bloods',
-      lines: [`${first} would like a few markers before writing your plan.`,
-              'Book the draw whenever suits — we can talk you through it first.'],
+    /* Paid. The next thing the patient does is pick a time. */
+    programme: {
+      key: 'programme',
+      lines: ['You are on the programme. Thank you.',
+              'Step one is your blood test. Pick a time that suits you and a '
+                + 'nurse comes to you.'],
       chips: [
-        { ic: '🩸', q: 'Why do I need blood work?',
-          a: [`${first} would rather measure than guess — the markers decide the starting doses.`,
-              'It also gives you a baseline to compare against at the end.'] },
-        { ic: '💬', q: 'What did we agree today?',
-          a: [`You and ${first} focused on ${goal}.`,
-              'It’s all on your next-step card, and we can go deeper on any part of it.'] },
-        { ic: '⏳', q: 'How long until I have a plan?',
-          a: ['Results come back in a day or two, and the plan follows straight after.',
-              'We’ll tell you at every step rather than make you check.'] },
-      ],
-    } : {
-      key: 'consulted-direct',
-      lines: [`${first} is reviewing everything you shared today.`,
-              'We’ll message you here as soon as your plan is ready.'],
-      chips: [
-        { ic: '💬', q: 'What did we agree today?',
-          a: [`You and ${first} focused on ${goal}.`,
-              'It’s all on your next-step card, and we can go deeper on any part of it.'] },
-        { ic: '⏳', q: 'How long does the plan take?',
-          a: ['Usually same day. You’ll see it on Today the moment it’s written.',
-              'We’ll tell you as soon as it lands.'] },
-        { ic: '📝', q: 'Can I add something I forgot?',
-          a: ['Tell us and we’ll put it in front of the team before the plan is finalised.',
-              'Better now than after it’s written.'] },
-      ],
-    },
-
-    bloodsNeeded: {
-      key: 'bloodsNeeded',
-      lines: [`${first} would like bloods before finalising your plan.`,
-              'A nurse comes to you — we can talk you through it.'],
-      chips: [
-        { ic: '🩸', q: 'What’s involved in the blood test?',
-          a: ['A nurse comes to your home, takes one draw, and leaves. About fifteen minutes.',
-              'You’ll need to have fasted for ten hours, so mornings are easiest.'] },
-        { ic: '💰', q: 'What does it cost?',
-          a: [`SAR ${BLOOD_FEE}, including the home visit and the panel.`,
-              'Nothing else to pay for it later.'] },
-        { ic: '📈', q: 'When would I get results?',
-          a: ['Usually 24 to 48 hours after the draw.',
-              `Then you and ${first} go through them together.`] },
+        { ic: '🩸', q: 'What happens at the blood test?',
+          a: ['A nurse comes to your home, takes one sample, and leaves. About '
+                + 'fifteen minutes.',
+              'You must not eat for ten hours before it, so mornings are easiest.'] },
+        { ic: '💰', q: 'Do I pay for the blood test?',
+          a: ['No. Your programme covers it.',
+              'There is nothing more to pay at any step.'] },
+        { ic: '📈', q: 'When do I get my plan?',
+          a: [`Results take one or two days. Then you and ${first} go through `
+                + 'them together, and the plan follows that call.'] },
       ],
     },
 
@@ -3296,7 +3288,7 @@ export function includedIn(st, pKey) {
      decided — so this has to ask the run, not the template. Promising "home
      blood draw included" to someone the doctor sent straight to a plan puts a
      line in the Included list that contradicts the journey directly above it. */
-  const upfront = p.blood === 'yes' || (runOf(st, pKey) || {}).route === 'bloods';
+  const upfront = true;   /* every programme includes the blood work */
   /* Labels, not sentences. These render as a grid you check at a glance, and a
      sentence in a grid cell wraps to four lines and ruins the row — the whole
      point of the shape is that six things are legible in one look. */
@@ -3326,13 +3318,13 @@ export function careJourney(st, pKey) {
   const half = Math.round(p.wk / 2);
 
   return [
-    { t: 'Consultation', s: 'Done', when: r.slot, state: 'done' },
-    ...(r.route === 'bloods' || p.blood === 'yes'
-      ? [{ t: 'Blood draw', s: 'A nurse comes to you', when: r.bloodSlot,
-           state: past('bloodsDone') ? 'done' : at('bloodsBooked') },
-         { t: 'Results reviewed', s: `You and ${givenNameOf(coachOf(pKey) || DOCTOR)} go through them`,
-           when: r.followSlot, state: past('followup') ? 'done' : at('followup') }]
-      : []),
+    { t: 'First consultation', s: 'Done', state: 'done' },
+    /* No longer optional. Every programme starts with blood work, because the
+       clinician cannot write the plan without it. */
+    { t: 'Blood draw', s: 'A nurse comes to you', when: r.bloodSlot,
+      state: past('bloodsDone') ? 'done' : at('bloodsBooked') },
+    { t: 'Results reviewed', s: `You and ${givenNameOf(coachOf(pKey) || DOCTOR)} go through them`,
+      when: r.followSlot, state: past('followup') ? 'done' : at('followup') },
     { t: 'Medication delivered', s: 'To your door, first month included',
       state: at('shipping') },
     { t: `Week ${half} review`, s: 'We check what’s moving and adjust', state: at('running') },
@@ -3379,4 +3371,83 @@ export function treatmentStatus(st, pKey) {
 
 export function nextOnPlan(st, pKey) {
   return careJourney(st, pKey).find((s) => s.state !== 'done') || null;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE PROGRAMME — one purchase, at one moment
+
+   The patient is not buying a blood test. The patient is buying help with a
+   goal. So the price sits on the programme, and the blood work is a line
+   inside it.
+
+   One payment covers the whole course of care. There is no second charge when
+   the plan arrives, because the patient already bought the plan. The plan
+   screen therefore ends in "Activate", not in "Buy".
+
+   NOTE FOR THE STAKEHOLDER REVIEW: this figure is the example from the design
+   discussion. The SAR 600 adjustment is still open, and this number does not
+   yet separate the cost of the medication from the cost of the care. Change
+   PROGRAMME_FEE and nothing else breaks.
+   ══════════════════════════════════════════════════════════════════════════ */
+export const PROGRAMME_FEE = 999;
+
+export const PROGRAMME_INCLUDES = [
+  'Your first consultation',
+  'The blood work Jamie needs',
+  'Clinical review of your results',
+  'Your personalised treatment plan',
+  'Follow-up consultations',
+  'Unlimited support from the practice',
+];
+
+/* ── THE CARE BRIEF ──
+   `CONSULT_SUMMARY.said` already holds what the clinician heard, so the brief
+   reuses it rather than authoring the same sentences twice.
+
+   `asks` is the new part and it is the reason the brief works. A blood test
+   presented as a price is an obstacle. The same blood test presented as four
+   clinical questions is the reason to continue. These are the questions the
+   clinician must answer before deciding the treatment, written so a patient
+   can read them. */
+export const BRIEF = {
+  P_TEST: {
+    asks: ['How well is your own testosterone production working?',
+           'What is your SHBG doing, and is it holding free testosterone down?',
+           'Is anything else contributing to the tiredness?',
+           'Is there anything we should treat before we start?'],
+  },
+  P_WEIGHT: {
+    asks: ['Where is your HbA1c now?',
+           'How is your thyroid function?',
+           'Is insulin resistance part of the picture?',
+           'Is there any reason to avoid the medication we would normally use?'],
+  },
+  P_LONG: {
+    asks: ['What is your ApoB, and how far is it from target?',
+           'Is there inflammation we should be treating first?',
+           'How are your liver and kidney markers?',
+           'Is it safe to introduce a supervised medication later?'],
+  },
+  P_POST: {
+    asks: ['How low is your ferritin?',
+           'Is your thyroid function normal after the birth?',
+           'Is vitamin D or B12 contributing to the tiredness?',
+           'Is anything else slowing your recovery?'],
+  },
+};
+
+/* The four steps of the brief, and where the patient stands in them. This is
+   the same list on the brief and on Today, so the two cannot disagree. */
+export function briefSteps(st, pKey) {
+  const rank = RX_FLOW.indexOf(statusOf(st, pKey));
+  const at = (k) => (rank > RX_FLOW.indexOf(k) ? 'done'
+    : rank === RX_FLOW.indexOf(k) ? 'now' : 'wait');
+  return [
+    { t: 'First consultation', s: 'done' },
+    { t: 'Blood test', s: rank > RX_FLOW.indexOf('bloodsDone') ? 'done'
+        : rank >= RX_FLOW.indexOf('bloodsBooked') ? 'now' : at('programme') },
+    { t: 'Jamie reviews your results', s: at('followup') },
+    { t: 'Your personalised plan', s: at('ready') },
+    { t: 'Treatment begins', s: rank >= RX_FLOW.indexOf('shipping') ? 'now' : 'wait' },
+  ];
 }

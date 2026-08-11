@@ -1,38 +1,43 @@
 import { useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import CheckIcon from '@mui/icons-material/Check';
 import PaySheet from '../components/PaySheet';
-import { PROTOCOLS, runOf } from '../data';
+import { PROTOCOLS, PROGRAMME_FEE, PROGRAMME_INCLUDES } from '../data';
 import { C } from '../theme';
 
 /**
- * CHECKOUT.
+ * PROGRAMME CHECKOUT.
  *
- * This screen has been talked out of three different jobs now. It was a
- * delivery manifest ("What arrives"), then a pre-treatment briefing carrying
- * the regimen, an included list, a payment breakdown and a four-step explainer
- * of what happens after paying. All of that was true and none of it belonged
- * here, because the screen immediately before it is a care plan that says the
- * same things at length and the patient has just read it.
+ * This screen has changed job three times, and the last change was the largest.
+ * It sold a protocol, then a first month of treatment. It now sells entry to a
+ * course of care.
  *
- * What is left is a cart. Two lines, a total, a button. The plan is the
- * product; the five things inside it are a spec you can go back one screen to
- * read, and repeating them at the till is how a checkout turns into a second
- * sales pitch.
+ * The reason is a real product problem. A patient does not want to buy a blood
+ * test, and does not think in terms of consultation plus diagnostics plus
+ * protocol plus logistics. A patient wants help with a goal. Those other things
+ * are parts of the service, so they belong inside one price rather than beside
+ * it as separate charges.
  *
- * It fits on one screen without scrolling, which is the actual test — a
- * checkout you have to scroll is a checkout that is still arguing.
+ * ── ONE LINE, NOT AN ITEMISED BILL ──
+ * An itemised list here turns the programme back into a basket of medical
+ * procedures. The patient already read what is included on the Care Brief, and
+ * the same list appears below the total for reassurance, not for arithmetic.
+ *
+ * ── AND ONLY ONCE ──
+ * This is the single payment in the whole journey. The consultation before it
+ * was free. The blood test after it is already covered. The plan screen at the
+ * end says "Activate", not "Buy".
  */
-export default function Buy({ st, pKey, onBack, onPaid }) {
+
+export default function Buy({ pKey, onBack, onPaid }) {
   const p = PROTOCOLS[pKey];
   const [pay, setPay] = useState(false);
 
-  const bloods = p.blood !== 'no' ? 449 : 0;
-  const total = p.price + bloods;
-  /* On the bloods route the draw already happened — it is still on the bill,
-     but calling it "included" as though it were ahead of them would be wrong. */
-  const drawn = !!(runOf(st || {}, pKey) || {}).bloodSlot;
-
+  /* One line, one price. The patient is buying entry to a course of care, and
+     the blood test is a step inside it. Itemising the components here would
+     turn the programme back into a shopping basket of medical procedures,
+     which is the framing this whole flow was rebuilt to remove. */
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: C.cream }}>
       <Stack direction="row" sx={{ alignItems: 'center', px: 1.5, pt: 1.5, pb: 0.5 }}>
@@ -44,28 +49,17 @@ export default function Buy({ st, pKey, onBack, onPaid }) {
       <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
         <Typography sx={{
           fontFamily: '"Fraunces", serif', fontSize: 27, fontWeight: 600,
-          lineHeight: 1.15, color: C.deep, mt: 0.5, mb: 2.75,
-        }}>Your order</Typography>
+          lineHeight: 1.15, color: C.deep, mt: 0.5,
+        }}>Start your programme</Typography>
+        <Typography sx={{ fontSize: 14.5, color: C.ink2, mt: 1.1, lineHeight: 1.5 }}>
+          One payment for your whole course of care with {p.t.toLowerCase()}.
+        </Typography>
 
         <Box sx={{
-          borderRadius: '18px', bgcolor: '#fff', px: 2,
+          mt: 3.5, borderRadius: '18px', bgcolor: '#fff', px: 2, py: 0.5,
           boxShadow: '0 2px 14px -10px rgba(27,57,91,.4)',
         }}>
-          <Line
-            t={`${p.t} plan`}
-            s={`First month · ${p.items.length} items`}
-            v={`SAR ${p.price.toLocaleString()}`}
-          />
-          {bloods > 0 && (
-            <Line
-              t="Home blood draw"
-              s={drawn ? 'Nurse visit, already taken' : 'Nurse visit included'}
-              v={`SAR ${bloods}`}
-              top
-            />
-          )}
-          <Line t="Delivery, consultations and support" v="Included" muted top />
-
+          <Line t="Personalised health programme" s={p.t} v={`SAR ${PROGRAMME_FEE.toLocaleString()}`} />
           <Stack direction="row" sx={{
             alignItems: 'baseline', py: 1.75, borderTop: `1px solid ${C.line}`,
           }}>
@@ -74,22 +68,40 @@ export default function Buy({ st, pKey, onBack, onPaid }) {
             </Typography>
             <Typography sx={{
               fontFamily: '"Fraunces", serif', fontSize: 21, fontWeight: 600, color: C.deep,
-            }}>SAR {total.toLocaleString()}</Typography>
+            }}>SAR {PROGRAMME_FEE.toLocaleString()}</Typography>
           </Stack>
+        </Box>
+
+        <Typography sx={{
+          fontSize: 10, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase',
+          color: C.ink2, mt: 4, mb: 1.8,
+        }}>What is included</Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          {PROGRAMME_INCLUDES.map((t) => (
+            <Stack key={t} direction="row" spacing={1.1} sx={{
+              width: 'calc(50% - 4px)', alignItems: 'center',
+              px: 1.4, py: 1.3, borderRadius: '14px', bgcolor: '#fff',
+              boxShadow: '0 2px 12px -9px rgba(27,57,91,.4)',
+            }}>
+              <CheckIcon sx={{ fontSize: 14, color: C.green, flexShrink: 0 }} />
+              <Typography sx={{ flex: 1, fontSize: 12.5, lineHeight: 1.3, color: C.deep }}>
+                {t}
+              </Typography>
+            </Stack>
+          ))}
         </Box>
       </Box>
 
       <Box sx={{ px: 2.25, pt: 1.5, pb: 3, flexShrink: 0 }}>
         <Button fullWidth variant="contained" color="secondary" onClick={() => setPay(true)}>
-          Buy plan · SAR {total.toLocaleString()}
+          Start my programme · SAR {PROGRAMME_FEE.toLocaleString()}
         </Button>
         <Typography sx={{ fontSize: 12, color: C.ink2, textAlign: 'center', mt: 1.2 }}>
-          Monthly after this, cancel any time
+          Nothing more to pay at any later step
         </Typography>
       </Box>
 
-      {/* The sheet's green tick is the confirmation. Today takes it from there. */}
-      <PaySheet open={pay} item={`${p.t} · first month`} fee={total.toLocaleString()}
+      <PaySheet open={pay} item={`${p.t} programme`} fee={PROGRAMME_FEE.toLocaleString()}
         onClose={() => setPay(false)} onDone={onPaid} />
     </Box>
   );

@@ -16,6 +16,8 @@ import Consult from './screens/Consult';
 import Between from './screens/Between';
 import Coach from './screens/Coach';
 import Meet from './screens/Meet';
+import Consultation from './screens/Consultation';
+import Brief from './screens/Brief';
 import BuyScreen from './screens/Buy';
 import BottomNav from './components/BottomNav';
 import Feedback from './components/Feedback';
@@ -35,7 +37,8 @@ const INIT = {
   blood: false,
   devices: [],     /* paired wearables — a fact about the person, not a protocol */
   /* Protocols in flight, keyed by protocol. Any number at once:
-     saved → booked → ready → shipping → running → verdict → reviewing → done */
+     consulted → programme → bloodsBooked → bloodsDone → followup → ready
+     → shipping → running → verdict → reviewing → done */
   runs: {},
   focus: null,     /* which run Today is showing */
 };
@@ -97,16 +100,22 @@ function reducer(s, a) {
       };
     }
 
-    /* ── one protocol's lifecycle ── */
-    case 'book':
+    /* ── one protocol's lifecycle ──
+       The run now begins at the end of the free consultation. Nothing is
+       booked and nothing is paid before that, so `consulted` is the first
+       state that exists and it is the one that creates the record. */
+    case 'consulted':
       return {
         ...s,
-        runs: { ...s.runs, [a.protocol]: { status: 'booked', slot: a.slot } },
+        runs: { ...s.runs, [a.protocol]: { ...(s.runs[a.protocol] || {}),
+                                           status: 'consulted' } },
         focus: s.focus || a.protocol,
       };
+    /* One payment. It buys the programme, and blood work is step one inside
+       it, so the patient is never asked for money again. */
+    case 'programme': return patchRun(s, target(s, a), { status: 'programme' });
     case 'reviewed':  return patchRun(s, target(s, a), { status: 'ready' });
     /* ── the middle of the journey ── */
-    case 'prepDone': return patchRun(s, target(s, a), { prep: 'done' });
 
     /* ── THE PRACTICE THREAD LIVES IN STATE ──
        It has to. A conversation the app recomputes on open is a status panel
@@ -129,9 +138,6 @@ function reducer(s, a) {
     }
     /* how far down the thread you have actually read */
     case 'seen': return patchRun(s, target(s, a), { seen: a.n });
-    case 'consulted': return patchRun(s, target(s, a),
-      { status: 'consulted', route: a.route || 'direct' });
-    case 'needBloods': return patchRun(s, target(s, a), { status: 'bloodsNeeded' });
     case 'bookBloods': return patchRun(s, target(s, a),
       { status: 'bloodsBooked', bloodSlot: a.slot });
     case 'bloodsDone': return patchRun(s, target(s, a),
@@ -139,9 +145,10 @@ function reducer(s, a) {
     case 'labsReady': return patchRun(s, target(s, a), { labs: 'ready' });
     case 'bookFollow': return patchRun(s, target(s, a),
       { status: 'followup', followSlot: a.slot });
-    /* Paid is the start of fulfilment, not the start of treatment. `ship`
-       tracks the parcel; `deliver` is what actually begins the run. */
-    case 'paid':      return patchRun(s, target(s, a),
+    /* Activating the plan starts fulfilment. It is not a purchase: the
+       programme was paid for at the Care Brief. `ship` tracks the parcel and
+       `deliver` is what actually begins the treatment. */
+    case 'activate':  return patchRun(s, target(s, a),
       { status: 'shipping', ship: 'confirmed' });
     case 'ship':      return patchRun(s, target(s, a), { ship: a.stage });
     case 'deliver': {
@@ -323,22 +330,6 @@ export default function App() {
      The clinical questions that used to gate this now sit on Today as an offer
      to help the doctor prepare — asking someone who has just paid to answer a
      questionnaire before their booking is real is how you lose them at the till. */
-  const bookConsult = (slot) => {
-    dispatch({ type: 'book', protocol: detail, slot });
-    dispatch({ type: 'focus', protocol: detail });
-    /* Straight into Today. Everything before payment is onboarding and
-       everything after it is retention — a receipt screen would sit exactly on
-       the seam and delay the only part that keeps anyone. */
-    setFlow('app'); setTab('today');
-    /* No timer. The consultation happening is a real-world event days away, and
-       a demo that fast-forwards through it on its own leaves nobody able to sit
-       on the milestone and look at it. Advancing is now deliberate — see
-       `nextStep` in the rail. */
-  };
-
-  /* The end-of-run booking. Same slot picker, same doctor, different question —
-     and the same beat afterwards: the call happens, he reads the retest, the
-     phone buzzes. */
   const bookReview = (slot) => {
     /* whichever run Today was showing is the one being closed */
     const pk = reviewKey;
@@ -369,16 +360,10 @@ export default function App() {
      rather than picking one, because which branch a protocol takes is a clinical
      judgement and hard-coding it would quietly turn a decision into a rule. */
   const NEXT = {
-    /* The fork moves to the consultation itself. It has to: the summary the
-       patient reads afterwards says either "we're taking bloods first" or "your
-       plan is being written", and it cannot say either until the clinician has
-       decided. Deciding it a step later meant the summary had to stay vague. */
-    booked: [
-      { t: 'Consultation → plan directly',
-        run: (k) => dispatch({ type: 'consulted', protocol: k, route: 'direct' }) },
-      { t: 'Consultation → bloods needed',
-        run: (k) => dispatch({ type: 'consulted', protocol: k, route: 'bloods' }) },
-    ],
+    /* The fork is gone. Every programme starts with blood work, because the
+       clinician cannot write a plan without it, so there is nothing to branch
+       on after the consultation. What the patient does next is pay and pick a
+       time, and both of those are the patient's move, not the system's. */
     bloodsBooked: [{ t: 'Nurse visit complete', run: (k) => {
       dispatch({ type: 'bloodsDone', protocol: k });
     } }],
@@ -393,11 +378,6 @@ export default function App() {
       dispatch({ type: 'results', protocol: k });
     } }],
   };
-  /* After the summary there is exactly one way on, because the branch was taken
-     on the call rather than here. */
-  if (f && f.status === 'consulted' && (f.run && f.run.route) !== 'bloods') {
-    NEXT.consulted = [{ t: 'Plan is ready', run: (k) => dispatch({ type: 'reviewed', protocol: k }) }];
-  }
   if (f && f.status === 'shipping') {
     const nx = { confirmed: ['preparing', 'Medication prepared'],
                  preparing: ['out', 'Out for delivery'],
@@ -460,16 +440,37 @@ export default function App() {
     <Matching mode="unlock" phase={phase} onDone={() => { setFlow('app'); setTab(home); }} />
   );
   else if (flow === 'meet') view = (
+    /* Straight into the consultation. No slot picker, no fee. The patient has
+       met the team and answered the questions; the next thing is the talk. */
     <Meet pKey={meetKey}
       onBack={() => setFlow('coach')}
-      onBook={(pk) => { setDetail(pk); setBooking('consult'); setFlow('consult'); }} />
+      onBook={(pk) => { setDetail(pk); setFlow('consultation'); }} />
+  );
+  else if (flow === 'consultation') view = (
+    <Consultation pKey={detail}
+      onDone={() => {
+        /* The run begins here, at `consulted`. Nothing was booked and nothing
+           was paid, so there is no earlier state to record. */
+        dispatch({ type: 'consulted', protocol: detail });
+        dispatch({ type: 'focus', protocol: detail });
+        setFlow('brief');
+      }} />
+  );
+  else if (flow === 'brief') view = (
+    <Brief pKey={detail} st={st}
+      onBack={() => { setFlow('app'); setTab('today'); }}
+      onStart={() => setFlow('buy')} />
   );
   else if (flow === 'detail') view = (
     <ProtocolDetail st={st} pKey={detail} view={detailView} onView={setDetailView}
       onBack={() => { setFlow('app'); setTab('protocols'); }}
       onConsult={() => setFlow('consult')}
       onTrack={() => trackOn(detail)}
-      onBuy={() => setFlow('buy')} />
+      onBuy={() => {
+        /* "Activate my plan". The programme was paid for at the Care Brief. */
+        dispatch({ type: 'activate', protocol: detail });
+        setFlow('app'); setTab('today');
+      }} />
   );
   else if (flow === 'consult') view = (
     <Consult mode={booking === 'consult' ? 'start' : booking === 'bloods' ? 'bloods' : 'review'}
@@ -482,7 +483,7 @@ export default function App() {
         } else if (booking === 'follow') {
           dispatch({ type: 'bookFollow', protocol: detail, slot });
           setFlow('app'); setTab('today');
-        } else bookConsult(slot);
+        }
       }} />
   );
   else if (flow === 'review') view = (
@@ -492,7 +493,7 @@ export default function App() {
   else if (flow === 'buy') view = (
     <BuyScreen st={st} pKey={detail} onBack={() => setFlow('detail')}
       onPaid={() => {
-        dispatch({ type: 'paid', protocol: detail });
+        dispatch({ type: 'programme', protocol: detail });
         dispatch({ type: 'focus', protocol: detail });
         setFlow('app'); setTab('today');
       }} />
@@ -534,13 +535,16 @@ export default function App() {
                 )}
                 {tab === 'today' && (
                   <Today st={st} dispatch={dispatch} onGo={setTab}
+                         onBrief={(pk) => { setDetail(pk); setFlow('brief'); }}
                          onBookBloods={(pk) => {
                            setDetail(pk); setBooking('bloods'); setFlow('consult');
                          }}
                          onBookFollow={(pk) => {
                            setDetail(pk); setBooking('follow'); setFlow('consult');
                          }}
-                         onBuy={(pk) => { setDetail(pk); setFlow('buy'); }}
+                         onBuy={(pk) => {
+                           dispatch({ type: 'activate', protocol: pk });
+                         }}
                          onDetail={(pk) => openDetail(pk)}
                          onReview={(pk) => { setReviewKey(pk); setFlow('review'); }}
                          onResults={(pk) => openResults(pk)}

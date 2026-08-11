@@ -393,12 +393,13 @@ export default function Recommendation({ st, pKey, onBack, onBuy, onTrack }) {
           </Button>
         ) : (
           <>
+            {/* Not a purchase. The programme was paid for at the Care Brief,
+                and this plan is what the programme produced. */}
             <Button fullWidth variant="contained" color="secondary" onClick={onBuy}>
-              Begin this plan
+              Activate my plan
             </Button>
             <Typography sx={{ fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1.3 }}>
-              SAR {p.price.toLocaleString()} · first month and all bloods included.
-              Cancel any time.
+              Included in your programme. Nothing more to pay.
             </Typography>
           </>
         )}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Box, Drawer, IconButton, InputBase, Stack, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import { practiceScript, prepClosing, PREP_SCRIPT, runOf, statusOf } from '../data';
+import { practiceScript, runOf, statusOf } from '../data';
 import { C } from '../theme';
 
 /**
@@ -47,10 +47,10 @@ export default function Practice({ open, onClose, st, pKey, dispatch }) {
   const c = script.clinician;
   const thread = (r && r.thread) || [];
 
-  /* preparation runs inside the thread, one question at a time */
-  const prepping = status === 'booked' && !(r && r.prep === 'done');
-  const [pi, setPi] = useState(0);
-  const step = prepping ? PREP_SCRIPT[pi] : null;
+  /* The preparation questions used to run here, during the wait between
+     booking a consultation and attending it. There is no wait now: the
+     consultation is immediate, and the clinician asks those questions inside
+     it. So this thread carries messages and answers only. */
 
   /* ── the stage announces itself, once, and then it is history ──
      Dispatched rather than rendered: see the reducer's `say`.
@@ -87,33 +87,10 @@ export default function Practice({ open, onClose, st, pKey, dispatch }) {
     if (open && feed.current) feed.current.scrollTop = feed.current.scrollHeight;
   }, [open, thread.length, typing]);
 
-  useEffect(() => { if (!open) setPi(0); }, [open]);
-
   const say = (msgs, key) => dispatch({ type: 'say', protocol: pKey, key, msgs });
 
-  const answerPrep = (o) => {
-    const nxt = pi + 1;
-    const done = nxt >= PREP_SCRIPT.length;
-    say([
-      { w: 'me', t: o },
-      ...(done ? prepClosing(script.first) : [{ w: 'them', t: PREP_SCRIPT[nxt].q }])
-        .map((t) => (typeof t === 'string' ? { w: 'them', t } : t)),
-    ]);
-    if (done) dispatch({ type: 'prepDone', protocol: pKey });
-    else setPi(nxt);
-  };
-
-  /* the first prep question rides in with the greeting; the rest follow answers */
-  const waiting = (r && r.said || []).includes(script.key);
-  const askedPrep = thread.some((m) => m.w === 'them' && m.t === (step && step.q));
-  useEffect(() => {
-    if (!prepping || !waiting || askedPrep || typing || !step || pi !== 0) return undefined;
-    const t = setTimeout(() => say([{ w: 'them', t: step.q }]), 600);
-    return () => clearTimeout(t);
-  }, [prepping, waiting, askedPrep, typing, pi]);
-
   const asked = thread.filter((m) => m.w === 'me').map((m) => m.t);
-  const chips = prepping ? [] : script.chips.filter((x) => !asked.includes(x.q));
+  const chips = script.chips.filter((x) => !asked.includes(x.q));
 
   return (
     <Drawer anchor="bottom" open={open} onClose={onClose}
@@ -175,20 +152,7 @@ export default function Practice({ open, onClose, st, pKey, dispatch }) {
       <Box sx={{
         px: 2.25, pt: 1.5, pb: 2.5, flexShrink: 0, borderTop: `1px solid ${C.line}`,
       }}>
-        {/* mid-preparation the answers ARE the input, so nothing else competes */}
-        {prepping && step && askedPrep ? (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8, justifyContent: 'flex-end' }}>
-            {step.o.map((o) => (
-              <Box key={o} onClick={() => answerPrep(o)} sx={{
-                px: 1.6, py: 1, borderRadius: '999px', cursor: 'pointer', bgcolor: '#fff',
-                border: '1px solid rgba(27,57,91,.22)',
-                fontSize: 13.5, fontWeight: 500, color: C.deep,
-                '&:active': { bgcolor: 'rgba(27,57,91,.05)' },
-              }}>{o}</Box>
-            ))}
-          </Box>
-        ) : (
-          <>
+        <>
             {chips.length > 0 && (
               <Box sx={{
                 display: 'flex', gap: 0.8, overflowX: 'auto', mb: 1.5, pb: 0.5,
@@ -227,8 +191,7 @@ export default function Practice({ open, onClose, st, pKey, dispatch }) {
                 <ArrowUpwardIcon sx={{ fontSize: 17, color: C.deep }} />
               </Box>
             </Stack>
-          </>
-        )}
+        </>
       </Box>
     </Drawer>
   );

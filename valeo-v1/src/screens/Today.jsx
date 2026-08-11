@@ -31,7 +31,7 @@ import { C, meter } from '../theme';
  *   verdict  → retest day
  */
 export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults,
-  onBookBloods, onBookFollow,
+  onBookBloods, onBookFollow, onBrief,
                                 onFocus }) {
   const [coach, setCoach] = useState(false);
   const [sheet, setSheet] = useState(null);   /* doses | meals | body | checkin | devices */
@@ -215,7 +215,8 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
               <Box sx={{ px: 2.25, py: 1.75, borderTop: `1px solid ${C.line}` }}>
                 <Box onClick={() => {
                   const k = ns.ctaKind || ns.kind;
-                  if (k === 'bookBloods') onBookBloods(pKey);
+                  if (k === 'brief') onBrief(pKey);
+                  else if (k === 'bookBloods') onBookBloods(pKey);
                   else if (k === 'bookFollow') onBookFollow(pKey);
                   else if (k === 'plan') onDetail(pKey);
                   else if (k === 'startDay') dispatch({ type: 'deliver', protocol: pKey });
@@ -246,7 +247,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                   py: 1.3, borderRadius: '12px', textAlign: 'center', cursor: 'pointer',
                   border: `1.5px solid ${C.deep}`, color: C.deep,
                   fontSize: 14, fontWeight: 700,
-                }}>Buy plan · SAR {ns.price.toLocaleString()}</Box>
+                }}>Activate my plan</Box>
               </Box>
             )}
           </Box>

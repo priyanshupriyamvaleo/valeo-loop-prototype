@@ -52,8 +52,11 @@ export default function Consult({ onBack, onBooked, mode = 'start' }) {
     /* Paid, and on this one screen — the booking pattern only stays learnable
        if every booking behaves identically. Consistency beats novelty here. */
     bloods: { sub: 'A nurse will come to you. Mornings only — you’ll be fasting.',
-              foot: 'Home blood draw · about 15 minutes', price: `SAR ${BLOOD_FEE}`,
-              cta: `Book blood test • SAR ${BLOOD_FEE}`, pays: true, list: BLOOD_SLOTS,
+              /* No price and no payment sheet. The programme already covers
+                 this draw, and charging at the door for something the patient
+                 bought last week is how a programme stops feeling like one. */
+              foot: 'Home blood draw · about 15 minutes', price: 'Included',
+              cta: 'Confirm my blood test', pays: false, list: BLOOD_SLOTS,
               item: 'Blood test', fee: BLOOD_FEE },
     review: { sub: 'Pick a time to go through your results together.',
               foot: '30-minute video consultation', price: 'Included',

@@ -25,6 +25,8 @@ import { RECOMMEND, focusRun, statusOf } from '../data';
 
 const FLOW = {
   home:     'Valeo home',
+  consultation: 'First consultation',
+  brief:    'Care brief',
   between:  'Greeting',
   coach:    'Intake chat',
   meet:     'Meet your doctor',
@@ -39,9 +41,8 @@ const FLOW = {
 
 /* The Today card, named for what it actually shows. */
 const TODAY = {
-  booked:      'consultation booked',
-  consulted:   'consultation complete',
-  bloodsNeeded:'blood test needed',
+  consulted:   'care brief ready',
+  programme:   'blood test to book',
   bloodsBooked:'blood draw scheduled',
   bloodsDone:  'waiting on results',
   followup:    'follow-up booked',
@@ -59,8 +60,7 @@ const TAB = {
 
 export function screenOf({ flow, tab, st, booking, detail }) {
   if (flow === 'consult') {
-    const m = booking === 'consult' ? 'consultation'
-      : booking === 'bloods' ? 'blood draw' : 'follow-up';
+    const m = booking === 'bloods' ? 'blood draw' : 'follow-up';
     return { key: `consult:${booking || 'review'}`, label: `Scheduling — ${m}` };
   }
 
