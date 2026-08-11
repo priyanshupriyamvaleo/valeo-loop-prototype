@@ -25,10 +25,12 @@ import { C } from '../theme';
  * that follows, before any charge occurs. A screen that argues for judgement
  * and shows a number at the same time argues for neither.
  *
- * ── THE ONE PIECE OF MECHANICS THAT STAYED ──
- * One line states that the blood work joins today's consultation. The patient
- * must know that a blood test is part of this before agreeing to it. Removing
- * that line would make the screen shorter and dishonest.
+ * ── NO MECHANICS AT ALL ──
+ * An earlier build kept one sentence about the blood work. It is gone. The
+ * disclosure did not disappear with it: the checkout screen that follows lists
+ * "The blood work Jamie needs" under what the programme includes, and that
+ * screen appears before any charge. So the patient still learns about the
+ * blood test before agreeing to pay, and this screen holds one idea only.
  *
  * ── WHY THE THREE POINTS ARE NOT CARDS ──
  * A card makes a statement look like a product feature. These are qualities of
@@ -132,16 +134,6 @@ export default function Brief({ pKey, onBack, onStart }) {
             </Box>
           ))}
         </Stack>
-
-        {/* The blood test is named once. A patient must know it is part of this
-            before agreeing to it, and one sentence is the whole obligation. */}
-        <Typography sx={{
-          fontSize: 13.5, lineHeight: 1.6, color: C.ink2, mt: 5,
-          pt: 2.5, borderTop: `1px solid ${C.line}`, maxWidth: 300,
-        }}>
-          To personalise your care, {first} will use your blood work alongside
-          today’s consultation.
-        </Typography>
       </Box>
 
       <Box sx={{
