@@ -3451,3 +3451,38 @@ export function briefSteps(st, pKey) {
     { t: 'Treatment begins', s: rank >= RX_FLOW.indexOf('shipping') ? 'now' : 'wait' },
   ];
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE INSTANT CONSULTATION
+
+   The first build of this was a chat. The patient tapped answers to written
+   questions. That is a bot, and it is the thing this screen must not be.
+
+   A consultation is a live meeting with a clinician. So the product does what
+   an on-demand service does: the patient asks, the system finds a clinician
+   who is free right now, and the call starts. The patient waits seconds, not
+   days, and speaks to a person.
+
+   `CALL_TOPICS` is what the clinician covers during that call. It is not a
+   list of questions for the patient to tap. It appears as a quiet record of
+   what has been discussed so far, because a video call gives a reviewer
+   nothing to look at otherwise, and because the patient should be able to see
+   that the conversation is going somewhere.
+
+   The same five subjects were the old written questions. A clinician asks them
+   out loud. */
+export const CALL_TOPICS = [
+  'Your goals',
+  'Medication and history',
+  'Previous blood work',
+  'What you have already tried',
+  'What matters most to you',
+];
+
+/* Who picks up. The lead clinician of the practice takes the call in this
+   build, which keeps the Care Brief, the plan and the message thread in one
+   person's name. A real rota would put a duty clinician here instead, and
+   only this function would change. */
+export function onCallNow(pKey) {
+  return coachOf(pKey) || DOCTOR;
+}
