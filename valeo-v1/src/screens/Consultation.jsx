@@ -4,83 +4,87 @@ import MicIcon from '@mui/icons-material/MicNone';
 import VideocamIcon from '@mui/icons-material/VideocamOutlined';
 import CallEndIcon from '@mui/icons-material/CallEnd';
 import CheckIcon from '@mui/icons-material/Check';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import { CALL_TOPICS, MATCH_TIME, USER, callbackAt, CALLBACK_MINUTES,
-         coachOf, givenNameOf, matchSteps, onCallNow } from '../data';
+import { CALL_TOPICS, ETA_STEPS, GUIDED, READY_STEPS, USER,
+         callbackAt, CALLBACK_MINUTES, coachOf, givenNameOf, onCallNow } from '../data';
 import { C } from '../theme';
 
 /**
- * THE FIRST CONSULTATION — connect, then meet.
+ * THE LAST TWO MINUTES BEFORE A CONSULTATION.
  *
- * Four builds. Each one failed differently, and the failures are worth keeping
- * written down.
+ * Five builds. The failures are worth keeping written down, because each one
+ * looked correct until it was on a screen.
  *
- * A chat was a bot with a photograph. A search said "checking who is free now"
- * and showed the inside of the routing system, which makes a clinic look like a
- * marketplace. A preparation checklist was calm and warm, and it left the
- * patient with nothing to do. An idle patient leaves.
+ * A chat was a bot with a photograph. A search said "checking who is free" and
+ * showed the routing system, which turns a clinic into a marketplace. A
+ * preparation checklist was calm and left the patient idle. A single free text
+ * box gave the patient something to do, but it read as an unrelated form
+ * bolted to the bottom of a waiting page.
  *
- * ── THE WAIT IS NOW AN INVESTMENT ──
- * One question sits under the status: anything else the clinician should know.
- * It does three jobs at once. The wait gains a purpose. The patient puts effort
- * into the session and becomes far less likely to abandon it. The consultation
- * is genuinely better for the answer.
+ * ── THE THESIS ──
+ * This is not a waiting screen. It is the last two minutes before a live
+ * consultation, and both sides are getting ready. The clinician is reading the
+ * file. The patient is deciding what to raise. One activity, two halves, one
+ * screen. That idea decides every other choice here.
  *
- * A ride-hailing app shows a car moving because the rider has nothing to
- * contribute. A patient has everything to contribute. That difference is the
- * whole design of this screen.
+ * ── WHY THE QUESTIONS ARE TAPS, NOT TYPING ──
+ * They come from the clinical intake that already exists. Nothing was invented
+ * to occupy the patient. A clinician reads the answers, so answering is worth
+ * the patient's time, and each one costs a single tap.
  *
- * ── A NAME, AND A VERB ──
- * "Jamie is reading what you shared" is believable. "Checking who is free" is
- * not, and it sounds like a call centre queue. A face plus an action reads as
- * care that has already started.
+ * The consultation never depends on them. If the patient answers nothing, the
+ * call opens at the same moment in the same way. The timers do not wait.
  *
- * ── THE FALLBACK IS THE IMPORTANT PART ──
- * The failure that loses a patient is not a ninety second wait. It is the quiet
- * fall back to a calendar. So when nobody connects, the screen holds the
- * patient's place with a real callback time in the same session, and the
- * calendar appears once, small, as the last option.
+ * ── WHY THE SCREEN MOVES ──
+ * A static page says a request is queued. A page where the estimate shortens,
+ * the clinician's state advances and the question changes says something is
+ * arriving. That is the entire difference between logistics and care, and it
+ * is built from three small pieces of motion rather than animation for its own
+ * sake.
  *
- * ── NO EXITS ──
- * There is no back arrow and no navigation. The only ways out are forward, or
- * the small calendar link inside the fallback.
+ * ── NAMING THE CLINICIAN ──
+ * `onCallNow` returns the practice lead deterministically, so the name on this
+ * screen is true when it appears. If a real rota routed across a team, this
+ * screen would say "your clinician" until somebody accepted, and only then
+ * show a name. The copy must always match what the system actually knows.
  *
  * ── DEMO TIMING ──
- * The copy states the real expectation. The prototype connects in about eleven
- * seconds, because nobody reviewing this will wait two minutes. The rail
- * control "No clinician free" forces the fallback, which is otherwise hard to
- * see and is the state that matters most.
+ * The states and their order are real. The prototype runs them in about
+ * fourteen seconds, because nobody reviewing this will wait two minutes. The
+ * rail control "No clinician free" forces the delayed state, which matters more
+ * than the happy path and which a reviewer would never otherwise reach.
  */
 export default function Consultation({ pKey, onDone, failed }) {
   const c = coachOf(pKey);
   const doc = onCallNow(pKey);
   const first = givenNameOf(doc);
-  const steps = matchSteps(first);
 
-  const [phase, setPhase] = useState('matching');
-  const [step, setStep] = useState(0);
-  const [note, setNote] = useState('');
-  const [sent, setSent] = useState('');
-  const [held, setHeld] = useState(false);
-  /* Fixed when the fallback appears, never recomputed. callbackAt() reads the
-     clock, so calling it during render moved the promised time from 5:53 to
-     5:54 between the offer and the confirmation. A time that changes while a
-     patient reads it is worse than no time at all. */
+  const [phase, setPhase] = useState('live');   /* live | ready | fallback | call */
+  const [stage, setStage] = useState(0);        /* which preparation state is active */
+  const [qi, setQi] = useState(0);
   const [callAt, setCallAt] = useState('');
+  const [held, setHeld] = useState(false);
   const [secs, setSecs] = useState(0);
   const [covered, setCovered] = useState(0);
   const timer = useRef(null);
 
+  /* The clinician's half advances on its own. */
   useEffect(() => {
-    if (phase !== 'matching') return undefined;
-    const a = setTimeout(() => setStep(1), 9000);
-    const b = setTimeout(() => setPhase('call'), 11500);
-    return () => { clearTimeout(a); clearTimeout(b); };
+    if (phase !== 'live') return undefined;
+    const a = setTimeout(() => setStage(1), 4200);
+    const b = setTimeout(() => setStage(2), 9000);
+    const d = setTimeout(() => setPhase('ready'), 12200);
+    return () => { clearTimeout(a); clearTimeout(b); clearTimeout(d); };
   }, [phase]);
 
-  /* The rail forces the state that a reviewer would otherwise never see. */
+  /* Arrival is short, and it opens the call without another tap. */
   useEffect(() => {
-    if (!failed || phase !== 'matching') return;
+    if (phase !== 'ready') return undefined;
+    const t = setTimeout(() => setPhase('call'), 2600);
+    return () => clearTimeout(t);
+  }, [phase]);
+
+  useEffect(() => {
+    if (!failed || (phase !== 'live' && phase !== 'ready')) return;
     setCallAt(callbackAt());
     setPhase('fallback');
   }, [failed, phase]);
@@ -99,25 +103,40 @@ export default function Consultation({ pKey, onDone, failed }) {
 
   if (!c) return null;
 
-  const face = (size) => (
-    <Box sx={{
-      width: size, height: size, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-      border: '2.5px solid rgba(255,255,255,.2)',
-      background: `linear-gradient(155deg,${doc.tone} 0%,rgba(11,21,34,.7) 145%)`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      {doc.img
-        ? <Box component="img" src={doc.img} alt="" sx={{
-            width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
-          }} />
-        : <Typography sx={{
-            fontFamily: '"Fraunces", serif', fontSize: size * 0.3,
-            color: 'rgba(255,255,255,.9)',
-          }}>{doc.mono}</Typography>}
+  const face = (size, ring) => (
+    <Box sx={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      {ring && [0, 1].map((n) => (
+        <Box key={n} sx={{
+          position: 'absolute', inset: -6, borderRadius: '50%',
+          border: '1.5px solid rgba(255,185,0,.4)',
+          animation: 'halo 3s cubic-bezier(.2,.7,.3,1) infinite',
+          animationDelay: `${n * 1.5}s`,
+          '@keyframes halo': {
+            '0%': { transform: 'scale(.86)', opacity: 0 },
+            '30%': { opacity: .75 },
+            '100%': { transform: 'scale(1.14)', opacity: 0 },
+          },
+        }} />
+      ))}
+      <Box sx={{
+        width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden',
+        border: `2.5px solid ${ring ? 'rgba(255,185,0,.55)' : 'rgba(111,214,155,.8)'}`,
+        background: `linear-gradient(155deg,${doc.tone} 0%,rgba(11,21,34,.7) 145%)`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {doc.img
+          ? <Box component="img" src={doc.img} alt="" sx={{
+              width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
+            }} />
+          : <Typography sx={{
+              fontFamily: '"Fraunces", serif', fontSize: size * 0.3,
+              color: 'rgba(255,255,255,.9)',
+            }}>{doc.mono}</Typography>}
+      </Box>
     </Box>
   );
 
-  /* ── FALLBACK · nobody connected ──────────────────────────────────── */
+  /* ── DELAYED ─────────────────────────────────────────────────────── */
   if (phase === 'fallback') {
     return (
       <Box sx={{
@@ -150,16 +169,22 @@ export default function Consultation({ pKey, onDone, failed }) {
           </>
         ) : (
           <>
+            {/* Honest, and specific about who is busy. Vagueness at this point
+                makes a patient wonder whether anybody is coming at all. */}
             <Typography variant="h1" sx={{ fontSize: 26, lineHeight: 1.22, maxWidth: 300 }}>
-              All clinicians are with patients right now.
+              This is taking longer than expected.
+            </Typography>
+            <Typography sx={{
+              fontSize: 15, color: 'rgba(255,255,255,.62)', mt: 1.5, lineHeight: 1.55,
+            }}>
+              Our clinicians are with other patients right now.
             </Typography>
 
-            {/* A real time, in this session. Not a calendar. */}
             <Stack direction="row" spacing={1.75} sx={{
-              alignItems: 'center', mt: 3.5, px: 2, py: 2.25, borderRadius: '18px',
+              alignItems: 'center', mt: 3.25, px: 2, py: 2.25, borderRadius: '18px',
               bgcolor: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.13)',
             }}>
-              {face(46)}
+              {face(46, false)}
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography sx={{ fontSize: 15, fontWeight: 700, lineHeight: 1.35 }}>
                   {first} will call you at {callAt}
@@ -178,68 +203,84 @@ export default function Consultation({ pKey, onDone, failed }) {
               bgcolor: C.yellow, color: C.deep, fontSize: 15, fontWeight: 700,
             }}>Hold my place</Box>
 
-            {/* The only path to a calendar, and it is deliberately quiet. */}
             <Typography onClick={onDone} sx={{
               fontSize: 12.5, color: 'rgba(255,255,255,.38)', textAlign: 'center',
               mt: 2.5, cursor: 'pointer', textDecoration: 'underline',
-            }}>Prefer another time?</Typography>
+            }}>Choose another time</Typography>
           </>
         )}
       </Box>
     );
   }
 
-  /* ── MATCHING ─────────────────────────────────────────────────────── */
-  if (phase === 'matching') {
+  /* ── LIVE and ARRIVAL share one composition, so arrival is a change of
+        state rather than a new page. ─────────────────────────────────── */
+  if (phase === 'live' || phase === 'ready') {
+    const here = phase === 'ready';
+    const q = GUIDED[qi];
+    const steps = here
+      ? [`${first} is here`, 'Starting video']
+      : READY_STEPS;
+    const active = here ? 1 : stage;
+
     return (
       <Box sx={{
-        height: '100%', display: 'flex', flexDirection: 'column',
-        color: '#fff', background: `linear-gradient(172deg,#1E3F63,${C.night} 62%,#0B1B2E)`,
+        height: '100%', display: 'flex', flexDirection: 'column', color: '#fff',
+        background: `linear-gradient(172deg,#1E3F63,${C.night} 62%,#0B1B2E)`,
       }}>
         <Box sx={{
-          flex: '1 1 auto', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', px: 3.25, textAlign: 'center',
+          flex: '1 1 auto', overflowY: 'auto', px: 3, pt: 2.5, pb: 2,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
         }}>
-          <Box sx={{ position: 'relative', width: 108, height: 108, mb: 3.5 }}>
-            {[0, 1].map((n) => (
-              <Box key={n} sx={{
-                position: 'absolute', inset: 0, borderRadius: '50%',
-                border: '1.5px solid rgba(255,185,0,.4)',
-                animation: 'halo 2.8s cubic-bezier(.2,.7,.3,1) infinite',
-                animationDelay: `${n * 1.4}s`,
-                '@keyframes halo': {
-                  '0%': { transform: 'scale(.72)', opacity: 0 },
-                  '30%': { opacity: .8 },
-                  '100%': { transform: 'scale(1)', opacity: 0 },
-                },
-              }} />
-            ))}
+          {/* the room you are already in */}
+          <Stack direction="row" spacing={0.8} sx={{ alignItems: 'center' }}>
             <Box sx={{
-              position: 'absolute', inset: '50% auto auto 50%', transform: 'translate(-50%,-50%)',
-            }}>{face(80)}</Box>
-          </Box>
+              width: 6, height: 6, borderRadius: '50%', bgcolor: '#6FD69B',
+              animation: 'live 2s ease-in-out infinite',
+              '@keyframes live': { '0%,100%': { opacity: 1 }, '50%': { opacity: .3 } },
+            }} />
+            <Typography sx={{
+              fontSize: 9.5, fontWeight: 800, letterSpacing: '.18em',
+              textTransform: 'uppercase', color: 'rgba(255,255,255,.55)',
+            }}>Live consultation</Typography>
+          </Stack>
 
-          <Typography variant="h1" sx={{ fontSize: 25, lineHeight: 1.2 }}>
-            Connecting you with {first}
+          <Box sx={{ mt: 3.25 }}>{face(96, !here)}</Box>
+
+          <Typography sx={{
+            fontFamily: '"Fraunces", serif', fontSize: 25, fontWeight: 600,
+            lineHeight: 1.2, mt: 2.75, maxWidth: 290,
+          }}>
+            {here ? `${first} is ready` : `${first} is getting ready to join you`}
           </Typography>
 
-          {/* Verbs of care. Never a queue position. */}
-          <Stack spacing={1.3} sx={{ mt: 3.25, width: '100%', maxWidth: 268 }}>
+          {/* An estimate that shortens. Not a service guarantee. */}
+          <Typography sx={{
+            fontSize: 14, color: here ? 'rgba(255,255,255,.75)' : C.yellow,
+            mt: 1.2, fontWeight: here ? 400 : 600,
+            transition: 'color .4s',
+          }}>
+            {here ? 'Starting your consultation…' : ETA_STEPS[stage]}
+          </Typography>
+
+          {/* three states, never more */}
+          <Stack spacing={1.15} sx={{ mt: 3.25, width: '100%', maxWidth: 262 }}>
             {steps.map((t, n) => {
-              const done = n < step;
-              const now = n === step;
+              const done = n < active;
+              const now = n === active;
               return (
                 <Stack key={t} direction="row" spacing={1.4} sx={{ alignItems: 'center' }}>
                   <Box sx={{
                     width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     bgcolor: done ? 'rgba(111,214,155,.2)' : 'rgba(255,255,255,.08)',
+                    transition: 'background-color .5s',
                   }}>
                     {done
                       ? <CheckIcon sx={{ fontSize: 11, color: '#6FD69B' }} />
                       : <Box sx={{
                           width: 5, height: 5, borderRadius: '50%',
-                          bgcolor: now ? C.yellow : 'rgba(255,255,255,.3)',
+                          bgcolor: now ? C.yellow : 'rgba(255,255,255,.28)',
                           animation: now ? 'bl 1.4s ease-in-out infinite' : 'none',
                           '@keyframes bl': { '0%,100%': { opacity: 1 }, '50%': { opacity: .25 } },
                         }} />}
@@ -248,74 +289,80 @@ export default function Consultation({ pKey, onDone, failed }) {
                     flex: 1, textAlign: 'left', fontSize: 13.5,
                     color: now ? '#fff' : 'rgba(255,255,255,.5)',
                     fontWeight: now ? 600 : 400,
+                    transition: 'color .4s',
                   }}>{t}</Typography>
                 </Stack>
               );
             })}
           </Stack>
 
-          <Typography sx={{ fontSize: 12.5, color: 'rgba(255,255,255,.42)', mt: 2.5 }}>
-            {MATCH_TIME}
-          </Typography>
+          {/* ── the patient's half of the same activity ── */}
+          {!here && (
+            <Box sx={{
+              width: '100%', mt: 4, pt: 3.25, borderTop: '1px solid rgba(255,255,255,.1)',
+            }}>
+              {q ? (
+                <>
+                  <Stack direction="row" sx={{ alignItems: 'baseline', mb: 1.75 }}>
+                    <Typography sx={{
+                      flex: 1, textAlign: 'left', fontSize: 9.5, fontWeight: 800,
+                      letterSpacing: '.16em', textTransform: 'uppercase',
+                      color: 'rgba(255,255,255,.5)',
+                    }}>While {first} gets ready</Typography>
+                    <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,.4)' }}>
+                      {qi + 1} of {GUIDED.length}
+                    </Typography>
+                  </Stack>
+
+                  {/* One question at a time. Each answer replaces it, so the
+                      screen never looks like a form to be completed. */}
+                  <Box key={q.k} sx={{
+                    animation: 'qIn .45s cubic-bezier(.2,.9,.25,1) both',
+                    '@keyframes qIn': {
+                      from: { opacity: 0, transform: 'translateY(10px)' },
+                      to: { opacity: 1, transform: 'none' },
+                    },
+                  }}>
+                    <Typography sx={{
+                      fontSize: 16.5, fontWeight: 600, lineHeight: 1.35, textAlign: 'left', mb: 1.6,
+                    }}>{q.q}</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.9 }}>
+                      {q.o.map((o) => (
+                        <Box key={o} onClick={() => setQi((n) => n + 1)} sx={{
+                          px: 1.6, py: 1.05, borderRadius: '999px', cursor: 'pointer',
+                          fontSize: 13.5, fontWeight: 500,
+                          bgcolor: 'rgba(255,255,255,.08)', color: '#fff',
+                          border: '1px solid rgba(255,255,255,.16)',
+                          '&:active': { bgcolor: 'rgba(255,185,0,.2)' },
+                        }}>{o}</Box>
+                      ))}
+                    </Box>
+                  </Box>
+                </>
+              ) : (
+                <Stack direction="row" spacing={1.3} sx={{
+                  alignItems: 'center', px: 2, py: 1.75, borderRadius: '16px',
+                  bgcolor: 'rgba(111,214,155,.1)', border: '1px solid rgba(111,214,155,.22)',
+                }}>
+                  <CheckIcon sx={{ fontSize: 16, color: '#6FD69B', flexShrink: 0 }} />
+                  <Typography sx={{
+                    flex: 1, textAlign: 'left', fontSize: 13.5, lineHeight: 1.5,
+                  }}>
+                    Thank you. {first} will see this before you talk.
+                  </Typography>
+                </Stack>
+              )}
+            </Box>
+          )}
         </Box>
 
-        {/* ── the wait, spent on something useful ── */}
-        <Box sx={{ px: 3.25, pb: 3.5, flexShrink: 0 }}>
-          {sent ? (
-            <Stack direction="row" spacing={1.3} sx={{
-              alignItems: 'flex-start', px: 2, py: 1.75, borderRadius: '16px',
-              bgcolor: 'rgba(111,214,155,.1)', border: '1px solid rgba(111,214,155,.22)',
-              animation: 'noteIn .4s cubic-bezier(.2,.9,.25,1) both',
-              '@keyframes noteIn': {
-                from: { opacity: 0, transform: 'translateY(8px)' },
-                to: { opacity: 1, transform: 'none' },
-              },
-            }}>
-              <CheckIcon sx={{ fontSize: 15, color: '#6FD69B', flexShrink: 0, mt: '2px' }} />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontSize: 12.5, color: 'rgba(255,255,255,.6)' }}>
-                  {first} will see this before you talk
-                </Typography>
-                <Typography sx={{ fontSize: 13.5, color: '#fff', mt: 0.5, lineHeight: 1.5 }}>
-                  {sent}
-                </Typography>
-              </Box>
-            </Stack>
-          ) : (
-            <>
-              <Typography sx={{
-                fontSize: 13.5, color: 'rgba(255,255,255,.6)', mb: 1.4, textAlign: 'center',
-              }}>
-                Anything else {first} should know before you talk?
-              </Typography>
-              <Stack direction="row" spacing={1} sx={{
-                alignItems: 'flex-end', pl: 2, pr: 0.6, py: 0.6, borderRadius: '20px',
-                bgcolor: 'rgba(255,255,255,.09)', border: '1px solid rgba(255,255,255,.15)',
-              }}>
-                <Box component="textarea" rows={1} value={note} placeholder="Type here"
-                  onChange={(e) => setNote(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if (note.trim()) setSent(note.trim());
-                    }
-                  }}
-                  sx={{
-                    flex: 1, resize: 'none', border: 'none', outline: 'none',
-                    background: 'transparent', color: '#fff', py: 1.1,
-                    fontFamily: 'inherit', fontSize: 14, lineHeight: 1.5,
-                    '&::placeholder': { color: 'rgba(255,255,255,.35)' },
-                  }} />
-                <Box onClick={() => note.trim() && setSent(note.trim())} sx={{
-                  width: 34, height: 34, borderRadius: '50%', flexShrink: 0, mb: 0.4,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: note.trim() ? 'pointer' : 'default',
-                  bgcolor: note.trim() ? C.yellow : 'rgba(255,255,255,.12)',
-                  color: note.trim() ? C.deep : 'rgba(255,255,255,.35)',
-                }}><ArrowUpwardIcon sx={{ fontSize: 17 }} /></Box>
-              </Stack>
-            </>
-          )}
+        {/* The one thing the patient needs to know about their own role. */}
+        <Box sx={{ px: 3, pb: 3, pt: 1, flexShrink: 0 }}>
+          <Typography sx={{
+            fontSize: 11.5, color: 'rgba(255,255,255,.38)', textAlign: 'center', lineHeight: 1.5,
+          }}>
+            Stay on this screen. We will take you straight in when {first} is ready.
+          </Typography>
         </Box>
       </Box>
     );

@@ -3569,11 +3569,6 @@ export function goalAim(pKey) {
    before a clinician accepts. The rule was right when the screen described a
    search. It is wrong now, because the practice lead takes this call and the
    name is true when it appears. */
-export const MATCH_TIME = 'Usually under 2 minutes';
-
-export function matchSteps(first) {
-  return [`${first} is reading what you shared`, 'Starting your call'];
-}
 
 /* ── THE FALLBACK MATTERS MORE THAN THE HAPPY PATH ──
    The failure that loses a patient is not a ninety second wait. It is the
@@ -3590,3 +3585,49 @@ export function callbackAt(mins = CALLBACK_MINUTES) {
   h = h % 12 || 12;
   return `${h}:${String(d.getMinutes()).padStart(2, '0')} ${ampm}`;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE LAST TWO MINUTES BEFORE A CONSULTATION
+
+   This is not a waiting screen and it must not be built as one. Both sides are
+   getting ready. The clinician is reading the file. The patient is deciding
+   what to raise. The screen shows one activity with two halves.
+
+   ── THE CLINICIAN'S HALF ──
+   Three states, no more. A patient needs to understand "preparing, then
+   joining, then talking". A longer list is an engineering dashboard.
+
+   The verbs matter. "Reviewing your information" describes a person doing
+   something. "Checking who is free" describes a system searching, and it tells
+   the patient they are in a queue. */
+export const READY_STEPS = [
+  'Reviewing your information',
+  'Preparing for your consultation',
+  'Joining your call',
+];
+
+/* An estimate, not a service guarantee. "Usually under 2 minutes" is the
+   language of a support desk. A time that shortens while the patient watches
+   is the language of something arriving. */
+export const ETA_STEPS = [
+  'Your consultation starts in about 2 minutes',
+  'Your consultation starts in about 1 minute',
+  'Almost ready',
+];
+
+/* ── THE PATIENT'S HALF ──
+   These come from the clinical intake that already exists in PREP_SCRIPT.
+   Nothing here was invented to keep the patient busy. A clinician reads the
+   answers, so answering is worth the patient's time.
+
+   Three questions, one at a time, each answered with a tap. The consultation
+   is never conditional on them. If the patient answers nothing, the call opens
+   exactly the same way. */
+export const GUIDED = [
+  { k: 'meds', q: 'Are you taking any medication at the moment?',
+    o: ['Nothing right now', 'Blood pressure', 'Thyroid', 'Something else'] },
+  { k: 'bloods', q: 'Have you had blood work done in the last year?',
+    o: ['Yes, I can share it', 'Yes, but I don’t have it', 'No'] },
+  { k: 'allergies', q: 'Any allergies we should know about?',
+    o: ['None', 'Penicillin', 'Food allergies', 'Something else'] },
+];
