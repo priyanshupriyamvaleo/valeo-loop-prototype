@@ -3541,45 +3541,52 @@ export function goalAim(pKey) {
   }[(PROTOCOLS[pKey] || {}).cat] || 'reach your goal';
 }
 
+
 /* ══════════════════════════════════════════════════════════════════════════
-   WHILE THE CONSULTATION IS PREPARED
+   WHILE A CLINICIAN CONNECTS
 
-   The wait before a clinician joins is three to five minutes. The first build
-   of that screen showed the search: "Checking who is free now", a name
-   accepting the request, faces of the team. That is the inside of the routing
-   system, and it makes a clinic look like a marketplace with drivers.
+   Three builds of this screen were wrong in three ways.
 
-   The patient does not need to know that a clinician is being matched. The
-   patient needs to know that the consultation is being prepared, and roughly
-   how long that takes.
+   A chat was a bot. A search ("checking who is free now") showed the inside of
+   the routing system. A preparation checklist was calm, but it left the patient
+   idle, and an idle patient leaves.
 
-   The wait then has a second use. This is a video consultation, and a patient
-   who takes the call in a corridor with two bars of signal gets a worse
-   consultation. Four short items turn the wait into preparation.
+   The wait is now an investment. One question sits under the status: anything
+   else the clinician should know. It does three jobs at once. The wait has a
+   purpose, the patient puts effort into the session and is far less likely to
+   abandon it, and the consultation is genuinely better for the answer.
 
-   None of these are instructions for using software. Each one states a reason,
-   because "check your connection" is an order and "so the call does not drop
-   while you are talking" is a reason. */
-export const PREPARE_ITEMS = [
-  { t: 'Find a private space',
-    s: 'So you can speak openly and comfortably.' },
-  { t: 'Check your connection',
-    s: 'Somewhere with stable internet keeps the conversation smooth.' },
-  { t: 'Keep any reports nearby',
-    s: 'If you have had tests done recently and want to discuss them.' },
-  { t: 'Take a moment to think',
-    s: 'What would you most like to get help with today?' },
-];
+   A ride-hailing app shows a car moving because the rider has nothing to give.
+   A patient has everything to give. That is the difference, and this screen
+   uses it.
 
-/* What the system is doing, in words a patient can read. The last line stays
-   open until a clinician accepts.
+   ── NAMED, AND DOING SOMETHING ──
+   "Jamie is reading what you shared" is believable. "Checking who is free" is
+   not, and it sounds like a call centre. A face and a verb read as care that
+   has already started.
 
-   "Connecting you with your clinician" is deliberate. Before somebody accepts,
-   the product must not name a person. The promise made to the patient is
-   "meet your care team", and naming Jamie before Jamie has accepted invents a
-   relationship that may not happen. */
-export const PREPARE_STEPS = [
-  'Your information is ready',
-  'Your consultation is being prepared',
-  'Connecting you with your clinician',
-];
+   This reverses an earlier rule in this file, which said no name may appear
+   before a clinician accepts. The rule was right when the screen described a
+   search. It is wrong now, because the practice lead takes this call and the
+   name is true when it appears. */
+export const MATCH_TIME = 'Usually under 2 minutes';
+
+export function matchSteps(first) {
+  return [`${first} is reading what you shared`, 'Starting your call'];
+}
+
+/* ── THE FALLBACK MATTERS MORE THAN THE HAPPY PATH ──
+   The failure that loses a patient is not a ninety second wait. It is the
+   silent fall back to "book a slot tomorrow". A held callback in the same
+   session keeps the commitment. A calendar resets it to nothing.
+
+   So the calendar is the last option and never the default. */
+export const CALLBACK_MINUTES = 18;
+
+export function callbackAt(mins = CALLBACK_MINUTES) {
+  const d = new Date(Date.now() + mins * 60000);
+  let h = d.getHours();
+  const ampm = h >= 12 ? 'pm' : 'am';
+  h = h % 12 || 12;
+  return `${h}:${String(d.getMinutes()).padStart(2, '0')} ${ampm}`;
+}

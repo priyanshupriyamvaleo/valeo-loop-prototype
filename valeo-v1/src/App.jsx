@@ -274,6 +274,10 @@ export default function App() {
      reuse the same screen — one booking experience, three occasions — so the
      mode says what to do with the slot that comes back. */
   const [booking, setBooking] = useState('consult');
+  /* Demo only. The fallback is the state that matters most, and a reviewer
+     would never reach it because the happy path always connects. The rail
+     forces it. */
+  const [matchFail, setMatchFail] = useState(false);
 
   const goQuestions = (r) => { setReveal(r || null); setFlow('questions'); };
 
@@ -395,7 +399,12 @@ export default function App() {
       ...NEXT.followup,
     ];
   }
-  const steps = (f && NEXT[f.status]) || [];
+  let steps = (f && NEXT[f.status]) || [];
+  /* While the consultation screen is open there is no run yet, so the rail has
+     nothing to advance. This is the one control it needs there. */
+  if (flow === 'consultation' && !matchFail) {
+    steps = [{ t: 'No clinician free', run: () => setMatchFail(true) }];
+  }
 
   const dark = false;
 
@@ -444,10 +453,10 @@ export default function App() {
        met the team and answered the questions; the next thing is the talk. */
     <Meet pKey={meetKey}
       onBack={() => setFlow('coach')}
-      onBook={(pk) => { setDetail(pk); setFlow('consultation'); }} />
+      onBook={(pk) => { setDetail(pk); setMatchFail(false); setFlow('consultation'); }} />
   );
   else if (flow === 'consultation') view = (
-    <Consultation pKey={detail}
+    <Consultation pKey={detail} failed={matchFail}
       onDone={() => {
         /* The run begins here, at `consulted`. Nothing was booked and nothing
            was paid, so there is no earlier state to record. */

@@ -4,69 +4,86 @@ import MicIcon from '@mui/icons-material/MicNone';
 import VideocamIcon from '@mui/icons-material/VideocamOutlined';
 import CallEndIcon from '@mui/icons-material/CallEnd';
 import CheckIcon from '@mui/icons-material/Check';
-import { CALL_TOPICS, PREPARE_ITEMS, PREPARE_STEPS, USER,
-         coachOf, givenNameOf, goalAim, onCallNow } from '../data';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import { CALL_TOPICS, MATCH_TIME, USER, callbackAt, CALLBACK_MINUTES,
+         coachOf, givenNameOf, matchSteps, onCallNow } from '../data';
 import { C } from '../theme';
 
 /**
- * THE FIRST CONSULTATION — prepare, then meet.
+ * THE FIRST CONSULTATION — connect, then meet.
  *
- * Two earlier builds were wrong in two different ways.
+ * Four builds. Each one failed differently, and the failures are worth keeping
+ * written down.
  *
- * The first was a chat: the patient tapped answers to written questions. That
- * is a bot with a photograph.
+ * A chat was a bot with a photograph. A search said "checking who is free now"
+ * and showed the inside of the routing system, which makes a clinic look like a
+ * marketplace. A preparation checklist was calm and warm, and it left the
+ * patient with nothing to do. An idle patient leaves.
  *
- * The second was a search. It said "Checking who is free now", showed a name
- * accepting the request, and put the team's faces on screen. That is the
- * inside of the routing system, and it makes a clinic look like a marketplace
- * with drivers. It also promised a person before a person had agreed.
+ * ── THE WAIT IS NOW AN INVESTMENT ──
+ * One question sits under the status: anything else the clinician should know.
+ * It does three jobs at once. The wait gains a purpose. The patient puts effort
+ * into the session and becomes far less likely to abandon it. The consultation
+ * is genuinely better for the answer.
  *
- * ── WHAT THE WAIT IS FOR ──
- * Connecting a clinician takes three to five minutes. The patient does not
- * need to know that a match is being found. The patient needs to know that the
- * consultation is being prepared, and roughly how long that takes.
+ * A ride-hailing app shows a car moving because the rider has nothing to
+ * contribute. A patient has everything to contribute. That difference is the
+ * whole design of this screen.
  *
- * The wait then has a second use. This is a video consultation, and a patient
- * who takes the call in a corridor with two bars of signal gets a worse
- * consultation. So the screen spends the wait on preparation, and the patient
- * arrives at the call ready rather than merely present.
+ * ── A NAME, AND A VERB ──
+ * "Jamie is reading what you shared" is believable. "Checking who is free" is
+ * not, and it sounds like a call centre queue. A face plus an action reads as
+ * care that has already started.
  *
- * ── THE PRODUCT PROMISE IS "YOUR CARE TEAM" ──
- * Before anybody accepts, the screen says "your clinician". It does not say
- * Jamie. Naming a person before that person has agreed invents a relationship
- * that may not happen, and the routing may reasonably send the patient to any
- * qualified clinician in the practice. The name and the face appear at the
- * moment they become true, and not before.
+ * ── THE FALLBACK IS THE IMPORTANT PART ──
+ * The failure that loses a patient is not a ninety second wait. It is the quiet
+ * fall back to a calendar. So when nobody connects, the screen holds the
+ * patient's place with a real callback time in the same session, and the
+ * calendar appears once, small, as the last option.
  *
- * ── WARM, NOT DARK ──
- * The previous screen is cream and so is this one. The dark treatment belonged
- * to the search, and darkness at this point reads as a system working rather
- * than a room being made ready. Only the call itself is dark, which is correct
- * for video.
+ * ── NO EXITS ──
+ * There is no back arrow and no navigation. The only ways out are forward, or
+ * the small calendar link inside the fallback.
  *
  * ── DEMO TIMING ──
- * The copy states the real range of three to five minutes. The prototype
- * advances in about nine seconds, because nobody reviewing this will sit
- * through four minutes. The states and their order are the real ones.
+ * The copy states the real expectation. The prototype connects in about eleven
+ * seconds, because nobody reviewing this will wait two minutes. The rail
+ * control "No clinician free" forces the fallback, which is otherwise hard to
+ * see and is the state that matters most.
  */
-export default function Consultation({ pKey, onDone }) {
+export default function Consultation({ pKey, onDone, failed }) {
   const c = coachOf(pKey);
   const doc = onCallNow(pKey);
   const first = givenNameOf(doc);
+  const steps = matchSteps(first);
 
-  const [phase, setPhase] = useState('preparing');
-  const [step, setStep] = useState(1);
+  const [phase, setPhase] = useState('matching');
+  const [step, setStep] = useState(0);
+  const [note, setNote] = useState('');
+  const [sent, setSent] = useState('');
+  const [held, setHeld] = useState(false);
+  /* Fixed when the fallback appears, never recomputed. callbackAt() reads the
+     clock, so calling it during render moved the promised time from 5:53 to
+     5:54 between the offer and the confirmation. A time that changes while a
+     patient reads it is worse than no time at all. */
+  const [callAt, setCallAt] = useState('');
   const [secs, setSecs] = useState(0);
   const [covered, setCovered] = useState(0);
   const timer = useRef(null);
 
-  /* Prepare, then a clinician accepts, then the call opens. */
   useEffect(() => {
-    const a = setTimeout(() => setStep(2), 2600);
-    const b = setTimeout(() => setPhase('ready'), 8000);
-    const d = setTimeout(() => setPhase('call'), 11200);
-    return () => { clearTimeout(a); clearTimeout(b); clearTimeout(d); };
-  }, []);
+    if (phase !== 'matching') return undefined;
+    const a = setTimeout(() => setStep(1), 9000);
+    const b = setTimeout(() => setPhase('call'), 11500);
+    return () => { clearTimeout(a); clearTimeout(b); };
+  }, [phase]);
+
+  /* The rail forces the state that a reviewer would otherwise never see. */
+  useEffect(() => {
+    if (!failed || phase !== 'matching') return;
+    setCallAt(callbackAt());
+    setPhase('fallback');
+  }, [failed, phase]);
 
   useEffect(() => {
     if (phase !== 'call') return undefined;
@@ -82,172 +99,229 @@ export default function Consultation({ pKey, onDone }) {
 
   if (!c) return null;
 
-  /* ── PHASE 1 · PREPARING ──────────────────────────────────────────── */
-  if (phase === 'preparing') {
+  const face = (size) => (
+    <Box sx={{
+      width: size, height: size, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+      border: '2.5px solid rgba(255,255,255,.2)',
+      background: `linear-gradient(155deg,${doc.tone} 0%,rgba(11,21,34,.7) 145%)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {doc.img
+        ? <Box component="img" src={doc.img} alt="" sx={{
+            width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
+          }} />
+        : <Typography sx={{
+            fontFamily: '"Fraunces", serif', fontSize: size * 0.3,
+            color: 'rgba(255,255,255,.9)',
+          }}>{doc.mono}</Typography>}
+    </Box>
+  );
+
+  /* ── FALLBACK · nobody connected ──────────────────────────────────── */
+  if (phase === 'fallback') {
     return (
       <Box sx={{
         height: '100%', display: 'flex', flexDirection: 'column',
-        background: `linear-gradient(180deg,#FFF6E4 0%,${C.cream} 26%)`,
+        justifyContent: 'center', px: 3.25, color: '#fff',
+        background: `linear-gradient(172deg,#1E3F63,${C.night} 62%,#0B1B2E)`,
+        animation: 'fadeIn .5s ease both',
+        '@keyframes fadeIn': { from: { opacity: 0 }, to: { opacity: 1 } },
       }}>
-        <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 3, pt: 5, pb: 3 }}>
-          <Typography sx={{
-            fontFamily: '"Fraunces", serif', fontSize: 29, fontWeight: 600,
-            lineHeight: 1.15, color: C.deep, maxWidth: 290,
-          }}>Preparing your consultation</Typography>
+        {held ? (
+          <>
+            <Box sx={{
+              width: 52, height: 52, borderRadius: '50%', bgcolor: 'rgba(111,214,155,.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3,
+            }}><CheckIcon sx={{ fontSize: 26, color: '#6FD69B' }} /></Box>
+            <Typography variant="h1" sx={{ fontSize: 26, lineHeight: 1.2 }}>
+              Your place is held.
+            </Typography>
+            <Typography sx={{
+              fontSize: 15, color: 'rgba(255,255,255,.68)', mt: 1.75, lineHeight: 1.55,
+            }}>
+              {first} will call you at {callAt}. We will send a WhatsApp message
+              two minutes before.
+            </Typography>
+            <Typography sx={{
+              fontSize: 13.5, color: 'rgba(255,255,255,.45)', mt: 2.5, lineHeight: 1.55,
+            }}>
+              You can close the app. Nothing else is needed from you.
+            </Typography>
+          </>
+        ) : (
+          <>
+            <Typography variant="h1" sx={{ fontSize: 26, lineHeight: 1.22, maxWidth: 300 }}>
+              All clinicians are with patients right now.
+            </Typography>
 
-          <Typography sx={{
-            fontSize: 15, lineHeight: 1.55, color: C.ink2, mt: 1.5, maxWidth: 290,
-          }}>
-            We’ll connect you with your care team in about 3–5 minutes.
+            {/* A real time, in this session. Not a calendar. */}
+            <Stack direction="row" spacing={1.75} sx={{
+              alignItems: 'center', mt: 3.5, px: 2, py: 2.25, borderRadius: '18px',
+              bgcolor: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.13)',
+            }}>
+              {face(46)}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: 15, fontWeight: 700, lineHeight: 1.35 }}>
+                  {first} will call you at {callAt}
+                </Typography>
+                <Typography sx={{
+                  fontSize: 12.5, color: 'rgba(255,255,255,.6)', mt: 0.4, lineHeight: 1.45,
+                }}>
+                  In about {CALLBACK_MINUTES} minutes. We will send a WhatsApp
+                  message two minutes before.
+                </Typography>
+              </Box>
+            </Stack>
+
+            <Box onClick={() => setHeld(true)} sx={{
+              mt: 3, py: 1.6, borderRadius: '999px', textAlign: 'center', cursor: 'pointer',
+              bgcolor: C.yellow, color: C.deep, fontSize: 15, fontWeight: 700,
+            }}>Hold my place</Box>
+
+            {/* The only path to a calendar, and it is deliberately quiet. */}
+            <Typography onClick={onDone} sx={{
+              fontSize: 12.5, color: 'rgba(255,255,255,.38)', textAlign: 'center',
+              mt: 2.5, cursor: 'pointer', textDecoration: 'underline',
+            }}>Prefer another time?</Typography>
+          </>
+        )}
+      </Box>
+    );
+  }
+
+  /* ── MATCHING ─────────────────────────────────────────────────────── */
+  if (phase === 'matching') {
+    return (
+      <Box sx={{
+        height: '100%', display: 'flex', flexDirection: 'column',
+        color: '#fff', background: `linear-gradient(172deg,#1E3F63,${C.night} 62%,#0B1B2E)`,
+      }}>
+        <Box sx={{
+          flex: '1 1 auto', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', px: 3.25, textAlign: 'center',
+        }}>
+          <Box sx={{ position: 'relative', width: 108, height: 108, mb: 3.5 }}>
+            {[0, 1].map((n) => (
+              <Box key={n} sx={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                border: '1.5px solid rgba(255,185,0,.4)',
+                animation: 'halo 2.8s cubic-bezier(.2,.7,.3,1) infinite',
+                animationDelay: `${n * 1.4}s`,
+                '@keyframes halo': {
+                  '0%': { transform: 'scale(.72)', opacity: 0 },
+                  '30%': { opacity: .8 },
+                  '100%': { transform: 'scale(1)', opacity: 0 },
+                },
+              }} />
+            ))}
+            <Box sx={{
+              position: 'absolute', inset: '50% auto auto 50%', transform: 'translate(-50%,-50%)',
+            }}>{face(80)}</Box>
+          </Box>
+
+          <Typography variant="h1" sx={{ fontSize: 25, lineHeight: 1.2 }}>
+            Connecting you with {first}
           </Typography>
 
-          {/* Quiet, and never a queue position. It says work is happening and
-              stops there. */}
-          <Stack spacing={1.4} sx={{ mt: 3.5 }}>
-            {PREPARE_STEPS.map((t, n) => {
-              const ok = n < step;
+          {/* Verbs of care. Never a queue position. */}
+          <Stack spacing={1.3} sx={{ mt: 3.25, width: '100%', maxWidth: 268 }}>
+            {steps.map((t, n) => {
+              const done = n < step;
+              const now = n === step;
               return (
-                <Stack key={t} direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                <Stack key={t} direction="row" spacing={1.4} sx={{ alignItems: 'center' }}>
                   <Box sx={{
                     width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    bgcolor: ok ? 'rgba(39,153,91,.14)' : 'rgba(27,57,91,.06)',
-                    transition: 'background-color .5s',
+                    bgcolor: done ? 'rgba(111,214,155,.2)' : 'rgba(255,255,255,.08)',
                   }}>
-                    {ok
-                      ? <CheckIcon sx={{ fontSize: 11, color: C.green }} />
+                    {done
+                      ? <CheckIcon sx={{ fontSize: 11, color: '#6FD69B' }} />
                       : <Box sx={{
-                          width: 5, height: 5, borderRadius: '50%', bgcolor: C.yellowDeep,
-                          animation: 'pulseDot 1.8s ease-in-out infinite',
-                          '@keyframes pulseDot': {
-                            '0%,100%': { opacity: 1 }, '50%': { opacity: .25 },
-                          },
+                          width: 5, height: 5, borderRadius: '50%',
+                          bgcolor: now ? C.yellow : 'rgba(255,255,255,.3)',
+                          animation: now ? 'bl 1.4s ease-in-out infinite' : 'none',
+                          '@keyframes bl': { '0%,100%': { opacity: 1 }, '50%': { opacity: .25 } },
                         }} />}
                   </Box>
                   <Typography sx={{
-                    fontSize: 13.5, color: ok ? C.ink2 : C.deep,
-                    fontWeight: ok ? 400 : 600,
+                    flex: 1, textAlign: 'left', fontSize: 13.5,
+                    color: now ? '#fff' : 'rgba(255,255,255,.5)',
+                    fontWeight: now ? 600 : 400,
                   }}>{t}</Typography>
                 </Stack>
               );
             })}
           </Stack>
 
-          {/* ── the wait, put to use ── */}
-          <Typography sx={{
-            fontSize: 10, fontWeight: 800, letterSpacing: '.16em',
-            textTransform: 'uppercase', color: C.ink2,
-            mt: 5, pt: 3, borderTop: `1px solid ${C.line}`,
-          }}>While we get everything ready</Typography>
-          <Typography sx={{
-            fontSize: 14.5, lineHeight: 1.55, color: C.ink2, mt: 1.5, mb: 3, maxWidth: 295,
-          }}>
-            A few small things can help make your consultation more useful.
+          <Typography sx={{ fontSize: 12.5, color: 'rgba(255,255,255,.42)', mt: 2.5 }}>
+            {MATCH_TIME}
           </Typography>
+        </Box>
 
-          <Stack spacing={2.75}>
-            {PREPARE_ITEMS.map((x) => (
-              <Stack key={x.t} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
-                <Box sx={{
-                  width: 6, height: 6, borderRadius: '50%', bgcolor: C.yellowDeep,
-                  flexShrink: 0, mt: '8px',
-                }} />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{
-                    fontSize: 15.5, fontWeight: 700, color: C.deep, lineHeight: 1.3,
-                  }}>{x.t}</Typography>
-                  <Typography sx={{
-                    fontSize: 14, lineHeight: 1.5, color: C.ink2, mt: 0.5, maxWidth: 275,
-                  }}>{x.s}</Typography>
-                </Box>
+        {/* ── the wait, spent on something useful ── */}
+        <Box sx={{ px: 3.25, pb: 3.5, flexShrink: 0 }}>
+          {sent ? (
+            <Stack direction="row" spacing={1.3} sx={{
+              alignItems: 'flex-start', px: 2, py: 1.75, borderRadius: '16px',
+              bgcolor: 'rgba(111,214,155,.1)', border: '1px solid rgba(111,214,155,.22)',
+              animation: 'noteIn .4s cubic-bezier(.2,.9,.25,1) both',
+              '@keyframes noteIn': {
+                from: { opacity: 0, transform: 'translateY(8px)' },
+                to: { opacity: 1, transform: 'none' },
+              },
+            }}>
+              <CheckIcon sx={{ fontSize: 15, color: '#6FD69B', flexShrink: 0, mt: '2px' }} />
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: 12.5, color: 'rgba(255,255,255,.6)' }}>
+                  {first} will see this before you talk
+                </Typography>
+                <Typography sx={{ fontSize: 13.5, color: '#fff', mt: 0.5, lineHeight: 1.5 }}>
+                  {sent}
+                </Typography>
+              </Box>
+            </Stack>
+          ) : (
+            <>
+              <Typography sx={{
+                fontSize: 13.5, color: 'rgba(255,255,255,.6)', mb: 1.4, textAlign: 'center',
+              }}>
+                Anything else {first} should know before you talk?
+              </Typography>
+              <Stack direction="row" spacing={1} sx={{
+                alignItems: 'flex-end', pl: 2, pr: 0.6, py: 0.6, borderRadius: '20px',
+                bgcolor: 'rgba(255,255,255,.09)', border: '1px solid rgba(255,255,255,.15)',
+              }}>
+                <Box component="textarea" rows={1} value={note} placeholder="Type here"
+                  onChange={(e) => setNote(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (note.trim()) setSent(note.trim());
+                    }
+                  }}
+                  sx={{
+                    flex: 1, resize: 'none', border: 'none', outline: 'none',
+                    background: 'transparent', color: '#fff', py: 1.1,
+                    fontFamily: 'inherit', fontSize: 14, lineHeight: 1.5,
+                    '&::placeholder': { color: 'rgba(255,255,255,.35)' },
+                  }} />
+                <Box onClick={() => note.trim() && setSent(note.trim())} sx={{
+                  width: 34, height: 34, borderRadius: '50%', flexShrink: 0, mb: 0.4,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: note.trim() ? 'pointer' : 'default',
+                  bgcolor: note.trim() ? C.yellow : 'rgba(255,255,255,.12)',
+                  color: note.trim() ? C.deep : 'rgba(255,255,255,.35)',
+                }}><ArrowUpwardIcon sx={{ fontSize: 17 }} /></Box>
               </Stack>
-            ))}
-          </Stack>
-
-          {/* Built from what the patient already told us. It asks for nothing
-              and adds no form. */}
-          <Box sx={{
-            mt: 4.5, px: 2.25, py: 2.25, borderRadius: '18px', bgcolor: '#fff',
-            boxShadow: '0 3px 16px -12px rgba(27,57,91,.45)',
-          }}>
-            <Typography sx={{ fontSize: 14.5, lineHeight: 1.55, color: C.deep }}>
-              You told us you want to {goalAim(pKey)}.
-            </Typography>
-            <Typography sx={{ fontSize: 13.5, lineHeight: 1.55, color: C.ink2, mt: 0.8 }}>
-              If there is anything specific you want to cover, keep it in mind for
-              the conversation.
-            </Typography>
-          </Box>
+            </>
+          )}
         </Box>
       </Box>
     );
   }
 
-  /* ── PHASE 2 · A CLINICIAN HAS ACCEPTED ───────────────────────────── */
-  if (phase === 'ready') {
-    return (
-      <Box sx={{
-        height: '100%', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', px: 3.5, textAlign: 'center',
-        background: `linear-gradient(180deg,#FFF6E4 0%,${C.cream} 40%)`,
-        animation: 'settle .6s cubic-bezier(.2,.9,.25,1) both',
-        '@keyframes settle': {
-          from: { opacity: 0 }, to: { opacity: 1 },
-        },
-      }}>
-        {/* The name and the face appear now, because now they are true. */}
-        <Box sx={{
-          width: 104, height: 104, borderRadius: '50%', overflow: 'hidden',
-          border: '3px solid #fff',
-          boxShadow: '0 12px 30px -14px rgba(27,57,91,.5)',
-          background: `linear-gradient(155deg,${doc.tone} 0%,rgba(11,21,34,.7) 145%)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          animation: 'pop .55s cubic-bezier(.2,.9,.25,1) both',
-          '@keyframes pop': {
-            from: { opacity: 0, transform: 'scale(.9)' },
-            to: { opacity: 1, transform: 'none' },
-          },
-        }}>
-          {doc.img
-            ? <Box component="img" src={doc.img} alt="" sx={{
-                width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
-              }} />
-            : <Typography sx={{
-                fontFamily: '"Fraunces", serif', fontSize: 30, fontWeight: 600,
-                color: 'rgba(255,255,255,.9)',
-              }}>{doc.mono}</Typography>}
-        </Box>
-
-        <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 27, fontWeight: 600,
-          lineHeight: 1.15, color: C.deep, mt: 3,
-        }}>Your clinician is ready</Typography>
-
-        <Typography sx={{ fontSize: 16, fontWeight: 700, color: C.deep, mt: 2 }}>
-          {doc.name}
-        </Typography>
-        <Typography sx={{ fontSize: 13.5, color: C.ink2, mt: 0.3 }}>
-          {doc.role}
-        </Typography>
-
-        <Stack direction="row" spacing={0.7} sx={{ alignItems: 'center', mt: 4 }}>
-          {[0, 1, 2].map((n) => (
-            <Box key={n} sx={{
-              width: 6, height: 6, borderRadius: '50%', bgcolor: C.yellowDeep,
-              animation: 'wink 1.2s ease-in-out infinite',
-              animationDelay: `${n * 0.18}s`,
-              '@keyframes wink': { '0%,100%': { opacity: .25 }, '50%': { opacity: 1 } },
-            }} />
-          ))}
-          <Typography sx={{ fontSize: 13, color: C.ink2, pl: 0.7 }}>
-            Starting your consultation
-          </Typography>
-        </Stack>
-      </Box>
-    );
-  }
-
-  /* ── PHASE 3 · THE CALL ───────────────────────────────────────────── */
+  /* ── THE CALL ─────────────────────────────────────────────────────── */
   const done = covered >= CALL_TOPICS.length;
   const clock = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
 
