@@ -3486,3 +3486,11 @@ export const CALL_TOPICS = [
 export function onCallNow(pKey) {
   return coachOf(pKey) || DOCTOR;
 }
+
+/* How many clinicians can take a call right now. A fixed number in this build.
+   A real rota supplies it, and only this function changes. It is a resolver
+   rather than a literal in the screen, because the same count must agree with
+   the connecting screen if that screen ever shows it. */
+export function availableNow() {
+  return 3;
+}

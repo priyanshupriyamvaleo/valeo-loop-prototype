@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import CheckIcon from '@mui/icons-material/Check';
-import { coachOf } from '../data';
+import { coachOf, availableNow } from '../data';
 import { C } from '../theme';
 
 /**
@@ -42,6 +42,7 @@ import { C } from '../theme';
  */
 export default function Meet({ pKey, onBook, onBack }) {
   const c = coachOf(pKey);
+  const free = availableNow();
   const [inn, setInn] = useState(false);
   useEffect(() => { const t = setTimeout(() => setInn(true), 40); return () => clearTimeout(t); }, []);
 
@@ -173,13 +174,18 @@ export default function Meet({ pKey, onBook, onBack }) {
         background: `linear-gradient(180deg,rgba(255,253,245,0) 0%,${C.cream} 40%)`,
       }}>
         {/* The consultation is free and it starts now. "Continue" used to lead
-            to a slot picker and a SAR 200 charge, both of which sat in front of
-            the relationship rather than in front of the treatment. */}
+            to a slot picker and a SAR 200 charge. Both sat in front of the
+            relationship instead of in front of the treatment.
+
+            The line under the button states a count, not a promise. "Someone is
+            available" asks for trust. "3 clinicians available now" is a fact,
+            and it is the same claim an on-demand service makes at the moment a
+            person decides to tap. */}
         <Button fullWidth variant="contained" color="secondary" onClick={() => onBook(pKey)}>
-          Talk to {c.short}’s team
+          Start your consultation
         </Button>
         <Typography sx={{ fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1.3 }}>
-          Free · someone is available now
+          {free} clinician{free === 1 ? '' : 's'} available now
         </Typography>
       </Box>
 
