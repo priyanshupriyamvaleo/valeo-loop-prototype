@@ -1,49 +1,47 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import CheckIcon from '@mui/icons-material/Check';
-import { BRIEF, CONSULT_SUMMARY, PROGRAMME_FEE, PROGRAMME_INCLUDES,
-         briefSteps, coachOf, givenNameOf } from '../data';
+import { careMeaning, coachOf, givenNameOf, goalAim } from '../data';
 import { C } from '../theme';
 
 /**
- * THE CARE BRIEF — the bridge between the conversation and the treatment.
+ * JAMIE'S RECOMMENDATION.
  *
- * This screen exists because of a conflict between two true things.
+ * The first build of this screen showed the mechanics of the programme. It
+ * listed what the consultation heard, the four clinical questions the blood
+ * test answers, the five steps of the journey, the price, and a grid of what
+ * the programme includes. Every part was true, and no part was the reason to
+ * continue.
  *
- * The clinicians cannot write a protocol before they see blood results. So the
- * product must not show a plan yet.
+ * The reason to continue is clinical judgement. A patient at this moment is not
+ * choosing a blood test, a protocol or a support package. A patient is choosing
+ * to let one clinician decide what happens to their body, and to keep deciding
+ * as things change. That decision is the product.
  *
- * The patient has just spent time in a consultation and needs to see that it
- * produced something. "Nothing happens until you pay for a blood test" is a
- * dead end, and it makes the blood test look like the product.
+ * ── WHAT THIS SCREEN REMOVED, AND WHY ──
+ * The journey map went, because a list of steps describes the service and not
+ * the value of it. The included grid went, because it turns care into a
+ * shopping basket. The price went, because it belongs on the checkout screen
+ * that follows, before any charge occurs. A screen that argues for judgement
+ * and shows a number at the same time argues for neither.
  *
- * The Care Brief resolves both. It is the honest output of the consultation:
- * what the clinician heard, which questions the blood work must answer, and
- * what happens next. It is not a weak version of the plan. It is a different
- * document with a different job.
+ * ── THE ONE PIECE OF MECHANICS THAT STAYED ──
+ * One line states that the blood work joins today's consultation. The patient
+ * must know that a blood test is part of this before agreeing to it. Removing
+ * that line would make the screen shorter and dishonest.
  *
- * ── THE SECOND SECTION IS THE IMPORTANT ONE ──
- * "You need to pay for a blood test" is an obstacle. The same test written as
- * four clinical questions is the reason to continue. The patient can read what
- * the clinician does not yet know, and why the answer changes the treatment.
- * That is what makes the price at the bottom reasonable.
- *
- * ── THE PRICE SITS HERE, AND ONLY HERE ──
- * One payment, on the document that explains what the payment buys. The
- * patient enters a programme. The blood test is step one inside it, already
- * paid for. Nothing asks for money again, including the plan screen later.
+ * ── WHY THE THREE POINTS ARE NOT CARDS ──
+ * A card makes a statement look like a product feature. These are qualities of
+ * a person's judgement. They get space, a quiet marker and no border.
  */
-export default function Brief({ pKey, st, onStart, onBack }) {
+export default function Brief({ pKey, onBack, onStart }) {
   const c = coachOf(pKey);
-  const first = givenNameOf(c);
-  const sum = CONSULT_SUMMARY[pKey];
-  const brief = BRIEF[pKey];
   const [inn, setInn] = useState(false);
   useEffect(() => { const t = setTimeout(() => setInn(true), 40); return () => clearTimeout(t); }, []);
 
-  if (!c || !brief) return null;
-  const steps = briefSteps(st, pKey);
+  if (!c) return null;
+  const first = givenNameOf(c);
+  const points = careMeaning(first);
 
   return (
     <Box sx={{
@@ -57,145 +55,103 @@ export default function Brief({ pKey, st, onStart, onBack }) {
       </Box>
 
       <Box sx={{
-        flex: '1 1 auto', overflowY: 'auto', px: 2.75, pb: 2,
+        flex: '1 1 auto', overflowY: 'auto', px: 3, pb: 2,
         opacity: inn ? 1 : 0,
         transform: inn ? 'none' : 'translateY(12px)',
-        transition: 'opacity .45s cubic-bezier(.2,.9,.25,1), transform .5s cubic-bezier(.2,.9,.25,1)',
+        transition: 'opacity .5s cubic-bezier(.2,.9,.25,1), transform .55s cubic-bezier(.2,.9,.25,1)',
       }}>
-        <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 29, fontWeight: 600,
-          lineHeight: 1.14, color: C.deep, mt: 0.5,
-        }}>Your care brief</Typography>
-
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: 1.3 }}>
+        {/* Small, because the patient has just spent a call looking at this
+            face. It grounds the recommendation in a person and then stops. */}
+        <Stack direction="row" spacing={1.3} sx={{ alignItems: 'center', mt: 0.5 }}>
           <Box sx={{
-            width: 22, height: 22, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+            width: 34, height: 34, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+            border: '2px solid #fff',
+            boxShadow: '0 4px 12px -6px rgba(27,57,91,.45)',
             background: `linear-gradient(155deg,${c.tone} 0%,rgba(11,21,34,.7) 145%)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            {c.img && <Box component="img" src={c.img} alt="" sx={{
-              width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
-            }} />}
-          </Box>
-          <Typography sx={{ fontSize: 12.5, color: C.ink2 }}>
-            Written by {first} after your consultation
-          </Typography>
-        </Stack>
-
-        {/* ── 1 · what we heard ── */}
-        <Head>What we heard</Head>
-        <Stack spacing={1.3}>
-          {(sum ? sum.said : []).map((t) => (
-            <Stack key={t} direction="row" spacing={1.4} sx={{ alignItems: 'flex-start' }}>
-              <Box sx={{
-                width: 5, height: 5, borderRadius: '50%', bgcolor: C.yellowDeep,
-                flexShrink: 0, mt: '9px',
-              }} />
-              <Typography sx={{ flex: 1, fontSize: 15.5, lineHeight: 1.5, color: C.deep }}>
-                {t}
-              </Typography>
-            </Stack>
-          ))}
-        </Stack>
-
-        {/* ── 2 · what the blood test is for ──
-            The whole design turns on this section. Questions, not a price. */}
-        <Head>What we’re looking into</Head>
-        <Typography sx={{ fontSize: 14.5, lineHeight: 1.55, color: C.ink2, mb: 2 }}>
-          Before {first} decides on treatment, these are the things to understand
-          about how your body is working.
-        </Typography>
-        <Stack spacing={1.4}>
-          {brief.asks.map((q, n) => (
-            <Stack key={q} direction="row" spacing={1.6} sx={{
-              alignItems: 'flex-start', px: 1.75, py: 1.5,
-              borderRadius: '15px', bgcolor: '#fff',
-              boxShadow: '0 2px 12px -9px rgba(27,57,91,.4)',
-            }}>
-              <Typography sx={{
-                fontFamily: '"Fraunces", serif', fontSize: 15, fontWeight: 600,
-                color: C.yellowDeep, flexShrink: 0, lineHeight: 1.4,
-              }}>{n + 1}</Typography>
-              <Typography sx={{ flex: 1, fontSize: 14.5, lineHeight: 1.45, color: C.deep }}>
-                {q}
-              </Typography>
-            </Stack>
-          ))}
-        </Stack>
-        <Typography sx={{ fontSize: 14, lineHeight: 1.55, color: C.ink2, mt: 2 }}>
-          A blood test answers all four. A nurse comes to you and it takes about
-          fifteen minutes.
-        </Typography>
-
-        {/* ── 3 · what happens next ── */}
-        <Head>What happens next</Head>
-        <Box>
-          {steps.map((s, i) => (
-            <Stack key={s.t} direction="row" spacing={1.8}
-              sx={{ position: 'relative', pb: i === steps.length - 1 ? 0 : 2.1 }}>
-              {i < steps.length - 1 && (
-                <Box sx={{
-                  position: 'absolute', left: 9, top: 22, bottom: 2, width: 1.5,
-                  bgcolor: s.s === 'done' ? 'rgba(39,153,91,.3)' : 'rgba(27,57,91,.10)',
+            {c.img
+              ? <Box component="img" src={c.img} alt="" sx={{
+                  width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
                 }} />
-              )}
-              <Box sx={{
-                width: 19, height: 19, borderRadius: '50%', flexShrink: 0, zIndex: 1, mt: '2px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                bgcolor: s.s === 'done' ? C.green : s.s === 'now' ? C.yellow : 'transparent',
-                border: s.s === 'wait' ? '1.5px solid rgba(27,57,91,.18)' : 'none',
-              }}>
-                {s.s === 'done' && <CheckIcon sx={{ fontSize: 11, color: '#fff' }} />}
-              </Box>
-              <Typography sx={{
-                flex: 1, fontSize: 15, mt: '1px',
-                fontWeight: s.s === 'wait' ? 500 : 700,
-                color: s.s === 'wait' ? C.ink : C.deep,
-              }}>{s.t}</Typography>
-            </Stack>
-          ))}
-        </Box>
+              : <Typography sx={{
+                  fontFamily: '"Fraunces", serif', fontSize: 12, fontWeight: 600,
+                  color: 'rgba(255,255,255,.9)',
+                }}>{c.mono}</Typography>}
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>
+              {c.name}
+            </Typography>
+            <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>{c.role}</Typography>
+          </Box>
+        </Stack>
 
-        {/* ── 4 · the programme ── */}
-        <Head>Your programme</Head>
-        <Typography sx={{ fontSize: 14.5, lineHeight: 1.55, color: C.ink2, mb: 2 }}>
-          One payment covers your whole course of care. There is nothing to pay
-          at any later step.
+        <Typography sx={{
+          fontFamily: '"Fraunces", serif', fontSize: 32, fontWeight: 600,
+          lineHeight: 1.12, color: C.deep, mt: 3.5, maxWidth: 300,
+        }}>{first}’s recommendation</Typography>
+
+        <Typography sx={{
+          fontSize: 16.5, lineHeight: 1.5, color: C.deep, mt: 2, maxWidth: 305,
+        }}>
+          Based on today’s consultation, {first} has recommended a personalised
+          approach to {goalAim(pKey)}.
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {PROGRAMME_INCLUDES.map((t) => (
-            <Stack key={t} direction="row" spacing={1.1} sx={{
-              width: 'calc(50% - 4px)', alignItems: 'center',
-              px: 1.4, py: 1.3, borderRadius: '14px', bgcolor: '#fff',
-              boxShadow: '0 2px 12px -9px rgba(27,57,91,.4)',
-            }}>
-              <CheckIcon sx={{ fontSize: 14, color: C.green, flexShrink: 0 }} />
-              <Typography sx={{ flex: 1, fontSize: 12.5, lineHeight: 1.3, color: C.deep }}>
-                {t}
-              </Typography>
-            </Stack>
+
+        {/* The claim the whole screen exists to make. */}
+        <Typography sx={{
+          fontSize: 15, lineHeight: 1.55, color: C.ink2, mt: 2.25, maxWidth: 300,
+        }}>
+          From this point on, every decision is guided by {first}, tailored to your
+          health, your goals and your progress.
+        </Typography>
+
+        <Typography sx={{
+          fontSize: 10, fontWeight: 800, letterSpacing: '.16em',
+          textTransform: 'uppercase', color: C.ink2, mt: 5, mb: 2.5,
+        }}>What this means for you</Typography>
+
+        <Stack spacing={3}>
+          {points.map((x) => (
+            <Box key={x.t}>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                <Box sx={{
+                  width: 7, height: 7, borderRadius: '50%', bgcolor: C.yellowDeep,
+                  flexShrink: 0, mt: '7px',
+                }} />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{
+                    fontSize: 16, fontWeight: 700, color: C.deep, lineHeight: 1.3,
+                  }}>{x.t}</Typography>
+                  <Typography sx={{
+                    fontSize: 14.5, lineHeight: 1.5, color: C.ink2, mt: 0.6, maxWidth: 280,
+                  }}>{x.s}</Typography>
+                </Box>
+              </Stack>
+            </Box>
           ))}
-        </Box>
+        </Stack>
+
+        {/* The blood test is named once. A patient must know it is part of this
+            before agreeing to it, and one sentence is the whole obligation. */}
+        <Typography sx={{
+          fontSize: 13.5, lineHeight: 1.6, color: C.ink2, mt: 5,
+          pt: 2.5, borderTop: `1px solid ${C.line}`, maxWidth: 300,
+        }}>
+          To personalise your care, {first} will use your blood work alongside
+          today’s consultation.
+        </Typography>
       </Box>
 
       <Box sx={{
-        px: 2.75, pt: 4, pb: 3, flexShrink: 0, mt: -3,
-        background: `linear-gradient(180deg,rgba(255,253,245,0) 0%,${C.cream} 50%)`,
+        px: 3, pt: 4, pb: 3, flexShrink: 0, mt: -3,
+        background: `linear-gradient(180deg,rgba(255,253,245,0) 0%,${C.cream} 52%)`,
       }}>
         <Button fullWidth variant="contained" color="secondary" onClick={onStart}>
-          Start my programme · SAR {PROGRAMME_FEE.toLocaleString()}
+          Continue with my care
         </Button>
-        <Typography sx={{ fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1.3 }}>
-          Your first consultation was free. Cancel any time.
-        </Typography>
       </Box>
     </Box>
-  );
-}
-
-function Head({ children }) {
-  return (
-    <Typography sx={{
-      fontSize: 18.5, fontWeight: 700, color: C.deep, mt: 4.5, mb: 2,
-    }}>{children}</Typography>
   );
 }

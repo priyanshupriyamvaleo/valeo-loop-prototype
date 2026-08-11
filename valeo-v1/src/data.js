@@ -3494,3 +3494,49 @@ export function onCallNow(pKey) {
 export function availableNow() {
   return 3;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   WHAT THIS SCREEN SELLS
+
+   The Care Brief first showed the mechanics of the programme: what the
+   consultation heard, which questions the blood test answers, the five steps
+   of the journey, the price and the list of what is included. All of it was
+   true. None of it was the reason to continue.
+
+   The reason to continue is clinical judgement. The patient is not choosing a
+   blood test, a protocol or a support package. The patient is choosing to let
+   one clinician decide what happens to their body, and to keep deciding as
+   things change.
+
+   So this screen states one idea. Every decision from now on comes from Jamie
+   and from the patient's own results. The three points below are the only
+   support that idea needs.
+
+   The price is not here. It is on the checkout screen that follows, before any
+   charge occurs. A screen that argues for judgement and then shows a number in
+   the same breath argues for neither. */
+export function careMeaning(first) {
+  return [
+    { t: 'Care built around you',
+      s: 'Treatment tailored to your health.' },
+    { t: 'Clinical decisions, not assumptions',
+      s: `${first} makes each treatment decision using your clinical information.` },
+    { t: 'Support that continues beyond today',
+      s: `Ongoing guidance from ${first} and from the team as your treatment evolves.` },
+  ];
+}
+
+/* The goal, written to sit after "a personalised approach to ...".
+   GOALS.say is a button label ("Improve sexual health") and it does not fit
+   inside a sentence: it produces "an approach to improve sexual health", which
+   is missing the word "your". The word cannot be inserted by rule, because
+   "an approach to your lose weight" is wrong. So each goal carries its own
+   phrase for this one sentence. */
+export function goalAim(pKey) {
+  return {
+    test: 'improve your sexual health',
+    fat:  'improve your weight and metabolic health',
+    long: 'protect your long-term health',
+    post: 'restore your energy after birth',
+  }[(PROTOCOLS[pKey] || {}).cat] || 'reach your goal';
+}
