@@ -4,7 +4,7 @@ import MicIcon from '@mui/icons-material/MicNone';
 import VideocamIcon from '@mui/icons-material/VideocamOutlined';
 import CallEndIcon from '@mui/icons-material/CallEnd';
 import CheckIcon from '@mui/icons-material/Check';
-import { CALL_TOPICS, ETA_STEPS, GUIDED, READY_STEPS, USER,
+import { CALL_TOPICS, GUIDED, LIVE, USER, WAIT_STAGES, WAIT_STEPS,
          callbackAt, CALLBACK_MINUTES, coachOf, givenNameOf, onCallNow } from '../data';
 import { C } from '../theme';
 
@@ -229,28 +229,28 @@ export default function Consultation({ pKey, onDone, failed }) {
     );
   }
 
-  /* ── LIVE and ARRIVAL share one composition, so arrival is a change of
-        state rather than a new page. ─────────────────────────────────── */
+  /* ── THE WAIT ────────────────────────────────────────────────────────
+     One continuous column. No cards. Cards would cut this into a status
+     widget, a form and a reassurance box, and the patient would read three
+     unrelated things instead of one story. */
   if (phase === 'live' || phase === 'ready') {
     const here = phase === 'ready';
     const q = GUIDED[qi];
-    const steps = here
-      ? [`${first} is here`, 'Starting video']
-      : READY_STEPS;
-    const active = here ? 1 : stage;
+    const st = WAIT_STAGES[stage];
+    /* Jamie's practice, minus Jamie in the wing positions, so the group reads
+       as a team rather than as one person flanked by decoration. */
+    const team = [...new Set(LIVE.map((k) => coachOf(k)))].filter((m) => m !== doc);
+    const wings = [team[0], team[1]].filter(Boolean);
 
     return (
       <Box sx={{
         height: '100%', display: 'flex', flexDirection: 'column',
-        background: `linear-gradient(180deg,#FFF6E4 0%,${C.cream} 26%)`,
+        background: `linear-gradient(180deg,#FFF6E4 0%,${C.cream} 24%)`,
       }}>
         <Box sx={{
-          flex: '1 1 auto', overflowY: 'auto', px: 3, pt: 2.5, pb: 2,
+          flex: '1 1 auto', overflowY: 'auto', px: 3, pt: 3, pb: 2,
           display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
         }}>
-          {/* the room you are already in */}
-          {/* A live room, stated as a chip rather than by making the whole
-              screen dark. */}
           <Stack direction="row" spacing={0.8} sx={{
             alignItems: 'center', px: 1.25, py: 0.55, borderRadius: '999px',
             bgcolor: C.greenSoft,
@@ -266,77 +266,114 @@ export default function Consultation({ pKey, onDone, failed }) {
             }}>Live consultation</Typography>
           </Stack>
 
-          <Box sx={{ mt: 3.25 }}>{face(96, !here)}</Box>
+          {/* ── THE TEAM, UNTIL SOMEBODY ACCEPTS ──
+              Three faces while the case is being picked up, one face the moment
+              it is. The collapse from group to individual is the arrival, and
+              it needs no announcement. */}
+          <Stack direction="row" spacing={-1.5} sx={{
+            alignItems: 'center', justifyContent: 'center', mt: 3.5, height: 92,
+          }}>
+            {!here && wings[0] && <Wing c={wings[0]} />}
+            <Box sx={{
+              zIndex: 2,
+              transition: 'transform .6s cubic-bezier(.2,.9,.25,1)',
+              transform: here ? 'scale(1.08)' : 'none',
+            }}>{face(here ? 84 : 78, !here)}</Box>
+            {!here && wings[1] && <Wing c={wings[1]} />}
+          </Stack>
 
           <Typography sx={{
-            fontFamily: '"Fraunces", serif', fontSize: 25, fontWeight: 600,
-            lineHeight: 1.2, mt: 2.75, maxWidth: 290, color: C.deep,
+            fontSize: 9.5, fontWeight: 800, letterSpacing: '.16em',
+            textTransform: 'uppercase', color: C.ink2, mt: 2,
+          }}>{here ? doc.role : `${c.short}’s care team`}</Typography>
+
+          {/* The headline is the live element. It changes as the work does. */}
+          <Typography key={here ? 'here' : stage} sx={{
+            fontFamily: '"Fraunces", serif', fontSize: 26, fontWeight: 600,
+            lineHeight: 1.2, color: C.deep, mt: 1.4, maxWidth: 300,
+            animation: 'headIn .5s cubic-bezier(.2,.9,.25,1) both',
+            '@keyframes headIn': {
+              from: { opacity: 0, transform: 'translateY(7px)' },
+              to: { opacity: 1, transform: 'none' },
+            },
           }}>
-            {here ? `${first} is ready` : `${first} is getting ready to join you`}
+            {here ? `${doc.name} is here` : st.head}
           </Typography>
 
-          {/* An estimate that shortens. Not a service guarantee. */}
           <Typography sx={{
-            fontSize: 14, color: here ? C.ink2 : C.yellowDeep,
-            mt: 1.2, fontWeight: here ? 400 : 600,
-            transition: 'color .4s',
+            fontSize: 14, fontWeight: here ? 400 : 700, mt: 1.1,
+            color: here ? C.ink2 : C.yellowDeep, transition: 'color .4s',
           }}>
-            {here ? 'Starting your consultation…' : ETA_STEPS[stage]}
+            {here ? 'Starting your consultation' : st.eta}
           </Typography>
 
-          {/* three states, never more */}
-          <Stack spacing={1.15} sx={{ mt: 3.25, width: '100%', maxWidth: 262 }}>
-            {steps.map((t, n) => {
-              const done = n < active;
-              const now = n === active;
+          {/* A thread, not a list of rows in a box. The line between the marks
+              is what makes three separate statuses read as one process. */}
+          <Box sx={{ width: '100%', maxWidth: 300, mt: 4, position: 'relative' }}>
+            {WAIT_STEPS.map((x, n) => {
+              const ok = here || n < stage;
+              const now = !here && n === stage;
               return (
-                <Stack key={t} direction="row" spacing={1.4} sx={{ alignItems: 'center' }}>
+                <Stack key={x.t} direction="row" spacing={1.75} sx={{
+                  position: 'relative', pb: n === WAIT_STEPS.length - 1 ? 0 : 2.6,
+                }}>
+                  {n < WAIT_STEPS.length - 1 && (
+                    <Box sx={{
+                      position: 'absolute', left: 9, top: 22, bottom: 2, width: 1.5,
+                      bgcolor: ok ? 'rgba(39,153,91,.3)' : 'rgba(27,57,91,.1)',
+                      transition: 'background-color .6s',
+                    }} />
+                  )}
                   <Box sx={{
-                    width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    bgcolor: done ? C.greenSoft : 'rgba(27,57,91,.06)',
-                    transition: 'background-color .5s',
+                    width: 19, height: 19, borderRadius: '50%', flexShrink: 0, zIndex: 1,
+                    mt: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    bgcolor: ok ? C.greenSoft : now ? 'rgba(224,164,0,.16)' : 'rgba(27,57,91,.05)',
+                    transition: 'background-color .6s',
                   }}>
-                    {done
-                      ? <CheckIcon sx={{ fontSize: 11, color: C.green }} />
+                    {ok
+                      ? <CheckIcon sx={{ fontSize: 11.5, color: C.green }} />
                       : <Box sx={{
-                          width: 5, height: 5, borderRadius: '50%',
-                          bgcolor: now ? C.yellowDeep : 'rgba(27,57,91,.22)',
-                          animation: now ? 'bl 1.4s ease-in-out infinite' : 'none',
-                          '@keyframes bl': { '0%,100%': { opacity: 1 }, '50%': { opacity: .25 } },
+                          width: 6, height: 6, borderRadius: '50%',
+                          bgcolor: now ? C.yellowDeep : 'rgba(27,57,91,.2)',
+                          animation: now ? 'bl 1.6s ease-in-out infinite' : 'none',
+                          '@keyframes bl': { '0%,100%': { opacity: 1 }, '50%': { opacity: .2 } },
                         }} />}
                   </Box>
-                  <Typography sx={{
-                    flex: 1, textAlign: 'left', fontSize: 13.5,
-                    color: now ? C.deep : C.ink2,
-                    fontWeight: now ? 600 : 400,
-                    transition: 'color .4s',
-                  }}>{t}</Typography>
+                  <Box sx={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                    <Typography sx={{
+                      fontSize: 14.5, lineHeight: 1.3,
+                      fontWeight: now ? 700 : 500,
+                      color: now || ok ? C.deep : C.ink2,
+                      transition: 'color .5s',
+                    }}>{x.t}</Typography>
+                    <Typography sx={{ fontSize: 12.5, color: C.ink2, mt: 0.25, lineHeight: 1.4 }}>
+                      {x.s}
+                    </Typography>
+                  </Box>
                 </Stack>
               );
             })}
-          </Stack>
+          </Box>
 
-          {/* ── the patient's half of the same activity ── */}
+          {/* ── THE PATIENT'S HALF ──
+              Attributed to the care team, so it reads as a clinician gathering
+              context rather than as a form the app decided to show. */}
           {!here && (
             <Box sx={{
-              width: '100%', mt: 4, pt: 3.25, borderTop: `1px solid ${C.line}`,
+              width: '100%', maxWidth: 300, mt: 4.5, pt: 3.25,
+              borderTop: `1px solid ${C.line}`, textAlign: 'left',
             }}>
               {q ? (
                 <>
-                  <Stack direction="row" sx={{ alignItems: 'baseline', mb: 1.75 }}>
-                    <Typography sx={{
-                      flex: 1, textAlign: 'left', fontSize: 9.5, fontWeight: 800,
-                      letterSpacing: '.16em', textTransform: 'uppercase',
-                      color: C.ink2,
-                    }}>While {first} gets ready</Typography>
-                    <Typography sx={{ fontSize: 11, color: C.ink2 }}>
-                      {qi + 1} of {GUIDED.length}
+                  <Stack direction="row" sx={{ alignItems: 'baseline', mb: 2 }}>
+                    <Typography sx={{ flex: 1, fontSize: 13, color: C.ink2, lineHeight: 1.5 }}>
+                      Your care team asked us to check a few things.
+                    </Typography>
+                    <Typography sx={{ fontSize: 11, color: C.ink2, flexShrink: 0, pl: 1 }}>
+                      {qi + 1}/{GUIDED.length}
                     </Typography>
                   </Stack>
 
-                  {/* One question at a time. Each answer replaces it, so the
-                      screen never looks like a form to be completed. */}
                   <Box key={q.k} sx={{
                     animation: 'qIn .45s cubic-bezier(.2,.9,.25,1) both',
                     '@keyframes qIn': {
@@ -345,13 +382,12 @@ export default function Consultation({ pKey, onDone, failed }) {
                     },
                   }}>
                     <Typography sx={{
-                      fontSize: 16.5, fontWeight: 600, lineHeight: 1.35,
-                      textAlign: 'left', mb: 1.6, color: C.deep,
+                      fontSize: 17, fontWeight: 600, lineHeight: 1.35, mb: 1.75, color: C.deep,
                     }}>{q.q}</Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.9 }}>
                       {q.o.map((o) => (
                         <Box key={o} onClick={() => setQi((n) => n + 1)} sx={{
-                          px: 1.6, py: 1.05, borderRadius: '999px', cursor: 'pointer',
+                          px: 1.7, py: 1.1, borderRadius: '999px', cursor: 'pointer',
                           fontSize: 13.5, fontWeight: 500,
                           bgcolor: '#fff', color: C.deep,
                           border: '1px solid rgba(27,57,91,.16)',
@@ -363,15 +399,10 @@ export default function Consultation({ pKey, onDone, failed }) {
                   </Box>
                 </>
               ) : (
-                <Stack direction="row" spacing={1.3} sx={{
-                  alignItems: 'center', px: 2, py: 1.75, borderRadius: '16px',
-                  bgcolor: C.greenSoft, border: '1px solid rgba(39,153,91,.22)',
-                }}>
-                  <CheckIcon sx={{ fontSize: 16, color: C.green, flexShrink: 0 }} />
-                  <Typography sx={{
-                    flex: 1, textAlign: 'left', fontSize: 13.5, lineHeight: 1.5, color: C.deep,
-                  }}>
-                    Thank you. {first} will see this before you talk.
+                <Stack direction="row" spacing={1.3} sx={{ alignItems: 'flex-start' }}>
+                  <CheckIcon sx={{ fontSize: 16, color: C.green, flexShrink: 0, mt: '2px' }} />
+                  <Typography sx={{ flex: 1, fontSize: 14, lineHeight: 1.5, color: C.ink2 }}>
+                    Thank you. This is with your clinician now.
                   </Typography>
                 </Stack>
               )}
@@ -379,12 +410,11 @@ export default function Consultation({ pKey, onDone, failed }) {
           )}
         </Box>
 
-        {/* The one thing the patient needs to know about their own role. */}
         <Box sx={{ px: 3, pb: 3, pt: 1, flexShrink: 0 }}>
           <Typography sx={{
             fontSize: 11.5, color: C.ink2, textAlign: 'center', lineHeight: 1.5,
           }}>
-            Stay on this screen. We will take you straight in when {first} is ready.
+            Stay on this screen. We’ll take you straight in.
           </Typography>
         </Box>
       </Box>
@@ -523,6 +553,30 @@ export default function Consultation({ pKey, onDone, failed }) {
           {USER.first}
         </Typography>
       </Box>
+    </Box>
+  );
+}
+
+/* A team member either side of the one who will take the call. Smaller and
+   set back, because they are context and not the subject. */
+function Wing({ c }) {
+  return (
+    <Box sx={{
+      width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+      border: '2.5px solid rgba(255,255,255,.9)',
+      boxShadow: '0 4px 14px -8px rgba(27,57,91,.4)',
+      background: `linear-gradient(155deg,${c.tone} 0%,rgba(11,21,34,.7) 145%)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      opacity: .82,
+    }}>
+      {c.img
+        ? <Box component="img" src={c.img} alt="" sx={{
+            width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
+          }} />
+        : <Typography sx={{
+            fontFamily: '"Fraunces", serif', fontSize: 16, fontWeight: 600,
+            color: 'rgba(255,255,255,.9)',
+          }}>{c.mono}</Typography>}
     </Box>
   );
 }

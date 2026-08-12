@@ -242,6 +242,9 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
         ) : step.kind === 'sub' ? (
           <Suggest opts={(goal ? goal.sub : []).map((o) => ({ k: o, t: o }))}
             onPick={(o) => answer('sub', o.t)} />
+        ) : step.kind === 'choice' ? (
+          <Suggest opts={step.o.map((o) => ({ k: o, t: o }))}
+            onPick={(o) => answer(step.k, o.t)} />
         ) : (
           <NumberRail step={step} onPick={(v) => answer(step.k, `${v} ${step.suffix}`, v)} />
         )}

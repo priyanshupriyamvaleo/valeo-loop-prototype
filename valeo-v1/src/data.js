@@ -2739,6 +2739,13 @@ export const isLive = (pKey) => LIVE.includes(pKey);
 export const COACH_OPENING = [
   { k: 'goal',   kind: 'goal',   q: 'What would you like to work on today?' },
   { k: 'sub',    kind: 'sub',    q: 'Which of these sounds most like you?' },
+  /* Clinical, not demographic. Reference ranges for most of the markers these
+     protocols track differ by sex, so a plan cannot be read correctly without
+     it. Two options only, because that is what the ranges are defined against.
+     It sits after the goal so the conversation starts with the patient rather
+     than with a form field. */
+  { k: 'sex',    kind: 'choice', q: 'And are you male or female?',
+    o: ['Male', 'Female'] },
   { k: 'height', kind: 'number', q: 'How tall are you?', ph: '175', suffix: 'cm', min: 120, max: 220 },
   { k: 'weight', kind: 'number', q: 'And roughly what do you weigh?', ph: '82', suffix: 'kg', min: 35, max: 250 },
 ];
@@ -3600,29 +3607,40 @@ export function callbackAt(mins = CALLBACK_MINUTES) {
    The verbs matter. "Reviewing your information" describes a person doing
    something. "Checking who is free" describes a system searching, and it tells
    the patient they are in a queue. */
-export const READY_STEPS = [
-  'Reviewing your information',
-  'Preparing for your consultation',
-  'Joining your call',
+/* ══════════════════════════════════════════════════════════════════════════
+   THE MINUTES BEFORE A CONSULTATION
+
+   The headline is the live element. A fixed headline with a moving spinner
+   underneath says the page is loading. A headline that changes from reviewing
+   to preparing to joining says a person is working through something.
+
+   Every line names a human action. None of them names the system. "Matching",
+   "searching" and "loading" describe a queue, and a patient in a queue is
+   waiting. A patient whose case is being read is already being cared for.
+
+   ── WHY NOBODY IS NAMED UNTIL THE END ──
+   The screen before this one says three clinicians are available. Promising
+   Jamie here would contradict it, and it would be a promise the rota cannot
+   keep. So the whole wait belongs to "your care team" and "your clinician".
+   A name and a face appear only at the moment somebody accepts. */
+export const WAIT_STAGES = [
+  { head: 'Your care team is reviewing your case',
+    eta: 'About 2 minutes' },
+  { head: 'Your clinician is preparing for you',
+    eta: 'About a minute' },
+  { head: 'Your clinician is joining you now',
+    eta: 'Any moment now' },
 ];
 
-/* An estimate, not a service guarantee. "Usually under 2 minutes" is the
-   language of a support desk. A time that shortens while the patient watches
-   is the language of something arriving. */
-export const ETA_STEPS = [
-  'Your consultation starts in about 2 minutes',
-  'Your consultation starts in about 1 minute',
-  'Almost ready',
+/* Three states, and each one says what is happening rather than what is being
+   processed. The support lines exist because "Reviewing what you have shared"
+   alone leaves the patient guessing which part of their file is open. */
+export const WAIT_STEPS = [
+  { t: 'Reviewing what you’ve shared', s: 'Your goals, your history, your answers' },
+  { t: 'Preparing for your consultation', s: 'Getting up to speed on your case' },
+  { t: 'Joining your call', s: 'We’ll connect you automatically' },
 ];
 
-/* ── THE PATIENT'S HALF ──
-   These come from the clinical intake that already exists in PREP_SCRIPT.
-   Nothing here was invented to keep the patient busy. A clinician reads the
-   answers, so answering is worth the patient's time.
-
-   Three questions, one at a time, each answered with a tap. The consultation
-   is never conditional on them. If the patient answers nothing, the call opens
-   exactly the same way. */
 export const GUIDED = [
   { k: 'meds', q: 'Are you taking any medication at the moment?',
     o: ['Nothing right now', 'Blood pressure', 'Thyroid', 'Something else'] },
