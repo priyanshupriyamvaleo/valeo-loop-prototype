@@ -35,6 +35,16 @@ const ICONS = {
   chat: ChatBubbleOutlineIcon, chart: BarChartIcon,
 };
 
+/* One quiet hue per section band, from the existing Valeo palette: navy for
+   the people, teal for measurement, gold for treatment, green for follow-up.
+   The tint is the band's whole job — rows underneath stay neutral. */
+const TONES = {
+  team: { bg: 'rgba(27,57,91,.06)', fg: C.deep },
+  testing: { bg: C.tealSoft, fg: C.teal },
+  treatment: { bg: 'rgba(224,164,0,.13)', fg: C.yellowDeep },
+  support: { bg: C.greenSoft, fg: C.green },
+};
+
 /**
  * SCREEN TWO — THE 12-WEEK CARE PLAN.
  *
@@ -82,8 +92,11 @@ export default function Buy({ pKey, onBack, onPaid }) {
   );
 
   return (
-    <Box sx={{ height: '100%', position: 'relative', overflow: 'hidden', bgcolor: '#FAF6ED' }}>
-      <Box sx={{ height: '100%', overflowY: 'auto', px: 2.25, pt: 1.75, pb: 2.5 }}>
+    <Box sx={{
+      height: '100%', position: 'relative', overflow: 'hidden',
+      display: 'flex', flexDirection: 'column', bgcolor: '#FAF6ED',
+    }}>
+      <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pt: 1.75, pb: 2 }}>
         {/* Header: back on the left, the clinician on the right. */}
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <IconButton onClick={onBack} size="small" sx={{
@@ -154,11 +167,15 @@ export default function Buy({ pKey, onBack, onPaid }) {
           {plan.sections.map((sec) => (
             <Box key={sec.k}>
               {/* The section band: full-bleed tint inside the card. This is
-                  the entire segmentation device — no borders, no sub-cards. */}
-              <Box sx={{ mx: -1.75, px: 1.75, py: 0.7, bgcolor: 'rgba(27,57,91,.04)' }}>
+                  the entire segmentation device — no borders, no sub-cards.
+                  Each section carries its own quiet hue. */}
+              <Box sx={{
+                mx: -1.75, px: 1.75, py: 0.7,
+                bgcolor: (TONES[sec.k] || TONES.team).bg,
+              }}>
                 <Typography sx={{
                   fontSize: 9, fontWeight: 800, letterSpacing: '.15em',
-                  textTransform: 'uppercase', color: C.ink2,
+                  textTransform: 'uppercase', color: (TONES[sec.k] || TONES.team).fg,
                 }}>{sec.t}</Typography>
               </Box>
               {sec.rows.map((r, i) => {
@@ -212,45 +229,9 @@ export default function Buy({ pKey, onBack, onPaid }) {
           </Stack>
         </Box>
 
-        {/* ── the loop at a glance ── */}
-        <Box sx={{ ...card, mt: 1.75, px: 1.75, py: 2 }}>
-          {label('Your 12 weeks', { fontSize: 10, mb: 1.75 })}
-          {plan.journey.map((j, n) => {
-            const Ic = ICONS[j.ic] || ScienceOutlinedIcon;
-            const last = n === plan.journey.length - 1;
-            return (
-              <Stack key={j.t} direction="row" spacing={1.25}>
-                <Stack sx={{ alignItems: 'center' }}>
-                  <Box sx={{
-                    width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                    bgcolor: C.deep, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Ic sx={{ fontSize: 14, color: C.yellow }} />
-                  </Box>
-                  {!last && <Box sx={{
-                    width: 0, flex: 1, my: 0.4,
-                    borderLeft: '1.5px dashed rgba(27,57,91,.3)',
-                  }} />}
-                </Stack>
-                <Box sx={{ pb: last ? 0 : 1.6, minWidth: 0, pt: '2px' }}>
-                  <Stack direction="row" spacing={0.6} sx={{ alignItems: 'baseline' }}>
-                    <Typography sx={{
-                      fontSize: 11.5, fontWeight: 800, color: C.yellowDeep, flexShrink: 0,
-                    }}>{String(n + 1).padStart(2, '0')}</Typography>
-                    <Typography sx={{
-                      fontSize: 12.5, fontWeight: 700, color: C.deep, lineHeight: 1.25,
-                    }}>{j.t}</Typography>
-                  </Stack>
-                  <Typography sx={{ fontSize: 11, lineHeight: 1.4, color: C.ink2, mt: 0.25 }}>
-                    {j.s}
-                  </Typography>
-                </Box>
-              </Stack>
-            );
-          })}
-        </Box>
-
-        {/* How the care works — sequencing, never a blocker. */}
+        {/* How the care works — sequencing, never a blocker. The 12-week
+            loop card that used to sit here duplicated the journey sheet one
+            tap above, so it went. */}
         <Stack direction="row" spacing={1.25} sx={{
           mt: 1.75, px: 1.75, py: 1.75, borderRadius: '14px',
           bgcolor: 'rgba(224,164,0,.09)', alignItems: 'flex-start',
@@ -260,14 +241,19 @@ export default function Buy({ pKey, onBack, onPaid }) {
             {plan.how}
           </Typography>
         </Stack>
+      </Box>
 
-        {/* The commitment, in the page flow per the mock. */}
+      {/* ── the commitment, frozen: visible wherever the page is scrolled ── */}
+      <Box sx={{
+        flexShrink: 0, px: 2.25, pt: 1.5, pb: 2,
+        borderTop: `1px solid ${C.line}`, bgcolor: '#FAF6ED',
+      }}>
         <Button fullWidth variant="contained" color="secondary" onClick={() => setPay(true)}
           endIcon={<ArrowForwardIcon sx={{ fontSize: 18 }} />}
-          sx={{ mt: 2, py: 1.5, fontSize: 15.5 }}>
-          Start my care · SAR {price}
+          sx={{ py: 1.4, fontSize: 15.5 }}>
+          Activate my plan · SAR {price}
         </Button>
-        <Stack direction="row" spacing={0.6} sx={{ alignItems: 'center', justifyContent: 'center', mt: 1.25 }}>
+        <Stack direction="row" spacing={0.6} sx={{ alignItems: 'center', justifyContent: 'center', mt: 1 }}>
           <LockOutlinedIcon sx={{ fontSize: 12, color: C.ink2 }} />
           <Typography sx={{ fontSize: 11, color: C.ink2, textAlign: 'center', lineHeight: 1.45 }}>
             12 weeks of clinician-led care, testing, treatment and follow-up. One payment.

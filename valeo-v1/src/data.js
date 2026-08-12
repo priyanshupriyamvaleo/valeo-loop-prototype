@@ -3888,12 +3888,6 @@ export function carePlan(pKey) {
     price: 2499 + perMonth * 3,
     sections,
     timeline,
-    journey: [
-      { ic: 'test', t: 'Baseline', s: 'Blood test + clinical review' },
-      { ic: 'box', t: 'Treatment begins', s: 'Your personalised care starts' },
-      { ic: 'tune', t: 'Follow & adjust', s: 'Reviews, support and treatment' },
-      { ic: 'cal', t: 'Reassess', s: 'Repeat testing + progress review' },
-    ],
     /* Sequencing, not a blocker. This is how the care works. */
     how: `Your care begins with the information ${first} needs to personalise `
        + 'your treatment. Once your results are reviewed, your treatment is '
