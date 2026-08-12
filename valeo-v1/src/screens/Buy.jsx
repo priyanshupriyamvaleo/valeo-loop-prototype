@@ -1,43 +1,56 @@
 import { useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import CheckIcon from '@mui/icons-material/Check';
 import PaySheet from '../components/PaySheet';
-import { PROTOCOLS, PROGRAMME_FEE, PROGRAMME_INCLUDES } from '../data';
+import { PROTOCOLS, PROGRAMME_FEE, careIncludes, careSteps,
+         coachOf, givenNameOf } from '../data';
 import { C } from '../theme';
 
 /**
- * PROGRAMME CHECKOUT.
+ * SCREEN TWO — THE COMMITMENT.
  *
- * This screen has changed job three times, and the last change was the largest.
- * It sold a protocol, then a first month of treatment. It now sells entry to a
- * course of care.
+ * The screen before this one answers "do I want this care?". This one answers
+ * a different question: what exactly am I committing to? Two psychological
+ * moments, so two screens. Merging them would force one page to argue and
+ * account at the same time, and it would do neither.
  *
- * The reason is a real product problem. A patient does not want to buy a blood
- * test, and does not think in terms of consultation plus diagnostics plus
- * protocol plus logistics. A patient wants help with a goal. Those other things
- * are parts of the service, so they belong inside one price rather than beside
- * it as separate charges.
+ * This screen is allowed to be more transactional than the one before it. That
+ * is deliberate. A patient who has decided wants the terms stated plainly, and
+ * vagueness at the moment of payment reads as evasion.
  *
- * ── ONE LINE, NOT AN ITEMISED BILL ──
- * An itemised list here turns the programme back into a basket of medical
- * procedures. The patient already read what is included on the Care Brief, and
- * the same list appears below the total for reassurance, not for arithmetic.
+ * ── WHAT IT MUST MAKE CLEAR ──
+ * What the care is, what it includes, what happens after paying, and what it
+ * costs. In that order, because the price is easier to accept once the four
+ * things it buys are already understood.
  *
- * ── AND ONLY ONCE ──
- * This is the single payment in the whole journey. The consultation before it
- * was free. The blood test after it is already covered. The plan screen at the
- * end says "Activate", not "Buy".
+ * ── THE SEQUENCING IS THE HARD PART ──
+ * The clinician cannot confirm treatment before seeing blood results. Two ways
+ * of saying that are both wrong. "You cannot get your plan until your blood
+ * test" makes the patient feel blocked by us. "Your treatment is ready" is
+ * false. So the numbered steps state the order as ordinary clinical sequence,
+ * and one line says care starts now with treatment confirmed after the results.
+ *
+ * ── NO INTERNAL ACCOUNTING ──
+ * The patient sees one price for one course of care. What the blood draw costs
+ * us, and how the consultation is credited, are our problems. Itemising them
+ * turns care back into a basket of procedures, which is the framing this whole
+ * flow was rebuilt to remove.
+ *
+ * ── AND NO REMINDER THAT THE CONSULTATION WAS FREE ──
+ * It was, and saying so here would build the pattern free, then pay. The
+ * patient should experience consultation, recommendation, care.
  */
-
 export default function Buy({ pKey, onBack, onPaid }) {
   const p = PROTOCOLS[pKey];
+  const c = coachOf(pKey);
   const [pay, setPay] = useState(false);
 
-  /* One line, one price. The patient is buying entry to a course of care, and
-     the blood test is a step inside it. Itemising the components here would
-     turn the programme back into a shopping basket of medical procedures,
-     which is the framing this whole flow was rebuilt to remove. */
+  if (!p || !c) return null;
+  const first = givenNameOf(c);
+  const includes = careIncludes(first, c.short);
+  const steps = careSteps(first);
+  const price = PROGRAMME_FEE.toLocaleString();
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: C.cream }}>
       <Stack direction="row" sx={{ alignItems: 'center', px: 1.5, pt: 1.5, pb: 0.5 }}>
@@ -46,82 +59,105 @@ export default function Buy({ pKey, onBack, onPaid }) {
         </IconButton>
       </Stack>
 
-      <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
+      <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 3, pb: 2 }}>
         <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 27, fontWeight: 600,
-          lineHeight: 1.15, color: C.deep, mt: 0.5,
-        }}>Start your programme</Typography>
-        <Typography sx={{ fontSize: 14.5, color: C.ink2, mt: 1.1, lineHeight: 1.5 }}>
-          One payment for your whole course of care with {p.t.toLowerCase()}.
+          fontFamily: '"Fraunces", serif', fontSize: 31, fontWeight: 600,
+          lineHeight: 1.14, color: C.deep, mt: 0.5,
+        }}>Your care</Typography>
+
+        <Typography sx={{ fontSize: 15.5, color: C.ink2, mt: 1.2, lineHeight: 1.5 }}>
+          {/* Not "and his team": no clinician in this product has stated
+              pronouns, and the same sentence has to work for Layla and Huda.
+              Not "the team at Jamie's practice" either, which said the name
+              twice in one line. */}
+          Personalised care with {first} and the practice team.
         </Typography>
 
-        <Box sx={{
-          mt: 3.5, borderRadius: '18px', bgcolor: '#fff', px: 2, py: 0.5,
-          boxShadow: '0 2px 14px -10px rgba(27,57,91,.4)',
+        {/* The price, once, early, and not hidden. A patient who has to hunt
+            for the number assumes it is bad news. */}
+        <Stack direction="row" spacing={1.4} sx={{
+          alignItems: 'baseline', mt: 3.25, pb: 3, borderBottom: `1px solid ${C.line}`,
         }}>
-          <Line t="Personalised health programme" s={p.t} v={`SAR ${PROGRAMME_FEE.toLocaleString()}`} />
-          <Stack direction="row" sx={{
-            alignItems: 'baseline', py: 1.75, borderTop: `1px solid ${C.line}`,
-          }}>
-            <Typography sx={{ flex: 1, fontSize: 15, fontWeight: 700, color: C.deep }}>
-              Total
-            </Typography>
-            <Typography sx={{
-              fontFamily: '"Fraunces", serif', fontSize: 21, fontWeight: 600, color: C.deep,
-            }}>SAR {PROGRAMME_FEE.toLocaleString()}</Typography>
-          </Stack>
-        </Box>
+          <Typography sx={{
+            fontFamily: '"Fraunces", serif', fontSize: 34, fontWeight: 600, color: C.deep,
+          }}>SAR {price}</Typography>
+          <Typography sx={{ fontSize: 13.5, color: C.ink2 }}>
+            {p.wk}-week course of care
+          </Typography>
+        </Stack>
 
         <Typography sx={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase',
-          color: C.ink2, mt: 4, mb: 1.8,
-        }}>What is included</Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {PROGRAMME_INCLUDES.map((t) => (
-            <Stack key={t} direction="row" spacing={1.1} sx={{
-              width: 'calc(50% - 4px)', alignItems: 'center',
-              px: 1.4, py: 1.3, borderRadius: '14px', bgcolor: '#fff',
-              boxShadow: '0 2px 12px -9px rgba(27,57,91,.4)',
-            }}>
-              <CheckIcon sx={{ fontSize: 14, color: C.green, flexShrink: 0 }} />
-              <Typography sx={{ flex: 1, fontSize: 12.5, lineHeight: 1.3, color: C.deep }}>
-                {t}
+          fontSize: 10, fontWeight: 800, letterSpacing: '.16em',
+          textTransform: 'uppercase', color: C.ink2, mt: 4, mb: 2.5,
+        }}>Your care includes</Typography>
+
+        {/* Named, then explained. "Follow-up consultations" alone is a line on
+            a pricing page. The sentence under it describes being looked after. */}
+        <Stack spacing={2.5}>
+          {includes.map((x) => (
+            <Box key={x.t}>
+              <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: C.deep, lineHeight: 1.3 }}>
+                {x.t}
               </Typography>
+              <Typography sx={{ fontSize: 14, lineHeight: 1.5, color: C.ink2, mt: 0.4, maxWidth: 290 }}>
+                {x.s}
+              </Typography>
+            </Box>
+          ))}
+        </Stack>
+
+        <Typography sx={{
+          fontSize: 10, fontWeight: 800, letterSpacing: '.16em',
+          textTransform: 'uppercase', color: C.ink2,
+          mt: 5, pt: 3.5, borderTop: `1px solid ${C.line}`, mb: 2.5,
+        }}>What happens next</Typography>
+
+        <Stack spacing={2.5}>
+          {steps.map((x, n) => (
+            <Stack key={x.t} direction="row" spacing={1.9} sx={{ alignItems: 'flex-start' }}>
+              <Typography sx={{
+                fontFamily: '"Fraunces", serif', fontSize: 14, fontWeight: 600,
+                color: C.yellowDeep, flexShrink: 0, width: 22, mt: '2px',
+              }}>{String(n + 1).padStart(2, '0')}</Typography>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: 15.5, fontWeight: 700, color: C.deep, lineHeight: 1.3 }}>
+                  {x.t}
+                </Typography>
+                <Typography sx={{ fontSize: 14, lineHeight: 1.5, color: C.ink2, mt: 0.3 }}>
+                  {x.s}
+                </Typography>
+              </Box>
             </Stack>
           ))}
-        </Box>
-      </Box>
+        </Stack>
 
-      <Box sx={{ px: 2.25, pt: 1.5, pb: 3, flexShrink: 0 }}>
-        <Button fullWidth variant="contained" color="secondary" onClick={() => setPay(true)}>
-          Start my programme · SAR {PROGRAMME_FEE.toLocaleString()}
-        </Button>
-        <Typography sx={{ fontSize: 12, color: C.ink2, textAlign: 'center', mt: 1.2 }}>
-          Nothing more to pay at any later step
+        {/* Sequencing, not a disclaimer. "You cannot get your plan until the
+            blood test" blocks the patient. This says care has already begun. */}
+        <Typography sx={{
+          fontSize: 14.5, lineHeight: 1.6, color: C.deep, mt: 4,
+          px: 2.25, py: 2, borderRadius: '16px', bgcolor: 'rgba(224,164,0,.1)',
+        }}>
+          Your care starts now. {first} confirms your treatment once your blood
+          results are in.
         </Typography>
       </Box>
 
-      <PaySheet open={pay} item={`${p.t} programme`} fee={PROGRAMME_FEE.toLocaleString()}
+      <Box sx={{
+        px: 3, pt: 4, pb: 3, flexShrink: 0, mt: -3,
+        background: `linear-gradient(180deg,rgba(255,253,245,0) 0%,${C.cream} 52%)`,
+      }}>
+        <Button fullWidth variant="contained" color="secondary" onClick={() => setPay(true)}>
+          Continue my care · SAR {price}
+        </Button>
+        <Typography sx={{
+          fontSize: 12, color: C.ink2, textAlign: 'center', mt: 1.3, lineHeight: 1.5,
+        }}>
+          One payment. Nothing further to pay at any later step.
+        </Typography>
+      </Box>
+
+      <PaySheet open={pay} item={`Care with ${c.short}’s practice`} fee={price}
         onClose={() => setPay(false)} onDone={onPaid} />
     </Box>
-  );
-}
-
-function Line({ t, s, v, muted, top }) {
-  return (
-    <Stack direction="row" spacing={1.5} sx={{
-      alignItems: 'baseline', py: 1.6, borderTop: top ? `1px solid ${C.line}` : 'none',
-    }}>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 14.5, fontWeight: 600, color: C.deep, lineHeight: 1.35 }}>
-          {t}
-        </Typography>
-        {s && <Typography sx={{ fontSize: 12.5, color: C.ink2, mt: 0.25 }}>{s}</Typography>}
-      </Box>
-      <Typography sx={{
-        fontSize: 14.5, fontWeight: 600, flexShrink: 0,
-        color: muted ? C.green : C.deep,
-      }}>{v}</Typography>
-    </Stack>
   );
 }

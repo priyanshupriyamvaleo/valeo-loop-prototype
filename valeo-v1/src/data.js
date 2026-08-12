@@ -3649,3 +3649,89 @@ export const GUIDED = [
   { k: 'allergies', q: 'Any allergies we should know about?',
     o: ['None', 'Penicillin', 'Food allergies', 'Something else'] },
 ];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TWO SCREENS, TWO JOBS
+
+   Screen one asks "do I want this care?". Screen two asks "what exactly am I
+   committing to?". They are different psychological moments and they must not
+   be merged.
+
+   ── THE HERO IS THE OUTCOME, NOT THE CLINICIAN ──
+   "Jamie's recommendation" as a headline makes the clinician the subject. The
+   patient came for a result. So the clinician's name becomes a small label
+   above, and the headline is what the patient gets.
+
+   ── NO INTERNAL WORDS ──
+   "Protocol" is our word. A patient should never have to learn it.
+
+   ── WHAT IS NOT CLAIMED ──
+   The clinician cannot finalise treatment before seeing blood results, so no
+   line here says the treatment is decided. The third outcome states the real
+   sequence: treatment that fits the results. That is honest and it is also
+   more reassuring than a promise the clinician cannot yet make. */
+Object.assign(RECOMMEND.P_TEST, {
+  hero: 'Better sexual health, with care built around you.',
+  toward: ['Better sexual function and libido',
+           'A clear picture of what is affecting your energy',
+           'Treatment chosen once your results are in'],
+});
+Object.assign(RECOMMEND.P_WEIGHT, {
+  hero: 'Weight loss that holds, with care built around you.',
+  toward: ['Fat lost without losing muscle',
+           'Metabolic markers back in range',
+           'Treatment chosen once your results are in'],
+});
+Object.assign(RECOMMEND.P_LONG, {
+  hero: 'More healthy years, with care built around you.',
+  toward: ['Lower cardiovascular risk',
+           'A clear picture of what runs in your family',
+           'Treatment chosen once your results are in'],
+});
+Object.assign(RECOMMEND.P_POST, {
+  hero: 'Your energy back, with care built around you.',
+  toward: ['Energy and strength returning',
+           'Iron and thyroid back in range',
+           'Treatment chosen once your results are in'],
+});
+
+/* One sentence of philosophy, not a section. The promise is continuous
+   clinician-led care, and it takes a sentence to say. */
+export function careApproach(first) {
+  return `Your care is guided by ${first} and adjusted around your health, `
+       + 'your results and how you respond over time.';
+}
+
+/* ── SCREEN TWO ──
+   What the one payment buys, written as care rather than as features. Each
+   line names the thing and then says what it is for, because "Follow-up
+   consultations" alone is a bullet on a pricing page and "Continued review as
+   your care progresses" is a description of being looked after. */
+export function careIncludes(first, practice) {
+  return [
+    { t: 'Your blood test',
+      s: 'Required testing, arranged and taken at your home.' },
+    { t: `${first}’s clinical review`,
+      s: 'Your results are read before any treatment is confirmed.' },
+    { t: 'Your personalised treatment',
+      s: 'Chosen around your health, your goals and your results.' },
+    { t: 'Follow-up consultations',
+      s: 'Continued review as your care progresses.' },
+    { t: 'Support between consultations',
+      s: `Message ${practice}’s practice any time.` },
+    { t: 'Delivery to your door',
+      s: 'Medication and supplements, where they are prescribed.' },
+  ];
+}
+
+/* The sequence, stated plainly. A patient must understand that they are not
+   buying a treatment that has already been decided. They are entering care in
+   which the treatment is decided once the clinician has what they need. */
+export function careSteps(first) {
+  return [
+    { t: 'Blood test', s: 'A nurse comes to you.' },
+    { t: 'Results reviewed', s: `${first} reads your results.` },
+    { t: 'Treatment confirmed', s: 'Chosen around what your results show.' },
+    { t: 'Care begins', s: 'Your treatment arrives and your care continues.' },
+  ];
+}
