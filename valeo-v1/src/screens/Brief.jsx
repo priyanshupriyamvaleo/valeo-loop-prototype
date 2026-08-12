@@ -21,6 +21,45 @@ const ICONS = {
   scale: MonitorWeightOutlinedIcon, muscle: FitnessCenterIcon, chart: ShowChartIcon,
 };
 
+/* ── THE HAND-DRAWN UNDERLINE ──
+   One gold stroke that dips and recovers like a pen pulled quickly along the
+   page: down-up-down, uneven on purpose. It is an SVG background rather than
+   text-decoration because no browser lets a text-decoration wobble.
+
+   `preserveAspectRatio="none"` stretches the same gesture under a short word
+   or a five-word phrase, and `box-decoration-break: clone` redraws it on each
+   line fragment when a phrase wraps — without it, the middle line of a
+   wrapped phrase would go bare. */
+const STROKE = encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 9" preserveAspectRatio="none">'
+  + '<path d="M3 5.2 C 22 2.4, 43 7.4, 62 4.6 S 99 6.6, 117 3.4"'
+  + ' fill="none" stroke="#E8A93C" stroke-width="2.6" stroke-linecap="round" opacity=".9"/></svg>',
+);
+
+function Mark({ children }) {
+  return (
+    <Box component="span" sx={{
+      backgroundImage: `url("data:image/svg+xml,${STROKE}")`,
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: '0 100%',
+      backgroundSize: '100% 0.32em',
+      pb: '0.18em',
+      boxDecorationBreak: 'clone',
+      WebkitBoxDecorationBreak: 'clone',
+    }}>{children}</Box>
+  );
+}
+
+/* Splits the assessment around the marked phrases so each one renders inside
+   <Mark>. Plain string work — the phrases are authored to match verbatim. */
+function markUp(text, marks) {
+  if (!marks?.length) return text;
+  const rx = new RegExp(`(${marks.map((m) => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`);
+  return text.split(rx).map((part, i) => (
+    marks.includes(part) ? <Mark key={i}>{part}</Mark> : part
+  ));
+}
+
 /**
  * SCREEN ONE — THE CLINICIAN'S RECOMMENDATION.
  *
@@ -119,7 +158,7 @@ export default function Brief({ pKey, onBack, onStart }) {
         <Typography sx={{
           fontSize: 13.5, lineHeight: 1.55, color: C.ink, mt: 1.75,
           pl: 1.75, borderLeft: '3px solid #F5C64F',
-        }}>{s.think}</Typography>
+        }}>{markUp(s.think, s.marks)}</Typography>
 
         {/* The bridge between what was said and what is recommended. */}
         <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', mt: 2.25 }}>

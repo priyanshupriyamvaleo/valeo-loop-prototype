@@ -3676,7 +3676,12 @@ export const GUIDED = [
 
    `points` are the three columns inside the dark recommendation panel. `ic`
    is a key the screen maps to an icon, so this file stays free of component
-   imports. Titles fit one column at 13px — about 22 characters. */
+   imports. Titles fit one column at 13px — about 22 characters.
+
+   `marks` are the phrases inside `think` that get the hand-drawn underline —
+   the two or three words the clinician would underline on paper. Each must
+   appear in `think` verbatim (the screen finds them by exact match), and two
+   per programme is the ceiling: underline more and nothing is underlined. */
 Object.assign(RECOMMEND.P_TEST, {
   speak: {
     prog: 'Male Performance Program',
@@ -3686,6 +3691,7 @@ Object.assign(RECOMMEND.P_TEST, {
          + 'have both changed, and maintaining fertility is an important '
          + 'priority. I believe these concerns are linked and should be '
          + 'addressed together.',
+    marks: ['energy and sexual health', 'fertility'],
     why: 'This is the care plan I recommend for you.',
     points: [
       { ic: 'energy', t: 'Boost energy', s: 'Feel like yourself again' },
@@ -3704,6 +3710,7 @@ Object.assign(RECOMMEND.P_WEIGHT, {
          + 'discipline — and you told me you’d rather go slower than lose '
          + 'muscle getting there. I agree. I want to see your metabolic '
          + 'markers before deciding exactly how we treat this.',
+    marks: ['the weight has come back', 'lose muscle'],
     why: 'This is the care plan I recommend for you.',
     points: [
       { ic: 'scale', t: 'Lose the weight', s: 'And keep it off this time' },
@@ -3720,6 +3727,7 @@ Object.assign(RECOMMEND.P_LONG, {
     think: 'You feel fine today, and that’s exactly the right time to act. '
          + 'With your family history, I want a clear picture of your '
          + 'cardiovascular risk — ApoB above all — before we assume anything.',
+    marks: ['family history', 'cardiovascular risk'],
     why: 'This is the care plan I recommend for you.',
     points: [
       { ic: 'heart', t: 'Lower your risk', s: 'ApoB down, and kept down' },
@@ -3736,6 +3744,7 @@ Object.assign(RECOMMEND.P_POST, {
     think: 'Fatigue like this after birth is usually a deficiency, not a '
          + 'discipline problem. Before anyone talks to you about weight, I '
          + 'want to see your iron and thyroid.',
+    marks: ['a deficiency', 'iron and thyroid'],
     why: 'This is the care plan I recommend for you.',
     points: [
       { ic: 'energy', t: 'Restore energy', s: 'Iron and thyroid repleted' },
