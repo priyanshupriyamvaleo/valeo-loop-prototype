@@ -3735,52 +3735,56 @@ export function carePlans(pKey) {
   const perMonth = Math.round(PROTOCOLS[pKey].price / 4 / 50) * 50;
   return [
     { k: 'm1', t: '1 month',  weeks: 4,  months: 1,
-      care: PROGRAMME_FEE, meds: PROGRAMME_FEE + perMonth, cta: 'Start 1 month' },
+      price: PROGRAMME_FEE + perMonth },
     { k: 'm3', t: '3 months', weeks: 12, months: 3,
-      care: 2499, meds: 2499 + perMonth * 3, cta: 'Start 3 months' },
+      price: 2499 + perMonth * 3 },
   ];
 }
 
-/* What each length actually contains. The three month plan is not the one
-   month plan repeated: it adds a retest and a progress review, because the
-   point of a longer course is finding out whether the treatment worked.
+/* THE COMPARISON, AS SEVEN ROWS.
 
-   Each badge says WHEN the item happens, and no two rows carry the same word.
-   An earlier build stamped the plan length on every row, so seven badges said
-   "12 WEEKS" and none of them told the reader anything. A badge that repeats
-   is decoration. */
-export function planItems(first, practice, plan, withMeds) {
-  const base = plan.k === 'm1'
-    ? [
-      { t: 'Blood test', b: 'week 1',
-        s: 'A full panel taken at home to map your baseline.' },
-      { t: `${first}’s clinical review`, b: 'week 2',
-        s: 'Your results are read before any treatment is confirmed.' },
-      { t: 'Personalised treatment', b: 'from week 2',
-        s: 'Chosen around your results, your health and your goal.' },
-      { t: 'Follow-up consultation', b: '1 review',
-        s: `One review with ${first} during your first month.` },
-      { t: 'Support between consultations', b: 'any time',
-        s: `Message ${practice}’s practice any time.` },
-    ]
-    : [
-      { t: 'Blood test', b: 'week 1 & 12',
-        s: 'A full panel at the start, repeated at week 12 to show what moved.' },
-      { t: `${first}’s clinical review`, b: 'twice',
-        s: 'Your results are read at the start and again at the retest.' },
-      { t: 'Personalised treatment', b: 'adjusted',
-        s: 'Adjusted across 12 weeks as your markers change.' },
-      { t: 'Follow-up consultations', b: '3 reviews',
-        s: `Reviews with ${first} at week 4, week 8 and week 12.` },
-      { t: 'Support between consultations', b: 'any time',
-        s: `Message ${practice}’s practice any time.` },
-      { t: 'Progress review', b: 'week 12',
-        s: 'A clear read on what changed, and what comes next.' },
-    ];
+   One row for each thing the care contains, and one cell for each plan. The
+   cell holds a NUMBER where the two plans differ in quantity, a TICK where the
+   item is simply included, and a DASH where it is absent.
 
-  return [...base, withMeds
-    ? { t: 'Medication, delivered', b: 'monthly',
-        s: 'Dispensed by a licensed pharmacy and delivered to you each month.' }
-    : { t: 'Your prescription', b: 'included',
-        s: `Written by ${first}. Fill it at any pharmacy you choose.` }];
+   ── WHY NOT TICKS EVERYWHERE ──
+   A checklist of ✓ against ✓ tells the reader nothing. The two plans do not
+   differ in what they contain; they differ in HOW MUCH of it you get. One
+   blood test or two. One review or three. Writing "2" where the other column
+   says "1" is the whole comparison in one glyph, and it is the only reason the
+   table earns its place on the screen.
+
+   Ticks are kept for the three rows that really are yes-or-no, so the reader
+   can see at a glance that nothing is being withheld from the shorter plan.
+
+   ── MEDICATION IS NOT AN OPTION ──
+   Every Valeo plan supplies it, so it is a row like any other and never a
+   choice. An earlier build put a "care only" column beside it, which offered
+   the patient a plan Valeo does not sell and made the price look like it had
+   a cheaper version hiding behind it.
+
+   The order is the order things happen: test, read, decide, deliver, review,
+   support, and prove it worked.
+
+   Labels stay under 24 characters and captions under 26, because the label
+   column is 190px wide and a wrapped row would break the grid rhythm. */
+export function compareRows(first) {
+  return [
+    { t: 'Blood test', s: 'A full panel, at home',
+      m1: { v: '1', c: 'week 1' }, m3: { v: '2', c: 'week 1 & 12' } },
+    { t: `${first}’s review`, s: 'Your results, read in full',
+      m1: { v: '1' }, m3: { v: '2' } },
+    { t: 'Personalised treatment', s: 'Chosen on your results',
+      m1: { v: true }, m3: { v: true, c: 'adjusted' } },
+    /* The caption counts the shipments. Saying "1 month" here would only
+       repeat the column heading directly above it. */
+    { t: 'Medication delivered', s: 'Dispensed and shipped',
+      m1: { v: '1', c: 'delivery' }, m3: { v: '3', c: 'deliveries' } },
+    { t: 'Follow-up consultations', s: `One to one with ${first}`,
+      m1: { v: '1', c: 'week 4' }, m3: { v: '3', c: 'wk 4, 8, 12' } },
+    { t: 'Message the practice', s: 'Between consultations',
+      m1: { v: true }, m3: { v: true } },
+    { t: 'Progress review', s: 'What changed, and next',
+      m1: { v: null }, m3: { v: true, c: 'week 12' } },
+  ];
 }

@@ -1,205 +1,212 @@
 import { useState } from 'react';
-import { Box, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import CheckIcon from '@mui/icons-material/Check';
 import PaySheet from '../components/PaySheet';
-import { PROTOCOLS, carePlans, careSteps, planItems, coachOf, givenNameOf } from '../data';
+import { carePlans, compareRows, coachOf, givenNameOf } from '../data';
 import { C } from '../theme';
+
+/** Width of one plan column. Two of them plus a 186px label column fill the
+ *  350px of content the 390px frame allows. */
+const COL = 82;
 
 /**
  * SCREEN TWO — CHOOSE YOUR CARE.
  *
- * Two lengths of care, and one toggle for whether Valeo supplies the
- * medication. Four combinations from two controls.
+ * Two lengths of care, and the whole comparison on one screen with nothing to
+ * scroll.
  *
- * ── WHY THE TOGGLE IS ABOVE BOTH CARDS ──
- * It applies to both lengths. Putting it inside each card would ask the same
- * question twice and make the cards look like four plans instead of two.
+ * ── WHY A TABLE AND NOT TWO CARDS ──
+ * Two cards stacked the same seven items twice, which put the second plan
+ * below the fold and turned a comparison into a memory test. A person cannot
+ * compare what they cannot see at the same time. The table says each item
+ * once and lets the two columns answer it, so the screen carries the same
+ * information in a third of the height.
  *
- * ── WHY A CAROUSEL AND NOT A STACK ──
- * The value of two plans is the comparison, and a comparison needs the options
- * near each other. Two cards will not fit side by side at this width, so they
- * scroll horizontally with the next one visible at the edge. Stacking them
- * would turn a choice into a scroll.
+ * ── THE CELLS ARE NOT ALL TICKS ──
+ * The plans do not differ in WHAT they contain. They differ in HOW MUCH: one
+ * blood test or two, one review or three. So a cell holds a number wherever
+ * the plans differ, a tick where the item is simply included, and a dash for
+ * the one thing the short plan does not have. A column of identical ticks
+ * would look like a comparison while making none.
  *
- * ── NOTHING IS MARKED "RECOMMENDED" ──
- * The three month plan is cheaper per month, and that is the honest reason to
- * pick it. A badge pushing people toward it would undo the screen before this
- * one, where the clinician already made the recommendation. The only thing
- * being chosen here is length and supply.
+ * ── THERE IS NO MEDICATION TOGGLE ──
+ * Every Valeo plan includes the medication. A toggle offering care without it
+ * would advertise a plan that does not exist and make every price look like
+ * it had a cheaper version behind it. The line under the heading states the
+ * promise once, and medication is a row in the table like any other.
  *
- * ── THE PRICE IS NOT A HEADLINE ──
- * An earlier build set it at 34px, which made a care page look like a price
- * tag. It sits under the plan name at reading size, which is where a person
- * looks for it and is enough.
+ * ── ONE CHOICE, MADE IN ONE PLACE ──
+ * The column headings are the control: tapping one slides a white card behind
+ * that column and the single button at the bottom follows it. Two buttons,
+ * one under each plan, would ask the patient to choose twice — once with
+ * their eyes and again with their thumb.
+ *
+ * ── THE SAVING IS ARITHMETIC, NOT PERSUASION ──
+ * Three months costs less than three single months, and the difference is
+ * stated under the button as a number the patient can check. That is the
+ * honest argument for the longer plan, which is why no badge says
+ * "recommended" and no column is called "best value".
  */
 export default function Buy({ pKey, onBack, onPaid }) {
-  const p = PROTOCOLS[pKey];
   const c = coachOf(pKey);
-  const [meds, setMeds] = useState(false);
-  const [pay, setPay] = useState(null);
+  const [sel, setSel] = useState('m3');
+  const [pay, setPay] = useState(false);
 
-  if (!p || !c) return null;
+  if (!c) return null;
   const first = givenNameOf(c);
   const plans = carePlans(pKey);
-  const steps = careSteps(first);
+  const chosen = plans.find((pl) => pl.k === sel) || plans[1];
+  const rows = compareRows(first);
+  const save = plans[0].price * 3 - plans[1].price;
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: C.cream }}>
-      <Stack direction="row" sx={{ alignItems: 'center', px: 1.5, pt: 1.5, pb: 0.5 }}>
+      <Box sx={{ px: 1, pt: 1, flexShrink: 0 }}>
         <IconButton onClick={onBack} size="small" sx={{ color: C.ink2 }}>
           <ArrowBackIosNewIcon sx={{ fontSize: 17 }} />
         </IconButton>
-      </Stack>
+      </Box>
 
-      <Box sx={{ flex: '1 1 auto', overflowY: 'auto', pb: 3 }}>
-        <Box sx={{ px: 3, textAlign: 'center' }}>
-          <Typography sx={{
-            fontSize: 10, fontWeight: 800, letterSpacing: '.18em',
-            textTransform: 'uppercase', color: C.ink2,
-          }}>Choose your care</Typography>
-          <Typography sx={{
-            fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 600,
-            lineHeight: 1.15, color: C.deep, mt: 1.2,
-          }}>Your care with {first}</Typography>
+      <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.5 }}>
+        <Typography sx={{
+          fontSize: 10, fontWeight: 800, letterSpacing: '.18em',
+          textTransform: 'uppercase', color: C.ink2, textAlign: 'center',
+        }}>Choose your care</Typography>
+        <Typography sx={{
+          fontFamily: '"Fraunces", serif', fontSize: 27, fontWeight: 600,
+          lineHeight: 1.15, color: C.deep, mt: 0.9, textAlign: 'center',
+        }}>Your care with {first}</Typography>
 
-          {/* One question, asked once, for both plans. */}
-          <Stack direction="row" spacing={0.5} sx={{
-            mt: 3, p: 0.5, borderRadius: '999px', bgcolor: 'rgba(27,57,91,.055)',
-          }}>
-            {[['Care only', false], ['With medication', true]].map(([t, v]) => (
-              <Box key={t} onClick={() => setMeds(v)} sx={{
-                flex: 1, textAlign: 'center', py: 1, borderRadius: '999px', cursor: 'pointer',
-                fontSize: 13, fontWeight: meds === v ? 700 : 500,
-                bgcolor: meds === v ? '#fff' : 'transparent',
-                color: meds === v ? C.deep : C.ink2,
-                boxShadow: meds === v ? '0 2px 10px -6px rgba(27,57,91,.45)' : 'none',
-                transition: 'background-color .25s, color .25s',
-              }}>{t}</Box>
-            ))}
-          </Stack>
-
-          <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 1.3, lineHeight: 1.5 }}>
-            {meds
-              ? 'Medication dispensed and delivered for the length of your care.'
-              : 'Your prescription is included. Medication is bought separately.'}
-          </Typography>
-        </Box>
-
-        {/* ── the two plans ── */}
-        <Box sx={{
-          display: 'flex', gap: 1.5, mt: 3, px: 2.25, pb: 1,
-          overflowX: 'auto', scrollSnapType: 'x mandatory',
-          '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none',
+        {/* The promise the toggle used to carry, said once and for both plans. */}
+        <Typography sx={{
+          fontSize: 13, lineHeight: 1.5, color: C.ink2, mt: 1.4,
+          textAlign: 'center', px: 1,
         }}>
-          {plans.map((pl, n) => {
-            const fee = (meds ? pl.meds : pl.care).toLocaleString();
-            const items = planItems(first, c.short, pl, meds);
-            const lead = n === 1;
-            return (
-              <Box key={pl.k} sx={{
-                flex: '0 0 auto', width: '86%', scrollSnapAlign: 'center',
-                borderRadius: '22px', bgcolor: '#fff', overflow: 'hidden',
-                border: `1px solid ${lead ? 'rgba(224,164,0,.4)' : 'rgba(27,57,91,.08)'}`,
-                boxShadow: '0 4px 20px -14px rgba(27,57,91,.5)',
-              }}>
-                <Box sx={{ px: 2.25, pt: 2.5, pb: 2 }}>
+          Both plans include your medication, delivered to you.
+        </Typography>
+
+        {/* ── the comparison ── */}
+        <Box sx={{ position: 'relative', mt: 4.5 }}>
+          {/* The selected column, as a card that slides between the two. It
+              overhangs its column by only 4px: the plan headings are nearly as
+              wide as the column, so a fatter card would run its border into
+              the word beside it. */}
+          <Box sx={{
+            position: 'absolute', top: -14, bottom: -6, right: -4, width: COL + 8,
+            borderRadius: '20px', bgcolor: '#fff',
+            border: `1.5px solid ${C.yellow}`,
+            boxShadow: '0 14px 36px -22px rgba(27,57,91,.6)',
+            transform: sel === 'm1' ? `translateX(-${COL}px)` : 'none',
+            transition: 'transform .34s cubic-bezier(.2,.9,.25,1)',
+          }} />
+
+          {/* Headings, which are also the control. */}
+          <Stack direction="row" sx={{ position: 'relative', alignItems: 'flex-end' }}>
+            <Box sx={{ flex: 1 }} />
+            {plans.map((pl) => {
+              const on = sel === pl.k;
+              return (
+                <Box key={pl.k} onClick={() => setSel(pl.k)} sx={{
+                  width: COL, flexShrink: 0, textAlign: 'center', cursor: 'pointer', pb: 1.4,
+                }}>
                   <Typography sx={{
-                    fontFamily: '"Fraunces", serif', fontSize: 24, fontWeight: 600,
-                    color: C.deep, lineHeight: 1.15,
+                    fontFamily: '"Fraunces", serif', fontSize: 14, fontWeight: 600,
+                    lineHeight: 1.1, whiteSpace: 'nowrap',
+                    color: on ? C.deep : 'rgba(27,57,91,.62)',
+                    transition: 'color .25s',
                   }}>{pl.t}</Typography>
-
-                  <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mt: 1 }}>
-                    <Typography sx={{ fontSize: 19, fontWeight: 700, color: C.deep }}>
-                      SAR {fee}
-                    </Typography>
-                    {pl.months > 1 && (
-                      <Typography sx={{ fontSize: 12, color: C.ink2 }}>
-                        SAR {Math.round((meds ? pl.meds : pl.care) / pl.months).toLocaleString()} a month
-                      </Typography>
-                    )}
-                  </Stack>
-
-                  <Box onClick={() => setPay(pl)} sx={{
-                    mt: 2, py: 1.4, borderRadius: '999px', textAlign: 'center', cursor: 'pointer',
-                    fontSize: 14, fontWeight: 700,
-                    bgcolor: lead ? C.yellow : 'transparent',
-                    color: C.deep,
-                    border: lead ? 'none' : `1.5px solid ${C.deep}`,
-                    '&:active': { opacity: .85 },
-                  }}>{pl.cta}</Box>
-                </Box>
-
-                <Box sx={{ px: 2.25, pb: 2.25 }}>
-                  {items.map((x, i) => (
-                    <Box key={x.t} sx={{
-                      pt: i === 0 ? 0 : 1.75, pb: 1.75,
-                      borderBottom: i === items.length - 1 ? 'none' : `1px solid ${C.line}`,
-                    }}>
-                      <Stack direction="row" spacing={0.9} sx={{ alignItems: 'center', mb: 0.6 }}>
-                        <Typography sx={{
-                          fontSize: 14, fontWeight: 700, color: C.deep, lineHeight: 1.25,
-                        }}>{x.t}</Typography>
-                        <Typography sx={{
-                          flexShrink: 0, px: 0.85, py: 0.25, borderRadius: '6px',
-                          fontSize: 9, fontWeight: 800, letterSpacing: '.08em',
-                          textTransform: 'uppercase',
-                          bgcolor: lead ? 'rgba(224,164,0,.16)' : 'rgba(27,57,91,.06)',
-                          color: lead ? C.yellowDeep : C.ink2,
-                        }}>{x.b}</Typography>
-                      </Stack>
-                      <Typography sx={{ fontSize: 12.5, lineHeight: 1.5, color: C.ink2 }}>
-                        {x.s}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            );
-          })}
-        </Box>
-
-        {/* ── the sequence, the same whichever plan is chosen ── */}
-        <Box sx={{ px: 3, mt: 3 }}>
-          <Typography sx={{
-            fontSize: 10, fontWeight: 800, letterSpacing: '.16em',
-            textTransform: 'uppercase', color: C.ink2,
-            pt: 3, borderTop: `1px solid ${C.line}`, mb: 2.5,
-          }}>What happens next</Typography>
-
-          <Stack spacing={2.25}>
-            {steps.map((x, n) => (
-              <Stack key={x.t} direction="row" spacing={1.8} sx={{ alignItems: 'flex-start' }}>
-                <Typography sx={{
-                  fontFamily: '"Fraunces", serif', fontSize: 13.5, fontWeight: 600,
-                  color: C.yellowDeep, flexShrink: 0, width: 21, mt: '2px',
-                }}>{String(n + 1).padStart(2, '0')}</Typography>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 15, fontWeight: 700, color: C.deep, lineHeight: 1.3 }}>
-                    {x.t}
-                  </Typography>
-                  <Typography sx={{ fontSize: 13.5, lineHeight: 1.5, color: C.ink2, mt: 0.25 }}>
-                    {x.s}
+                  <Typography sx={{
+                    fontSize: 12.5, fontWeight: 700, mt: 0.55, whiteSpace: 'nowrap',
+                    color: on ? C.deep : 'rgba(27,57,91,.58)', transition: 'color .25s',
+                  }}>SAR {pl.price.toLocaleString()}</Typography>
+                  {/* The 1 month column keeps this line empty so both headings
+                      are the same height and the cells below stay aligned. */}
+                  <Typography sx={{
+                    fontSize: 9.5, fontWeight: 700, letterSpacing: '.04em',
+                    color: on ? C.yellowDeep : 'rgba(27,57,91,.35)',
+                    minHeight: 13, transition: 'color .25s',
+                  }}>
+                    {pl.months > 1 ? `${Math.round(pl.price / pl.months).toLocaleString()}/mo` : ''}
                   </Typography>
                 </Box>
-              </Stack>
-            ))}
+              );
+            })}
           </Stack>
 
-          {/* Sequencing, not a disclaimer. */}
-          <Typography sx={{
-            fontSize: 14, lineHeight: 1.6, color: C.deep, mt: 3.5,
-            px: 2.25, py: 2, borderRadius: '16px', bgcolor: 'rgba(224,164,0,.1)',
-          }}>
-            Your care starts now. {first} confirms your treatment once your blood
-            results are in.
-          </Typography>
+          {rows.map((r, i) => (
+            <Stack key={r.t} direction="row" sx={{ position: 'relative', alignItems: 'center' }}>
+              {/* The rule runs under the label only. It would otherwise cut
+                  across the selected card and break the illusion of a card. */}
+              <Box sx={{
+                flex: 1, minWidth: 0, py: 1.6,
+                borderTop: `1px solid ${i === 0 ? 'transparent' : C.line}`,
+              }}>
+                <Typography sx={{
+                  fontSize: 13.5, fontWeight: 700, color: C.deep, lineHeight: 1.25,
+                }}>{r.t}</Typography>
+                <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.15 }}>{r.s}</Typography>
+              </Box>
+              {plans.map((pl) => (
+                <Cell key={pl.k} {...r[pl.k]} on={sel === pl.k} />
+              ))}
+            </Stack>
+          ))}
         </Box>
       </Box>
 
-      <PaySheet open={!!pay}
-        item={pay ? `${pay.t} of care with ${c.short}` : ''}
-        fee={pay ? (meds ? pay.meds : pay.care).toLocaleString() : ''}
-        onClose={() => setPay(null)} onDone={onPaid} />
+      <Box sx={{ px: 2.5, pt: 2, pb: 2.5, flexShrink: 0 }}>
+        <Button fullWidth variant="contained" color="secondary" onClick={() => setPay(true)}>
+          Start {chosen.t}
+        </Button>
+        <Typography sx={{
+          fontSize: 11.5, lineHeight: 1.5, color: C.ink2, mt: 1.2, textAlign: 'center',
+        }}>
+          One payment of SAR {chosen.price.toLocaleString()}
+          {chosen.k === 'm3' && `, SAR ${save.toLocaleString()} less than three single months`}
+          . {first} confirms your treatment once your results are in.
+        </Typography>
+      </Box>
+
+      <PaySheet open={pay}
+        item={`${chosen.t} of care with ${c.short}`}
+        fee={chosen.price.toLocaleString()}
+        onClose={() => setPay(false)} onDone={onPaid} />
+    </Box>
+  );
+}
+
+/** One cell. A number where the plans differ, a tick where the item is simply
+ *  included, a dash where it is absent. The caption underneath says when. */
+function Cell({ v, c, on }) {
+  return (
+    <Box sx={{
+      width: COL, flexShrink: 0, position: 'relative',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', alignSelf: 'stretch',
+    }}>
+      {/* The unselected column is not disabled, only unchosen. It stays legible
+          enough to compare against, which is the entire point of a table. */}
+      {v === true ? (
+        <CheckIcon sx={{
+          fontSize: 20, color: on ? C.yellowDeep : 'rgba(27,57,91,.42)',
+          transition: 'color .25s',
+        }} />
+      ) : v === null ? (
+        <Typography sx={{ fontSize: 15, color: 'rgba(27,57,91,.26)', lineHeight: 1 }}>—</Typography>
+      ) : (
+        <Typography sx={{
+          fontFamily: '"Fraunces", serif', fontSize: 19, fontWeight: 600, lineHeight: 1,
+          color: on ? C.deep : 'rgba(27,57,91,.58)', transition: 'color .25s',
+        }}>{v}</Typography>
+      )}
+      {c && (
+        <Typography sx={{
+          fontSize: 8.5, fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase',
+          color: on ? C.ink2 : 'rgba(27,57,91,.4)', mt: 0.45, transition: 'color .25s',
+          whiteSpace: 'nowrap',
+        }}>{c}</Typography>
+      )}
     </Box>
   );
 }
