@@ -22,7 +22,7 @@ import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
 import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
 import PaySheet from '../components/PaySheet';
-import { carePlan, coachOf, givenNameOf } from '../data';
+import { carePlan, coachOf } from '../data';
 import { C } from '../theme';
 
 /* Data names a concept, this maps it to a glyph — so data.js never imports
@@ -79,7 +79,6 @@ export default function Buy({ pKey, onBack, onPaid }) {
   const [tour, setTour] = useState(false);
 
   if (!c) return null;
-  const first = givenNameOf(c);
   const plan = carePlan(pKey);
   const price = plan.price.toLocaleString();
 
@@ -122,29 +121,22 @@ export default function Buy({ pKey, onBack, onPaid }) {
           </Box>
         </Stack>
 
+        {/* The title is the whole hero: programme name and price, nothing
+            else. The eyebrow and the "one structured course" line went —
+            the name already says whose care it is and how long it runs. */}
         <Typography sx={{
-          fontSize: 11, fontWeight: 800, letterSpacing: '.18em',
-          textTransform: 'uppercase', color: C.yellowDeep, mt: 1.75,
-        }}>Your care with {first}</Typography>
-        <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 32, fontWeight: 600,
-          lineHeight: 1.1, color: C.deep, mt: 0.75,
-        }}>12-week care plan</Typography>
-        <Typography sx={{ fontSize: 13.5, lineHeight: 1.5, color: C.ink2, mt: 1, maxWidth: 300 }}>
-          One structured course of care, guided by {first} and built around your goals.
-        </Typography>
+          fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 600,
+          lineHeight: 1.15, color: C.deep, mt: 1.75,
+        }}>{plan.title}</Typography>
 
         {/* ── the price card ── */}
-        <Stack direction="row" sx={{ ...card, mt: 2, px: 2, py: 2, alignItems: 'center' }}>
+        <Stack direction="row" sx={{ ...card, mt: 1.75, px: 2, py: 2, alignItems: 'center' }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography sx={{
               fontFamily: '"Fraunces", serif', fontSize: 26, fontWeight: 600,
               color: C.deep, lineHeight: 1.1,
             }}>SAR {price}</Typography>
-            <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: C.yellowDeep, mt: 0.5 }}>
-              12 weeks of care
-            </Typography>
-            <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.25 }}>
+            <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.5 }}>
               One payment to begin your care.
             </Typography>
           </Box>

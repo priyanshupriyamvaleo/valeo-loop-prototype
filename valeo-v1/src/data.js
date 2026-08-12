@@ -3885,6 +3885,9 @@ export function carePlan(pKey) {
 
   return {
     weeks: 12,
+    /* The page title is the programme name the clinician recommended on the
+       screen before, so the two screens can never drift apart. */
+    title: `12-Week ${RECOMMEND[pKey]?.speak?.prog || 'Care Plan'}`,
     price: 2499 + perMonth * 3,
     sections,
     timeline,
