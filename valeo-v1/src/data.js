@@ -3707,7 +3707,7 @@ export function careApproach(first) {
    line names the thing and then says what it is for, because "Follow-up
    consultations" alone is a bullet on a pricing page and "Continued review as
    your care progresses" is a description of being looked after. */
-export function careIncludes(first, practice) {
+export function careIncludes(first, practice, withMeds) {
   return [
     { t: 'Your blood test',
       s: 'Required testing, arranged and taken at your home.' },
@@ -3719,8 +3719,15 @@ export function careIncludes(first, practice) {
       s: 'Continued review as your care progresses.' },
     { t: 'Support between consultations',
       s: `Message ${practice}’s practice any time.` },
-    { t: 'Delivery to your door',
-      s: 'Medication and supplements, where they are prescribed.' },
+    /* The one line that differs between the two plans. On the care plan the
+       prescription is still written and still included; the patient simply
+       fills it wherever they choose. Saying so stops the cheaper plan from
+       looking like care with something missing. */
+    withMeds
+      ? { t: 'Your medication, delivered',
+          s: 'Dispensed by a licensed pharmacy and delivered to you each month.' }
+      : { t: 'Your prescription',
+          s: `Written by ${first}. Fill it at any pharmacy you choose.` },
   ];
 }
 
@@ -3733,5 +3740,25 @@ export function careSteps(first) {
     { t: 'Results reviewed', s: `${first} reads your results.` },
     { t: 'Treatment confirmed', s: 'Chosen around what your results show.' },
     { t: 'Care begins', s: 'Your treatment arrives and your care continues.' },
+  ];
+}
+
+/* ── TWO PLANS, ONE COURSE OF CARE ──
+   The care is identical in both. The only difference is whether Valeo dispenses
+   and delivers the medication, or the patient takes the prescription elsewhere.
+
+   That is a real choice and it is worth offering. It is not a good plan and a
+   better plan, so neither is marked "recommended" and neither is styled to win.
+   Manufacturing a preference here would undo the point of the screen before it,
+   which is that the clinician already made the recommendation.
+
+   The medication price is the protocol price, because that figure has always
+   covered the treatment itself. `PROGRAMME_FEE` covers the care around it. */
+export function carePlans(pKey) {
+  return [
+    { k: 'care', t: 'Care only', fee: PROGRAMME_FEE,
+      note: 'Your prescription is included. Medication is bought separately.' },
+    { k: 'meds', t: 'With medication', fee: PROTOCOLS[pKey].price,
+      note: 'Medication dispensed and delivered for the length of your care.' },
   ];
 }
