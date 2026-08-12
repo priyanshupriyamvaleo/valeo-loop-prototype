@@ -3533,22 +3533,6 @@ export function careMeaning(first) {
   ];
 }
 
-/* The goal, written to sit after "a personalised approach to ...".
-   GOALS.say is a button label ("Improve sexual health") and it does not fit
-   inside a sentence: it produces "an approach to improve sexual health", which
-   is missing the word "your". The word cannot be inserted by rule, because
-   "an approach to your lose weight" is wrong. So each goal carries its own
-   phrase for this one sentence. */
-export function goalAim(pKey) {
-  return {
-    test: 'improve your sexual health',
-    fat:  'improve your weight and metabolic health',
-    long: 'protect your long-term health',
-    post: 'restore your energy after birth',
-  }[(PROTOCOLS[pKey] || {}).cat] || 'reach your goal';
-}
-
-
 /* ══════════════════════════════════════════════════════════════════════════
    WHILE A CLINICIAN CONNECTS
 
@@ -3653,54 +3637,95 @@ export const GUIDED = [
 /* ══════════════════════════════════════════════════════════════════════════
    TWO SCREENS, TWO JOBS
 
-   Screen one asks "do I want this care?". Screen two asks "what exactly am I
-   committing to?". They are different psychological moments and they must not
-   be merged.
+   Screen one is the moment after the consultation: the clinician says "here
+   is what I think, and here is where I'd start". Screen two asks "what
+   exactly am I committing to?". They are different psychological moments and
+   they must not be merged.
 
-   ── THE HERO IS THE OUTCOME, NOT THE CLINICIAN ──
-   "Jamie's recommendation" as a headline makes the clinician the subject. The
-   patient came for a result. So the clinician's name becomes a small label
-   above, and the headline is what the patient gets.
+   ── THE CLINICIAN SPEAKS IN THE FIRST PERSON ──
+   An earlier build headlined the outcome ("Better sexual health, with care
+   built around you") and listed three things we were "working toward". That
+   is a brochure's grammar. Nobody who just spent twenty minutes talking to a
+   clinician wants the company's summary of the conversation; they want the
+   clinician's conclusion, in the clinician's own voice. So every field here
+   is written as speech: `think` is what I made of what you told me, `why` is
+   why I'd start where I'm pointing.
+
+   ── AUTHORED, NEVER ASSEMBLED ──
+   These sentences are clinical judgement. In the real product the clinician
+   writes them during or after the call; here they are authored per programme,
+   in that clinician's voice, grounded in the same facts as `why` above and
+   inventing nothing. The day a template generates "that pattern usually isn't
+   about discipline" is the day the page starts lying about who is speaking.
+
+   ── `prog` IS THE PATIENT-FACING NAME ──
+   PROTOCOLS[].t is our catalogue word ("Testosterone", "Longevity") and
+   "protocol" is our internal noun. A recommendation is named the way a
+   clinician would say it across a desk.
 
    ── NO INTERNAL WORDS ──
    "Protocol" is our word. A patient should never have to learn it.
 
    ── WHAT IS NOT CLAIMED ──
-   The clinician cannot finalise treatment before seeing blood results, so no
-   line here says the treatment is decided. The third outcome states the real
-   sequence: treatment that fits the results. That is honest and it is also
-   more reassuring than a promise the clinician cannot yet make. */
+   The clinician cannot finalise treatment before seeing blood results, so
+   nothing here says the treatment is decided. Each `desc` says the opposite,
+   in the patient's favour: the treatment is built around the results. */
 Object.assign(RECOMMEND.P_TEST, {
-  hero: 'Better sexual health, with care built around you.',
-  toward: ['Better sexual function and libido',
-           'A clear picture of what is affecting your energy',
-           'Treatment chosen once your results are in'],
+  speak: {
+    prog: 'Men’s Hormone Health',
+    desc: 'A structured programme to understand what’s affecting your energy '
+        + 'and build the right treatment around your results.',
+    think: 'From our conversation, your energy and sexual health are the two '
+         + 'things I’d focus on first. You also told me fertility matters to '
+         + 'you — that shapes what I’d be willing to prescribe, and it means I '
+         + 'want to understand what’s driving the change before deciding '
+         + 'exactly how to treat it.',
+    why: 'I’d start here because it gives us the right framework to find '
+       + 'what’s behind your symptoms, and it keeps us working with your own '
+       + 'hormones first — which is what keeps fertility on the table.',
+  },
 });
 Object.assign(RECOMMEND.P_WEIGHT, {
-  hero: 'Weight loss that holds, with care built around you.',
-  toward: ['Fat lost without losing muscle',
-           'Metabolic markers back in range',
-           'Treatment chosen once your results are in'],
+  speak: {
+    prog: 'Weight & Metabolic Health',
+    desc: 'A structured programme to understand what’s working against your '
+        + 'weight and build the right treatment around your results.',
+    think: 'Everything you’ve tried has worked until it stopped, and the '
+         + 'weight has come back each time. That pattern usually isn’t about '
+         + 'discipline — and you told me you’d rather go slower than lose '
+         + 'muscle getting there. I agree. I want to see your metabolic '
+         + 'markers before deciding exactly how we treat this.',
+    why: 'I’d start here because it treats the cause rather than the scale. '
+       + 'We move your markers first, hold onto your muscle, and let the '
+       + 'weight follow.',
+  },
 });
 Object.assign(RECOMMEND.P_LONG, {
-  hero: 'More healthy years, with care built around you.',
-  toward: ['Lower cardiovascular risk',
-           'A clear picture of what runs in your family',
-           'Treatment chosen once your results are in'],
+  speak: {
+    prog: 'Longevity & Heart Health',
+    desc: 'A structured programme to measure the risks that run in your '
+        + 'family and act on them early, guided by your results.',
+    think: 'You feel fine today, and that’s exactly the right time to act. '
+         + 'With your family history, I want a clear picture of your '
+         + 'cardiovascular risk — ApoB above all — before we assume anything.',
+    why: 'I’d start here because your family history means acting earlier '
+       + 'than we otherwise would. We measure first, bring the risk down, and '
+       + 'only then consider anything more.',
+  },
 });
 Object.assign(RECOMMEND.P_POST, {
-  hero: 'Your energy back, with care built around you.',
-  toward: ['Energy and strength returning',
-           'Iron and thyroid back in range',
-           'Treatment chosen once your results are in'],
+  speak: {
+    prog: 'Postpartum Recovery',
+    desc: 'A structured programme to restore what birth has drawn down and '
+        + 'rebuild your strength in the right order.',
+    think: 'Fatigue like this after birth is usually a deficiency, not a '
+         + 'discipline problem. Before anyone talks to you about weight, I '
+         + 'want to see your iron and thyroid.',
+    why: 'I’d start here because it repletes you before it asks anything of '
+       + 'you. Iron and thyroid first, strength after — and nothing about the '
+       + 'scale until your energy is back.',
+  },
 });
-
-/* One sentence of philosophy, not a section. The promise is continuous
-   clinician-led care, and it takes a sentence to say. */
-export function careApproach(first) {
-  return `Your care is guided by ${first} and adjusted around your health, `
-       + 'your results and how you respond over time.';
-}
 
 
 /* The sequence, stated plainly. A patient must understand that they are not

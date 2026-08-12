@@ -1,39 +1,40 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import { RECOMMEND, careApproach, coachOf, givenNameOf, goalAim } from '../data';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { RECOMMEND, coachOf, givenNameOf } from '../data';
 import { C } from '../theme';
 
 /**
- * SCREEN ONE — THE RECOMMENDATION.
+ * SCREEN ONE — THE CLINICIAN'S RECOMMENDATION.
  *
- * The job of this screen is one question: do I want this care? It is not a
- * pricing page, not a feature list, and not a record of the consultation that
- * just happened. The patient was there. They do not need it played back.
+ * The consultation just ended. This screen is the clinician saying one thing:
+ * "here is what I think, and here is where I'd start." The patient's only
+ * decision is "okay — show me", which is what the CTA does. Contents, length,
+ * price and payment all belong to the next screen.
  *
- * ── THE OUTCOME IS THE HERO, NOT THE CLINICIAN ──
- * An earlier build used "Jamie's recommendation" as the headline, which makes
- * the clinician the subject of the sentence. The patient did not come for a
- * clinician. They came for a result. So the name moves to a small label above,
- * where it does its real job of saying who this came from, and the headline
- * becomes what the patient gets.
+ * ── ONE NARRATIVE, NOT A STACK OF CARDS ──
+ * An earlier attempt was a doctor card, an assessment card, a programme card
+ * and a benefits grid. That reads as a brochure assembled by a company. A
+ * recommendation is speech, so the page is one continuous column — label,
+ * speaker, what I think, what I recommend, why — separated by spacing and
+ * typography, not by containers.
  *
- * ── WHAT IS DELIBERATELY NOT CLAIMED ──
- * The clinician cannot finalise treatment before seeing blood results. Nothing
- * on this screen says the treatment is decided. The third outcome says the
- * opposite in the patient's favour: treatment chosen once your results are in.
- * That is honest, and it is also a stronger promise than a decision made
- * without the evidence.
+ * ── EXACTLY ONE OBJECT ──
+ * The programme panel is the only boxed element on the page, which is what
+ * makes it read as "the one Jamie chose for me". If anything else on the page
+ * were a card, this would become a card among cards, i.e. a catalogue.
  *
- * ── NO PRICE, AND NO OPERATIONS ──
- * There is no number here and no explanation of how anything works. Both
- * belong on the screen after this one, which exists to make the commitment
- * concrete. A screen that argues for a recommendation and quotes a price at
- * the same time does neither well.
+ * ── THE CLINICIAN SPEAKS, THE COMPANY DOESN'T ──
+ * Every sentence between the name and the CTA is first person and comes from
+ * RECOMMEND[pKey].speak, which is authored per programme in the clinician's
+ * voice. Nothing on this screen is assembled from fragments, because the
+ * moment a template writes "here's what I think", it isn't.
  *
- * ── "PROTOCOL" DOES NOT APPEAR ──
- * It is an internal word. A patient should never have to learn our vocabulary
- * to understand their own care.
+ * ── WHAT IS DELIBERATELY ABSENT ──
+ * No price, no inclusions list, no timeline, no feature icons, no
+ * testimonials, no "recommended" badge competing with the clinician's own
+ * words. The word "protocol" does not appear.
  */
 export default function Brief({ pKey, onBack, onStart }) {
   const c = coachOf(pKey);
@@ -41,8 +42,9 @@ export default function Brief({ pKey, onBack, onStart }) {
   const [inn, setInn] = useState(false);
   useEffect(() => { const t = setTimeout(() => setInn(true), 40); return () => clearTimeout(t); }, []);
 
-  if (!c || !rec) return null;
+  if (!c || !rec?.speak) return null;
   const first = givenNameOf(c);
+  const s = rec.speak;
 
   return (
     <Box sx={{
@@ -56,18 +58,23 @@ export default function Brief({ pKey, onBack, onStart }) {
       </Box>
 
       <Box sx={{
-        flex: '1 1 auto', overflowY: 'auto', px: 3, pb: 2,
+        flex: '1 1 auto', overflowY: 'auto', px: 3, pb: 1,
         opacity: inn ? 1 : 0,
         transform: inn ? 'none' : 'translateY(12px)',
         transition: 'opacity .5s cubic-bezier(.2,.9,.25,1), transform .55s cubic-bezier(.2,.9,.25,1)',
       }}>
-        {/* Who this came from. Small, because it is attribution and not the
-            subject of the page. */}
-        <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center', mt: 1 }}>
+        <Typography sx={{
+          fontSize: 10, fontWeight: 800, letterSpacing: '.18em',
+          textTransform: 'uppercase', color: C.yellowDeep, mt: 0.5,
+        }}>{first}’s recommendation</Typography>
+
+        {/* Who is speaking. Identity, not a profile card — no credentials,
+            reply times or patient counts here. */}
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mt: 2 }}>
           <Box sx={{
-            width: 26, height: 26, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-            border: '1.5px solid #fff',
-            boxShadow: '0 3px 10px -5px rgba(27,57,91,.5)',
+            width: 44, height: 44, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+            border: '2px solid #fff',
+            boxShadow: '0 4px 14px -6px rgba(27,57,91,.45)',
             background: `linear-gradient(155deg,${c.tone} 0%,rgba(11,21,34,.7) 145%)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
@@ -76,65 +83,67 @@ export default function Brief({ pKey, onBack, onStart }) {
                   width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
                 }} />
               : <Typography sx={{
-                  fontFamily: '"Fraunces", serif', fontSize: 10, fontWeight: 600,
+                  fontFamily: '"Fraunces", serif', fontSize: 15, fontWeight: 600,
                   color: 'rgba(255,255,255,.9)',
                 }}>{c.mono}</Typography>}
           </Box>
-          <Typography sx={{
-            fontSize: 10, fontWeight: 800, letterSpacing: '.16em',
-            textTransform: 'uppercase', color: C.ink2,
-          }}>{first}’s recommendation</Typography>
+          <Box>
+            <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: C.deep, lineHeight: 1.2 }}>
+              {c.name}
+            </Typography>
+            <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.3 }}>{c.role}</Typography>
+          </Box>
         </Stack>
 
-        {/* The outcome. */}
+        {/* What I think. */}
         <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 31, fontWeight: 600,
-          lineHeight: 1.14, color: C.deep, mt: 3, maxWidth: 305,
-        }}>{rec.hero}</Typography>
+          fontFamily: '"Fraunces", serif', fontSize: 29, fontWeight: 600,
+          lineHeight: 1.16, color: C.deep, mt: 3,
+        }}>Here’s where I’d start.</Typography>
 
-        <Typography sx={{
-          fontSize: 16, lineHeight: 1.55, color: C.ink, mt: 2.25, maxWidth: 300,
-        }}>
-          Based on today’s consultation, {first} recommends a personalised approach
-          focused on helping you {goalAim(pKey)} and understanding what is getting
-          in the way.
+        <Typography sx={{ fontSize: 15, lineHeight: 1.58, color: C.ink, mt: 1.75 }}>
+          {s.think}
         </Typography>
 
-        <Typography sx={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '.16em',
-          textTransform: 'uppercase', color: C.ink2, mt: 5, mb: 2.25,
-        }}>What we’re working toward</Typography>
+        {/* What I recommend — the one boxed object on the page. */}
+        <Box sx={{
+          mt: 3, px: 2.5, py: 2.25, borderRadius: '18px', bgcolor: '#fff',
+          borderLeft: `3px solid ${C.yellow}`,
+          boxShadow: '0 10px 30px -24px rgba(27,57,91,.55)',
+        }}>
+          <Typography sx={{
+            fontSize: 9.5, fontWeight: 800, letterSpacing: '.16em',
+            textTransform: 'uppercase', color: C.ink2,
+          }}>What I recommend</Typography>
+          <Typography sx={{
+            fontFamily: '"Fraunces", serif', fontSize: 23, fontWeight: 600,
+            lineHeight: 1.18, color: C.deep, mt: 1,
+          }}>{s.prog}</Typography>
+          <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: C.yellowDeep, mt: 0.6 }}>
+            Clinician-led care · personalised to your results
+          </Typography>
+          <Typography sx={{ fontSize: 13.5, lineHeight: 1.55, color: C.ink2, mt: 1.4 }}>
+            {s.desc}
+          </Typography>
+        </Box>
 
-        <Stack spacing={2.25}>
-          {rec.toward.map((t) => (
-            <Stack key={t} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
-              <Box sx={{
-                width: 7, height: 7, borderRadius: '50%', bgcolor: C.yellowDeep,
-                flexShrink: 0, mt: '8px',
-              }} />
-              <Typography sx={{
-                flex: 1, fontSize: 16.5, lineHeight: 1.4, color: C.deep, fontWeight: 500,
-              }}>{t}</Typography>
-            </Stack>
-          ))}
-        </Stack>
+        {/* Why. Still the clinician talking, so it is not boxed. */}
+        <Typography sx={{ fontSize: 14.5, lineHeight: 1.58, color: C.ink, mt: 2.25 }}>
+          {s.why}
+        </Typography>
 
-        {/* The philosophy, in one sentence. It is the whole Valeo promise and
-            it does not need a section of its own to make the point. */}
-        <Typography sx={{
-          fontSize: 15, lineHeight: 1.6, color: C.ink2, mt: 5,
-          pt: 3, borderTop: `1px solid ${C.line}`, maxWidth: 300,
-        }}>{careApproach(first)}</Typography>
+        <Typography sx={{ fontSize: 12, lineHeight: 1.5, color: C.ink2, mt: 2 }}>
+          Your final treatment is confirmed after {first} reviews your results.
+        </Typography>
       </Box>
 
       <Box sx={{
-        px: 3, pt: 4, pb: 3, flexShrink: 0, mt: -3,
-        background: `linear-gradient(180deg,rgba(255,253,245,0) 0%,${C.cream} 52%)`,
+        px: 3, pt: 2.5, pb: 3, flexShrink: 0, mt: -1.5,
+        background: `linear-gradient(180deg,rgba(255,253,245,0) 0%,${C.cream} 46%)`,
       }}>
-        {/* No price. This is a decision about care, and the commitment is made
-            concrete on the next screen. */}
-        <Button fullWidth variant="contained" color="secondary" onClick={onStart}>
-          Continue with my care
+        <Button fullWidth variant="contained" color="secondary" onClick={onStart}
+          endIcon={<ArrowForwardIcon sx={{ fontSize: 17 }} />}>
+          View recommended care
         </Button>
       </Box>
     </Box>
