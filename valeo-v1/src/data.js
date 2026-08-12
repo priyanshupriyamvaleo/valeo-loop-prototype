@@ -3702,34 +3702,6 @@ export function careApproach(first) {
        + 'your results and how you respond over time.';
 }
 
-/* ── SCREEN TWO ──
-   What the one payment buys, written as care rather than as features. Each
-   line names the thing and then says what it is for, because "Follow-up
-   consultations" alone is a bullet on a pricing page and "Continued review as
-   your care progresses" is a description of being looked after. */
-export function careIncludes(first, practice, withMeds) {
-  return [
-    { t: 'Your blood test',
-      s: 'Required testing, arranged and taken at your home.' },
-    { t: `${first}’s clinical review`,
-      s: 'Your results are read before any treatment is confirmed.' },
-    { t: 'Your personalised treatment',
-      s: 'Chosen around your health, your goals and your results.' },
-    { t: 'Follow-up consultations',
-      s: 'Continued review as your care progresses.' },
-    { t: 'Support between consultations',
-      s: `Message ${practice}’s practice any time.` },
-    /* The one line that differs between the two plans. On the care plan the
-       prescription is still written and still included; the patient simply
-       fills it wherever they choose. Saying so stops the cheaper plan from
-       looking like care with something missing. */
-    withMeds
-      ? { t: 'Your medication, delivered',
-          s: 'Dispensed by a licensed pharmacy and delivered to you each month.' }
-      : { t: 'Your prescription',
-          s: `Written by ${first}. Fill it at any pharmacy you choose.` },
-  ];
-}
 
 /* The sequence, stated plainly. A patient must understand that they are not
    buying a treatment that has already been decided. They are entering care in
@@ -3743,22 +3715,72 @@ export function careSteps(first) {
   ];
 }
 
-/* ── TWO PLANS, ONE COURSE OF CARE ──
-   The care is identical in both. The only difference is whether Valeo dispenses
-   and delivers the medication, or the patient takes the prescription elsewhere.
 
-   That is a real choice and it is worth offering. It is not a good plan and a
-   better plan, so neither is marked "recommended" and neither is styled to win.
-   Manufacturing a preference here would undo the point of the screen before it,
-   which is that the clinician already made the recommendation.
+/* ══════════════════════════════════════════════════════════════════════════
+   TWO LENGTHS OF CARE, WITH OR WITHOUT MEDICATION
 
-   The medication price is the protocol price, because that figure has always
-   covered the treatment itself. `PROGRAMME_FEE` covers the care around it. */
+   Four combinations from two controls: a length, chosen on the card, and a
+   supply arrangement, chosen on the toggle above. The toggle sits above both
+   cards because it applies to both, and putting it inside each card would ask
+   the same question twice.
+
+   The medication figure is the protocol price divided across its months, so
+   the two plans price the same treatment consistently and one constant still
+   drives it.
+
+   The three month plan costs less per month than the one month plan. That is
+   the honest reason to offer it, and it is why no badge is needed to push
+   anyone toward it. */
 export function carePlans(pKey) {
+  const perMonth = Math.round(PROTOCOLS[pKey].price / 4 / 50) * 50;
   return [
-    { k: 'care', t: 'Care only', fee: PROGRAMME_FEE,
-      note: 'Your prescription is included. Medication is bought separately.' },
-    { k: 'meds', t: 'With medication', fee: PROTOCOLS[pKey].price,
-      note: 'Medication dispensed and delivered for the length of your care.' },
+    { k: 'm1', t: '1 month',  weeks: 4,  months: 1,
+      care: PROGRAMME_FEE, meds: PROGRAMME_FEE + perMonth, cta: 'Start 1 month' },
+    { k: 'm3', t: '3 months', weeks: 12, months: 3,
+      care: 2499, meds: 2499 + perMonth * 3, cta: 'Start 3 months' },
   ];
+}
+
+/* What each length actually contains. The three month plan is not the one
+   month plan repeated: it adds a retest and a progress review, because the
+   point of a longer course is finding out whether the treatment worked.
+
+   Each badge says WHEN the item happens, and no two rows carry the same word.
+   An earlier build stamped the plan length on every row, so seven badges said
+   "12 WEEKS" and none of them told the reader anything. A badge that repeats
+   is decoration. */
+export function planItems(first, practice, plan, withMeds) {
+  const base = plan.k === 'm1'
+    ? [
+      { t: 'Blood test', b: 'week 1',
+        s: 'A full panel taken at home to map your baseline.' },
+      { t: `${first}’s clinical review`, b: 'week 2',
+        s: 'Your results are read before any treatment is confirmed.' },
+      { t: 'Personalised treatment', b: 'from week 2',
+        s: 'Chosen around your results, your health and your goal.' },
+      { t: 'Follow-up consultation', b: '1 review',
+        s: `One review with ${first} during your first month.` },
+      { t: 'Support between consultations', b: 'any time',
+        s: `Message ${practice}’s practice any time.` },
+    ]
+    : [
+      { t: 'Blood test', b: 'week 1 & 12',
+        s: 'A full panel at the start, repeated at week 12 to show what moved.' },
+      { t: `${first}’s clinical review`, b: 'twice',
+        s: 'Your results are read at the start and again at the retest.' },
+      { t: 'Personalised treatment', b: 'adjusted',
+        s: 'Adjusted across 12 weeks as your markers change.' },
+      { t: 'Follow-up consultations', b: '3 reviews',
+        s: `Reviews with ${first} at week 4, week 8 and week 12.` },
+      { t: 'Support between consultations', b: 'any time',
+        s: `Message ${practice}’s practice any time.` },
+      { t: 'Progress review', b: 'week 12',
+        s: 'A clear read on what changed, and what comes next.' },
+    ];
+
+  return [...base, withMeds
+    ? { t: 'Medication, delivered', b: 'monthly',
+        s: 'Dispensed by a licensed pharmacy and delivered to you each month.' }
+    : { t: 'Your prescription', b: 'included',
+        s: `Written by ${first}. Fill it at any pharmacy you choose.` }];
 }
