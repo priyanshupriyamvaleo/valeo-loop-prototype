@@ -3712,10 +3712,13 @@ Object.assign(RECOMMEND.P_WEIGHT, {
          + 'markers before deciding exactly how we treat this.',
     marks: ['the weight has come back', 'lose muscle'],
     why: 'This is the care plan I recommend for you.',
+    /* The weight programme's real staffing: a doctor plus nutritionist and
+       performance coach, with continuous glucose monitoring. Stated here
+       because it is what this plan contains, not a generic outcome. */
     points: [
       { ic: 'scale', t: 'Lose the weight', s: 'And keep it off this time' },
-      { ic: 'muscle', t: 'Keep your muscle', s: 'Strength held while you lose' },
-      { ic: 'chart', t: 'Fix your markers', s: 'HbA1c back in range' },
+      { ic: 'muscle', t: 'A full care team', s: 'Doctor, nutritionist and coach' },
+      { ic: 'chart', t: 'Live glucose data', s: 'CGM informs every adjustment' },
     ],
   },
 });
@@ -3769,74 +3772,75 @@ export function careSteps(first) {
 
 
 /* ══════════════════════════════════════════════════════════════════════════
-   TWO LENGTHS OF CARE, WITH OR WITHOUT MEDICATION
+   ONE COURSE OF CARE — THE 12-WEEK PLAN
 
-   Four combinations from two controls: a length, chosen on the card, and a
-   supply arrangement, chosen on the toggle above. The toggle sits above both
-   cards because it applies to both, and putting it inside each card would ask
-   the same question twice.
+   There is exactly one duration, because the clinician recommended a specific
+   course of care, not a menu. An earlier build compared a 1-month and a
+   3-month column; it made the recommendation look like shopping and made the
+   price look like it had a cheaper version behind it. The patient is not
+   choosing between packages — they are looking at the complete loop of care
+   they are about to enter: baseline, understand, treat, follow, reassess.
 
-   The medication figure is the protocol price divided across its months, so
-   the two plans price the same treatment consistently and one constant still
-   drives it.
+   ── THE ROWS COME FROM THE REAL PROTOCOL ARCHITECTURE ──
+   The shape mirrors the production peptide-protocol PDPs (Aug 2026): baseline
+   and week-12 testing, results review, monthly dispatch, concierge check-in
+   calls on day 10 and day 25, a week-6 mid-point review, unlimited messaging,
+   and a week-12 reassessment. Each row is name + what it does + when it
+   happens, and never a paragraph.
 
-   The three month plan costs less per month than the one month plan. That is
-   the honest reason to offer it, and it is why no badge is needed to push
-   anyone toward it. */
-export function carePlans(pKey) {
-  const perMonth = Math.round(PROTOCOLS[pKey].price / 4 / 50) * 50;
-  return [
-    { k: 'm1', t: '1 month',  weeks: 4,  months: 1,
-      price: PROGRAMME_FEE + perMonth },
-    { k: 'm3', t: '3 months', weeks: 12, months: 3,
-      price: 2499 + perMonth * 3 },
+   ── PER-PROGRAMME ROWS ──
+   The weight programme carries its real care team — nutritionist, performance
+   coach, and continuous glucose monitoring — because that is what that plan
+   actually contains. Rows appear only where the plan genuinely includes them.
+
+   ── PRICE ──
+   One figure: the programme fee plus three months of treatment, both derived
+   from the same constants as before so nothing drifts. No per-month figure
+   and no "save X" line — there is no monthly alternative to save against. */
+export function carePlan(pKey) {
+  const p = PROTOCOLS[pKey];
+  const c = coachOf(pKey) || DOCTOR;
+  const first = givenNameOf(c);
+  const perMonth = Math.round(p.price / 4 / 50) * 50;
+
+  const rows = [
+    { t: 'Blood test', s: 'Full panel, collected at home by a nurse', b: 'week 1 + 12' },
+    { t: `${first}’s review`, s: 'Your results, read in full', b: 'after testing' },
+    { t: 'Personalised treatment', s: 'Selected around your results', b: 'throughout' },
+    { t: 'Medication delivered', s: 'Dispensed and delivered to you', b: 'monthly' },
+    { t: 'Follow-up consultations', s: `One-to-one reviews with ${first}`, b: 'weeks 4, 8 & 12' },
+    { t: 'Care team check-ins', s: 'Your care team calls to check progress', b: 'days 10 & 25' },
+    ...(p.cat === 'fat' ? [
+      { t: 'Nutritionist', s: 'An evolving plan as your markers change', b: 'throughout' },
+      { t: 'Performance coach', s: 'Training that adapts as your body changes', b: 'throughout' },
+      { t: 'Glucose monitoring', s: 'Live CGM data informs every adjustment', b: 'cgm included' },
+    ] : []),
+    { t: 'Message the practice', s: 'Support between consultations', b: 'any time' },
+    { t: 'Progress review', s: 'Repeat testing, and what comes next', b: 'week 12' },
   ];
-}
 
-/* THE COMPARISON, AS SEVEN ROWS.
-
-   One row for each thing the care contains, and one cell for each plan. The
-   cell holds a NUMBER where the two plans differ in quantity, a TICK where the
-   item is simply included, and a DASH where it is absent.
-
-   ── WHY NOT TICKS EVERYWHERE ──
-   A checklist of ✓ against ✓ tells the reader nothing. The two plans do not
-   differ in what they contain; they differ in HOW MUCH of it you get. One
-   blood test or two. One review or three. Writing "2" where the other column
-   says "1" is the whole comparison in one glyph, and it is the only reason the
-   table earns its place on the screen.
-
-   Ticks are kept for the three rows that really are yes-or-no, so the reader
-   can see at a glance that nothing is being withheld from the shorter plan.
-
-   ── MEDICATION IS NOT AN OPTION ──
-   Every Valeo plan supplies it, so it is a row like any other and never a
-   choice. An earlier build put a "care only" column beside it, which offered
-   the patient a plan Valeo does not sell and made the price look like it had
-   a cheaper version hiding behind it.
-
-   The order is the order things happen: test, read, decide, deliver, review,
-   support, and prove it worked.
-
-   Labels stay under 24 characters and captions under 26, because the label
-   column is 190px wide and a wrapped row would break the grid rhythm. */
-export function compareRows(first) {
-  return [
-    { t: 'Blood test', s: 'A full panel, at home',
-      m1: { v: '1', c: 'week 1' }, m3: { v: '2', c: 'week 1 & 12' } },
-    { t: `${first}’s review`, s: 'Your results, read in full',
-      m1: { v: '1' }, m3: { v: '2' } },
-    { t: 'Personalised treatment', s: 'Chosen on your results',
-      m1: { v: true }, m3: { v: true, c: 'adjusted' } },
-    /* The caption counts the shipments. Saying "1 month" here would only
-       repeat the column heading directly above it. */
-    { t: 'Medication delivered', s: 'Dispensed and shipped',
-      m1: { v: '1', c: 'delivery' }, m3: { v: '3', c: 'deliveries' } },
-    { t: 'Follow-up consultations', s: `One to one with ${first}`,
-      m1: { v: '1', c: 'week 4' }, m3: { v: '3', c: 'wk 4, 8, 12' } },
-    { t: 'Message the practice', s: 'Between consultations',
-      m1: { v: true }, m3: { v: true } },
-    { t: 'Progress review', s: 'What changed, and next',
-      m1: { v: null }, m3: { v: true, c: 'week 12' } },
-  ];
+  return {
+    weeks: 12,
+    price: 2499 + perMonth * 3,
+    rows,
+    journey: [
+      { t: 'Baseline', s: 'Blood test + clinical review' },
+      { t: 'Treatment begins', s: 'Your personalised care starts' },
+      { t: 'Follow & adjust', s: 'Reviews, support and treatment' },
+      { t: 'Reassess', s: 'Repeat testing + progress review' },
+    ],
+    included: [
+      'At-home blood testing',
+      `${first}’s clinical review`,
+      'Personalised treatment',
+      'Medication delivery where prescribed',
+      'Follow-up consultations',
+      'Ongoing support from the practice',
+      'Week 12 reassessment',
+    ],
+    /* Sequencing, not a blocker. This is how the care works. */
+    how: `Your care begins with the information ${first} needs to personalise `
+       + 'your treatment. Once your results are reviewed, your treatment is '
+       + 'confirmed and your care continues through the programme.',
+  };
 }

@@ -3,210 +3,171 @@ import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import CheckIcon from '@mui/icons-material/Check';
 import PaySheet from '../components/PaySheet';
-import { carePlans, compareRows, coachOf, givenNameOf } from '../data';
+import { carePlan, coachOf, givenNameOf } from '../data';
 import { C } from '../theme';
 
-/** Width of one plan column. Two of them plus a 186px label column fill the
- *  350px of content the 390px frame allows. */
-const COL = 82;
-
 /**
- * SCREEN TWO — CHOOSE YOUR CARE.
+ * SCREEN TWO — THE 12-WEEK CARE PLAN.
  *
- * Two lengths of care, and the whole comparison on one screen with nothing to
- * scroll.
+ * Screen one answered "what does my clinician recommend?". This one answers
+ * "what exactly does that care consist of, how does it unfold, and what am I
+ * committing to?" — in that order, top to bottom.
  *
- * ── WHY A TABLE AND NOT TWO CARDS ──
- * Two cards stacked the same seven items twice, which put the second plan
- * below the fold and turned a comparison into a memory test. A person cannot
- * compare what they cannot see at the same time. The table says each item
- * once and lets the two columns answer it, so the screen carries the same
- * information in a third of the height.
+ * ── ONE PLAN, NO CHOOSING ──
+ * The clinician recommended a specific course of care, so there is nothing to
+ * pick. An earlier build compared 1-month and 3-month columns; it made the
+ * recommendation look like shopping. Now the page presents the single
+ * complete loop — baseline, understand, treat, follow, reassess — and the
+ * only decision is to start it.
  *
- * ── THE CELLS ARE NOT ALL TICKS ──
- * The plans do not differ in WHAT they contain. They differ in HOW MUCH: one
- * blood test or two, one review or three. So a cell holds a number wherever
- * the plans differ, a tick where the item is simply included, and a dash for
- * the one thing the short plan does not have. A column of identical ticks
- * would look like a comparison while making none.
+ * ── THE TABLE IS THE CENTRE ──
+ * The row anatomy is borrowed from the strongest reference we have: name,
+ * one-line plain-English explanation, and a small timing chip on the name
+ * line. Rows are separated by hairlines, never boxed into cards — the page
+ * should read like a beautifully typeset clinical service plan, not a stack
+ * of product tiles.
  *
- * ── THERE IS NO MEDICATION TOGGLE ──
- * Every Valeo plan includes the medication. A toggle offering care without it
- * would advertise a plan that does not exist and make every price look like
- * it had a cheaper version behind it. The line under the heading states the
- * promise once, and medication is a row in the table like any other.
+ * ── THE PRICE IS STRUCTURAL, NOT PROMOTIONAL ──
+ * It appears once in the hero at reading scale with "12 weeks of care"
+ * beside it, and once inside the CTA where the commitment is made. No
+ * savings maths, no badges — there is no alternative plan to compare it to.
  *
- * ── ONE CHOICE, MADE IN ONE PLACE ──
- * The column headings are the control: tapping one slides a white card behind
- * that column and the single button at the bottom follows it. Two buttons,
- * one under each plan, would ask the patient to choose twice — once with
- * their eyes and again with their thumb.
- *
- * ── THE SAVING IS ARITHMETIC, NOT PERSUASION ──
- * Three months costs less than three single months, and the difference is
- * stated under the button as a number the patient can check. That is the
- * honest argument for the longer plan, which is why no badge says
- * "recommended" and no column is called "best value".
+ * ── WHAT IS DELIBERATELY ABSENT ──
+ * No tiers, no comparison columns, no "best value", no discount language,
+ * and no replay of the recommendation from screen one. "Protocol" appears
+ * nowhere.
  */
 export default function Buy({ pKey, onBack, onPaid }) {
   const c = coachOf(pKey);
-  const [sel, setSel] = useState('m3');
   const [pay, setPay] = useState(false);
 
   if (!c) return null;
   const first = givenNameOf(c);
-  const plans = carePlans(pKey);
-  const chosen = plans.find((pl) => pl.k === sel) || plans[1];
-  const rows = compareRows(first);
-  const save = plans[0].price * 3 - plans[1].price;
+  const plan = carePlan(pKey);
+  const price = plan.price.toLocaleString();
+
+  const label = (t, sx) => (
+    <Typography sx={{
+      fontSize: 10, fontWeight: 800, letterSpacing: '.16em',
+      textTransform: 'uppercase', color: C.ink2, ...sx,
+    }}>{t}</Typography>
+  );
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: C.cream }}>
-      <Box sx={{ px: 1, pt: 1, flexShrink: 0 }}>
-        <IconButton onClick={onBack} size="small" sx={{ color: C.ink2 }}>
-          <ArrowBackIosNewIcon sx={{ fontSize: 17 }} />
-        </IconButton>
-      </Box>
-
-      <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.5 }}>
-        <Typography sx={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '.18em',
-          textTransform: 'uppercase', color: C.ink2, textAlign: 'center',
-        }}>Choose your care</Typography>
-        <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 27, fontWeight: 600,
-          lineHeight: 1.15, color: C.deep, mt: 0.9, textAlign: 'center',
-        }}>Your care with {first}</Typography>
-
-        {/* The promise the toggle used to carry, said once and for both plans. */}
-        <Typography sx={{
-          fontSize: 13, lineHeight: 1.5, color: C.ink2, mt: 1.4,
-          textAlign: 'center', px: 1,
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FAF6ED' }}>
+      <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.75, pt: 1.75, pb: 2 }}>
+        <IconButton onClick={onBack} size="small" sx={{
+          width: 34, height: 34, bgcolor: '#fff', color: C.deep,
+          boxShadow: '0 6px 18px -10px rgba(27,57,91,.45)',
+          '&:hover': { bgcolor: '#fff' },
         }}>
-          Both plans include your medication, delivered to you.
+          <ArrowBackIosNewIcon sx={{ fontSize: 14 }} />
+        </IconButton>
+
+        {/* ── hero: what, how long, how much ── */}
+        {label(`Your care with ${first}`, { color: C.yellowDeep, letterSpacing: '.2em', mt: 2.25 })}
+        <Typography sx={{
+          fontFamily: '"Fraunces", serif', fontSize: 30, fontWeight: 600,
+          lineHeight: 1.12, color: C.deep, mt: 1.25,
+        }}>12-week care plan</Typography>
+        <Typography sx={{ fontSize: 13.5, lineHeight: 1.55, color: C.ink2, mt: 1, maxWidth: 300 }}>
+          One structured course of care, guided by {first} and built around your goals.
         </Typography>
 
-        {/* ── the comparison ── */}
-        <Box sx={{ position: 'relative', mt: 4.5 }}>
-          {/* The selected column, as a card that slides between the two. It
-              overhangs its column by only 4px: the plan headings are nearly as
-              wide as the column, so a fatter card would run its border into
-              the word beside it. */}
-          <Box sx={{
-            position: 'absolute', top: -14, bottom: -6, right: -4, width: COL + 8,
-            borderRadius: '20px', bgcolor: '#fff',
-            border: `1.5px solid ${C.yellow}`,
-            boxShadow: '0 14px 36px -22px rgba(27,57,91,.6)',
-            transform: sel === 'm1' ? `translateX(-${COL}px)` : 'none',
-            transition: 'transform .34s cubic-bezier(.2,.9,.25,1)',
-          }} />
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: 'baseline', mt: 2.5 }}>
+          <Typography sx={{
+            fontFamily: '"Fraunces", serif', fontSize: 30, fontWeight: 600, color: C.deep,
+          }}>SAR {price}</Typography>
+          <Typography sx={{ fontSize: 13, fontWeight: 600, color: C.ink2 }}>
+            12 weeks of care
+          </Typography>
+        </Stack>
+        <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.5 }}>
+          One payment to begin your care.
+        </Typography>
 
-          {/* Headings, which are also the control. */}
-          <Stack direction="row" sx={{ position: 'relative', alignItems: 'flex-end' }}>
-            <Box sx={{ flex: 1 }} />
-            {plans.map((pl) => {
-              const on = sel === pl.k;
-              return (
-                <Box key={pl.k} onClick={() => setSel(pl.k)} sx={{
-                  width: COL, flexShrink: 0, textAlign: 'center', cursor: 'pointer', pb: 1.4,
-                }}>
-                  <Typography sx={{
-                    fontFamily: '"Fraunces", serif', fontSize: 14, fontWeight: 600,
-                    lineHeight: 1.1, whiteSpace: 'nowrap',
-                    color: on ? C.deep : 'rgba(27,57,91,.62)',
-                    transition: 'color .25s',
-                  }}>{pl.t}</Typography>
-                  <Typography sx={{
-                    fontSize: 12.5, fontWeight: 700, mt: 0.55, whiteSpace: 'nowrap',
-                    color: on ? C.deep : 'rgba(27,57,91,.58)', transition: 'color .25s',
-                  }}>SAR {pl.price.toLocaleString()}</Typography>
-                  {/* The 1 month column keeps this line empty so both headings
-                      are the same height and the cells below stay aligned. */}
-                  <Typography sx={{
-                    fontSize: 9.5, fontWeight: 700, letterSpacing: '.04em',
-                    color: on ? C.yellowDeep : 'rgba(27,57,91,.35)',
-                    minHeight: 13, transition: 'color .25s',
-                  }}>
-                    {pl.months > 1 ? `${Math.round(pl.price / pl.months).toLocaleString()}/mo` : ''}
-                  </Typography>
-                </Box>
-              );
-            })}
-          </Stack>
-
-          {rows.map((r, i) => (
-            <Stack key={r.t} direction="row" sx={{ position: 'relative', alignItems: 'center' }}>
-              {/* The rule runs under the label only. It would otherwise cut
-                  across the selected card and break the illusion of a card. */}
-              <Box sx={{
-                flex: 1, minWidth: 0, py: 1.6,
-                borderTop: `1px solid ${i === 0 ? 'transparent' : C.line}`,
-              }}>
+        {/* ── the care table — the centre of the page ── */}
+        <Box sx={{ mt: 2, borderTop: `1px solid ${C.line}` }}>
+          {plan.rows.map((r) => (
+            <Box key={r.t} sx={{ py: 1.6, borderBottom: `1px solid ${C.line}` }}>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                 <Typography sx={{
-                  fontSize: 13.5, fontWeight: 700, color: C.deep, lineHeight: 1.25,
+                  fontSize: 14.5, fontWeight: 700, color: C.deep, lineHeight: 1.25,
                 }}>{r.t}</Typography>
-                <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.15 }}>{r.s}</Typography>
-              </Box>
-              {plans.map((pl) => (
-                <Cell key={pl.k} {...r[pl.k]} on={sel === pl.k} />
-              ))}
-            </Stack>
+                <Typography sx={{
+                  flexShrink: 0, px: 0.9, py: 0.3, borderRadius: '6px',
+                  fontSize: 9, fontWeight: 800, letterSpacing: '.07em',
+                  textTransform: 'uppercase', whiteSpace: 'nowrap',
+                  bgcolor: 'rgba(224,164,0,.13)', color: C.yellowDeep,
+                }}>{r.b}</Typography>
+              </Stack>
+              <Typography sx={{ fontSize: 12.5, lineHeight: 1.5, color: C.ink2, mt: 0.5 }}>
+                {r.s}
+              </Typography>
+            </Box>
           ))}
         </Box>
+
+        {/* ── the loop, so 12 weeks reads as a designed arc, not a duration ── */}
+        {label('Your 12 weeks', { mt: 3.5, mb: 2 })}
+        <Stack spacing={0}>
+          {plan.journey.map((j, n) => (
+            <Stack key={j.t} direction="row" spacing={1.75}>
+              <Stack sx={{ alignItems: 'center' }}>
+                <Typography sx={{
+                  fontFamily: '"Fraunces", serif', fontSize: 13, fontWeight: 600,
+                  color: C.yellowDeep, width: 24, textAlign: 'center', flexShrink: 0,
+                }}>{String(n + 1).padStart(2, '0')}</Typography>
+                {n < plan.journey.length - 1 && (
+                  <Box sx={{ width: '1.5px', flex: 1, bgcolor: 'rgba(224,164,0,.35)', my: 0.5 }} />
+                )}
+              </Stack>
+              <Box sx={{ pb: n < plan.journey.length - 1 ? 2 : 0 }}>
+                <Typography sx={{ fontSize: 14, fontWeight: 700, color: C.deep, lineHeight: 1.3 }}>
+                  {j.t}
+                </Typography>
+                <Typography sx={{ fontSize: 12.5, color: C.ink2, mt: 0.25 }}>{j.s}</Typography>
+              </Box>
+            </Stack>
+          ))}
+        </Stack>
+
+        {/* ── included — removes uncertainty, sells nothing ── */}
+        {label('Included in your care', { mt: 3.5, mb: 1.5 })}
+        <Stack spacing={1}>
+          {plan.included.map((t) => (
+            <Stack key={t} direction="row" spacing={1.1} sx={{ alignItems: 'center' }}>
+              <CheckIcon sx={{ fontSize: 15, color: C.yellowDeep, flexShrink: 0 }} />
+              <Typography sx={{ fontSize: 13, color: C.ink, lineHeight: 1.4 }}>{t}</Typography>
+            </Stack>
+          ))}
+        </Stack>
+
+        {/* How the care works — sequencing, never a blocker. */}
+        <Typography sx={{
+          fontSize: 13, lineHeight: 1.6, color: C.deep, mt: 3,
+          px: 2, py: 1.75, borderRadius: '14px', bgcolor: 'rgba(224,164,0,.1)',
+        }}>{plan.how}</Typography>
       </Box>
 
-      <Box sx={{ px: 2.5, pt: 2, pb: 2.5, flexShrink: 0 }}>
-        <Button fullWidth variant="contained" color="secondary" onClick={() => setPay(true)}>
-          Start {chosen.t}
+      {/* ── the commitment, always reachable ── */}
+      <Box sx={{
+        px: 2.75, pt: 1.75, pb: 2.25, flexShrink: 0,
+        borderTop: `1px solid ${C.line}`, bgcolor: '#FAF6ED',
+      }}>
+        <Button fullWidth variant="contained" color="secondary" onClick={() => setPay(true)}
+          sx={{ py: 1.4, fontSize: 15 }}>
+          Start my care · SAR {price}
         </Button>
-        <Typography sx={{
-          fontSize: 11.5, lineHeight: 1.5, color: C.ink2, mt: 1.2, textAlign: 'center',
-        }}>
-          One payment of SAR {chosen.price.toLocaleString()}
-          {chosen.k === 'm3' && `, SAR ${save.toLocaleString()} less than three single months`}
-          . {first} confirms your treatment once your results are in.
+        <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 1, textAlign: 'center' }}>
+          One payment. Your complete 12-week care plan.
         </Typography>
       </Box>
 
       <PaySheet open={pay}
-        item={`${chosen.t} of care with ${c.short}`}
-        fee={chosen.price.toLocaleString()}
+        item={`12 weeks of care with ${c.short}`}
+        fee={price}
         onClose={() => setPay(false)} onDone={onPaid} />
-    </Box>
-  );
-}
-
-/** One cell. A number where the plans differ, a tick where the item is simply
- *  included, a dash where it is absent. The caption underneath says when. */
-function Cell({ v, c, on }) {
-  return (
-    <Box sx={{
-      width: COL, flexShrink: 0, position: 'relative',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', alignSelf: 'stretch',
-    }}>
-      {/* The unselected column is not disabled, only unchosen. It stays legible
-          enough to compare against, which is the entire point of a table. */}
-      {v === true ? (
-        <CheckIcon sx={{
-          fontSize: 20, color: on ? C.yellowDeep : 'rgba(27,57,91,.42)',
-          transition: 'color .25s',
-        }} />
-      ) : v === null ? (
-        <Typography sx={{ fontSize: 15, color: 'rgba(27,57,91,.26)', lineHeight: 1 }}>—</Typography>
-      ) : (
-        <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 19, fontWeight: 600, lineHeight: 1,
-          color: on ? C.deep : 'rgba(27,57,91,.58)', transition: 'color .25s',
-        }}>{v}</Typography>
-      )}
-      {c && (
-        <Typography sx={{
-          fontSize: 8.5, fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase',
-          color: on ? C.ink2 : 'rgba(27,57,91,.4)', mt: 0.45, transition: 'color .25s',
-          whiteSpace: 'nowrap',
-        }}>{c}</Typography>
-      )}
     </Box>
   );
 }
