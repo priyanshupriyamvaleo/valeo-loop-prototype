@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { RECOMMEND, coachOf, givenNameOf } from '../data';
+import { RECOMMEND, coachOf } from '../data';
 import { C } from '../theme';
 
 /**
@@ -43,7 +43,6 @@ export default function Brief({ pKey, onBack, onStart }) {
   useEffect(() => { const t = setTimeout(() => setInn(true), 40); return () => clearTimeout(t); }, []);
 
   if (!c || !rec?.speak) return null;
-  const first = givenNameOf(c);
   const s = rec.speak;
 
   return (
@@ -66,7 +65,7 @@ export default function Brief({ pKey, onBack, onStart }) {
         <Typography sx={{
           fontSize: 10, fontWeight: 800, letterSpacing: '.18em',
           textTransform: 'uppercase', color: C.yellowDeep, mt: 0.5,
-        }}>{first}’s recommendation</Typography>
+        }}>My recommendation</Typography>
 
         {/* Who is speaking. Identity, not a profile card — no credentials,
             reply times or patient counts here. */}
@@ -99,7 +98,7 @@ export default function Brief({ pKey, onBack, onStart }) {
         <Typography sx={{
           fontFamily: '"Fraunces", serif', fontSize: 29, fontWeight: 600,
           lineHeight: 1.16, color: C.deep, mt: 3,
-        }}>Here’s where I’d start.</Typography>
+        }}>Here’s my assessment.</Typography>
 
         <Typography sx={{ fontSize: 15, lineHeight: 1.58, color: C.ink, mt: 1.75 }}>
           {s.think}
@@ -114,26 +113,24 @@ export default function Brief({ pKey, onBack, onStart }) {
           <Typography sx={{
             fontSize: 9.5, fontWeight: 800, letterSpacing: '.16em',
             textTransform: 'uppercase', color: C.ink2,
-          }}>What I recommend</Typography>
+          }}>Recommended care</Typography>
           <Typography sx={{
             fontFamily: '"Fraunces", serif', fontSize: 23, fontWeight: 600,
             lineHeight: 1.18, color: C.deep, mt: 1,
           }}>{s.prog}</Typography>
-          <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: C.yellowDeep, mt: 0.6 }}>
-            Clinician-led care · personalised to your results
-          </Typography>
-          <Typography sx={{ fontSize: 13.5, lineHeight: 1.55, color: C.ink2, mt: 1.4 }}>
+          {/* No meta line here: every desc already opens with what kind of
+              care this is, and a gold "clinician-led" strapline above a
+              sentence that says "clinician-led" was saying it twice. */}
+          <Typography sx={{ fontSize: 13.5, lineHeight: 1.55, color: C.ink2, mt: 1.2 }}>
             {s.desc}
           </Typography>
         </Box>
 
-        {/* Why. Still the clinician talking, so it is not boxed. */}
+        {/* The close. Still the clinician talking, so it is not boxed. The
+            "treatment confirmed after results" sequencing lives on the next
+            screen, under the payment button, where the commitment is made. */}
         <Typography sx={{ fontSize: 14.5, lineHeight: 1.58, color: C.ink, mt: 2.25 }}>
           {s.why}
-        </Typography>
-
-        <Typography sx={{ fontSize: 12, lineHeight: 1.5, color: C.ink2, mt: 2 }}>
-          Your final treatment is confirmed after {first} reviews your results.
         </Typography>
       </Box>
 

@@ -3670,19 +3670,18 @@ export const GUIDED = [
    The clinician cannot finalise treatment before seeing blood results, so
    nothing here says the treatment is decided. Each `desc` says the opposite,
    in the patient's favour: the treatment is built around the results. */
+/* This block is the stakeholder's own copy (Aug 2026), lightly punctuated.
+   The name "Male Performance Program" was an explicit rename. */
 Object.assign(RECOMMEND.P_TEST, {
   speak: {
-    prog: 'Men’s Hormone Health',
-    desc: 'A structured programme to understand what’s affecting your energy '
-        + 'and build the right treatment around your results.',
-    think: 'From our conversation, your energy and sexual health are the two '
-         + 'things I’d focus on first. You also told me fertility matters to '
-         + 'you — that shapes what I’d be willing to prescribe, and it means I '
-         + 'want to understand what’s driving the change before deciding '
-         + 'exactly how to treat it.',
-    why: 'I’d start here because it gives us the right framework to find '
-       + 'what’s behind your symptoms, and it keeps us working with your own '
-       + 'hormones first — which is what keeps fertility on the table.',
+    prog: 'Male Performance Program',
+    desc: 'A clinician-led care plan designed to improve your energy, sexual '
+        + 'health and hormone health through structured, ongoing care.',
+    think: 'From our conversation, it’s clear your energy and sexual health '
+         + 'have both changed, and maintaining fertility is an important '
+         + 'priority. I believe these concerns are linked and should be '
+         + 'addressed together.',
+    why: 'This is the care plan I’d recommend for you.',
   },
 });
 Object.assign(RECOMMEND.P_WEIGHT, {
