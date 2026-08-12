@@ -4,19 +4,22 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import CardGiftcardOutlinedIcon from '@mui/icons-material/CardGiftcardOutlined';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlined';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
+import CloseIcon from '@mui/icons-material/Close';
+import EastRoundedIcon from '@mui/icons-material/EastRounded';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import GppGoodOutlinedIcon from '@mui/icons-material/GppGoodOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutlined';
 import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
+import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
 import PaySheet from '../components/PaySheet';
 import { carePlan, coachOf, givenNameOf } from '../data';
@@ -25,37 +28,45 @@ import { C } from '../theme';
 /* Data names a concept, this maps it to a glyph — so data.js never imports
    a component library. */
 const ICONS = {
-  test: ScienceOutlinedIcon, doc: DescriptionOutlinedIcon, rx: MedicationOutlinedIcon,
-  box: Inventory2OutlinedIcon, cal: CalendarMonthOutlinedIcon, chat: ChatBubbleOutlineIcon,
-  chart: BarChartIcon, tune: TuneIcon, food: RestaurantMenuIcon,
-  gym: FitnessCenterIcon, cgm: MonitorHeartOutlinedIcon,
+  doctor: MedicalServicesOutlinedIcon, food: RestaurantMenuIcon, gym: FitnessCenterIcon,
+  test: ScienceOutlinedIcon, cgm: MonitorHeartOutlinedIcon, rx: MedicationOutlinedIcon,
+  box: Inventory2OutlinedIcon, tune: TuneIcon, gift: CardGiftcardOutlinedIcon,
+  cal: CalendarMonthOutlinedIcon, call: SupportAgentOutlinedIcon,
+  chat: ChatBubbleOutlineIcon, chart: BarChartIcon,
 };
 
 /**
  * SCREEN TWO — THE 12-WEEK CARE PLAN.
  *
- * Layout and styling reproduce the stakeholder's approved mock (Aug 2026):
- * header with the clinician's portrait opposite the back button, the price
- * in a white card beside a shield that says who is accountable, the care
- * table as icon rows with right-aligned timings and a gold chevron, the
- * journey and included lists side by side as two half-width cards, the
- * sequencing note behind an info icon, and the gold CTA in the page flow
- * with a lock line under it.
+ * The patient is being asked to pay, so the table lists every tangible the
+ * money buys — thirteen rows, not seven headlines. Thirteen rows would be
+ * unreadable as a flat list, so the table is segmented by four quiet
+ * section bands (care team → testing → treatment → follow-up: the order a
+ * patient asks "who / how do you know / what do I get / how do you keep me
+ * on track"). The bands are tinted strips inside the SAME card — one table,
+ * subtly sectioned, never a stack of cards.
+ *
+ * ── ROW ANATOMY ──
+ * Icon, name, timing chip inline after the name, one-line explanation.
+ * The chip moved from a right-hand column to the name line because the
+ * honest timings ("Weeks 4, 8 & 12", "Days 10 & 25") no longer fit a right
+ * column at 390px, and a wrapped column breaks every row below it. Type is
+ * a step smaller throughout — density is the point, per the reference.
+ *
+ * ── THE FULL JOURNEY IS ONE TAP AWAY ──
+ * "View entire programme journey" is the table's last row and opens a
+ * sheet with the week-by-week timeline — pre-programme to week 12, with
+ * the consultation already marked done, because it is. Keeping the
+ * timeline in the sheet is what lets the main page stay a summary.
  *
  * ── ONE PLAN, NO CHOOSING ──
- * The clinician recommended a specific course of care, so there is nothing
- * to pick. The page presents the single complete loop — baseline,
- * understand, treat, follow, reassess — and the only decision is to start.
- *
- * ── EVERYTHING IS DATA ──
- * Rows, timings, journey stages and the included list come from
- * carePlan(pKey); the weight programme renders its nutritionist, coach and
- * CGM rows through the same pipe. Nothing on this screen is hardcoded to a
- * programme.
+ * The clinician recommended a specific course of care. No tiers, no
+ * comparison columns, no "best value". "Protocol" appears nowhere.
  */
 export default function Buy({ pKey, onBack, onPaid }) {
   const c = coachOf(pKey);
   const [pay, setPay] = useState(false);
+  const [tour, setTour] = useState(false);
 
   if (!c) return null;
   const first = givenNameOf(c);
@@ -71,8 +82,8 @@ export default function Buy({ pKey, onBack, onPaid }) {
   );
 
   return (
-    <Box sx={{ height: '100%', overflowY: 'auto', bgcolor: '#FAF6ED' }}>
-      <Box sx={{ px: 2.25, pt: 1.75, pb: 2.5 }}>
+    <Box sx={{ height: '100%', position: 'relative', overflow: 'hidden', bgcolor: '#FAF6ED' }}>
+      <Box sx={{ height: '100%', overflowY: 'auto', px: 2.25, pt: 1.75, pb: 2.5 }}>
         {/* Header: back on the left, the clinician on the right. */}
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
           <IconButton onClick={onBack} size="small" sx={{
@@ -132,99 +143,112 @@ export default function Buy({ pKey, onBack, onPaid }) {
           </Stack>
         </Stack>
 
-        {/* ── the care table ── */}
+        {/* ── the care table: one card, four quiet sections ── */}
         <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', mt: 2.75, mb: 1.5 }}>
           <Box sx={{ flex: 1, height: '1px', bgcolor: 'rgba(224,164,0,.4)' }} />
           {label('What’s included & when it happens')}
           <Box sx={{ flex: 1, height: '1px', bgcolor: 'rgba(224,164,0,.4)' }} />
         </Stack>
 
-        <Box sx={{ ...card, px: 1.75 }}>
-          {plan.rows.map((r, i) => {
-            const Ic = ICONS[r.ic] || ScienceOutlinedIcon;
+        <Box sx={{ ...card, px: 1.75, overflow: 'hidden' }}>
+          {plan.sections.map((sec) => (
+            <Box key={sec.k}>
+              {/* The section band: full-bleed tint inside the card. This is
+                  the entire segmentation device — no borders, no sub-cards. */}
+              <Box sx={{ mx: -1.75, px: 1.75, py: 0.7, bgcolor: 'rgba(27,57,91,.04)' }}>
+                <Typography sx={{
+                  fontSize: 9, fontWeight: 800, letterSpacing: '.15em',
+                  textTransform: 'uppercase', color: C.ink2,
+                }}>{sec.t}</Typography>
+              </Box>
+              {sec.rows.map((r, i) => {
+                const Ic = ICONS[r.ic] || ScienceOutlinedIcon;
+                return (
+                  <Stack key={r.t} direction="row" spacing={1.1} sx={{
+                    alignItems: 'flex-start', py: 1.25,
+                    borderTop: i === 0 ? 'none' : `1px solid ${C.line}`,
+                  }}>
+                    <Box sx={{
+                      width: 28, height: 28, borderRadius: '50%', flexShrink: 0, mt: '1px',
+                      bgcolor: 'rgba(27,57,91,.055)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Ic sx={{ fontSize: 14, color: C.deep }} />
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Stack direction="row" spacing={0.8} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Typography sx={{
+                          fontSize: 12.5, fontWeight: 700, color: C.deep, lineHeight: 1.3,
+                        }}>{r.t}</Typography>
+                        <Typography sx={{
+                          px: 0.7, py: 0.2, borderRadius: '5px', whiteSpace: 'nowrap',
+                          fontSize: 8, fontWeight: 800, letterSpacing: '.06em',
+                          textTransform: 'uppercase',
+                          bgcolor: 'rgba(224,164,0,.14)', color: C.yellowDeep,
+                        }}>{r.b}</Typography>
+                      </Stack>
+                      <Typography sx={{ fontSize: 10.5, lineHeight: 1.45, color: C.ink2, mt: 0.35 }}>
+                        {r.s}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                );
+              })}
+            </Box>
+          ))}
+
+          {/* The table's last row: the door to the week-by-week view. */}
+          <Stack direction="row" onClick={() => setTour(true)} sx={{
+            mx: -1.75, px: 1.75, py: 1.5, alignItems: 'center',
+            justifyContent: 'space-between', cursor: 'pointer',
+            borderTop: `1px solid ${C.line}`,
+            '&:active': { bgcolor: 'rgba(27,57,91,.03)' },
+          }}>
+            <Typography sx={{
+              fontSize: 10.5, fontWeight: 800, letterSpacing: '.13em',
+              textTransform: 'uppercase', color: C.deep,
+            }}>View entire programme journey</Typography>
+            <EastRoundedIcon sx={{ fontSize: 17, color: C.deep }} />
+          </Stack>
+        </Box>
+
+        {/* ── the loop at a glance ── */}
+        <Box sx={{ ...card, mt: 1.75, px: 1.75, py: 2 }}>
+          {label('Your 12 weeks', { fontSize: 10, mb: 1.75 })}
+          {plan.journey.map((j, n) => {
+            const Ic = ICONS[j.ic] || ScienceOutlinedIcon;
+            const last = n === plan.journey.length - 1;
             return (
-              <Stack key={r.t} direction="row" spacing={1.25} sx={{
-                alignItems: 'center', py: 1.5,
-                borderTop: i === 0 ? 'none' : `1px solid ${C.line}`,
-              }}>
-                <Box sx={{
-                  width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-                  bgcolor: 'rgba(27,57,91,.055)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <Ic sx={{ fontSize: 17, color: C.deep }} />
-                </Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{
-                    fontSize: 13.5, fontWeight: 700, color: C.deep, lineHeight: 1.25,
-                  }}>{r.t}</Typography>
-                  <Typography sx={{ fontSize: 11.5, lineHeight: 1.4, color: C.ink2, mt: 0.3 }}>
-                    {r.s}
+              <Stack key={j.t} direction="row" spacing={1.25}>
+                <Stack sx={{ alignItems: 'center' }}>
+                  <Box sx={{
+                    width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                    bgcolor: C.deep, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Ic sx={{ fontSize: 14, color: C.yellow }} />
+                  </Box>
+                  {!last && <Box sx={{
+                    width: 0, flex: 1, my: 0.4,
+                    borderLeft: '1.5px dashed rgba(27,57,91,.3)',
+                  }} />}
+                </Stack>
+                <Box sx={{ pb: last ? 0 : 1.6, minWidth: 0, pt: '2px' }}>
+                  <Stack direction="row" spacing={0.6} sx={{ alignItems: 'baseline' }}>
+                    <Typography sx={{
+                      fontSize: 11.5, fontWeight: 800, color: C.yellowDeep, flexShrink: 0,
+                    }}>{String(n + 1).padStart(2, '0')}</Typography>
+                    <Typography sx={{
+                      fontSize: 12.5, fontWeight: 700, color: C.deep, lineHeight: 1.25,
+                    }}>{j.t}</Typography>
+                  </Stack>
+                  <Typography sx={{ fontSize: 11, lineHeight: 1.4, color: C.ink2, mt: 0.25 }}>
+                    {j.s}
                   </Typography>
                 </Box>
-                <Typography sx={{
-                  flexShrink: 0, maxWidth: 92, textAlign: 'right',
-                  fontSize: 11, fontWeight: 700, color: C.deep, lineHeight: 1.3,
-                }}>{r.b}</Typography>
-                <ChevronRightIcon sx={{ fontSize: 17, color: C.yellowDeep, flexShrink: 0, ml: '2px !important' }} />
               </Stack>
             );
           })}
         </Box>
-
-        {/* ── journey and included, side by side ── */}
-        <Stack direction="row" spacing={1.25} sx={{ mt: 1.75, alignItems: 'stretch' }}>
-          <Box sx={{ ...card, flex: 1, minWidth: 0, px: 1.75, py: 2 }}>
-            {label('Your 12 weeks', { fontSize: 10, mb: 1.75 })}
-            {plan.journey.map((j, n) => {
-              const Ic = ICONS[j.ic] || ScienceOutlinedIcon;
-              const last = n === plan.journey.length - 1;
-              return (
-                <Stack key={j.t} direction="row" spacing={1.1}>
-                  <Stack sx={{ alignItems: 'center' }}>
-                    <Box sx={{
-                      width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                      bgcolor: C.deep, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <Ic sx={{ fontSize: 14, color: C.yellow }} />
-                    </Box>
-                    {!last && <Box sx={{
-                      width: 0, flex: 1, my: 0.4,
-                      borderLeft: '1.5px dashed rgba(27,57,91,.3)',
-                    }} />}
-                  </Stack>
-                  <Box sx={{ pb: last ? 0 : 1.75, minWidth: 0 }}>
-                    <Stack direction="row" spacing={0.6} sx={{ alignItems: 'baseline' }}>
-                      <Typography sx={{
-                        fontSize: 11.5, fontWeight: 800, color: C.yellowDeep, flexShrink: 0,
-                      }}>{String(n + 1).padStart(2, '0')}</Typography>
-                      <Typography sx={{
-                        fontSize: 12.5, fontWeight: 700, color: C.deep, lineHeight: 1.25,
-                      }}>{j.t}</Typography>
-                    </Stack>
-                    <Typography sx={{ fontSize: 11, lineHeight: 1.4, color: C.ink2, mt: 0.3 }}>
-                      {j.s}
-                    </Typography>
-                  </Box>
-                </Stack>
-              );
-            })}
-          </Box>
-
-          <Box sx={{ ...card, flex: 1, minWidth: 0, px: 1.75, py: 2 }}>
-            {label('Included in your care', { fontSize: 10, mb: 1.75 })}
-            <Stack spacing={1.25}>
-              {plan.included.map((t) => (
-                <Stack key={t} direction="row" spacing={0.9} sx={{ alignItems: 'flex-start' }}>
-                  <CheckCircleOutlineIcon sx={{
-                    fontSize: 15, color: C.yellowDeep, flexShrink: 0, mt: '1px',
-                  }} />
-                  <Typography sx={{ fontSize: 11.5, color: C.ink, lineHeight: 1.4 }}>{t}</Typography>
-                </Stack>
-              ))}
-            </Stack>
-          </Box>
-        </Stack>
 
         {/* How the care works — sequencing, never a blocker. */}
         <Stack direction="row" spacing={1.25} sx={{
@@ -249,6 +273,73 @@ export default function Buy({ pKey, onBack, onPaid }) {
             12 weeks of clinician-led care, testing, treatment and follow-up. One payment.
           </Typography>
         </Stack>
+      </Box>
+
+      {/* ── the programme journey, week by week ── */}
+      <Box onClick={() => setTour(false)} sx={{
+        position: 'absolute', inset: 0, bgcolor: 'rgba(14,27,44,.4)',
+        opacity: tour ? 1 : 0, pointerEvents: tour ? 'auto' : 'none',
+        transition: 'opacity .3s',
+      }} />
+      <Box sx={{
+        position: 'absolute', left: 0, right: 0, bottom: 0, top: 44,
+        borderRadius: '24px 24px 0 0', bgcolor: '#FAF6ED',
+        boxShadow: '0 -12px 40px -18px rgba(14,27,44,.55)',
+        transform: tour ? 'none' : 'translateY(105%)',
+        transition: 'transform .38s cubic-bezier(.2,.9,.25,1)',
+        display: 'flex', flexDirection: 'column',
+      }}>
+        <Stack direction="row" sx={{
+          alignItems: 'center', justifyContent: 'space-between',
+          px: 2.5, pt: 2.25, pb: 1.5, flexShrink: 0,
+        }}>
+          <Typography sx={{
+            fontFamily: '"Fraunces", serif', fontSize: 21, fontWeight: 600, color: C.deep,
+          }}>Programme journey</Typography>
+          <IconButton onClick={() => setTour(false)} size="small" sx={{
+            width: 30, height: 30, bgcolor: 'rgba(27,57,91,.06)', color: C.deep,
+          }}>
+            <CloseIcon sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Stack>
+
+        <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.5, pb: 2.5 }}>
+          {/* The churn-killing sentence: early silence is normal. */}
+          <Typography sx={{ fontSize: 11.5, lineHeight: 1.55, color: C.ink2, mb: 1 }}>
+            {plan.pace}
+          </Typography>
+
+          {plan.timeline.map((x) => (
+            <Box key={x.w} sx={{
+              py: 1.6, borderBottom: '1px dashed rgba(27,57,91,.18)',
+              '&:last-of-type': { borderBottom: 'none' },
+            }}>
+              <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography sx={{
+                  px: 0.8, py: 0.25, borderRadius: '5px', display: 'inline-block',
+                  fontSize: 8.5, fontWeight: 800, letterSpacing: '.09em',
+                  textTransform: 'uppercase',
+                  bgcolor: x.done ? 'rgba(39,153,91,.14)' : 'rgba(27,57,91,.07)',
+                  color: x.done ? C.green : C.deep,
+                }}>{x.w}</Typography>
+                {x.done && (
+                  <Stack direction="row" spacing={0.4} sx={{ alignItems: 'center' }}>
+                    <CheckRoundedIcon sx={{ fontSize: 14, color: C.green }} />
+                    <Typography sx={{ fontSize: 10, fontWeight: 700, color: C.green }}>
+                      Done
+                    </Typography>
+                  </Stack>
+                )}
+              </Stack>
+              <Typography sx={{
+                fontSize: 13.5, fontWeight: 700, color: C.deep, lineHeight: 1.3, mt: 0.7,
+              }}>{x.t}</Typography>
+              <Typography sx={{ fontSize: 11.5, lineHeight: 1.5, color: C.ink2, mt: 0.4 }}>
+                {x.s}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
       </Box>
 
       <PaySheet open={pay}

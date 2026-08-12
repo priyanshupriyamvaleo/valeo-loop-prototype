@@ -3803,48 +3803,105 @@ export function carePlan(pKey) {
   const first = givenNameOf(c);
   const perMonth = Math.round(p.price / 4 / 50) * 50;
 
-  /* Rows, icons and timings reproduce the stakeholder's approved mock
-     (Aug 2026) verbatim for the base plan. `ic` is a concept key the screen
-     maps to a glyph. The weight programme appends its real staffing —
-     nutritionist, performance coach, CGM — because that plan genuinely
-     contains them; rows appear only where the care does. */
-  const rows = [
-    { ic: 'test', t: 'Blood test', s: 'Full panel, collected at home', b: 'Week 1 + Week 12' },
-    { ic: 'doc', t: `${first}’s review`, s: 'Your results, read in full', b: 'After testing + Week 12' },
-    { ic: 'rx', t: 'Personalised treatment', s: 'Treatment selected around your results', b: 'Throughout your care' },
-    { ic: 'box', t: 'Medication delivered', s: 'Dispensed and delivered to you', b: 'Monthly' },
-    { ic: 'cal', t: 'Follow-up consultations', s: `One-to-one reviews with ${first}`, b: 'Weeks 4, 8 & 12' },
-    ...(p.cat === 'fat' ? [
-      { ic: 'food', t: 'Nutritionist', s: 'An evolving plan as your markers change', b: 'Throughout your care' },
-      { ic: 'gym', t: 'Performance coach', s: 'Training that adapts as your body changes', b: 'Throughout your care' },
-      { ic: 'cgm', t: 'Glucose monitoring', s: 'Live CGM data informs every adjustment', b: 'CGM included' },
-    ] : []),
-    { ic: 'chat', t: 'Message the practice', s: 'Support between consultations', b: 'Throughout' },
-    { ic: 'chart', t: 'Progress review', s: 'What changed, and what comes next', b: 'Week 12' },
+  /* ── EVERY TANGIBLE, IN ONE TABLE, IN FOUR QUIET SECTIONS ──
+     The patient is being asked to pay, so everything the money buys is
+     listed: who looks after them, what gets measured, what they receive,
+     and how they are followed. Content comes from the production protocol
+     architecture (Aug 2026 PDPs): unlimited doctor consultations, monthly
+     cold-chain dispatch, concierge calls on days 10 and 25, dose titration,
+     the supplement voucher, and the week-12 retest.
+
+     Sections keep thirteen rows scannable without breaking the single
+     table: people, then measurement, then treatment, then follow-up — the
+     order a patient asks "who / how do you know / what do I get / how do
+     you keep me on track". `ic` is a concept key the screen maps to a
+     glyph. Row copy follows name + what it does + when: no paragraphs. */
+  const sections = [
+    { k: 'team', t: 'Your care team', rows: [
+      { ic: 'doctor', t: 'Your doctor', b: 'Unlimited',
+        s: `Consultations with ${first} — book any time, app or WhatsApp` },
+      { ic: 'food', t: 'Nutrition coach', b: 'Throughout',
+        s: 'An evolving nutrition plan as your markers change' },
+      { ic: 'gym', t: 'Performance coach', b: 'Throughout',
+        s: 'A training plan that adapts as your body changes' },
+    ] },
+    { k: 'testing', t: 'Testing & tracking', rows: [
+      { ic: 'test', t: 'Blood test', b: 'Week 1 + 12',
+        s: 'Full panel, collected at home by a nurse' },
+      { ic: 'cgm', t: 'Glucose monitoring', b: 'CGM included',
+        s: 'Live glucose data informs every adjustment' },
+    ] },
+    { k: 'treatment', t: 'Your treatment', rows: [
+      { ic: 'rx', t: 'Personalised treatment', b: 'From week 1',
+        s: `Selected by ${first} around your results` },
+      { ic: 'box', t: 'Medication delivered', b: '3 deliveries',
+        s: 'Dispensed monthly and delivered in cold chain' },
+      { ic: 'tune', t: 'Dose titration', b: 'Weeks 1–12',
+        s: 'Managed medically, refined as your data evolves' },
+      { ic: 'gift', t: 'Supplement voucher', b: 'Week 1',
+        s: 'SAR 150 on our range, issued after your consultation' },
+    ] },
+    { k: 'support', t: 'Follow-up & support', rows: [
+      { ic: 'cal', t: 'Follow-up consultations', b: 'Weeks 4, 8 & 12',
+        s: `One-to-one progress reviews with ${first}` },
+      { ic: 'call', t: 'Care team check-ins', b: 'Days 10 & 25',
+        s: 'Concierge calls to check how you are doing' },
+      { ic: 'chat', t: 'Message the practice', b: 'Any time',
+        s: 'In-app and WhatsApp support between consultations' },
+      { ic: 'chart', t: 'Progress review', b: 'Week 12',
+        s: 'What changed, and what comes next' },
+    ] },
+  ];
+
+  /* ── THE FULL JOURNEY, WEEK BY WEEK ──
+     Behind "View entire programme journey". The consultation row is marked
+     done because the patient reading this page has just finished it — the
+     journey has already started, which is the quietest possible argument
+     for continuing. The weeks 2–5 line sets expectations on purpose: the
+     single most important sentence for one-month churn is the one that
+     says early silence is normal. */
+  const timeline = [
+    { w: 'Pre-programme', t: 'Online consultation', done: true,
+      s: `Your goals, history and symptoms, reviewed with ${first}.` },
+    { w: 'Week 1', t: 'Testing and first steps',
+      s: `A nurse collects your blood panel at home. ${first} reviews your `
+       + 'results and confirms your treatment, and your first month is dispatched.' },
+    { w: 'Weeks 2–5', t: 'Building the base',
+      s: 'Daily treatment, with care team check-ins on day 10 and day 25. '
+       + 'It is normal to notice little change in this period.' },
+    { w: 'Week 4', t: 'First follow-up',
+      s: `A one-to-one with ${first} on how your first four weeks have gone.` },
+    { w: 'Week 6', t: 'Mid-point review',
+      s: 'Your response reviewed, and your dosing adjusted if required. '
+       + 'Month 2 dispatched.' },
+    { w: 'Week 8', t: 'Second follow-up',
+      s: `A progress review with ${first}, refining your plan for the final month.` },
+    { w: 'Weeks 9–12', t: 'Consolidation',
+      s: 'Month 3 dispatched. Your treatment continues as your results build.' },
+    { w: 'Week 12', t: 'Retest and reassess',
+      s: `A repeat blood panel with your nurse, a final review with ${first}, `
+       + 'and your next-step plan.' },
   ];
 
   return {
     weeks: 12,
     price: 2499 + perMonth * 3,
-    rows,
+    sections,
+    timeline,
     journey: [
       { ic: 'test', t: 'Baseline', s: 'Blood test + clinical review' },
       { ic: 'box', t: 'Treatment begins', s: 'Your personalised care starts' },
       { ic: 'tune', t: 'Follow & adjust', s: 'Reviews, support and treatment' },
       { ic: 'cal', t: 'Reassess', s: 'Repeat testing + progress review' },
     ],
-    included: [
-      'At-home blood testing',
-      `${first}’s clinical review`,
-      'Personalised treatment',
-      'Medication delivery where prescribed',
-      'Follow-up consultations',
-      'Ongoing support from the practice',
-      'Week 12 reassessment',
-    ],
     /* Sequencing, not a blocker. This is how the care works. */
     how: `Your care begins with the information ${first} needs to personalise `
        + 'your treatment. Once your results are reviewed, your treatment is '
        + 'confirmed and your care continues through the programme.',
+    /* Expectation-setting, adapted from the shared protocol skeleton. */
+    pace: 'Care like this is designed over 12 weeks, and it is normal to '
+        + 'notice very little in the first few weeks. Your body responds '
+        + 'gradually — which is why your care includes testing at the start '
+        + 'and at week 12. Your progress is measured, not guessed.',
   };
 }
