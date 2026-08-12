@@ -3803,20 +3803,24 @@ export function carePlan(pKey) {
   const first = givenNameOf(c);
   const perMonth = Math.round(p.price / 4 / 50) * 50;
 
+  /* Rows, icons and timings reproduce the stakeholder's approved mock
+     (Aug 2026) verbatim for the base plan. `ic` is a concept key the screen
+     maps to a glyph. The weight programme appends its real staffing —
+     nutritionist, performance coach, CGM — because that plan genuinely
+     contains them; rows appear only where the care does. */
   const rows = [
-    { t: 'Blood test', s: 'Full panel, collected at home by a nurse', b: 'week 1 + 12' },
-    { t: `${first}’s review`, s: 'Your results, read in full', b: 'after testing' },
-    { t: 'Personalised treatment', s: 'Selected around your results', b: 'throughout' },
-    { t: 'Medication delivered', s: 'Dispensed and delivered to you', b: 'monthly' },
-    { t: 'Follow-up consultations', s: `One-to-one reviews with ${first}`, b: 'weeks 4, 8 & 12' },
-    { t: 'Care team check-ins', s: 'Your care team calls to check progress', b: 'days 10 & 25' },
+    { ic: 'test', t: 'Blood test', s: 'Full panel, collected at home', b: 'Week 1 + Week 12' },
+    { ic: 'doc', t: `${first}’s review`, s: 'Your results, read in full', b: 'After testing + Week 12' },
+    { ic: 'rx', t: 'Personalised treatment', s: 'Treatment selected around your results', b: 'Throughout your care' },
+    { ic: 'box', t: 'Medication delivered', s: 'Dispensed and delivered to you', b: 'Monthly' },
+    { ic: 'cal', t: 'Follow-up consultations', s: `One-to-one reviews with ${first}`, b: 'Weeks 4, 8 & 12' },
     ...(p.cat === 'fat' ? [
-      { t: 'Nutritionist', s: 'An evolving plan as your markers change', b: 'throughout' },
-      { t: 'Performance coach', s: 'Training that adapts as your body changes', b: 'throughout' },
-      { t: 'Glucose monitoring', s: 'Live CGM data informs every adjustment', b: 'cgm included' },
+      { ic: 'food', t: 'Nutritionist', s: 'An evolving plan as your markers change', b: 'Throughout your care' },
+      { ic: 'gym', t: 'Performance coach', s: 'Training that adapts as your body changes', b: 'Throughout your care' },
+      { ic: 'cgm', t: 'Glucose monitoring', s: 'Live CGM data informs every adjustment', b: 'CGM included' },
     ] : []),
-    { t: 'Message the practice', s: 'Support between consultations', b: 'any time' },
-    { t: 'Progress review', s: 'Repeat testing, and what comes next', b: 'week 12' },
+    { ic: 'chat', t: 'Message the practice', s: 'Support between consultations', b: 'Throughout' },
+    { ic: 'chart', t: 'Progress review', s: 'What changed, and what comes next', b: 'Week 12' },
   ];
 
   return {
@@ -3824,10 +3828,10 @@ export function carePlan(pKey) {
     price: 2499 + perMonth * 3,
     rows,
     journey: [
-      { t: 'Baseline', s: 'Blood test + clinical review' },
-      { t: 'Treatment begins', s: 'Your personalised care starts' },
-      { t: 'Follow & adjust', s: 'Reviews, support and treatment' },
-      { t: 'Reassess', s: 'Repeat testing + progress review' },
+      { ic: 'test', t: 'Baseline', s: 'Blood test + clinical review' },
+      { ic: 'box', t: 'Treatment begins', s: 'Your personalised care starts' },
+      { ic: 'tune', t: 'Follow & adjust', s: 'Reviews, support and treatment' },
+      { ic: 'cal', t: 'Reassess', s: 'Repeat testing + progress review' },
     ],
     included: [
       'At-home blood testing',
