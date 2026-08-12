@@ -2,39 +2,48 @@ import { useEffect, useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import BoltIcon from '@mui/icons-material/Bolt';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import MonitorWeightOutlinedIcon from '@mui/icons-material/MonitorWeightOutlined';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import StarBorderRoundedIcon from '@mui/icons-material/StarBorderRounded';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { RECOMMEND, coachOf } from '../data';
 import { C } from '../theme';
+
+/* Data names a concept, this maps it to a glyph — so data.js never imports
+   a component library. */
+const ICONS = {
+  energy: BoltIcon, heart: FavoriteBorderIcon, shield: ShieldOutlinedIcon,
+  scale: MonitorWeightOutlinedIcon, muscle: FitnessCenterIcon, chart: ShowChartIcon,
+};
 
 /**
  * SCREEN ONE — THE CLINICIAN'S RECOMMENDATION.
  *
- * The consultation just ended. This screen is the clinician saying one thing:
- * "here is what I think, and here is where I'd start." The patient's only
- * decision is "okay — show me", which is what the CTA does. Contents, length,
- * price and payment all belong to the next screen.
+ * Layout and styling reproduce the stakeholder's mock (Aug 2026) exactly:
+ * gold eyebrow, clinician on a gold disc, an oversized serif heading with a
+ * gold full stop, the assessment against a gold bar, a "based on our
+ * discussion" bridge, then ONE dark navy panel carrying the recommended
+ * programme with a three-column benefit row, a star strip, and the gold CTA
+ * in the page flow.
  *
- * ── ONE NARRATIVE, NOT A STACK OF CARDS ──
- * An earlier attempt was a doctor card, an assessment card, a programme card
- * and a benefits grid. That reads as a brochure assembled by a company. A
- * recommendation is speech, so the page is one continuous column — label,
- * speaker, what I think, what I recommend, why — separated by spacing and
- * typography, not by containers.
- *
- * ── EXACTLY ONE OBJECT ──
- * The programme panel is the only boxed element on the page, which is what
- * makes it read as "the one Jamie chose for me". If anything else on the page
- * were a card, this would become a card among cards, i.e. a catalogue.
+ * ── THE PANEL IS THE ONLY DARK OBJECT ──
+ * Everything else sits on cream. That inversion is what makes the programme
+ * read as "the one my clinician chose" rather than a card among cards, so
+ * nothing else on this page may be boxed in navy.
  *
  * ── THE CLINICIAN SPEAKS, THE COMPANY DOESN'T ──
- * Every sentence between the name and the CTA is first person and comes from
- * RECOMMEND[pKey].speak, which is authored per programme in the clinician's
- * voice. Nothing on this screen is assembled from fragments, because the
- * moment a template writes "here's what I think", it isn't.
+ * Every sentence is first person and comes from RECOMMEND[pKey].speak,
+ * authored per programme. Nothing here is assembled from fragments.
  *
  * ── WHAT IS DELIBERATELY ABSENT ──
- * No price, no inclusions list, no timeline, no feature icons, no
- * testimonials, no "recommended" badge competing with the clinician's own
- * words. The word "protocol" does not appear.
+ * No price, no inclusions list, no timeline, no testimonials. The word
+ * "protocol" appears nowhere. Contents and commitment live on the next
+ * screen; this one only asks "do you want to see it?".
  */
 export default function Brief({ pKey, onBack, onStart }) {
   const c = coachOf(pKey);
@@ -46,35 +55,32 @@ export default function Brief({ pKey, onBack, onStart }) {
   const s = rec.speak;
 
   return (
-    <Box sx={{
-      height: '100%', display: 'flex', flexDirection: 'column',
-      background: `linear-gradient(180deg,#FFF6E4 0%,${C.cream} 24%)`,
-    }}>
-      <Box sx={{ px: 1.5, pt: 1.5, flexShrink: 0 }}>
-        <IconButton onClick={onBack} size="small" sx={{ color: C.ink2 }}>
-          <ArrowBackIosNewIcon sx={{ fontSize: 17 }} />
-        </IconButton>
-      </Box>
-
+    <Box sx={{ height: '100%', overflowY: 'auto', bgcolor: '#FAF6ED' }}>
       <Box sx={{
-        flex: '1 1 auto', overflowY: 'auto', px: 3, pb: 1,
+        px: 3, pt: 2.5, pb: 3.5,
         opacity: inn ? 1 : 0,
         transform: inn ? 'none' : 'translateY(12px)',
         transition: 'opacity .5s cubic-bezier(.2,.9,.25,1), transform .55s cubic-bezier(.2,.9,.25,1)',
       }}>
+        <IconButton onClick={onBack} size="small" sx={{
+          width: 40, height: 40, bgcolor: '#fff', color: C.deep,
+          boxShadow: '0 6px 18px -10px rgba(27,57,91,.45)',
+          '&:hover': { bgcolor: '#fff' },
+        }}>
+          <ArrowBackIosNewIcon sx={{ fontSize: 16 }} />
+        </IconButton>
+
         <Typography sx={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '.18em',
-          textTransform: 'uppercase', color: C.yellowDeep, mt: 0.5,
+          fontSize: 12, fontWeight: 800, letterSpacing: '.22em',
+          textTransform: 'uppercase', color: C.yellowDeep, mt: 3,
         }}>My recommendation</Typography>
 
-        {/* Who is speaking. Identity, not a profile card — no credentials,
-            reply times or patient counts here. */}
-        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mt: 2 }}>
+        {/* Who is speaking — the portrait sits on a gold disc, per the mock. */}
+        <Stack direction="row" spacing={1.75} sx={{ alignItems: 'center', mt: 2.5 }}>
           <Box sx={{
-            width: 44, height: 44, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-            border: '2px solid #fff',
-            boxShadow: '0 4px 14px -6px rgba(27,57,91,.45)',
-            background: `linear-gradient(155deg,${c.tone} 0%,rgba(11,21,34,.7) 145%)`,
+            width: 58, height: 58, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+            bgcolor: C.yellow, border: '3px solid #fff',
+            boxShadow: '0 8px 20px -10px rgba(27,57,91,.5)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             {c.img
@@ -82,64 +88,132 @@ export default function Brief({ pKey, onBack, onStart }) {
                   width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
                 }} />
               : <Typography sx={{
-                  fontFamily: '"Fraunces", serif', fontSize: 15, fontWeight: 600,
-                  color: 'rgba(255,255,255,.9)',
+                  fontFamily: '"Fraunces", serif', fontSize: 19, fontWeight: 600, color: C.deep,
                 }}>{c.mono}</Typography>}
           </Box>
           <Box>
-            <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: C.deep, lineHeight: 1.2 }}>
-              {c.name}
-            </Typography>
-            <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.3 }}>{c.role}</Typography>
+            <Typography sx={{
+              fontFamily: '"Fraunces", serif', fontSize: 24, fontWeight: 600,
+              color: C.deep, lineHeight: 1.15,
+            }}>{c.name}</Typography>
+            <Typography sx={{ fontSize: 14, color: C.ink2, mt: 0.4 }}>{c.role}</Typography>
           </Box>
         </Stack>
 
-        {/* What I think. */}
+        {/* The heading, with the mock's gold full stop. */}
         <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 29, fontWeight: 600,
-          lineHeight: 1.16, color: C.deep, mt: 3,
-        }}>Here’s my assessment.</Typography>
-
-        <Typography sx={{ fontSize: 15, lineHeight: 1.58, color: C.ink, mt: 1.75 }}>
-          {s.think}
+          fontFamily: '"Fraunces", serif', fontSize: 38, fontWeight: 600,
+          lineHeight: 1.12, color: C.deep, mt: 3.5,
+        }}>
+          Here’s my assessment<Box component="span" sx={{ color: C.yellow }}>.</Box>
         </Typography>
 
-        {/* What I recommend — the one boxed object on the page. */}
+        {/* The assessment, spoken against a gold bar. */}
+        <Typography sx={{
+          fontSize: 17, lineHeight: 1.62, color: C.ink, mt: 3,
+          pl: 2.25, borderLeft: '3px solid #F5C64F',
+        }}>{s.think}</Typography>
+
+        {/* The bridge between what was said and what is recommended. */}
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mt: 3.5 }}>
+          <Box sx={{
+            width: 42, height: 42, borderRadius: '50%', flexShrink: 0,
+            bgcolor: 'rgba(27,57,91,.06)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <AssignmentOutlinedIcon sx={{ fontSize: 20, color: C.deep }} />
+          </Box>
+          <Typography sx={{
+            fontSize: 12, fontWeight: 800, letterSpacing: '.14em',
+            textTransform: 'uppercase', color: C.deep,
+          }}>Based on our discussion</Typography>
+        </Stack>
+
+        {/* ── the recommendation — the one dark object on the page ── */}
         <Box sx={{
-          mt: 3, px: 2.5, py: 2.25, borderRadius: '18px', bgcolor: '#fff',
-          borderLeft: `3px solid ${C.yellow}`,
-          boxShadow: '0 10px 30px -24px rgba(27,57,91,.55)',
+          mt: 2.5, p: 3, borderRadius: '26px', position: 'relative', overflow: 'hidden',
+          background: 'linear-gradient(160deg,#1E3E63 0%,#132C4A 100%)',
+          boxShadow: '0 20px 44px -26px rgba(14,27,44,.75)',
         }}>
+          {/* The mock's concentric arcs, top right. Decoration only. */}
+          {[210, 300, 390].map((d) => (
+            <Box key={d} sx={{
+              position: 'absolute', top: -d / 2.6, right: -d / 2.6,
+              width: d, height: d, borderRadius: '50%',
+              border: '1.5px solid rgba(255,255,255,.05)', pointerEvents: 'none',
+            }} />
+          ))}
+
+          <Box sx={{
+            width: 52, height: 52, borderRadius: '50%',
+            bgcolor: 'rgba(255,255,255,.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <TrendingUpIcon sx={{ fontSize: 24, color: C.yellow }} />
+          </Box>
+
           <Typography sx={{
-            fontSize: 9.5, fontWeight: 800, letterSpacing: '.16em',
-            textTransform: 'uppercase', color: C.ink2,
+            fontSize: 11, fontWeight: 800, letterSpacing: '.2em',
+            textTransform: 'uppercase', color: C.yellow, mt: 2.5,
           }}>Recommended care</Typography>
+
           <Typography sx={{
-            fontFamily: '"Fraunces", serif', fontSize: 23, fontWeight: 600,
-            lineHeight: 1.18, color: C.deep, mt: 1,
+            fontFamily: '"Fraunces", serif', fontSize: 30, fontWeight: 600,
+            lineHeight: 1.16, color: '#fff', mt: 1,
           }}>{s.prog}</Typography>
-          {/* No meta line here: every desc already opens with what kind of
-              care this is, and a gold "clinician-led" strapline above a
-              sentence that says "clinician-led" was saying it twice. */}
-          <Typography sx={{ fontSize: 13.5, lineHeight: 1.55, color: C.ink2, mt: 1.2 }}>
-            {s.desc}
-          </Typography>
+
+          <Box sx={{ width: 56, height: 2, bgcolor: C.yellow, mt: 2 }} />
+
+          <Typography sx={{
+            fontSize: 15, lineHeight: 1.62, color: 'rgba(255,255,255,.78)', mt: 2.25,
+          }}>{s.desc}</Typography>
+
+          {/* Three outcomes, columned like the mock. */}
+          <Stack direction="row" sx={{
+            mt: 3, pt: 2.75, borderTop: '1px solid rgba(255,255,255,.12)',
+          }}>
+            {s.points.map((p, i) => {
+              const Ic = ICONS[p.ic] || BoltIcon;
+              return (
+                <Box key={p.t} sx={{
+                  flex: 1, minWidth: 0,
+                  pl: i === 0 ? 0 : 1.5, pr: i === s.points.length - 1 ? 0 : 1.5,
+                  borderLeft: i === 0 ? 'none' : '1px solid rgba(255,255,255,.12)',
+                }}>
+                  <Stack direction="row" spacing={0.9} sx={{ alignItems: 'flex-start' }}>
+                    <Ic sx={{ fontSize: 17, color: C.yellow, flexShrink: 0, mt: '1px' }} />
+                    <Typography sx={{
+                      fontSize: 12.5, fontWeight: 700, color: '#fff', lineHeight: 1.3,
+                    }}>{p.t}</Typography>
+                  </Stack>
+                  {/* Indented to the title's left edge, past the icon, as in
+                      the mock. 17px icon + 7.2px gap. */}
+                  <Typography sx={{
+                    fontSize: 11, lineHeight: 1.5, color: 'rgba(255,255,255,.55)',
+                    mt: 0.75, pl: '24px',
+                  }}>{p.s}</Typography>
+                </Box>
+              );
+            })}
+          </Stack>
         </Box>
 
-        {/* The close. Still the clinician talking, so it is not boxed. The
-            "treatment confirmed after results" sequencing lives on the next
-            screen, under the payment button, where the commitment is made. */}
-        <Typography sx={{ fontSize: 14.5, lineHeight: 1.58, color: C.ink, mt: 2.25 }}>
-          {s.why}
-        </Typography>
-      </Box>
+        {/* The close — still the clinician talking. */}
+        <Stack direction="row" spacing={1.5} sx={{
+          alignItems: 'center', mt: 2.5, px: 2.25, py: 2,
+          borderRadius: '18px', bgcolor: 'rgba(27,57,91,.05)',
+        }}>
+          <StarBorderRoundedIcon sx={{ fontSize: 24, color: C.yellowDeep, flexShrink: 0 }} />
+          <Typography sx={{ fontSize: 14.5, lineHeight: 1.5, color: C.deep }}>
+            {s.why}
+          </Typography>
+        </Stack>
 
-      <Box sx={{
-        px: 3, pt: 2.5, pb: 3, flexShrink: 0, mt: -1.5,
-        background: `linear-gradient(180deg,rgba(255,253,245,0) 0%,${C.cream} 46%)`,
-      }}>
+        {/* In the page flow, as designed — the page is short enough that the
+            CTA is at most one small scroll away. */}
         <Button fullWidth variant="contained" color="secondary" onClick={onStart}
-          endIcon={<ArrowForwardIcon sx={{ fontSize: 17 }} />}>
+          endIcon={<ArrowForwardIcon sx={{ fontSize: 18 }} />}
+          sx={{ mt: 3, py: 1.7, fontSize: 16 }}>
           View recommended care
         </Button>
       </Box>

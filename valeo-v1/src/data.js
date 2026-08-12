@@ -3670,8 +3670,13 @@ export const GUIDED = [
    The clinician cannot finalise treatment before seeing blood results, so
    nothing here says the treatment is decided. Each `desc` says the opposite,
    in the patient's favour: the treatment is built around the results. */
-/* This block is the stakeholder's own copy (Aug 2026), lightly punctuated.
-   The name "Male Performance Program" was an explicit rename. */
+/* This block is the stakeholder's own copy and design (Aug 2026): text,
+   benefit columns and the name "Male Performance Program" all came from
+   their mock, verbatim — including the US spelling of "optimize".
+
+   `points` are the three columns inside the dark recommendation panel. `ic`
+   is a key the screen maps to an icon, so this file stays free of component
+   imports. Titles fit one column at 13px — about 22 characters. */
 Object.assign(RECOMMEND.P_TEST, {
   speak: {
     prog: 'Male Performance Program',
@@ -3681,48 +3686,62 @@ Object.assign(RECOMMEND.P_TEST, {
          + 'have both changed, and maintaining fertility is an important '
          + 'priority. I believe these concerns are linked and should be '
          + 'addressed together.',
-    why: 'This is the care plan I’d recommend for you.',
+    why: 'This is the care plan I recommend for you.',
+    points: [
+      { ic: 'energy', t: 'Boost energy', s: 'Feel like yourself again' },
+      { ic: 'heart', t: 'Enhance sexual health', s: 'Improve performance and confidence' },
+      { ic: 'shield', t: 'Support fertility', s: 'Protect and optimize your future' },
+    ],
   },
 });
 Object.assign(RECOMMEND.P_WEIGHT, {
   speak: {
     prog: 'Weight & Metabolic Health',
-    desc: 'A structured programme to understand what’s working against your '
-        + 'weight and build the right treatment around your results.',
+    desc: 'A clinician-led care plan designed to bring your weight and '
+        + 'metabolic markers back in range through structured, ongoing care.',
     think: 'Everything you’ve tried has worked until it stopped, and the '
          + 'weight has come back each time. That pattern usually isn’t about '
          + 'discipline — and you told me you’d rather go slower than lose '
          + 'muscle getting there. I agree. I want to see your metabolic '
          + 'markers before deciding exactly how we treat this.',
-    why: 'I’d start here because it treats the cause rather than the scale. '
-       + 'We move your markers first, hold onto your muscle, and let the '
-       + 'weight follow.',
+    why: 'This is the care plan I recommend for you.',
+    points: [
+      { ic: 'scale', t: 'Lose the weight', s: 'And keep it off this time' },
+      { ic: 'muscle', t: 'Keep your muscle', s: 'Strength held while you lose' },
+      { ic: 'chart', t: 'Fix your markers', s: 'HbA1c back in range' },
+    ],
   },
 });
 Object.assign(RECOMMEND.P_LONG, {
   speak: {
     prog: 'Longevity & Heart Health',
-    desc: 'A structured programme to measure the risks that run in your '
-        + 'family and act on them early, guided by your results.',
+    desc: 'A clinician-led care plan designed to measure the risks that run '
+        + 'in your family and act on them early, through structured, ongoing care.',
     think: 'You feel fine today, and that’s exactly the right time to act. '
          + 'With your family history, I want a clear picture of your '
          + 'cardiovascular risk — ApoB above all — before we assume anything.',
-    why: 'I’d start here because your family history means acting earlier '
-       + 'than we otherwise would. We measure first, bring the risk down, and '
-       + 'only then consider anything more.',
+    why: 'This is the care plan I recommend for you.',
+    points: [
+      { ic: 'heart', t: 'Lower your risk', s: 'ApoB down, and kept down' },
+      { ic: 'muscle', t: 'Stay strong', s: 'Strength and capacity preserved' },
+      { ic: 'chart', t: 'Measure it', s: 'Tracked, never assumed' },
+    ],
   },
 });
 Object.assign(RECOMMEND.P_POST, {
   speak: {
     prog: 'Postpartum Recovery',
-    desc: 'A structured programme to restore what birth has drawn down and '
-        + 'rebuild your strength in the right order.',
+    desc: 'A clinician-led care plan designed to restore what birth has '
+        + 'drawn down and rebuild your strength through structured, ongoing care.',
     think: 'Fatigue like this after birth is usually a deficiency, not a '
          + 'discipline problem. Before anyone talks to you about weight, I '
          + 'want to see your iron and thyroid.',
-    why: 'I’d start here because it repletes you before it asks anything of '
-       + 'you. Iron and thyroid first, strength after — and nothing about the '
-       + 'scale until your energy is back.',
+    why: 'This is the care plan I recommend for you.',
+    points: [
+      { ic: 'energy', t: 'Restore energy', s: 'Iron and thyroid repleted' },
+      { ic: 'muscle', t: 'Rebuild strength', s: 'In the right order' },
+      { ic: 'heart', t: 'Feel yourself again', s: 'Before anything about weight' },
+    ],
   },
 });
 
