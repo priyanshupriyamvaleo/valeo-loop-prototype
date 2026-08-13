@@ -31,7 +31,7 @@ import { C, meter } from '../theme';
  *   verdict  → retest day
  */
 export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults,
-  onBookBloods, onBookFollow, onBrief,
+  onBookBloods, onBookFollow, onBrief, onCheckpointCall,
                                 onFocus }) {
   const [coach, setCoach] = useState(false);
   const [sheet, setSheet] = useState(null);   /* doses | meals | body | checkin | devices */
@@ -218,6 +218,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                   if (k === 'brief') onBrief(pKey);
                   else if (k === 'bookBloods') onBookBloods(pKey);
                   else if (k === 'bookFollow') onBookFollow(pKey);
+                  else if (k === 'checkpointCall') onCheckpointCall(pKey);
                   else if (k === 'plan') onDetail(pKey);
                   else if (k === 'startDay') dispatch({ type: 'deliver', protocol: pKey });
                 }} sx={{

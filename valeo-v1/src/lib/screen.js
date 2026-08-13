@@ -29,6 +29,7 @@ const FLOW = {
   brief:    'Care brief',
   between:  'Greeting',
   coach:    'Intake chat',
+  assess:   'AI assessment',
   meet:     'Meet your doctor',
   buy:      'Checkout',
   baseline: 'Blood test',

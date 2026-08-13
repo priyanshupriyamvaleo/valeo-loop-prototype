@@ -2030,13 +2030,35 @@ export function nextStep(st, pKey) {
 
     /* Paid. Blood work is step one and it is already covered, so this card
        asks for a time and never mentions money again. */
-    case 'programme': return {
-      kind: 'bookBloods', tag: 'Step 1 of your programme',
-      title: 'Your blood test comes first.',
-      body: `${who} needs these results before writing your plan. A nurse `
-          + 'comes to you.',
-      cta: 'Choose a time', free: true,
-    };
+    case 'programme': {
+      /* A known-door order waits on the doctor's sign-off first. Pending is a
+         waiting state, so it gets no button — the next move is the clinic's.
+         The call substate is the escalation beat: the disguised resolver
+         caught at the checkpoint, offered a doctor instead of a dispatch. */
+      if (r && r.door === 'known' && r.checkpoint !== 'approved') {
+        if (r.checkpoint === 'call') return {
+          kind: 'checkpointCall', tag: 'A quick word first',
+          title: `${who} wants two minutes with you before confirming.`,
+          body: 'Something in your answers deserves a doctor’s look before we '
+              + 'dispense. It’s included, and it’s usually reassurance.',
+          cta: 'Start the call', ctaKind: 'checkpointCall',
+        };
+        return {
+          kind: 'checkpoint', tag: 'Doctor review today',
+          title: `${who} is reviewing your order.`,
+          body: 'Nothing is dispensed until a doctor signs it off. You’ll '
+              + 'hear back today.',
+          cta: null,
+        };
+      }
+      return {
+        kind: 'bookBloods', tag: 'Step 1 of your programme',
+        title: 'Your blood test comes first.',
+        body: `${who} needs these results before writing your plan. A nurse `
+            + 'comes to you.',
+        cta: 'Choose a time', free: true,
+      };
+    }
     case 'bloodsBooked': return {
       kind: 'bloods', tag: 'Blood draw scheduled',
       when: r && r.bloodSlot, cta: null,
@@ -2748,7 +2770,136 @@ export const COACH_OPENING = [
     o: ['Male', 'Female'] },
   { k: 'height', kind: 'number', q: 'How tall are you?', ph: '175', suffix: 'cm', min: 120, max: 220 },
   { k: 'weight', kind: 'number', q: 'And roughly what do you weigh?', ph: '82', suffix: 'kg', min: 35, max: 250 },
+  /* ── THE FORK ──
+     One honest question, asked as a chat bubble like every other. It routes
+     between two different jobs — "execute what I already decided" and "help
+     me understand what's wrong" — and it is the ONLY place the two
+     architectures are ever allowed to surface. Everything downstream reads
+     the answer; no screen ever mentions it. */
+  { k: 'door',   kind: 'door',   q: 'Last one. Which of these sounds more like you?' },
 ];
+
+/* The fork's two answers, phrased in the patient's own words per goal. The
+   right words matter more here than anywhere: "I know what I want" from a
+   weight-loss patient is "I want to start the medication", and pretending
+   both doors are abstract "journeys" would make this a routing form. */
+export const DOOR_ASK = {
+  fat: {
+    known:   { t: 'I want to start weight-loss medication',
+               s: 'I’ve done my research. Help me start safely.' },
+    resolve: { t: 'I can’t lose weight and I don’t know why',
+               s: 'Help me figure out what’s going on first.' },
+  },
+  test: {
+    known:   { t: 'I know the treatment I’m after',
+               s: 'I’ve done my research. Help me start safely.' },
+    resolve: { t: 'My energy and drive are off — I want answers',
+               s: 'Help me figure out what’s going on first.' },
+  },
+  _default: {
+    known:   { t: 'I know what I want',
+               s: 'I’ve done my research. Help me start safely.' },
+    resolve: { t: 'Something’s off and I want answers',
+               s: 'Help me figure out what’s going on first.' },
+  },
+};
+export const doorAskFor = (goalKey) => DOOR_ASK[goalKey] || DOOR_ASK._default;
+
+/* Which door the answers actually put this person through. An escalated
+   known-door patient (red flag, or "it didn't work before") is a resolver who
+   arrived with a product name, so the escalation flag wins over the answer. */
+export const doorOf = (qa) =>
+  (qa && qa.door === 'known' && !qa.escalated ? 'known' : 'resolve');
+
+/* ── DOOR A · THE STRUCTURED INTAKE ──
+   Three more chat questions, asked only after "I know what I want": what,
+   prior use, red flags. `wants` options carry the protocol they map to, so
+   the router never re-derives it. The red-flag lists are deliberately short —
+   this is the screen door, not the consultation — and any positive answer
+   escalates to a doctor (see the escalation rule in Coach.jsx).
+
+   PLACEHOLDER flag lists, same caveat as the clinician registrations: a
+   clinician must sign these off before any external audience. */
+export const KNOWN = {
+  fat: {
+    wants: { q: 'What did you have in mind?', o: [
+      { t: 'GLP-1 weekly injection', pKey: 'P_WEIGHT' },
+      { t: 'Not sure — recommend one', pKey: null },
+    ] },
+    prior: { q: 'Have you used it before?',
+      o: ['Never', 'Currently using it', 'Used it — it didn’t work'] },
+    flags: { q: 'Quick safety check — do any of these apply to you?', o: [
+      'History of pancreatitis', 'Thyroid cancer in my family',
+      'Pregnant or breastfeeding', 'None of these'] },
+  },
+  test: {
+    wants: { q: 'What did you have in mind?', o: [
+      { t: 'Testosterone support', pKey: 'P_TEST' },
+      { t: 'ED medication', pKey: 'P_TEST' },
+      { t: 'Not sure — recommend one', pKey: null },
+    ] },
+    prior: { q: 'Have you used it before?',
+      o: ['Never', 'Currently using it', 'Used it — it didn’t work'] },
+    flags: { q: 'Quick safety check — do any of these apply to you?', o: [
+      'Trying to conceive in the next 12 months', 'A heart condition',
+      'None of these'] },
+  },
+  long: {
+    wants: { q: 'What did you have in mind?', o: [
+      { t: 'A full body checkup', pKey: 'P_LONG' },
+      { t: 'A longevity programme', pKey: 'P_LONG' },
+      { t: 'Not sure — recommend one', pKey: null },
+    ] },
+    prior: { q: 'Have you done structured testing before?',
+      o: ['Never', 'Once or twice', 'Regularly — it didn’t change anything'] },
+    flags: { q: 'Quick safety check — do any of these apply to you?', o: [
+      'An active infection right now', 'Immunosuppressed',
+      'None of these'] },
+  },
+  post: {
+    wants: { q: 'What did you have in mind?', o: [
+      { t: 'A postpartum recovery plan', pKey: 'P_POST' },
+      { t: 'Not sure — recommend one', pKey: null },
+    ] },
+    prior: { q: 'Have you tried anything so far?',
+      o: ['Nothing yet', 'Supplements on my own', 'A plan — it didn’t help'] },
+    flags: { q: 'Quick safety check — do any of these apply to you?', o: [
+      'Heavy bleeding or fever right now', 'Severe mood changes',
+      'None of these'] },
+  },
+};
+
+/* The known-door answer that means "it failed before" — the doc calls this
+   person a disguised resolver, and catching them is the fork's whole job. */
+export const KNOWN_FAILED = /didn’t (work|help|change)/;
+
+/* ── DOOR B · WHAT THE AI WORKED OUT ──
+   Three areas worth investigating per goal, shown on the Assess screen
+   between the intake and the consultation. AI investigates and reasons; the
+   clinician decides — each row maps to the markers the panel measures, so
+   the claim stays concrete. Authored, like every clinical judgement here. */
+export const INVESTIGATE = {
+  test: [
+    { t: 'Hormone levels', s: 'Energy and drive dropping together usually starts here.', m: 'Total + free T' },
+    { t: 'Thyroid & iron', s: 'The two most common mimics of low testosterone.', m: 'TSH · ferritin' },
+    { t: 'Sleep & recovery', s: 'Poor sleep suppresses everything above.', m: 'discussed live' },
+  ],
+  fat: [
+    { t: 'Metabolic markers', s: 'Weight that returns is usually signalling, not discipline.', m: 'HbA1c · insulin' },
+    { t: 'Thyroid', s: 'A slow thyroid quietly fights every diet.', m: 'TSH · free T4' },
+    { t: 'What you’ve tried', s: 'The pattern of what failed tells us what to change.', m: 'discussed live' },
+  ],
+  long: [
+    { t: 'Cardiovascular risk', s: 'The marker with thirty years of evidence behind it.', m: 'ApoB · hsCRP' },
+    { t: 'Metabolic health', s: 'Where decline starts a decade before symptoms.', m: 'HbA1c · lipids' },
+    { t: 'Family history', s: 'What runs in your family sets what we test first.', m: 'discussed live' },
+  ],
+  post: [
+    { t: 'Iron status', s: 'The most common cause of fatigue after birth.', m: 'ferritin · CBC' },
+    { t: 'Thyroid', s: 'Postpartum thyroid shifts are common and missable.', m: 'TSH · free T4' },
+    { t: 'Recovery load', s: 'Sleep, feeding and support shape what your body can do.', m: 'discussed live' },
+  ],
+};
 
 /* Asked only AFTER the consult is paid for, and never as a gate — it sits on
    Today as an offer to help the doctor prepare. Same questions the old blocking
@@ -3149,6 +3300,45 @@ export function practiceScript(st, pKey) {
         a: ['Go ahead — we’ll answer if we can, and get the right person if we can’t.'] },
     ],
   };
+
+  /* ── THE KNOWN-DOOR CHECKPOINT ──
+     A door-A run sits at 'programme' the moment it is paid, but until a
+     doctor signs the order off the practice has different news. Keyed per
+     substate so each message fires once, and the ordinary 'programme' script
+     follows naturally on approval. */
+  if (r && r.door === 'known' && status === 'programme' && r.checkpoint !== 'approved') {
+    return r.checkpoint === 'call' ? {
+      key: 'checkpoint-call', clinician: c, first,
+      lines: [`${first} looked at your order and wants two minutes with you `
+                + 'before confirming it.',
+              'Nothing to worry about — it’s how we make sure this is right '
+                + 'for you. The call is on your Today page.'],
+      chips: [
+        { ic: '📞', q: 'Why the call?',
+          a: ['Something in your answers deserves a doctor’s attention before '
+                + 'we dispense.',
+              'It takes about ten minutes, and it’s included.'] },
+        { ic: '💰', q: 'Have I been charged?',
+          a: ['Your programme is paid, and nothing ships until you and '
+                + `${first} have spoken.`,
+              'If the plan changes, the difference is settled before anything '
+                + 'is dispensed.'] },
+      ],
+    } : {
+      key: 'checkpoint-pending', clinician: c, first,
+      lines: ['Your order is in. Thank you.',
+              `${first} reviews it today — nothing is dispensed until a `
+                + 'doctor has signed it off. You’ll hear from us today.'],
+      chips: [
+        { ic: '🩺', q: 'What is being reviewed?',
+          a: ['Your answers, your safety screen and the treatment you chose.',
+              'A doctor signs off every order before the pharmacy touches it.'] },
+        { ic: '⏳', q: 'How long does it take?',
+          a: ['Same day, almost always within a few hours.',
+              'We’ll message you here the moment it’s confirmed.'] },
+      ],
+    };
+  }
 
   const s = S[status] || fallback;
 
@@ -3797,7 +3987,13 @@ export function careSteps(first) {
    One figure: the programme fee plus three months of treatment, both derived
    from the same constants as before so nothing drifts. No per-month figure
    and no "save X" line — there is no monthly alternative to save against. */
-export function carePlan(pKey) {
+/* `opts.door` varies the copy, never the care: a known-door patient arrives
+   without a consultation, so the sequencing note and the journey's first row
+   speak about the doctor's same-day order review instead of a consultation
+   that never happened. `opts.wants` names what he asked for in the
+   medication row — he named it first. */
+export function carePlan(pKey, opts = {}) {
+  const { door = 'resolve', wants = null } = opts;
   const p = PROTOCOLS[pKey];
   const c = coachOf(pKey) || DOCTOR;
   const first = givenNameOf(c);
@@ -3835,7 +4031,9 @@ export function carePlan(pKey) {
       { ic: 'rx', t: 'Personalised treatment', b: 'From week 1',
         s: `Selected by ${first} around your results` },
       { ic: 'box', t: 'Medication delivered', b: '3 deliveries',
-        s: 'Dispensed monthly and delivered in cold chain' },
+        s: wants
+          ? `Your ${wants}, dispensed monthly in cold chain`
+          : 'Dispensed monthly and delivered in cold chain' },
       { ic: 'tune', t: 'Dose titration', b: 'Weeks 1–12',
         s: 'Managed medically, refined as your data evolves' },
       { ic: 'gift', t: 'Supplement voucher', b: 'Week 1',
@@ -3861,8 +4059,14 @@ export function carePlan(pKey) {
      single most important sentence for one-month churn is the one that
      says early silence is normal. */
   const timeline = [
-    { w: 'Pre-programme', t: 'Online consultation', done: true,
-      s: `Your goals, history and symptoms, reviewed with ${first}.` },
+    door === 'known'
+      /* No consultation happened on this door. The first event is the
+         checkpoint, and it is dated: today. */
+      ? { w: 'Today', t: 'Doctor review of your order',
+          s: 'A Valeo doctor reviews your answers and your order today. '
+           + 'Nothing is dispensed until it’s signed off.' }
+      : { w: 'Pre-programme', t: 'Online consultation', done: true,
+          s: `Your goals, history and symptoms, reviewed with ${first}.` },
     { w: 'Week 1', t: 'Testing and first steps',
       s: `A nurse collects your blood panel at home. ${first} reviews your `
        + 'results and confirms your treatment, and your first month is dispatched.' },
@@ -3892,9 +4096,13 @@ export function carePlan(pKey) {
     sections,
     timeline,
     /* Sequencing, not a blocker. This is how the care works. */
-    how: `Your care begins with the information ${first} needs to personalise `
-       + 'your treatment. Once your results are reviewed, your treatment is '
-       + 'confirmed and your care continues through the programme.',
+    how: door === 'known'
+      ? 'A Valeo doctor reviews your order today, before anything is '
+        + 'dispensed. Your blood test then confirms the dose is right for '
+        + 'you, and your care continues through the programme.'
+      : `Your care begins with the information ${first} needs to personalise `
+        + 'your treatment. Once your results are reviewed, your treatment is '
+        + 'confirmed and your care continues through the programme.',
     /* Expectation-setting, adapted from the shared protocol skeleton. */
     pace: 'Care like this is designed over 12 weeks, and it is normal to '
         + 'notice very little in the first few weeks. Your body responds '

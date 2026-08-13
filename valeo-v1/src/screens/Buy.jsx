@@ -73,13 +73,13 @@ const TONES = {
  * The clinician recommended a specific course of care. No tiers, no
  * comparison columns, no "best value". "Protocol" appears nowhere.
  */
-export default function Buy({ pKey, onBack, onPaid }) {
+export default function Buy({ pKey, onBack, onPaid, door = 'resolve', wants = null }) {
   const c = coachOf(pKey);
   const [pay, setPay] = useState(false);
   const [tour, setTour] = useState(false);
 
   if (!c) return null;
-  const plan = carePlan(pKey);
+  const plan = carePlan(pKey, { door, wants });
   const price = plan.price.toLocaleString();
 
   const card = { borderRadius: '18px', bgcolor: '#fff', boxShadow: '0 8px 26px -20px rgba(27,57,91,.5)' };
@@ -122,11 +122,18 @@ export default function Buy({ pKey, onBack, onPaid }) {
         </Stack>
 
         {/* The title is the whole hero: programme name and price, nothing
-            else. The eyebrow and the "one structured course" line went —
-            the name already says whose care it is and how long it runs. */}
+            else. The known door gets one small line above it — the plan
+            arrived from his answers, not from a consultation, and saying so
+            is what makes it feel selected rather than merchandised. */}
+        {door === 'known' && (
+          <Typography sx={{
+            fontSize: 10.5, fontWeight: 800, letterSpacing: '.18em',
+            textTransform: 'uppercase', color: C.yellowDeep, mt: 1.75,
+          }}>Based on your answers</Typography>
+        )}
         <Typography sx={{
           fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 600,
-          lineHeight: 1.15, color: C.deep, mt: 1.75,
+          lineHeight: 1.15, color: C.deep, mt: door === 'known' ? 0.75 : 1.75,
         }}>{plan.title}</Typography>
 
         {/* ── the price card ── */}

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import { COACH_OPENING, GOALS, LIVE, USER, coachOf, leadFor } from '../data';
+import { COACH_OPENING, GOALS, KNOWN, KNOWN_FAILED, LIVE, USER,
+         coachOf, doorAskFor, leadFor } from '../data';
 import { C, meter } from '../theme';
 
 /**
@@ -64,11 +65,31 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
   const [skip, setSkip] = useState(0);
   const feed = useRef(null);
 
-  const step = COACH_OPENING[i];
-  const done = i >= COACH_OPENING.length;
-  const left = COACH_OPENING.length - start;
-  const WORD = ['no', 'one', 'two', 'three', 'four', 'five'][left] || String(left);
   const goal = GOALS.find((g) => g.k === a.goal);
+
+  /* ── THE QUESTION LIST IS DYNAMIC ──
+     The shared basics end with the fork. "I know what I want" appends the
+     structured intake — what, prior use, red flags — and an escalating answer
+     truncates the list at the question that triggered it, so the conversation
+     ends there and hands over to a doctor. The list only ever changes at the
+     index being answered, which is what keeps the replay below valid. */
+  const kAsk = a.door === 'known' && goal ? KNOWN[goal.k] : null;
+  const steps = kAsk
+    ? [...COACH_OPENING,
+       { k: 'wants', kind: 'wants', q: kAsk.wants.q },
+       { k: 'prior', kind: 'choice', q: kAsk.prior.q, o: kAsk.prior.o },
+       ...(a.escAt === 'prior' ? []
+         : [{ k: 'flags', kind: 'choice', q: kAsk.flags.q, o: kAsk.flags.o }]),
+      ]
+    : COACH_OPENING;
+
+  const step = steps[i];
+  const done = i >= steps.length;
+  /* The welcome's "N quick questions" counts the opening set only. The
+     door-A follow-ups extend `steps` after that promise has been made, and a
+     sentence in the history must never rewrite itself. */
+  const left = COACH_OPENING.length - start;
+  const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six'][left] || String(left);
   const team = [...new Set(LIVE.map((pk) => coachOf(pk)))];
   /* Resolved exactly the way the match screen resolves it, so the name spoken
      here is guaranteed to be the name on the next screen. Deriving it twice by
@@ -101,10 +122,10 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
      alternation of answer and question. */
   const thread = [];
   thread.push({ me: true, ic: seed ? seed.ic : '👋', t: seed ? (seed.say || seed.t) : 'Hi' });
-  thread.push({ welcome: true, q: COACH_OPENING[start].q });
+  thread.push({ welcome: true, q: steps[start].q });
   for (let s = start; s < i; s += 1) {
-    thread.push({ me: true, t: a[`${COACH_OPENING[s].k}_label`] });
-    if (s + 1 < COACH_OPENING.length) thread.push({ t: COACH_OPENING[s + 1].q });
+    thread.push({ me: true, t: a[`${steps[s].k}_label`] });
+    if (s + 1 < steps.length) thread.push({ t: steps[s + 1].q });
   }
 
   return (
@@ -206,8 +227,22 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
 
         {done && !typing && (
           <Bubble>
+            {/* Three endings for three exits. The escalation is written to
+                read as being taken more seriously, never as a rejection —
+                that one sentence is the difference between a safety rule and
+                a bounce. */}
             <Typed
-              paras={[
+              paras={a.escalated ? [
+                'Thank you for telling me — that changes what I’d recommend.',
+                ['I want ', { b: `${lead ? lead.short : 'a doctor'}` },
+                  ' to look at this with you before anything is prescribed.'],
+                'It takes about ten minutes, and it’s included.',
+              ] : a.door === 'known' ? [
+                `Thank you, ${USER.first}.`,
+                ['Based on your answers, I’ve put together ',
+                  { b: 'the plan I’d recommend.' }],
+                'It’s ready for you to review.',
+              ] : [
                 `Thank you, ${USER.first}.`,
                 ['Based on what you’ve shared, I think I’d like to introduce you to ',
                   { b: `${lead ? lead.short : 'your doctor'}’s team.` }],
@@ -232,7 +267,7 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
             py: 1.55, borderRadius: '999px', textAlign: 'center', cursor: 'pointer',
             bgcolor: C.deep, color: '#fff', fontSize: 14.5, fontWeight: 600,
           }}>
-            Meet my doctor
+            {a.door === 'known' && !a.escalated ? 'See my plan' : 'Meet my doctor'}
           </Box>
         ) : (typing || !ready) ? (
           <Box sx={{ height: 44 }} />
@@ -242,9 +277,46 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
         ) : step.kind === 'sub' ? (
           <Suggest opts={(goal ? goal.sub : []).map((o) => ({ k: o, t: o }))}
             onPick={(o) => answer('sub', o.t)} />
+        ) : step.kind === 'door' ? (
+          /* The fork. Two of the user's own sentences, each with its quiet
+             second line — stacked and full-width because they are longer
+             thoughts than the pill rail is made for. */
+          <Stack spacing={0.8}>
+            {['known', 'resolve'].map((d) => {
+              const o = doorAskFor(a.goal)[d];
+              return (
+                <Box key={d} onClick={() => answer('door', o.t, d)} sx={{
+                  px: 1.8, py: 1.25, borderRadius: '16px', cursor: 'pointer',
+                  bgcolor: '#fff', border: '1px solid rgba(27,57,91,.22)',
+                  '&:active': { bgcolor: 'rgba(27,57,91,.05)' },
+                }}>
+                  <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>
+                    {o.t}
+                  </Typography>
+                  <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.2 }}>
+                    {o.s}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Stack>
+        ) : step.kind === 'wants' ? (
+          <Suggest opts={kAsk.wants.o.map((o) => ({ k: o.t, t: o.t, pKey: o.pKey }))}
+            onPick={(o) => {
+              setA((prev) => ({ ...prev, wantsPkey: o.pKey || null }));
+              answer('wants', o.t);
+            }} />
         ) : step.kind === 'choice' ? (
           <Suggest opts={step.o.map((o) => ({ k: o, t: o }))}
-            onPick={(o) => answer(step.k, o.t)} />
+            onPick={(o) => {
+              /* The escalation rule. "It didn't work" is a disguised
+                 resolver; a red flag is a safety stop. Both end the intake
+                 here and hand over to a doctor. */
+              const esc = (step.k === 'prior' && KNOWN_FAILED.test(o.t))
+                       || (step.k === 'flags' && o.t !== 'None of these');
+              if (esc) setA((prev) => ({ ...prev, escalated: true, escAt: step.k }));
+              answer(step.k, o.t);
+            }} />
         ) : (
           <NumberRail step={step} onPick={(v) => answer(step.k, `${v} ${step.suffix}`, v)} />
         )}

@@ -15,6 +15,7 @@ import ProtocolDetail from './screens/ProtocolDetail';
 import Consult from './screens/Consult';
 import Between from './screens/Between';
 import Coach from './screens/Coach';
+import Assess from './screens/Assess';
 import Meet from './screens/Meet';
 import Consultation from './screens/Consultation';
 import Brief from './screens/Brief';
@@ -24,7 +25,7 @@ import Feedback from './components/Feedback';
 import PushToast from './components/PushToast';
 import { screenOf } from './lib/screen';
 import { PROTOCOLS, DEMO_QA, focusRun, activeRuns, synthObserved,
-         PHASES_APP, phaseHas, leadFor } from './data';
+         PHASES_APP, phaseHas, leadFor, doorOf } from './data';
 
 const INIT = {
   qa: {},          /* answers — the single source of truth for the twin */
@@ -114,6 +115,22 @@ function reducer(s, a) {
     /* One payment. It buys the programme, and blood work is step one inside
        it, so the patient is never asked for money again. */
     case 'programme': return patchRun(s, target(s, a), { status: 'programme' });
+    /* ── THE KNOWN DOOR ──
+       A door-A run is born at payment — there was no consultation to create
+       it earlier, and patchRun deliberately no-ops on runs that don't exist.
+       It lands at 'programme' like every paid run, but with the checkpoint
+       pending: nothing is dispensed until a doctor signs the order off. */
+    case 'orderPlaced':
+      return {
+        ...s,
+        runs: { ...s.runs, [a.protocol]: {
+          status: 'programme', door: 'known', checkpoint: 'pending' } },
+        focus: s.focus || a.protocol,
+      };
+    /* 'approved' clears the gate; 'call' is the escalation beat — the doctor
+       caught a disguised resolver post-payment and wants two minutes. */
+    case 'checkpoint':
+      return patchRun(s, target(s, a), { checkpoint: a.v });
     case 'reviewed':  return patchRun(s, target(s, a), { status: 'ready' });
     /* ── the middle of the journey ── */
 
@@ -278,6 +295,10 @@ export default function App() {
      would never reach it because the happy path always connects. The rail
      forces it. */
   const [matchFail, setMatchFail] = useState(false);
+  /* The consultation screen serves two occasions: the door-B instant consult
+     and the door-A checkpoint call. Same room, different exit — a checkpoint
+     call ends by confirming the order, not by writing a care brief. */
+  const [ckCall, setCkCall] = useState(false);
 
   const goQuestions = (r) => { setReveal(r || null); setFlow('questions'); };
 
@@ -399,6 +420,17 @@ export default function App() {
       ...NEXT.followup,
     ];
   }
+  /* The known-door checkpoint is the doctor's move, so both of its outcomes
+     live on the rail: the sign-off, and the "quick word first" escalation. */
+  if (f && f.run && f.run.door === 'known' && f.status === 'programme'
+      && f.run.checkpoint === 'pending') {
+    NEXT.programme = [
+      { t: 'Doctor approves the order',
+        run: (k) => dispatch({ type: 'checkpoint', protocol: k, v: 'approved' }) },
+      { t: 'Doctor asks for a quick call',
+        run: (k) => dispatch({ type: 'checkpoint', protocol: k, v: 'call' }) },
+    ];
+  }
   let steps = (f && NEXT[f.status]) || [];
   /* While the consultation screen is open there is no run yet, so the rail has
      nothing to advance. This is the one control it needs there. */
@@ -424,12 +456,24 @@ export default function App() {
       onDone={(a) => {
         dispatch({ type: 'answers', qa: a });
         setMatched(a.goal);
-        /* Straight to the person. This used to land on the plan tab, and the
-           moment a product card appeared the user stopped being a patient and
-           became a shopper — three screens after we'd welcomed them. */
-        setMeetKey(leadFor(a.goal));
-        setFlow('meet');
+        /* ── THE FORK LANDS HERE ──
+           Known door: straight to the plan — he told us what he wants, and
+           the doctor's checkpoint comes after payment. Everyone else — the
+           resolvers, and the known-door answers the intake escalated — goes
+           to the person, via the AI's investigation. */
+        if (doorOf(a) === 'known') {
+          setDetail(a.wantsPkey || leadFor(a.goal));
+          setFlow('buy');
+        } else {
+          setMeetKey(leadFor(a.goal));
+          setFlow(a.escalated ? 'meet' : 'assess');
+        }
       }} />
+  );
+  else if (flow === 'assess') view = (
+    <Assess goal={matched || st.qa.goal} pKey={meetKey}
+      onBack={() => setFlow('coach')}
+      onDone={() => setFlow('meet')} />
   );
   else if (flow === 'intro') view = (
     <Intro phase={phase}
@@ -458,6 +502,15 @@ export default function App() {
   else if (flow === 'consultation') view = (
     <Consultation pKey={detail} failed={matchFail}
       onDone={() => {
+        /* A checkpoint call ends by confirming the order the patient already
+           paid for — the run exists, so it must not be reset to 'consulted'
+           and no brief follows. The doctor said yes; care continues. */
+        if (ckCall) {
+          dispatch({ type: 'checkpoint', protocol: detail, v: 'approved' });
+          setCkCall(false);
+          setFlow('app'); setTab('today');
+          return;
+        }
         /* The run begins here, at `consulted`. Nothing was booked and nothing
            was paid, so there is no earlier state to record. */
         dispatch({ type: 'consulted', protocol: detail });
@@ -500,9 +553,18 @@ export default function App() {
       onBack={() => { setFlow('app'); setTab('today'); }} onBooked={bookReview} />
   );
   else if (flow === 'buy') view = (
-    <BuyScreen st={st} pKey={detail} onBack={() => setFlow('detail')}
+    <BuyScreen st={st} pKey={detail} door={doorOf(st.qa)}
+      wants={doorOf(st.qa) === 'known' ? (st.qa.wants || null) : null}
+      onBack={() => setFlow(doorOf(st.qa) === 'known' ? 'between' : 'detail')}
       onPaid={() => {
-        dispatch({ type: 'programme', protocol: detail });
+        /* Door A's run is created here, at payment, with the doctor's
+           checkpoint pending. Door B's run has existed since the
+           consultation, so paying just moves it forward. */
+        if (doorOf(st.qa) === 'known') {
+          dispatch({ type: 'orderPlaced', protocol: detail });
+        } else {
+          dispatch({ type: 'programme', protocol: detail });
+        }
         dispatch({ type: 'focus', protocol: detail });
         setFlow('app'); setTab('today');
       }} />
@@ -545,6 +607,10 @@ export default function App() {
                 {tab === 'today' && (
                   <Today st={st} dispatch={dispatch} onGo={setTab}
                          onBrief={(pk) => { setDetail(pk); setFlow('brief'); }}
+                         onCheckpointCall={(pk) => {
+                           setDetail(pk); setMatchFail(false);
+                           setCkCall(true); setFlow('consultation');
+                         }}
                          onBookBloods={(pk) => {
                            setDetail(pk); setBooking('bloods'); setFlow('consult');
                          }}
@@ -607,7 +673,8 @@ export default function App() {
             active={flow} onGo={(k) => setFlow(k)} />
 
           <Rail label="Funnel" items={[['between', 'Greeting'], ['coach', 'Intake chat'],
-            ['meet', 'Meet your doctor'], ['baseline', 'Blood test']]}
+            ['assess', 'AI assessment'], ['meet', 'Meet your doctor'],
+            ['baseline', 'Blood test']]}
             active={flow} onGo={(k) => { setReveal(null); setFlow(k); }} />
 
           <Rail label="App" items={tabs.map((k) => [k, ({
