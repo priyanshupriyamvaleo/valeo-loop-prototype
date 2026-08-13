@@ -107,7 +107,7 @@ export default function Assess({ goal, pKey, onBack, onDone }) {
           opacity: ready ? 1 : 0, transition: 'opacity .5s',
         }}>
           This is preparation, not a diagnosis. {first} decides what matters
-          on your call — and can see all of this before you speak.
+          on your call, and can see all of this before you speak.
         </Typography>
       </Box>
 

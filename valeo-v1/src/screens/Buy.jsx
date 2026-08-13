@@ -22,7 +22,7 @@ import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
 import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
 import PaySheet from '../components/PaySheet';
-import { carePlan, coachOf } from '../data';
+import { carePlan, knownPlan, coachOf } from '../data';
 import { C } from '../theme';
 
 /* Data names a concept, this maps it to a glyph — so data.js never imports
@@ -73,12 +73,176 @@ const TONES = {
  * The clinician recommended a specific course of care. No tiers, no
  * comparison columns, no "best value". "Protocol" appears nowhere.
  */
-export default function Buy({ pKey, onBack, onPaid, door = 'resolve', wants = null }) {
+export default function Buy({ pKey, onBack, onPaid, door = 'resolve',
+                              wants = null, wantsShort = null }) {
   const c = coachOf(pKey);
   const [pay, setPay] = useState(false);
   const [tour, setTour] = useState(false);
 
   if (!c) return null;
+
+  /* ── THE KNOWN DOOR GETS THE SIMPLE PLAN ──
+     Not the programme. A person who has already decided is buying execution:
+     a doctor's sign-off, the medication monthly, a check-in, a message line.
+     One screen, four rows, three steps, a monthly price well under the
+     programme, and no blood test to start. */
+  if (door === 'known') {
+    const kp = knownPlan(pKey, { wants, short: wantsShort });
+    const kprice = kp.price.toLocaleString();
+    return (
+      <Box sx={{
+        height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FAF6ED',
+      }}>
+        <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pt: 1.75, pb: 2 }}>
+          <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+            <IconButton onClick={onBack} size="small" sx={{
+              width: 34, height: 34, bgcolor: '#fff', color: C.deep,
+              boxShadow: '0 6px 18px -10px rgba(27,57,91,.45)',
+              '&:hover': { bgcolor: '#fff' },
+            }}>
+              <ArrowBackIosNewIcon sx={{ fontSize: 14 }} />
+            </IconButton>
+            <Box sx={{
+              width: 38, height: 38, borderRadius: '50%', overflow: 'hidden',
+              bgcolor: C.yellow, border: '2px solid #fff',
+              boxShadow: '0 6px 16px -8px rgba(27,57,91,.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {c.img
+                ? <Box component="img" src={c.img} alt="" sx={{
+                    width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
+                  }} />
+                : <Typography sx={{
+                    fontFamily: '"Fraunces", serif', fontSize: 13, fontWeight: 600, color: C.deep,
+                  }}>{c.mono}</Typography>}
+            </Box>
+          </Stack>
+
+          <Typography sx={{
+            fontSize: 10.5, fontWeight: 800, letterSpacing: '.18em',
+            textTransform: 'uppercase', color: C.yellowDeep, mt: 1.75,
+          }}>Based on your answers</Typography>
+          <Typography sx={{
+            fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 600,
+            lineHeight: 1.15, color: C.deep, mt: 0.75,
+          }}>{kp.title}</Typography>
+
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mt: 1.5 }}>
+            <Typography sx={{
+              fontFamily: '"Fraunces", serif', fontSize: 26, fontWeight: 600,
+              color: C.deep, lineHeight: 1.1,
+            }}>SAR {kprice}</Typography>
+            <Typography sx={{ fontSize: 13, fontWeight: 600, color: C.ink2 }}>
+              a month
+            </Typography>
+          </Stack>
+          <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.4 }}>
+            Doctor reviewed. Delivered monthly. Stop whenever you and your
+            doctor decide.
+          </Typography>
+
+          {/* the four things the money buys, and when */}
+          <Box sx={{
+            mt: 2, px: 1.75, borderRadius: '18px', bgcolor: '#fff',
+            boxShadow: '0 8px 26px -20px rgba(27,57,91,.5)',
+          }}>
+            {kp.rows.map((r, i) => {
+              const Ic = ICONS[r.ic] || MedicalServicesOutlinedIcon;
+              return (
+                <Stack key={r.t} direction="row" spacing={1.1} sx={{
+                  alignItems: 'flex-start', py: 1.4,
+                  borderTop: i === 0 ? 'none' : `1px solid ${C.line}`,
+                }}>
+                  <Box sx={{
+                    width: 30, height: 30, borderRadius: '50%', flexShrink: 0, mt: '1px',
+                    bgcolor: 'rgba(27,57,91,.055)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Ic sx={{ fontSize: 15, color: C.deep }} />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Stack direction="row" spacing={0.8} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Typography sx={{
+                        fontSize: 13, fontWeight: 700, color: C.deep, lineHeight: 1.3,
+                      }}>{r.t}</Typography>
+                      <Typography sx={{
+                        px: 0.7, py: 0.2, borderRadius: '5px', whiteSpace: 'nowrap',
+                        fontSize: 8, fontWeight: 800, letterSpacing: '.06em',
+                        textTransform: 'uppercase',
+                        bgcolor: 'rgba(224,164,0,.14)', color: C.yellowDeep,
+                      }}>{r.b}</Typography>
+                    </Stack>
+                    <Typography sx={{ fontSize: 11, lineHeight: 1.45, color: C.ink2, mt: 0.35 }}>
+                      {r.s}
+                    </Typography>
+                  </Box>
+                </Stack>
+              );
+            })}
+          </Box>
+
+          {/* how it works, in three dated steps */}
+          <Typography sx={{
+            fontSize: 10, fontWeight: 800, letterSpacing: '.15em',
+            textTransform: 'uppercase', color: C.ink2, mt: 2.5, mb: 1.25,
+          }}>How it works</Typography>
+          <Stack spacing={1.4}>
+            {kp.steps.map((x, n) => (
+              <Stack key={x.t} direction="row" spacing={1.4} sx={{ alignItems: 'flex-start' }}>
+                <Typography sx={{
+                  fontFamily: '"Fraunces", serif', fontSize: 12.5, fontWeight: 600,
+                  color: C.yellowDeep, flexShrink: 0, width: 20, mt: '1px',
+                }}>{String(n + 1).padStart(2, '0')}</Typography>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontSize: 13, fontWeight: 700, color: C.deep, lineHeight: 1.3 }}>
+                    {x.t}
+                  </Typography>
+                  <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.2 }}>{x.s}</Typography>
+                </Box>
+              </Stack>
+            ))}
+          </Stack>
+
+          {/* No blood test to start. Said plainly, because it is the whole
+              difference between this plan and the programme. */}
+          <Stack direction="row" spacing={1.25} sx={{
+            mt: 2.25, px: 1.75, py: 1.5, borderRadius: '14px',
+            bgcolor: 'rgba(224,164,0,.09)', alignItems: 'flex-start',
+          }}>
+            <InfoOutlinedIcon sx={{ fontSize: 17, color: C.yellowDeep, flexShrink: 0, mt: '1px' }} />
+            <Typography sx={{ fontSize: 12, lineHeight: 1.55, color: C.deep }}>
+              {kp.note}
+            </Typography>
+          </Stack>
+        </Box>
+
+        <Box sx={{
+          flexShrink: 0, px: 2.25, pt: 1.5, pb: 2,
+          borderTop: `1px solid ${C.line}`, bgcolor: '#FAF6ED',
+        }}>
+          <Button fullWidth variant="contained" color="secondary" onClick={() => setPay(true)}
+            endIcon={<ArrowForwardIcon sx={{ fontSize: 18 }} />}
+            sx={{ py: 1.4, fontSize: 15.5 }}>
+            Start my plan · SAR {kprice}
+          </Button>
+          <Stack direction="row" spacing={0.6} sx={{
+            alignItems: 'center', justifyContent: 'center', mt: 1,
+          }}>
+            <LockOutlinedIcon sx={{ fontSize: 12, color: C.ink2 }} />
+            <Typography sx={{ fontSize: 11, color: C.ink2, textAlign: 'center', lineHeight: 1.45 }}>
+              Billed monthly. A doctor reviews every order before it ships.
+            </Typography>
+          </Stack>
+        </Box>
+
+        <PaySheet open={pay}
+          item={`${kp.title} with ${c.short}`}
+          fee={kprice}
+          onClose={() => setPay(false)} onDone={onPaid} />
+      </Box>
+    );
+  }
+
   const plan = carePlan(pKey, { door, wants });
   const price = plan.price.toLocaleString();
 
@@ -122,18 +286,11 @@ export default function Buy({ pKey, onBack, onPaid, door = 'resolve', wants = nu
         </Stack>
 
         {/* The title is the whole hero: programme name and price, nothing
-            else. The known door gets one small line above it — the plan
-            arrived from his answers, not from a consultation, and saying so
-            is what makes it feel selected rather than merchandised. */}
-        {door === 'known' && (
-          <Typography sx={{
-            fontSize: 10.5, fontWeight: 800, letterSpacing: '.18em',
-            textTransform: 'uppercase', color: C.yellowDeep, mt: 1.75,
-          }}>Based on your answers</Typography>
-        )}
+            else. The known door never reaches this layout anymore; it has
+            its own simple monthly plan above. */}
         <Typography sx={{
           fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 600,
-          lineHeight: 1.15, color: C.deep, mt: door === 'known' ? 0.75 : 1.75,
+          lineHeight: 1.15, color: C.deep, mt: 1.75,
         }}>{plan.title}</Typography>
 
         {/* ── the price card ── */}

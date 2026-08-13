@@ -425,8 +425,13 @@ export default function App() {
   if (f && f.run && f.run.door === 'known' && f.status === 'programme'
       && f.run.checkpoint === 'pending') {
     NEXT.programme = [
+      /* Approval starts fulfilment directly. No blood test on this door;
+         the next event in the patient's life is the medication arriving. */
       { t: 'Doctor approves the order',
-        run: (k) => dispatch({ type: 'checkpoint', protocol: k, v: 'approved' }) },
+        run: (k) => {
+          dispatch({ type: 'checkpoint', protocol: k, v: 'approved' });
+          dispatch({ type: 'activate', protocol: k });
+        } },
       { t: 'Doctor asks for a quick call',
         run: (k) => dispatch({ type: 'checkpoint', protocol: k, v: 'call' }) },
     ];
@@ -454,7 +459,15 @@ export default function App() {
   else if (flow === 'coach') view = (
     <Coach preGoal={preGoal} onBack={() => setFlow('between')}
       onDone={(a) => {
-        dispatch({ type: 'answers', qa: a });
+        /* The fork keys are written authoritatively. `answers` merges into
+           qa, and a re-run of the intake must not inherit an escalation or a
+           product choice from a previous run: a happy-path `a` simply lacks
+           those keys, and the merge would keep the stale ones. */
+        dispatch({ type: 'answers', qa: {
+          escalated: false, escAt: null,
+          wants: null, wantsPkey: null, wantsShort: null,
+          ...a,
+        } });
         setMatched(a.goal);
         /* ── THE FORK LANDS HERE ──
            Known door: straight to the plan — he told us what he wants, and
@@ -507,6 +520,9 @@ export default function App() {
            and no brief follows. The doctor said yes; care continues. */
         if (ckCall) {
           dispatch({ type: 'checkpoint', protocol: detail, v: 'approved' });
+          /* No blood test on this door. Approval starts fulfilment: the next
+             thing that happens to this patient is medication arriving. */
+          dispatch({ type: 'activate', protocol: detail });
           setCkCall(false);
           setFlow('app'); setTab('today');
           return;
@@ -554,7 +570,8 @@ export default function App() {
   );
   else if (flow === 'buy') view = (
     <BuyScreen st={st} pKey={detail} door={doorOf(st.qa)}
-      wants={doorOf(st.qa) === 'known' ? (st.qa.wants || null) : null}
+      wants={doorOf(st.qa) === 'known' && st.qa.wantsPkey ? (st.qa.wants || null) : null}
+      wantsShort={doorOf(st.qa) === 'known' ? (st.qa.wantsShort || null) : null}
       onBack={() => setFlow(doorOf(st.qa) === 'known' ? 'between' : 'detail')}
       onPaid={() => {
         /* Door A's run is created here, at payment, with the doctor's

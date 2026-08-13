@@ -233,7 +233,7 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
                 a bounce. */}
             <Typed
               paras={a.escalated ? [
-                'Thank you for telling me — that changes what I’d recommend.',
+                'Thank you for telling me. That changes what I’d recommend.',
                 ['I want ', { b: `${lead ? lead.short : 'a doctor'}` },
                   ' to look at this with you before anything is prescribed.'],
                 'It takes about ten minutes, and it’s included.',
@@ -301,9 +301,11 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
             })}
           </Stack>
         ) : step.kind === 'wants' ? (
-          <Suggest opts={kAsk.wants.o.map((o) => ({ k: o.t, t: o.t, pKey: o.pKey }))}
+          <Suggest opts={kAsk.wants.o.map((o) => ({ k: o.t, t: o.t, pKey: o.pKey, short: o.short }))}
             onPick={(o) => {
-              setA((prev) => ({ ...prev, wantsPkey: o.pKey || null }));
+              setA((prev) => ({
+                ...prev, wantsPkey: o.pKey || null, wantsShort: o.short || null,
+              }));
               answer('wants', o.t);
             }} />
         ) : step.kind === 'choice' ? (

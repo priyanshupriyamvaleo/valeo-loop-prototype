@@ -2776,31 +2776,32 @@ export const COACH_OPENING = [
      me understand what's wrong" — and it is the ONLY place the two
      architectures are ever allowed to surface. Everything downstream reads
      the answer; no screen ever mentions it. */
-  { k: 'door',   kind: 'door',   q: 'Last one. Which of these sounds more like you?' },
+  { k: 'door',   kind: 'door',   q: 'What brings you to Valeo today?' },
 ];
 
 /* The fork's two answers, phrased in the patient's own words per goal. The
    right words matter more here than anywhere: "I know what I want" from a
-   weight-loss patient is "I want to start the medication", and pretending
-   both doors are abstract "journeys" would make this a routing form. */
+   weight-loss patient is "I want to start GLP-1", and pretending both doors
+   are abstract "journeys" would make this a routing form. Stakeholder copy
+   (Aug 2026) for the weight goal, verbatim. */
 export const DOOR_ASK = {
   fat: {
-    known:   { t: 'I want to start weight-loss medication',
-               s: 'I’ve done my research. Help me start safely.' },
-    resolve: { t: 'I can’t lose weight and I don’t know why',
-               s: 'Help me figure out what’s going on first.' },
+    known:   { t: 'I want to start GLP-1 treatment',
+               s: 'I’ve decided GLP-1 is right for me. Help me get started safely.' },
+    resolve: { t: 'I’m not sure what’s right for me',
+               s: 'Help me understand the best approach for my weight loss.' },
   },
   test: {
     known:   { t: 'I know the treatment I’m after',
-               s: 'I’ve done my research. Help me start safely.' },
-    resolve: { t: 'My energy and drive are off — I want answers',
-               s: 'Help me figure out what’s going on first.' },
+               s: 'I’ve decided what’s right for me. Help me get started safely.' },
+    resolve: { t: 'I’m not sure what’s right for me',
+               s: 'Help me understand the best approach for my health.' },
   },
   _default: {
     known:   { t: 'I know what I want',
-               s: 'I’ve done my research. Help me start safely.' },
-    resolve: { t: 'Something’s off and I want answers',
-               s: 'Help me figure out what’s going on first.' },
+               s: 'I’ve decided what’s right for me. Help me get started safely.' },
+    resolve: { t: 'I’m not sure what’s right for me',
+               s: 'Help me understand the best approach for my health.' },
   },
 };
 export const doorAskFor = (goalKey) => DOOR_ASK[goalKey] || DOOR_ASK._default;
@@ -2823,47 +2824,47 @@ export const doorOf = (qa) =>
 export const KNOWN = {
   fat: {
     wants: { q: 'What did you have in mind?', o: [
-      { t: 'GLP-1 weekly injection', pKey: 'P_WEIGHT' },
-      { t: 'Not sure — recommend one', pKey: null },
+      { t: 'GLP-1 weekly injection', short: 'GLP-1', pKey: 'P_WEIGHT' },
+      { t: 'Not sure, recommend one', pKey: null },
     ] },
     prior: { q: 'Have you used it before?',
-      o: ['Never', 'Currently using it', 'Used it — it didn’t work'] },
-    flags: { q: 'Quick safety check — do any of these apply to you?', o: [
+      o: ['Never', 'Currently using it', 'Used it before, it didn’t work'] },
+    flags: { q: 'Quick safety check. Do any of these apply to you?', o: [
       'History of pancreatitis', 'Thyroid cancer in my family',
       'Pregnant or breastfeeding', 'None of these'] },
   },
   test: {
     wants: { q: 'What did you have in mind?', o: [
-      { t: 'Testosterone support', pKey: 'P_TEST' },
-      { t: 'ED medication', pKey: 'P_TEST' },
-      { t: 'Not sure — recommend one', pKey: null },
+      { t: 'Testosterone support', short: 'Testosterone', pKey: 'P_TEST' },
+      { t: 'ED medication', short: 'ED Medication', pKey: 'P_TEST' },
+      { t: 'Not sure, recommend one', pKey: null },
     ] },
     prior: { q: 'Have you used it before?',
-      o: ['Never', 'Currently using it', 'Used it — it didn’t work'] },
-    flags: { q: 'Quick safety check — do any of these apply to you?', o: [
+      o: ['Never', 'Currently using it', 'Used it before, it didn’t work'] },
+    flags: { q: 'Quick safety check. Do any of these apply to you?', o: [
       'Trying to conceive in the next 12 months', 'A heart condition',
       'None of these'] },
   },
   long: {
     wants: { q: 'What did you have in mind?', o: [
-      { t: 'A full body checkup', pKey: 'P_LONG' },
-      { t: 'A longevity programme', pKey: 'P_LONG' },
-      { t: 'Not sure — recommend one', pKey: null },
+      { t: 'A full body checkup', short: 'Checkup', pKey: 'P_LONG' },
+      { t: 'A longevity plan', short: 'Longevity', pKey: 'P_LONG' },
+      { t: 'Not sure, recommend one', pKey: null },
     ] },
     prior: { q: 'Have you done structured testing before?',
-      o: ['Never', 'Once or twice', 'Regularly — it didn’t change anything'] },
-    flags: { q: 'Quick safety check — do any of these apply to you?', o: [
+      o: ['Never', 'Once or twice', 'Regularly, it didn’t change anything'] },
+    flags: { q: 'Quick safety check. Do any of these apply to you?', o: [
       'An active infection right now', 'Immunosuppressed',
       'None of these'] },
   },
   post: {
     wants: { q: 'What did you have in mind?', o: [
-      { t: 'A postpartum recovery plan', pKey: 'P_POST' },
-      { t: 'Not sure — recommend one', pKey: null },
+      { t: 'A postpartum recovery plan', short: 'Recovery', pKey: 'P_POST' },
+      { t: 'Not sure, recommend one', pKey: null },
     ] },
     prior: { q: 'Have you tried anything so far?',
-      o: ['Nothing yet', 'Supplements on my own', 'A plan — it didn’t help'] },
-    flags: { q: 'Quick safety check — do any of these apply to you?', o: [
+      o: ['Nothing yet', 'Supplements on my own', 'A plan, it didn’t help'] },
+    flags: { q: 'Quick safety check. Do any of these apply to you?', o: [
       'Heavy bleeding or fever right now', 'Severe mood changes',
       'None of these'] },
   },
@@ -3311,7 +3312,7 @@ export function practiceScript(st, pKey) {
       key: 'checkpoint-call', clinician: c, first,
       lines: [`${first} looked at your order and wants two minutes with you `
                 + 'before confirming it.',
-              'Nothing to worry about — it’s how we make sure this is right '
+              'Nothing to worry about. It’s how we make sure this is right '
                 + 'for you. The call is on your Today page.'],
       chips: [
         { ic: '📞', q: 'Why the call?',
@@ -3987,6 +3988,42 @@ export function careSteps(first) {
    One figure: the programme fee plus three months of treatment, both derived
    from the same constants as before so nothing drifts. No per-month figure
    and no "save X" line — there is no monthly alternative to save against. */
+/* ── THE KNOWN-DOOR PLAN ──
+   Not the programme. A person who has already decided wants a simple,
+   smaller, cheaper thing: a doctor signs the order off, the medication
+   arrives monthly, a short check-in keeps the dose right, and the practice
+   is a message away. No blood test is required to start; if the doctor
+   recommends testing later, it is arranged then. Priced per month, well
+   under the 12-week programme, because it carries less care. */
+export function knownPlan(pKey, opts = {}) {
+  const { wants = null, short = null } = opts;
+  const p = PROTOCOLS[pKey];
+  const perMonth = Math.round(p.price / 4 / 50) * 50;
+  return {
+    title: short ? `${short} Monthly Plan` : 'Monthly Care Plan',
+    price: 499 + perMonth,
+    rows: [
+      { ic: 'doctor', t: 'Doctor review of your order', b: 'today',
+        s: 'A Valeo doctor checks your answers and signs off before anything ships' },
+      { ic: 'box', t: 'Medication delivered', b: 'monthly',
+        s: wants
+          ? `Your ${wants}, dispensed and delivered in cold chain`
+          : 'Dispensed and delivered in cold chain' },
+      { ic: 'cal', t: 'Doctor check-in', b: 'monthly',
+        s: 'A short review each month to keep your dose right' },
+      { ic: 'chat', t: 'Message the practice', b: 'any time',
+        s: 'Support between check-ins, in app or on WhatsApp' },
+    ],
+    steps: [
+      { t: 'Doctor reviews your order', s: 'Today, before anything is dispensed' },
+      { t: 'Your medication arrives', s: 'Delivered to your door, in cold chain' },
+      { t: 'Check in and adjust', s: 'A short review with your doctor each month' },
+    ],
+    note: 'No blood test is needed to start. If your doctor recommends '
+        + 'testing later, we arrange it at your home.',
+  };
+}
+
 /* `opts.door` varies the copy, never the care: a known-door patient arrives
    without a consultation, so the sequencing note and the journey's first row
    speak about the doctor's same-day order review instead of a consultation
@@ -4015,7 +4052,7 @@ export function carePlan(pKey, opts = {}) {
   const sections = [
     { k: 'team', t: 'Your care team', rows: [
       { ic: 'doctor', t: 'Your doctor', b: 'Unlimited',
-        s: `Consultations with ${first} — book any time, app or WhatsApp` },
+        s: `Consultations with ${first}, book any time in app or WhatsApp` },
       { ic: 'food', t: 'Nutrition coach', b: 'Throughout',
         s: 'An evolving nutrition plan as your markers change' },
       { ic: 'gym', t: 'Performance coach', b: 'Throughout',
@@ -4106,7 +4143,7 @@ export function carePlan(pKey, opts = {}) {
     /* Expectation-setting, adapted from the shared protocol skeleton. */
     pace: 'Care like this is designed over 12 weeks, and it is normal to '
         + 'notice very little in the first few weeks. Your body responds '
-        + 'gradually — which is why your care includes testing at the start '
+        + 'gradually, which is why your care includes testing at the start '
         + 'and at week 12. Your progress is measured, not guessed.',
   };
 }
