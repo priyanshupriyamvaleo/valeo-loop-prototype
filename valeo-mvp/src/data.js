@@ -3650,27 +3650,91 @@ export const DEFAULT_PLAN = {
   guarantee: 'Full refund if the doctor decides it’s not right for you.',
 };
 
-/* The intake: six questions, no fork, no goal picker. Weight loss is the
-   whole shop. Any flag, or a prior course that failed, routes to a doctor
-   BEFORE any payment. The flag list is a PLACEHOLDER pending clinical
-   sign-off, like every clinical list in this prototype. */
-export const GLP_ASK = [
-  { k: 'wants',  kind: 'choice', q: 'What would you like to start?',
-    o: ['GLP-1 weekly injection', 'Not sure, recommend one'] },
-  { k: 'sex',    kind: 'choice', q: 'Are you male or female?',
+/* ══════════════════════════════════════════════════════════════════════════
+   THE ONBOARDING (docs/ONBOARDING_SPEC.md)
+
+   One rule: every question feeds a decision. Eligibility is BMI arithmetic
+   (30, or 27 with a weight-related condition, the Hims and Juniper line).
+   Routing is the safety screen: any contraindication signal sees a doctor
+   BEFORE payment. The motivation question and the interstitials feed
+   conversion and never route.
+
+   The wizard walks this list. `show(a)` hides a step whose branch is not
+   taken, so a man is never asked about pregnancy and a first-timer is never
+   asked why he stopped. Clinical lists are PLACEHOLDERS pending sign-off,
+   like every clinical list in this prototype.
+   ══════════════════════════════════════════════════════════════════════════ */
+export const bmiOf = (a) => (a.height && a.weight
+  ? Math.round((a.weight / ((a.height / 100) ** 2)) * 10) / 10
+  : null);
+
+export const GLP_QUIZ = [
+  { k: 'sex', kind: 'choice', q: 'Are you male or female?',
     o: ['Male', 'Female'] },
-  { k: 'height', kind: 'number', q: 'How tall are you?', ph: '175', suffix: 'cm', min: 120, max: 220 },
-  { k: 'weight', kind: 'number', q: 'And roughly what do you weigh?', ph: '96', suffix: 'kg', min: 35, max: 250 },
-  { k: 'prior',  kind: 'choice', q: 'Have you used GLP-1 before?',
-    o: ['Never', 'Currently using it', 'Used it before, it didn’t work'] },
-  { k: 'flags',  kind: 'choice', q: 'Quick safety check. Do any of these apply to you?',
-    o: ['History of pancreatitis', 'Thyroid cancer in my family',
-        'Pregnant or breastfeeding', 'Type 1 diabetes', 'None of these'] },
+  { k: 'age', kind: 'number', q: 'How old are you?',
+    suffix: 'years', min: 16, max: 90, chips: [25, 32, 40, 48, 55], start: 34 },
+  { k: 'height', kind: 'number', q: 'How tall are you?',
+    suffix: 'cm', min: 120, max: 220, chips: [160, 168, 175, 182, 190], start: 175 },
+  { k: 'weight', kind: 'number', q: 'And your weight today?',
+    suffix: 'kg', min: 45, max: 250, chips: [75, 85, 96, 110, 125], start: 96 },
+  /* 27–29.9 only: the label rule needs one weight-related condition. */
+  { k: 'comorbid', kind: 'choice', q: 'Do any of these come with the weight?',
+    sub: 'At your BMI, GLP-1 needs one of these alongside it.',
+    show: (a) => { const b = bmiOf(a); return b !== null && b >= 27 && b < 30; },
+    o: ['High blood pressure', 'Prediabetes or type 2 diabetes',
+        'Sleep apnea', 'High cholesterol', 'None of these'] },
+  { k: 'bmiMoment', kind: 'info' },
+  { k: 'why', kind: 'multi', q: 'Why do you want to lose weight?',
+    o: ['Improve my health', 'More energy', 'Feel better in my clothes',
+        'Confidence', 'Something else'] },
+  { k: 'wants', kind: 'choice', q: 'Do you have a treatment in mind already?',
+    o: ['GLP-1 weekly injections', 'I’d like the doctor to recommend'] },
+  { k: 'prior', kind: 'choice', q: 'Have you used GLP-1 before?',
+    o: ['Never', 'I’m currently taking it', 'I’ve taken it before'] },
+  { k: 'dose', kind: 'choice', q: 'Which weekly dose are you on?',
+    sub: 'Your doctor confirms this at the review.',
+    show: (a) => a.prior === 'I’m currently taking it',
+    o: ['0.25 mg', '0.5 mg', '1 mg', '1.7 mg', '2.4 mg', 'Not sure'] },
+  { k: 'stopWhy', kind: 'choice', q: 'Why did you stop?',
+    show: (a) => a.prior === 'I’ve taken it before',
+    o: ['Side effects', 'It didn’t work for me', 'Cost or availability',
+        'Something else'] },
+  { k: 'conditions', kind: 'multi', q: 'Do any of these apply to you?',
+    sub: 'Your safety screen. A doctor reads every answer.', none: 'None of these',
+    o: ['Thyroid cancer, in me or my family', 'History of pancreatitis',
+        'Type 1 diabetes', 'A severe stomach or digestive condition',
+        'History of an eating disorder', 'None of these'] },
+  { k: 'pregnancy', kind: 'choice', q: 'Are you pregnant, breastfeeding, or trying to conceive?',
+    show: (a) => a.sex === 'Female',
+    o: ['No', 'Yes'] },
+  { k: 'meds', kind: 'choice', q: 'Are you taking any medication right now?',
+    o: ['None', 'Insulin or diabetes medication', 'Blood pressure medication',
+        'Something else'] },
 ];
 
-export const GLP_FLAGGED = (a) =>
-  (a.flags && a.flags !== 'None of these')
-  || /didn’t work/.test(a.prior || '');
+/* The three decisions, derived from the answers and nowhere else. */
+export function quizRoute(a) {
+  if (a.age && a.age < 18) return { out: 'stop',
+    t: 'GLP-1 is for adults.',
+    s: 'We can’t treat under-18s. If weight is worrying you, a doctor at a clinic can help properly.' };
+  const b = bmiOf(a);
+  if (b !== null && b < 27) return { out: 'stop',
+    t: `Your BMI is ${b}. GLP-1 isn’t suitable here.`,
+    s: 'GLP-1 is designed for a BMI of 30, or 27 with a weight-related condition. At your weight it would do more harm than good, and no honest doctor would prescribe it.' };
+  if (b !== null && b < 30 && a.comorbid === 'None of these') return { out: 'stop',
+    t: `Your BMI is ${b}.`,
+    s: 'Under 30, GLP-1 needs a weight-related condition alongside it. Without one, it isn’t the right tool for you, and we’d rather say so now.' };
+  const reasons = [];
+  if ((a.conditions || []).some((c) => c !== 'None of these')) reasons.push('a safety answer');
+  if (a.pregnancy === 'Yes') reasons.push('pregnancy or breastfeeding');
+  if (['Side effects', 'It didn’t work for me', 'Something else'].includes(a.stopWhy || '')) reasons.push('your previous course');
+  if (a.meds === 'Insulin or diabetes medication') reasons.push('your current medication');
+  if (a.age && a.age >= 75) reasons.push('your age');
+  if (reasons.length) return { out: 'doctor', reasons };
+  return { out: 'plan' };
+}
+
+export const GLP_FLAGGED = (a) => quizRoute(a).out === 'doctor';
 
 /* ── THE SPLIT (MVP) ──
    The long flow sells the blood test first and the programme at the results

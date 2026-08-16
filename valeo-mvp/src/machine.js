@@ -16,8 +16,8 @@ export const STATES = [
     enter: 'The patient opens weight loss. An episode exists.',
     exit: 'Intake begins.' },
   { id: 'INTAKE', t: 'Intake & safety',
-    enter: 'Six questions: what you want, sex, height, weight, prior use, red flags.',
-    exit: 'Clean answers go to the plan. Any flag goes to a doctor first.' },
+    enter: 'About you, your why, then the safety screen. Every answer feeds a decision: eligibility by BMI, dosing, or the doctor gate.',
+    exit: 'Eligible and clean goes to the plan. Any flag goes to a doctor first. Out of range ends honestly.' },
   { id: 'FLAGGED_CALL', t: 'Eligibility call',
     enter: 'A safety answer needs a doctor. Ten minutes, included, before any payment.',
     exit: 'The doctor confirms eligibility: yes or no. The plan itself never changes.' },
@@ -53,13 +53,13 @@ function runState(r) {
 
 export function episodesOf(st, ui) {
   const eps = [];
-  const inFunnel = ['between', 'coach', 'consultation', 'plan'].includes(ui.flow);
+  const inFunnel = ['between', 'quiz', 'consultation', 'plan'].includes(ui.flow);
   if (inFunnel && !st.runs[GLP_PKEY]) {
     eps.push({
       id: 'funnel', pKey: null, goal: 'Weight Loss',
       flagged: !!st.qa.flagged,
       state: ui.flow === 'between' ? 'NEW'
-        : ui.flow === 'coach' ? 'INTAKE'
+        : ui.flow === 'quiz' ? 'INTAKE'
         : ui.flow === 'consultation' ? 'FLAGGED_CALL'
           : 'PLAN_VIEW',
     });
@@ -71,17 +71,16 @@ export function episodesOf(st, ui) {
   return eps;
 }
 
-/* SIM intake answers, for driving the funnel from the table. */
+/* SIM intake answers, for driving the funnel from the table. Same shape the
+   wizard produces. */
 export function simIntake(flagged) {
   return {
-    goal: 'fat', goal_label: 'Lose weight',
-    wants: 'GLP-1 weekly injection', wants_label: 'GLP-1 weekly injection',
-    sex: 'Male', sex_label: 'Male',
-    height: 175, height_label: '175 cm',
-    weight: 96, weight_label: '96 kg',
-    prior: 'Never', prior_label: 'Never',
-    flags: flagged ? 'History of pancreatitis' : 'None of these',
-    flags_label: flagged ? 'History of pancreatitis' : 'None of these',
+    sex: 'Male', age: 34, height: 175, weight: 96,
+    why: ['Improve my health', 'More energy'],
+    wants: 'GLP-1 weekly injections',
+    prior: 'Never',
+    conditions: flagged ? ['History of pancreatitis'] : ['None of these'],
+    meds: 'None',
     flagged: !!flagged, eligible: false,
   };
 }
@@ -97,13 +96,13 @@ export const TRANSITIONS = [
   { event: 'INTAKE_SUBMITTED · CLEAN', actor: 'patient', from: 'INTAKE', to: 'PLAN_VIEW', sim: true,
     writes: 'intake_answers, safety_screen (clean)',
     reason: 'The intake is not open',
-    guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
+    guard: (st, ui) => ['between', 'quiz'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(false)) },
 
   { event: 'INTAKE_SUBMITTED · FLAGGED', actor: 'patient', from: 'INTAKE', to: 'FLAGGED_CALL', sim: true,
     writes: 'intake_answers, safety_screen (flagged)',
     reason: 'The intake is not open',
-    guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
+    guard: (st, ui) => ['between', 'quiz'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(true)) },
 
   { event: 'ELIGIBILITY_CONFIRMED', actor: 'clinician', from: 'FLAGGED_CALL', to: 'PLAN_VIEW', sim: true,
