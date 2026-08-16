@@ -5,6 +5,10 @@ import ValeoHome from './screens/ValeoHome';
 import Between from './screens/Between';
 import Coach from './screens/Coach';
 import Consultation from './screens/Consultation';
+import BookConsult from './screens/BookConsult';
+import OrderPlaced from './screens/OrderPlaced';
+import Declined from './screens/Declined';
+import Program from './screens/Program';
 import PlanScreen from './screens/PlanScreen';
 import Today from './screens/Today';
 import BottomNav from './components/BottomNav';
@@ -97,6 +101,13 @@ function reducer(s, a) {
           checkpoint: a.eligible ? 'approved' : 'pending' } },
         focus: s.focus || a.protocol,
       };
+    /* A renewal restarts the cycle clock and asks for the dose review. */
+    case 'renew': {
+      const k = target(s, a);
+      const cur = s.runs[k];
+      if (!cur) return s;
+      return { ...s, runs: { ...s.runs, [k]: { ...cur, day: 1, titrationDone: false } } };
+    }
     case 'checkpoint':
       return patchRun(s, target(s, a), { checkpoint: a.v });
     case 'emit': return s;
@@ -196,6 +207,7 @@ export default function App() {
     return ['flow', 'plans'].includes(v) ? v : 'flow';
   });
   const [push, setPush] = useState(null);
+  const [paid, setPaid] = useState(null);   /* what was just bought */
 
   const enterApp = () => { setFlow('app'); setTab('today'); };
 
@@ -206,19 +218,43 @@ export default function App() {
     setFlow('between');
   };
 
-  /* The end of the six questions: clean sees the plan, flagged sees the
-     doctor first. Fork keys written authoritatively so a re-run cannot
-     inherit a stale flag. */
+  /* The end of the questions: clean sees the plan, flagged books a doctor.
+     Nobody is turned away here — the funnel has no third answer. Fork keys are
+     written authoritatively so a re-run cannot inherit a stale flag. */
   const completeIntake = (a) => {
     dispatch({ type: 'answers', qa: { flagged: false, eligible: false, ...a } });
-    setFlow(a.flagged ? 'consultation' : 'plan');
+    setFlow(a.flagged ? 'booking' : 'plan');
+  };
+
+  /* A time is taken. The call itself waits on Today until the link opens. */
+  const bookConsult = (slot) => {
+    dispatch({ type: 'answers', qa: { slotAt: slot.at.getTime(), slotLabel: slot.label } });
+    dispatch({ type: 'emit', event: 'CONSULT_BOOKED', actor: 'patient' });
+    enterApp();
   };
 
   /* The eligibility call ends one of two ways, and both are the doctor's. */
   const confirmEligible = () => {
-    dispatch({ type: 'answers', qa: { eligible: true } });
+    dispatch({ type: 'answers', qa: { eligible: true, declinedBy: null } });
     dispatch({ type: 'emit', event: 'ELIGIBILITY_CONFIRMED', actor: 'clinician' });
     setFlow('plan');
+  };
+
+  /* The no. Not a dead end: the clinician's words come back into the chat and
+     the patient is offered another goal, which starts a fresh journey. */
+  const declineEligibility = (message) => {
+    dispatch({ type: 'answers', qa: { eligible: false, declined: true, declineMessage: message } });
+    dispatch({ type: 'emit', event: 'ELIGIBILITY_DECLINED', actor: 'clinician' });
+    setFlow('declined');
+  };
+
+  /* Choosing a different goal wipes the weight-loss file and starts again. */
+  const restartWithGoal = (goal) => {
+    dispatch({ type: 'answers', qa: {
+      flagged: false, eligible: false, declined: false, declineMessage: null,
+      slotAt: null, slotLabel: null, goal,
+    } });
+    setFlow(goal === 'weight' ? 'coach' : 'home');
   };
 
   /* Payment. If a doctor already said yes on the call, review is complete
@@ -228,7 +264,9 @@ export default function App() {
                med: (med && med.name) || null, eligible: !!st.qa.eligible });
     dispatch({ type: 'focus', protocol: GLP_PKEY });
     if (st.qa.eligible) dispatch({ type: 'activate', protocol: GLP_PKEY });
-    enterApp();
+    /* The beat after paying gets its own screen before Today takes over. */
+    setPaid({ med: (med && med.name) || null, duration, eligible: !!st.qa.eligible });
+    setFlow('placed');
   };
 
   const approveOrder = (pk) => {
@@ -239,7 +277,8 @@ export default function App() {
 
   const ui = { flow, tab };
   const ctx = { dispatch, setFlow, setTab, startIntake, completeIntake,
-                confirmEligible, payPlan, approveOrder, declineOrder };
+                bookConsult, confirmEligible, declineEligibility, restartWithGoal,
+                payPlan, approveOrder, declineOrder };
 
   /* THE GATE. A transition the machine refuses simply does not fire. */
   const fireEvent = (eventId, ep) => {
@@ -265,12 +304,23 @@ export default function App() {
   else if (flow === 'coach') view = (
     <Coach onBack={() => setFlow('home')} onDone={completeIntake} />
   );
+  else if (flow === 'booking') view = (
+    <BookConsult onBack={() => setFlow('coach')} onBooked={bookConsult}
+      reasons={(st.qa && st.qa.reasons) || []} />
+  );
   else if (flow === 'consultation') view = (
-    /* The eligibility call. The doctor's one job here is yes or no; ending
-       the call is the yes (the no is the table's ORDER_DECLINED beat after
-       payment, or simply no plan offered — SIM keeps the happy path). */
+    /* The eligibility call, reached from Today when the link opens. The
+       doctor's one job here is yes or no, and now both are reachable. */
     <Consultation pKey={GLP_PKEY} failed={false}
-      onDone={confirmEligible} />
+      onDone={confirmEligible} onDecline={declineEligibility} />
+  );
+  else if (flow === 'declined') view = (
+    <Declined message={st.qa.declineMessage} onPick={restartWithGoal}
+      onBack={() => setFlow('home')} />
+  );
+  else if (flow === 'placed') view = (
+    <OrderPlaced med={paid && paid.med} duration={paid && paid.duration}
+      eligible={paid && paid.eligible} onDone={enterApp} />
   );
   else if (flow === 'plan') view = (
     <PlanScreen plan={st.plan} eligible={!!st.qa.eligible}
@@ -294,7 +344,15 @@ export default function App() {
           {chrome ? (
             <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ flex: '1 1 auto', minHeight: 0, position: 'relative' }}>
+                {tab === 'plan' ? (
+                  <Program st={st}
+                    onGo={setTab}
+                    onRenew={() => { dispatch({ type: 'renew', protocol: GLP_PKEY }); setFlow('placed'); setPaid({ med: (focusRun(st) || {}).run?.med, duration: (focusRun(st) || {}).run?.duration, eligible: true }); }}
+                    onBookTitration={() => setFlow('booking')}
+                    onNewGoal={() => setFlow('coach')} />
+                ) : (
                 <Today st={st} dispatch={dispatch} onGo={setTab}
+                       onJoinConsult={() => setFlow('consultation')}
                        onBrief={() => {}}
                        onCheckpointCall={() => {}}
                        onActivate={() => {}}
@@ -305,8 +363,9 @@ export default function App() {
                        onReview={() => {}}
                        onResults={() => {}}
                        onFocus={(pk) => dispatch({ type: 'focus', protocol: pk })} />
+                )}
               </Box>
-              <BottomNav active={tab} onGo={setTab} dark={false} tabs={['today']}
+              <BottomNav active={tab} onGo={setTab} dark={false} tabs={['today', 'plan']}
                          onHome={() => setFlow('home')} badge={{}} />
             </Box>
           ) : view}

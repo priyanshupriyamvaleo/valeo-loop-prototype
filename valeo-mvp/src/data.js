@@ -2008,6 +2008,23 @@ export function whenPhrase(slot) {
 }
 
 export function nextStep(st, pKey) {
+  /* Before any order exists, the booked consultation IS the next step. It is
+     the only card in the app whose action is time-gated: the link opens ten
+     minutes before, and until then the honest thing to show is the clock. */
+  const cs = consultState(st.qa);
+  if (cs && !st.runs[pKey] && !cs.missed) {
+    const who = coachOf(pKey) || DOCTOR;
+    return {
+      kind: 'consult', tag: cs.open ? 'Your doctor is ready' : 'Consultation booked',
+      title: cs.open ? `${who.short} is ready for you.` : `Today at ${cs.label}.`,
+      body: cs.open
+        ? 'Ten minutes, and nothing is prescribed until you have spoken.'
+        : `Your link opens ten minutes before. We will remind you ${cs.countdown}.`,
+      cta: cs.open ? 'Join the call' : null,
+      ctaKind: 'joinConsult',
+      consult: cs,
+    };
+  }
   const status = statusOf(st, pKey);
   const r = runOf(st, pKey);
   const p = PROTOCOLS[pKey];
@@ -3747,26 +3764,48 @@ export const GLP_QUIZ = [
         'Something else'] },
 ];
 
-/* The three decisions, derived from the answers and nowhere else. */
+/* ONE DECISION, TWO ANSWERS.
+   The funnel refuses nobody. Anything it cannot wave straight through goes to a
+   clinician, and only a clinician may say no — including the cases a screen
+   used to reject outright (under 18, a BMI below the label). A form declining
+   someone on medical grounds is a clinical judgement made by a text file; the
+   ten-minute call costs us little and is the honest version of the same answer.
+   `reasons` is what the patient is told, in their own words. */
 export function quizRoute(a) {
-  if (a.age && a.age < 18) return { out: 'stop',
-    t: 'GLP-1 is for adults.',
-    s: 'We can’t treat under-18s. If weight is worrying you, a doctor at a clinic can help properly.' };
-  const b = bmiOf(a);
-  if (b !== null && b < 27) return { out: 'stop',
-    t: `Your BMI is ${b}. GLP-1 isn’t suitable here.`,
-    s: 'GLP-1 is designed for a BMI of 30, or 27 with a weight-related condition. At your weight it would do more harm than good, and no honest doctor would prescribe it.' };
-  if (b !== null && b < 30 && a.comorbid === 'None of these') return { out: 'stop',
-    t: `Your BMI is ${b}.`,
-    s: 'Under 30, GLP-1 needs a weight-related condition alongside it. Without one, it isn’t the right tool for you, and we’d rather say so now.' };
   const reasons = [];
+  const b = bmiOf(a);
+
+  if (a.age && a.age < 18) reasons.push('your age');
+  else if (a.age && a.age >= 75) reasons.push('your age');
+  if (b !== null && b < 27) reasons.push('your BMI');
+  else if (b !== null && b < 30 && a.comorbid === 'None of these') reasons.push('your BMI');
+
   if ((a.conditions || []).some((c) => c !== 'None of these')) reasons.push('a safety answer');
   if (a.pregnancy === 'Yes') reasons.push('pregnancy or breastfeeding');
   if (['Side effects', 'It didn’t work for me', 'Something else'].includes(a.stopWhy || '')) reasons.push('your previous course');
   if (a.meds === 'Insulin or diabetes medication') reasons.push('your current medication');
-  if (a.age && a.age >= 75) reasons.push('your age');
+
   if (reasons.length) return { out: 'doctor', reasons };
   return { out: 'plan' };
+}
+
+/* The doctor-first close, in a sentence the patient recognises as their own
+   answer rather than a code. */
+export function reasonLine(reasons = []) {
+  const map = {
+    'your age': 'your age',
+    'your BMI': 'your BMI',
+    'a safety answer': 'something on the safety screen',
+    'pregnancy or breastfeeding': 'pregnancy or breastfeeding',
+    'your previous course': 'how your last course went',
+    'your current medication': 'the medication you take',
+  };
+  const list = [...new Set(reasons.map((r) => map[r] || r))];
+  if (!list.length) return 'One of your answers';
+  if (list.length === 1) return list[0][0].toUpperCase() + list[0].slice(1);
+  const last = list.pop();
+  const joined = `${list.join(', ')} and ${last}`;
+  return joined[0].toUpperCase() + joined.slice(1);
 }
 
 export const GLP_FLAGGED = (a) => quizRoute(a).out === 'doctor';
@@ -4355,5 +4394,67 @@ export function carePlan(pKey, opts = {}) {
         + 'notice very little in the first few weeks. Your body responds '
         + 'gradually, which is why your care includes testing at the start '
         + 'and at week 12. Your progress is measured, not guessed.',
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE CYCLE
+
+   A month of medication running out is a clinical event, not a billing one, so
+   the same object answers both questions: how far through are you, and what
+   has to happen before the next cycle can start. Week four of every cycle is
+   the dose review; the renewal prompt lands a week before the money does, so
+   nobody is surprised by a charge.
+   ══════════════════════════════════════════════════════════════════════════ */
+export function cycleState(rx) {
+  const weeks = rx.duration === 'quarter' ? 12 : 4;
+  const day = Math.max(1, rx.day || 1);
+  const week = Math.min(weeks, Math.ceil(day / 7));
+  const daysLeft = Math.max(0, weeks * 7 - day);
+
+  /* Renewal is raised a week out on monthly, a fortnight out on the quarter. */
+  const warnAt = rx.duration === 'quarter' ? 14 : 7;
+  const ended = daysLeft === 0;
+  const endingSoon = ended || daysLeft <= warnAt;
+
+  /* The dose review sits at week four of every cycle. */
+  const titrationDue = !rx.titrationDone && week >= 4 && !ended;
+
+  const addDays = (n) => {
+    const d = new Date(Date.now() + n * 86400e3);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  };
+
+  return {
+    weeks, week, day, daysLeft, ended, endingSoon, titrationDue,
+    doseLabel: rx.dose || '0.5 mg weekly',
+    renewsOn: ended ? 'Today' : addDays(daysLeft),
+    nextDelivery: rx.duration === 'quarter' ? addDays(Math.max(1, 28 - (day % 28))) : addDays(daysLeft || 1),
+    nextConsult: titrationDue ? 'Due now' : addDays(Math.max(1, 28 - day)),
+  };
+}
+
+/* The price the patient actually pays, read from the category manager's plan
+   rather than hardcoded, so a console edit reaches this screen too. */
+export function planPrice(plan, medName, duration) {
+  const med = (plan.meds || []).find((m) => m.name === medName) || (plan.meds || [])[0];
+  if (!med) return 0;
+  return duration === 'quarter' ? med.quarterly ?? med.quarter : med.monthly;
+}
+
+/* How long until the booked consultation, and whether the link is live. The
+   link opens ten minutes before: early enough to settle, late enough that it
+   never sits there stale for an hour. */
+export function consultState(qa) {
+  if (!qa || !qa.slotAt) return null;
+  const ms = qa.slotAt - Date.now();
+  const mins = Math.round(ms / 60000);
+  return {
+    at: qa.slotAt,
+    label: qa.slotLabel,
+    minsAway: mins,
+    open: ms <= 10 * 60000,          /* the link is live */
+    missed: ms < -20 * 60000,
+    countdown: mins <= 0 ? 'now' : mins === 1 ? 'in 1 minute' : `in ${mins} minutes`,
   };
 }

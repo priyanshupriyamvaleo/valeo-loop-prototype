@@ -11,7 +11,7 @@ const ALL_TABS = [
   /* phase 1 has no deck to explore, so the shortlist takes the first slot —
      the same position discovery occupies later, so the shape of the app does
      not move under a user when phase 2 ships */
-  { k: 'plan',      t: 'Plan',      Icon: ChecklistOutlinedIcon },
+  { k: 'plan',      t: 'My Program', Icon: ChecklistOutlinedIcon },
   { k: 'discover',  t: 'Discover',  Icon: ExploreOutlinedIcon },
   { k: 'today',     t: 'Today',     Icon: TodayOutlinedIcon },
   { k: 'protocols', t: 'Protocols', Icon: ListAltOutlinedIcon },

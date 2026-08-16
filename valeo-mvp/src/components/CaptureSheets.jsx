@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import Drum from './Drum';
-import { MEAL_SLOTS, MEAL_CHIPS, CHECKIN, BODY_FIELDS, DEVICES, DEVICE_ORDER } from '../data';
+import { MEAL_SLOTS, MEAL_CHIPS, CHECKIN, BODY_FIELDS } from '../data';
 import { C } from '../theme';
 
 /* Shared shell so all four captures feel like one thing. */
@@ -90,7 +90,7 @@ export function MealSheet({ open, onClose, day, onSave }) {
         ))}
       </Stack>
       <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 2.5, lineHeight: 1.5 }}>
-        Pair a glucose sensor and this stops being your job.
+        Log what you remember. Nobody is marking this.
       </Typography>
     </Sheet>
   );
@@ -171,48 +171,6 @@ export function CheckinSheet({ open, onClose, day, onSave }) {
           </Box>
         ))}
       </Stack>
-    </Sheet>
-  );
-}
-
-/* ── DEVICES ──
-   Top of the capture hierarchy. Each one says what it takes off your hands,
-   because that's the only reason anyone pairs anything. */
-export function DeviceSheet({ open, onClose, paired, onPair }) {
-  return (
-    <Sheet open={open} onClose={onClose} title="Connect a device"
-           sub="Passive beats manual, every time" cta="Done" onCta={onClose}>
-      <Stack spacing={1.1}>
-        {DEVICE_ORDER.map((k) => {
-          const d = DEVICES[k];
-          const on = paired.includes(k);
-          return (
-            <Stack key={k} direction="row" spacing={1.75}
-                   onClick={on ? undefined : () => onPair(k)} sx={{
-              alignItems: 'center', px: 1.9, py: 1.8, borderRadius: '17px',
-              cursor: on ? 'default' : 'pointer',
-              bgcolor: on ? 'rgba(39,153,91,.08)' : '#fff',
-              border: `1.5px solid ${on ? 'rgba(39,153,91,.35)' : 'transparent'}`,
-              boxShadow: on ? 'none' : '0 2px 10px -6px rgba(27,57,91,.28)',
-            }}>
-              <Box sx={{ fontSize: 22, width: 30, textAlign: 'center', flexShrink: 0 }}>{d.ic}</Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontSize: 14, fontWeight: 700, color: C.deep }}>{d.t}</Typography>
-                <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.2 }}>{d.gives}</Typography>
-              </Box>
-              {on
-                ? <CheckIcon sx={{ fontSize: 20, color: C.green, flexShrink: 0 }} />
-                : <Typography sx={{
-                    fontSize: 11, fontWeight: 800, color: C.teal, flexShrink: 0,
-                    letterSpacing: '.08em', textTransform: 'uppercase',
-                  }}>Pair</Typography>}
-            </Stack>
-          );
-        })}
-      </Stack>
-      <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 2.25, lineHeight: 1.55 }}>
-        We read only what the protocol is scored on. Nothing else leaves the device.
-      </Typography>
     </Sheet>
   );
 }

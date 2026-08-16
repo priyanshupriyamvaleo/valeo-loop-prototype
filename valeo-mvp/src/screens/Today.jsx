@@ -11,10 +11,10 @@ import Practice from '../components/Practice';
 import Trend from '../components/Trend';
 import LogSheet from '../components/LogSheet';
 import CaptureGrid from '../components/CaptureGrid';
-import { MealSheet, BodySheet, CheckinSheet, DeviceSheet } from '../components/CaptureSheets';
+import { MealSheet, BodySheet, CheckinSheet } from '../components/CaptureSheets';
 import { PROTOCOLS, KINDS, DOCTOR, coachOf, nextStep, behindScenes, logKindFor, LOG_KINDS, arcFor, nextMilestone,
-         WHEN, WHEN_ORDER, DEVICES, DEVICE_ORDER, capturesFor, streakOf,
-         deviceSeries, subsystemMoves, heroStreams, focusRun, activeRuns, RX_LABEL,
+         WHEN, WHEN_ORDER, capturesFor, streakOf,
+         subsystemMoves, heroStreams, focusRun, activeRuns, RX_LABEL,
 } from '../data';
 import MovedList from '../components/MovedList';
 import { C, meter } from '../theme';
@@ -31,7 +31,7 @@ import { C, meter } from '../theme';
  *   verdict  → retest day
  */
 export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults,
-  onBookBloods, onBookFollow, onBrief, onCheckpointCall, onActivate,
+  onBookBloods, onBookFollow, onBrief, onCheckpointCall, onActivate, onJoinConsult,
                                 onFocus }) {
   const [coach, setCoach] = useState(false);
   const [sheet, setSheet] = useState(null);   /* doses | meals | body | checkin | devices */
@@ -73,8 +73,14 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
     </Stack>
   ) : null;
 
-  /* ── nothing committed ── */
-  if (!rx) {
+  /* A booked consultation is a next step even though nothing has been bought
+     yet, so it is resolved before the empty state gets a chance to claim the
+     screen. */
+  const nsKey = pKey || 'P_WEIGHT';
+  const preNs = nextStep(st, nsKey);
+
+  /* ── nothing committed, and nothing booked ── */
+  if (!rx && !preNs) {
     return (
       <Shell coach={coach} setCoach={setCoach} st={st} pKey={pKey} dispatch={dispatch}>
         <Head sub="Tuesday 28 July" title="Nothing to run yet." onTwin={() => setCoach(true)} dot={unread} />
@@ -107,9 +113,9 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
      Waiting states get no button. When the next move belongs to the clinic,
      manufacturing an action for the patient is how a product starts nagging
      people about work that was never theirs. */
-  const ns = nextStep(st, pKey);
+  const ns = preNs;
   if (ns) {
-    const who = coachOf(pKey) || DOCTOR;
+    const who = coachOf(nsKey) || DOCTOR;
     const [when1, ...when2] = (ns.when || '').split(' ');
     /* Same component, same reason: work the clinic is doing that the patient
        cannot act on. The lab strip and the delivery strip are the same object
@@ -117,6 +123,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
     const bts = ns.ship
       ? { steps: ns.ship, ready: false, label: 'Your package' }
       : behindScenes(ns.bts);
+    const hasRun = !!rx;
     return (
       <Shell coach={coach} setCoach={setCoach} st={st} pKey={pKey} dispatch={dispatch}>
         <Head below={switcher} sub="Tuesday 28 July" title="Your next step"
@@ -215,7 +222,8 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
               <Box sx={{ px: 2.25, py: 1.75, borderTop: `1px solid ${C.line}` }}>
                 <Box onClick={() => {
                   const k = ns.ctaKind || ns.kind;
-                  if (k === 'brief') onBrief(pKey);
+                  if (k === 'joinConsult') onJoinConsult && onJoinConsult();
+                  else if (k === 'brief') onBrief(pKey);
                   else if (k === 'bookBloods') onBookBloods(pKey);
                   else if (k === 'bookFollow') onBookFollow(pKey);
                   else if (k === 'checkpointCall') onCheckpointCall(pKey);
@@ -355,85 +363,34 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
           )}
 
 
-          {/* ── ONE CARD, BECAUSE THERE IS ONE CONVERSATION ──
-              There were two here: a message inviting you to prepare, and, once
-              you had, an acknowledgement card that thanked you and then pointed
-              at a chat button. The second one duplicated work the thread had
-              already done — its closing message says "that's everything Jamie
-              needs" and "message us here anytime" in the practice's own voice,
-              so the card was the same two sentences again in the app's voice,
-              on the same screen, six lines apart.
-
-              What is left is the thread, previewed on Today: the practice's
-              latest messages, tappable, marked when something is unread. It
-              behaves the same before, during and after preparation because it
-              is the same conversation throughout — which is the entire point. */}
-          {(rx.thread || []).length > 0 && (
-            <Box onClick={() => setCoach(true)} sx={{
-              mt: 2.5, px: 1.9, py: 1.9, borderRadius: '20px', cursor: 'pointer',
-              bgcolor: '#fff', border: '1px solid rgba(27,57,91,.08)',
-              boxShadow: '0 3px 16px -11px rgba(27,57,91,.4)',
-              transition: 'transform .12s', '&:active': { transform: 'scale(.99)' },
-              animation: 'msgIn .45s cubic-bezier(.2,.9,.25,1) both',
-              '@keyframes msgIn': {
-                from: { opacity: 0, transform: 'translateY(8px)' },
-                to: { opacity: 1, transform: 'none' },
-              },
+          {/* CONNECT WITH CLINICIAN.
+              The thread that used to sit here previewed the doctor's messages
+              inline, which put a conversation in the middle of a screen whose
+              only job is the next action. The conversation still exists — the
+              bubble top right opens it — but what belongs in this position is
+              a way to reach a person, not a transcript of one. */}
+          <Stack direction="row" spacing={1.4} onClick={() => setCoach(true)} sx={{
+            alignItems: 'center', mt: 2.5, px: 1.9, py: 1.6, borderRadius: '18px',
+            cursor: 'pointer', bgcolor: '#fff', border: '1px solid rgba(27,57,91,.08)',
+            boxShadow: '0 3px 16px -11px rgba(27,57,91,.4)',
+          }}>
+            <Box sx={{
+              width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+              bgcolor: 'rgba(27,57,91,.06)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
             }}>
-              <Stack direction="row" spacing={1.4} sx={{ alignItems: 'flex-start' }}>
-                <Box sx={{
-                  width: 40, height: 40, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-                  background: `linear-gradient(155deg,${who.tone} 0%,rgba(11,21,34,.7) 145%)`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {who.img
-                    ? <Box component="img" src={who.img} alt="" sx={{
-                        width: '100%', height: '100%', objectFit: 'cover',
-                        objectPosition: 'center 18%',
-                      }} />
-                    : <Typography sx={{
-                        fontFamily: '"Fraunces", serif', fontSize: 14, fontWeight: 600,
-                        color: 'rgba(255,255,255,.9)',
-                      }}>{who.mono}</Typography>}
-                </Box>
-
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack direction="row" spacing={0.8} sx={{ alignItems: 'center' }}>
-                    <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: C.deep }}>
-                      {who.short}’s Practice
-                    </Typography>
-                    {unread && <Box sx={{
-                      width: 7, height: 7, borderRadius: '50%', bgcolor: C.yellow, flexShrink: 0,
-                    }} />}
-                    <Box sx={{ flex: 1 }} />
-                    <Typography sx={{ fontSize: 11, color: C.ink2, flexShrink: 0 }}>
-                      {unread ? 'Just now' : 'Earlier'}
-                    </Typography>
-                  </Stack>
-
-                  {/* ── A PREVIEW OF THE THREAD, NOT A SECOND COPY OF IT ──
-                      This card used to author the greeting itself, which meant
-                      the same message existed twice in slightly different words
-                      — "Before we meet today, I'd love to..." here against
-                      "Before today's consultation we'd love to..." in the
-                      conversation it opens. Two authorings of one message is
-                      how a product ends up sounding like two organisations.
-                      It now renders whatever the practice actually said. */}
-                  {(rx.thread || []).slice(unread ? (rx.seen || 0) : -2)
-                    .filter((m) => m.w === 'them').slice(-4).map((m, n) => (
-                    <Typography key={n} sx={{
-                      fontSize: 14, lineHeight: 1.6, color: C.ink, mt: n === 0 ? 0.9 : 0.7,
-                    }}>{m.t}</Typography>
-                  ))}
-                  {/* the affordance the card was missing entirely — without it
-                      this reads as a notice rather than something to open */}
-                  <Typography sx={{
-                    fontSize: 13.5, fontWeight: 700, color: C.yellowDeep, mt: 1.1,
-                  }}>{unread ? 'Tap to reply →' : 'Open conversation →'}</Typography>
-                </Box>
-              </Stack>
+              <ChatBubbleOutlineIcon sx={{ fontSize: 18, color: C.deep }} />
             </Box>
-          )}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 650, color: C.deep }}>
+                Connect with your clinician
+              </Typography>
+              <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.2 }}>
+                {who.short} and the practice, any time
+              </Typography>
+            </Box>
+            {unread && <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: C.coral }} />}
+          </Stack>
 
 
 
@@ -570,7 +527,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
 
   /* capture state, with notes written from what's actually true */
   const loggedBody = rx.body.some((b) => b.day === rx.day);
-  const captures = capturesFor(rx, rx.day, st.devices).map((c) => {
+  const captures = capturesFor(rx, rx.day, []).map((c) => {
     if (c.k === 'doses') return { ...c, done: loggedToday,
       note: loggedToday ? 'Logged' : LOG_KINDS[kind].t };
     if (c.k === 'meals') return { ...c,
@@ -923,7 +880,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
         </Stack>
 
         {/* ── the numbers. Two single-series charts, never one with two scales. ── */}
-        {(bodyPts.length > 1 || st.devices.length > 0) && (
+        {(bodyPts.length > 1) && (
           <>
             <Label sx={{ mt: 3 }}>Your numbers</Label>
             <Stack spacing={1.1}>
@@ -935,71 +892,8 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                          caption="Between blood draws this is the proxy." />
                 </Box>
               )}
-              {st.devices.map((d) => {
-                const ds = deviceSeries(rx, d);
-                return (
-                  <Box key={d} sx={{ p: 2, borderRadius: '20px', bgcolor: '#fff',
-                                     boxShadow: '0 2px 12px -6px rgba(27,57,91,.3)' }}>
-                    <ChartHead t={`${ds.t} · ${DEVICES[d].t}`}
-                               v={`${ds.pts[ds.pts.length - 1].v} ${ds.unit}`} />
-                    <Trend points={ds.pts} total={rx.total} unit={` ${ds.unit}`}
-                           caption={`Straight from your ${DEVICES[d].t}.`}
-                           tail=", no logging needed." />
-                  </Box>
-                );
-              })}
             </Stack>
           </>
-        )}
-
-        {/* ── passive capture. Top of the hierarchy, so it earns a section. ── */}
-        <Label sx={{ mt: 3 }}>Continuous monitoring</Label>
-        {st.devices.length === 0 ? (
-          <Stack direction="row" spacing={1.75} onClick={() => setSheet('devices')} sx={{
-            alignItems: 'center', px: 1.9, py: 1.9, borderRadius: '18px', cursor: 'pointer',
-            bgcolor: 'rgba(64,143,164,.09)', border: '1.5px dashed rgba(64,143,164,.45)',
-          }}>
-            <Box sx={{ fontSize: 20, flexShrink: 0 }}>⌚</Box>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 700, color: C.deep }}>
-                Connect a watch, ring or sensor
-              </Typography>
-              <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.25 }}>
-                Every stream you pair is one thing you stop logging
-              </Typography>
-            </Box>
-            <ChevronRightIcon sx={{ fontSize: 19, color: C.teal, flexShrink: 0 }} />
-          </Stack>
-        ) : (
-          <Stack spacing={0.9}>
-            {st.devices.map((d) => (
-              <Stack key={d} direction="row" spacing={1.5} sx={{
-                alignItems: 'center', px: 1.9, py: 1.5, borderRadius: '16px',
-                bgcolor: 'rgba(39,153,91,.07)', border: '1.5px solid rgba(39,153,91,.3)',
-              }}>
-                <Box sx={{ fontSize: 18, flexShrink: 0 }}>{DEVICES[d].ic}</Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>
-                    {DEVICES[d].t}
-                  </Typography>
-                  <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.15 }}>
-                    {DEVICES[d].gives}
-                  </Typography>
-                </Box>
-                <Stack direction="row" spacing={0.6} sx={{ alignItems: 'center', flexShrink: 0 }}>
-                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: C.green }} />
-                  <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: C.green,
-                                    letterSpacing: '.06em', textTransform: 'uppercase' }}>
-                    Synced
-                  </Typography>
-                </Stack>
-              </Stack>
-            ))}
-            <Button fullWidth variant="text" onClick={() => setSheet('devices')}
-                    sx={{ fontSize: 12.5, color: C.ink2, minHeight: 40 }}>
-              Add another
-            </Button>
-          </Stack>
         )}
 
         <Label sx={{ mt: 3 }}>The whole run</Label>
@@ -1047,8 +941,6 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                  onSave={(v) => { dispatch({ type: 'body', protocol: pKey, v }); setSheet(null); }} />
       <CheckinSheet open={sheet === 'checkin'} onClose={() => setSheet(null)} day={rx.day}
                     onSave={(v) => { dispatch({ type: 'checkin', protocol: pKey, v }); setSheet(null); }} />
-      <DeviceSheet open={sheet === 'devices'} onClose={() => setSheet(null)}
-                   paired={st.devices} onPair={(d) => dispatch({ type: 'pair', dev: d })} />
     </Shell>
   );
 }

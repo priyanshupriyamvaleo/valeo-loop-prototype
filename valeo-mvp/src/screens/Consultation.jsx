@@ -65,12 +65,14 @@ import { C } from '../theme';
  * rail control "No clinician free" forces the delayed state, which matters more
  * than the happy path and which a reviewer would never otherwise reach.
  */
-export default function Consultation({ pKey, onDone, failed }) {
+export default function Consultation({ pKey, onDone, onDecline, failed }) {
   const c = coachOf(pKey);
   const doc = onCallNow(pKey);
   const first = givenNameOf(doc);
 
-  const [phase, setPhase] = useState('live');   /* live | ready | fallback | call */
+  /* The waiting happened on Today, against a booked time. Arriving here means
+     the link was live and the patient tapped it, so the call opens directly. */
+  const [phase, setPhase] = useState('call');   /* live | ready | fallback | call */
   const [stage, setStage] = useState(0);        /* which preparation state is active */
   const [qi, setQi] = useState(0);
   const [callAt, setCallAt] = useState('');
@@ -536,6 +538,22 @@ export default function Consultation({ pKey, onDone, failed }) {
           }}><CallEndIcon sx={{ fontSize: 26 }} /></Box>
           <Ctl><VideocamIcon sx={{ fontSize: 21 }} /></Ctl>
         </Stack>
+
+        {/* THE OTHER ENDING.
+            A call that can only end in yes is not a consultation, it is a
+            formality with a camera on. The clinician's no lives here, one tap
+            away from the yes, and it carries their words with it. */}
+        {done && onDecline && (
+          <Typography onClick={() => onDecline(
+            `Thank you for your time, ${USER.first}. Having gone through your answers with you, `
+            + 'GLP-1 is not the right treatment for you at the moment, and I would not feel '
+            + 'right prescribing it.')} sx={{
+            fontSize: 11.5, color: 'rgba(255,255,255,.55)', textAlign: 'center',
+            mt: 2, cursor: 'pointer', textDecoration: 'underline',
+          }}>
+            Simulate: the doctor decides against treatment
+          </Typography>
+        )}
         <Typography sx={{
           fontSize: 11, color: 'rgba(255,255,255,.5)', textAlign: 'center', mt: 1.6,
         }}>
