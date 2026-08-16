@@ -25,7 +25,10 @@ import { C } from '../theme';
  * do is book the dose review.
  */
 export default function Program({ st, onGo, onRenew, onBookTitration, onNewGoal }) {
-  const rx = focusRun(st);
+  /* focusRun hands back the wrapper — the protocol, the status and the run —
+     and it is the run itself that carries the cycle. */
+  const f = focusRun(st);
+  const rx = f && f.run;
   const doc = COACHES.C_LAYLA;
 
   if (!rx) {
@@ -52,6 +55,7 @@ export default function Program({ st, onGo, onRenew, onBookTitration, onNewGoal 
     );
   }
 
+  const started = !!rx.day;
   const cyc = cycleState(rx);
   const price = planPrice(st.plan, rx.med, rx.duration);
   const termLabel = rx.duration === 'quarter' ? '3-month plan' : 'Monthly plan';
@@ -67,7 +71,7 @@ export default function Program({ st, onGo, onRenew, onBookTitration, onNewGoal 
       </Box>
 
       {/* ── the cycle-end moment, when it is close ── */}
-      {cyc.endingSoon && (
+      {started && cyc.endingSoon && (
         <Box sx={{ px: 3, mt: 2.5 }}>
           <Box sx={{
             px: 2.25, py: 2, borderRadius: '18px',
@@ -120,29 +124,37 @@ export default function Program({ st, onGo, onRenew, onBookTitration, onNewGoal 
               </Typography>
             </Box>
             <Box sx={{
-              px: 1.25, py: 0.5, borderRadius: '999px', bgcolor: 'rgba(39,153,91,.12)',
-              color: C.green, fontSize: 11, fontWeight: 700,
-            }}>Active</Box>
+              px: 1.25, py: 0.5, borderRadius: '999px', fontSize: 11, fontWeight: 700,
+              bgcolor: started ? 'rgba(39,153,91,.12)' : 'rgba(224,164,0,.16)',
+              color: started ? C.green : C.yellowDeep,
+            }}>{started ? 'Active' : 'Starting'}</Box>
           </Stack>
 
-          {/* progress through the cycle */}
-          <Box sx={{ mt: 2 }}>
-            <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 0.75 }}>
-              <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: C.deep }}>
-                Week {cyc.week} of {cyc.weeks}
-              </Typography>
-              <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>
-                {cyc.daysLeft} days left in this cycle
-              </Typography>
-            </Stack>
-            <Box sx={{ height: 6, borderRadius: 3, bgcolor: 'rgba(27,57,91,.08)', overflow: 'hidden' }}>
-              <Box sx={{
-                width: `${Math.min(100, Math.round((cyc.week / cyc.weeks) * 100))}%`,
-                height: '100%', borderRadius: 3, bgcolor: C.green,
-              }} />
+          {/* progress through the cycle, once there is a cycle */}
+          {started ? (
+            <Box sx={{ mt: 2 }}>
+              <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 0.75 }}>
+                <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: C.deep }}>
+                  Week {cyc.week} of {cyc.weeks} in this cycle
+                </Typography>
+                <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>
+                  {cyc.daysLeft} days left
+                </Typography>
+              </Stack>
+              <Box sx={{ height: 6, borderRadius: 3, bgcolor: 'rgba(27,57,91,.08)', overflow: 'hidden' }}>
+                <Box sx={{
+                  width: `${Math.min(100, Math.round((cyc.week / cyc.weeks) * 100))}%`,
+                  height: '100%', borderRadius: 3, bgcolor: C.green,
+                }} />
+              </Box>
             </Box>
-          </Box>
+          ) : (
+            <Typography sx={{ fontSize: 12.5, color: C.ink2, mt: 1.75, lineHeight: 1.55 }}>
+              Your cycle starts on the day you take your first dose.
+            </Typography>
+          )}
 
+          {started && (
           <Stack spacing={1.25} sx={{ mt: 2.25 }}>
             <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
               <LocalShippingOutlinedIcon sx={{ fontSize: 17, color: C.ink2 }} />
@@ -157,8 +169,9 @@ export default function Program({ st, onGo, onRenew, onBookTitration, onNewGoal 
               </Typography>
             </Stack>
           </Stack>
+          )}
 
-          {cyc.titrationDue && (
+          {started && cyc.titrationDue && (
             <Stack direction="row" spacing={1} onClick={onBookTitration} sx={{
               alignItems: 'center', justifyContent: 'center', mt: 2, py: 1.25,
               borderRadius: '999px', bgcolor: C.yellow, color: C.deep, cursor: 'pointer',

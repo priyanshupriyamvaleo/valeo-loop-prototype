@@ -14,7 +14,7 @@ import CaptureGrid from '../components/CaptureGrid';
 import { MealSheet, BodySheet, CheckinSheet } from '../components/CaptureSheets';
 import { PROTOCOLS, KINDS, DOCTOR, coachOf, nextStep, behindScenes, logKindFor, LOG_KINDS, arcFor, nextMilestone,
          WHEN, WHEN_ORDER, capturesFor, streakOf,
-         subsystemMoves, heroStreams, focusRun, activeRuns, RX_LABEL,
+         subsystemMoves, heroStreams, focusRun, activeRuns, RX_LABEL, cycleState,
 } from '../data';
 import MovedList from '../components/MovedList';
 import { C, meter } from '../theme';
@@ -32,7 +32,7 @@ import { C, meter } from '../theme';
  */
 export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults,
   onBookBloods, onBookFollow, onBrief, onCheckpointCall, onActivate, onJoinConsult,
-                                onFocus }) {
+                                onBookTitration, onRenewCycle, onFocus }) {
   const [coach, setCoach] = useState(false);
   const [sheet, setSheet] = useState(null);   /* doses | meals | body | checkin | devices */
   /* ── WHICH RUN IS TODAY ABOUT ──
@@ -43,6 +43,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
   const f = focusRun(st);
   const rx = f ? f.run : null;
   const pKey = f ? f.k : null;
+  const cyc = rx && rx.day ? cycleState(rx) : null;
   /* messages the practice sent that you haven't opened the thread on yet */
   const unread = !!rx && ((rx.thread || []).length > (rx.seen || 0));
   const runs = activeRuns(st);
@@ -782,6 +783,14 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
             })()}
             onTwin={() => setCoach(true)} dot={unread} below={switcher} />
       <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
+        {/* ── THE TWO MOMENTS THE CYCLE OWNS ──
+            A dose review and a renewal are the only things that outrank the
+            day itself, because both have a date attached and both stop the
+            treatment if they are missed. They appear above the run, once, and
+            they say what happens if nothing is done. The dose review comes
+            first: a renewal paid at the wrong dose has to be corrected. */}
+        <CycleMoment cyc={cyc} rx={rx} onBook={onBookTitration} onRenew={onRenewCycle} />
+
         <RunHero day={rx.day} total={rx.total} week={Math.ceil(rx.day / 7)} weeks={p.wk}
                  arc={arc} logs={rx.logs} milestone={milestone} streak={streak} />
 
@@ -1051,5 +1060,101 @@ function Step({ n, t, s, done, onClick }) {
       </Box>
       {onClick && <ChevronRightIcon sx={{ fontSize: 19, color: C.ink2, flexShrink: 0 }} />}
     </Stack>
+  );
+}
+
+/*
+ * THE CYCLE'S TWO MOMENTS.
+ *
+ * Week four is the dose review, and the last week of the term is the renewal.
+ * Both are dated, both stop the treatment if they pass unanswered, and both are
+ * therefore allowed above the day itself. Only one shows at a time: asked for
+ * two decisions at once, people make neither.
+ *
+ * The dose review wins the tie. A renewal paid at a dose the clinician was
+ * about to change is a delivery that has to be corrected, and correcting a
+ * delivery is how a patient ends up with two weeks of the wrong pen.
+ */
+function CycleMoment({ cyc, rx, onBook, onRenew }) {
+  if (!cyc) return null;
+  const titration = cyc.titrationDue;
+  const renewal = !titration && cyc.endingSoon;
+  if (!titration && !renewal) return null;
+
+  /* Booked is a state, not a silence. Removing the card the moment a slot is
+     taken loses the one thing the patient now needs: when. */
+  if (titration && rx.titrationSlot) {
+    return (
+      <Box sx={{
+        mt: 1.5, px: 2, py: 1.75, borderRadius: '18px', bgcolor: '#fff',
+        border: `1.5px solid ${C.line}`,
+      }}>
+        <Typography sx={{
+          fontSize: 9.5, fontWeight: 800, letterSpacing: '.13em',
+          textTransform: 'uppercase', color: C.ink2,
+        }}>Dose review booked</Typography>
+        <Typography sx={{
+          fontFamily: '"Fraunces", serif', fontSize: 18, fontWeight: 600,
+          lineHeight: 1.25, color: C.deep, mt: 0.55,
+        }}>Today at {rx.titrationSlot}.</Typography>
+        <Typography sx={{ fontSize: 12.5, lineHeight: 1.55, color: C.ink2, mt: 0.6 }}>
+          Your link opens ten minutes before. Keep logging until then: it is what
+          she reads to set the dose.
+        </Typography>
+      </Box>
+    );
+  }
+
+  const quarter = rx.duration === 'quarter';
+  const copy = titration
+    ? {
+      tag: 'Dose review due',
+      title: 'Time to look at your dose.',
+      body: 'Four weeks in is when the dose is set for the month ahead: up, held '
+          + 'or down, on how you have actually been. Ten minutes, included.',
+      cta: 'Book my dose review',
+      on: onBook,
+    }
+    : {
+      tag: cyc.ended ? 'Your cycle has ended' : 'Renewal coming up',
+      title: cyc.ended
+        ? 'Renew to keep going.'
+        : `Your ${quarter ? 'three months' : 'month'} ends ${cyc.renewsOn === 'Today' ? 'today' : `on ${cyc.renewsOn}`}.`,
+      body: cyc.ended
+        ? 'You have not been charged for another month. Renew and the next delivery '
+          + 'is prepared straight away, with a dose review to set the dose for it.'
+        : 'We prepare the next delivery a week ahead so there is no gap between '
+          + 'pens. You can pause or stop instead, and nothing is taken if you do.',
+      cta: cyc.ended ? 'Renew my plan' : 'Renew now',
+      on: onRenew,
+    };
+
+  return (
+    <Box sx={{
+      mt: 1.5, px: 2, py: 1.9, borderRadius: '18px',
+      bgcolor: titration ? 'rgba(255,185,0,.12)' : '#fff',
+      border: `1.5px solid ${titration ? 'rgba(224,164,0,.45)' : C.line}`,
+    }}>
+      <Typography sx={{
+        fontSize: 9.5, fontWeight: 800, letterSpacing: '.13em',
+        textTransform: 'uppercase', color: C.yellowDeep,
+      }}>{copy.tag}</Typography>
+      <Typography sx={{
+        fontFamily: '"Fraunces", serif', fontSize: 19, fontWeight: 600,
+        lineHeight: 1.25, color: C.deep, mt: 0.6,
+      }}>{copy.title}</Typography>
+      <Typography sx={{ fontSize: 13, lineHeight: 1.6, color: C.ink, mt: 0.75 }}>
+        {copy.body}
+      </Typography>
+      <Stack direction="row" spacing={0.75} onClick={copy.on} sx={{
+        alignItems: 'center', justifyContent: 'center', mt: 1.75, py: 1.15,
+        borderRadius: '999px', cursor: 'pointer',
+        bgcolor: titration ? C.deep : C.yellow,
+        color: titration ? '#fff' : C.deep,
+      }}>
+        <Typography sx={{ fontSize: 13.5, fontWeight: 700 }}>{copy.cta}</Typography>
+        <ChevronRightIcon sx={{ fontSize: 17 }} />
+      </Stack>
+    </Box>
   );
 }

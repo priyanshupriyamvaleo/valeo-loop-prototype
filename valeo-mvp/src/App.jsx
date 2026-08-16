@@ -13,25 +13,25 @@ import PlanScreen from './screens/PlanScreen';
 import Today from './screens/Today';
 import BottomNav from './components/BottomNav';
 import PushToast from './components/PushToast';
-import FlowTable from './dock/FlowTable';
+import Controls from './dock/Controls';
 import CatMan from './dock/CatMan';
-import { TRANSITIONS, canFire } from './machine';
+import { TRANSITIONS, canFire, target as runTarget } from './machine';
 import { PROTOCOLS, DEFAULT_PLAN, GLP_PKEY, focusRun, synthObserved } from './data';
 
 /* ══════════════════════════════════════════════════════════════════════════
-   VALEO MVP — weight loss, known intent, one plan.
+   VALEO MVP — weight loss, category-led, one plan.
 
-   The patient answers six questions. Clean answers see the plan and pay;
-   the doctor reviews in the background, same day, and either signs or
-   refunds in full. A flagged answer sees the doctor FIRST, ten minutes,
-   included, before any payment. The doctor's only verbs are yes and no.
+   The patient answers the questionnaire. Clean answers see the plan and pay,
+   and a doctor reviews the order the same day. A flagged answer books a
+   clinician first, from the next hour, before any payment. Nobody is refused
+   by the funnel: only a clinician can say no, and a no offers another goal.
 
    The plan itself is content: one object in the store, edited live in the
    category manager's console on the right, rendered by the PDP on the phone.
 
-   Right of the phone: two tabs. Flow — every step with its entry and exit
-   conditions, current row highlighted, one control for the system's next
-   move. Plans — the category manager's console.
+   Right of the phone: two tabs, neither of them part of the product. Drive
+   the flow — the moves that happen off the phone, so the prototype can be
+   walked end to end. Plans — the category manager's console.
    ══════════════════════════════════════════════════════════════════════════ */
 
 const INIT = {
@@ -57,6 +57,10 @@ const EVENT_OF = {
                   actor: a.stage === 'delivered' ? 'nurse' : 'pharmacy' }),
   deliver: () => ({ event: 'TREATMENT_STARTED', actor: 'patient' }),
   advance: () => ({ event: 'WEEK_ADVANCED', actor: 'system' }),
+  setDay: () => ({ event: 'WEEK_ADVANCED', actor: 'system' }),
+  titrationBooked: () => ({ event: 'DOSE_REVIEW_BOOKED', actor: 'patient' }),
+  titration: () => ({ event: 'DOSE_SET', actor: 'clinician' }),
+  renew: () => ({ event: 'CYCLE_RENEWED', actor: 'patient' }),
   planPatch: () => ({ event: 'PLAN_EDITED', actor: 'system' }),
   answers: (a) => (a.qa && a.qa.conditions
     ? { event: a.qa.flagged ? 'INTAKE_SUBMITTED · FLAGGED' : 'INTAKE_SUBMITTED · CLEAN',
@@ -101,12 +105,27 @@ function reducer(s, a) {
           checkpoint: a.eligible ? 'approved' : 'pending' } },
         focus: s.focus || a.protocol,
       };
-    /* A renewal restarts the cycle clock and asks for the dose review. */
+    /* The dose review, booked and then held. */
+    case 'titrationBooked':
+      return patchRun(s, target(s, a), { titrationSlot: a.label });
+    case 'titration':
+      return patchRun(s, target(s, a),
+        { titrationDone: true, titrationSlot: null, dose: a.dose });
+
+    /* A renewal restarts the billing cycle and asks for the dose review again.
+       The treatment day is untouched: the patient is not starting over. */
     case 'renew': {
       const k = target(s, a);
       const cur = s.runs[k];
       if (!cur) return s;
-      return { ...s, runs: { ...s.runs, [k]: { ...cur, day: 1, titrationDone: false } } };
+      const weeks = cur.duration === 'quarter' ? 12 : 4;
+      return { ...s, runs: { ...s.runs, [k]: {
+        ...cur,
+        cycleStart: cur.day || 1,
+        total: Math.max(cur.total || 0, (cur.day || 1) + weeks * 7 - 1),
+        titrationDone: false, titrationSlot: null,
+        renewed: (cur.renewed || 0) + 1,
+      } } };
     }
     case 'checkpoint':
       return patchRun(s, target(s, a), { checkpoint: a.v });
@@ -174,6 +193,20 @@ function reducer(s, a) {
       }
       return patchRun(s, k, { day, logs, body, doneItems: [], status: 'running' });
     }
+    /* The same week, jumped to rather than walked, so week four and the end of
+       a cycle can be shown without twelve taps. */
+    case 'setDay': {
+      const k = target(s, a); const r = s.runs[k];
+      if (!r || !r.day) return s;
+      const day = Math.max(1, Math.min(r.total, a.day));
+      const logs = [...r.logs];
+      const body = [...r.body];
+      for (let d = r.day; d < day; d += 1) {
+        logs.push({ day: d, kind: d <= 21 ? 'felt' : 'taken', v: true });
+        if (d % 7 === 1) body.push({ day: d, kg: 96 - Math.round((d / 7) * 0.9 * 10) / 10, waist: 96 });
+      }
+      return patchRun(s, k, { day, logs, body, doneItems: [], status: 'running' });
+    }
     case 'results': {
       const k = target(s, a); const r = s.runs[k];
       if (!r) return s;
@@ -228,9 +261,37 @@ export default function App() {
 
   /* A time is taken. The call itself waits on Today until the link opens. */
   const bookConsult = (slot) => {
-    dispatch({ type: 'answers', qa: { slotAt: slot.at.getTime(), slotLabel: slot.label } });
+    /* Two different calls use the same three slots: the eligibility call
+       before anything is bought, and the dose review at week four. The second
+       belongs to the run, not to the funnel, or Today would read it as a
+       patient who has not started yet. */
+    if (st.qa.titration) {
+      const cur = focusRun(st);
+      dispatch({ type: 'titrationBooked', protocol: (cur && cur.k) || GLP_PKEY, label: slot.label });
+      dispatch({ type: 'answers', qa: { titration: false } });
+    } else {
+      dispatch({ type: 'answers', qa: { slotAt: slot.at.getTime(), slotLabel: slot.label } });
+    }
     dispatch({ type: 'emit', event: 'CONSULT_BOOKED', actor: 'patient' });
     enterApp();
+  };
+
+  /* The link, which in life opens ten minutes before the slot. */
+  const openConsult = () => setFlow('consultation');
+
+  /* The dose review and the renewal are reached from either tab, so both live
+     here rather than twice over in the screens. */
+  const bookTitration = () => {
+    dispatch({ type: 'answers', qa: { slotAt: null, slotLabel: null, titration: true } });
+    setFlow('booking');
+  };
+  const renewCycle = () => {
+    const cur = focusRun(st);
+    dispatch({ type: 'renew', protocol: (cur && cur.k) || GLP_PKEY });
+    setPaid({ med: cur && cur.run && cur.run.med,
+              duration: cur && cur.run && cur.run.duration,
+              eligible: true, renewal: true });
+    setFlow('placed');
   };
 
   /* The eligibility call ends one of two ways, and both are the doctor's. */
@@ -248,13 +309,21 @@ export default function App() {
     setFlow('declined');
   };
 
-  /* Choosing a different goal wipes the weight-loss file and starts again. */
+  /* Choosing a different goal wipes the weight-loss file and starts again.
+     Every goal lands on the services home, including the second weight route:
+     reopening the GLP-1 questionnaire the clinician has just refused would be
+     the one thing this screen exists to avoid. */
   const restartWithGoal = (goal) => {
+    /* The new goal is recorded, but not as `goal`: that key is what tells the
+       home screen a shortlist has been matched, and a shortlist "matched to
+       the answers you gave us" is the last thing to show someone whose
+       answers have just been set aside. */
     dispatch({ type: 'answers', qa: {
       flagged: false, eligible: false, declined: false, declineMessage: null,
-      slotAt: null, slotLabel: null, goal,
+      slotAt: null, slotLabel: null, reasons: [], goal: null, nextGoal: goal,
     } });
-    setFlow(goal === 'weight' ? 'coach' : 'home');
+    dispatch({ type: 'emit', event: 'GOAL_CHANGED', actor: 'patient' });
+    setFlow('home');
   };
 
   /* Payment. If a doctor already said yes on the call, review is complete
@@ -277,14 +346,15 @@ export default function App() {
 
   const ui = { flow, tab };
   const ctx = { dispatch, setFlow, setTab, startIntake, completeIntake,
-                bookConsult, confirmEligible, declineEligibility, restartWithGoal,
+                bookConsult, openConsult, confirmEligible, declineEligibility, restartWithGoal,
                 payPlan, approveOrder, declineOrder };
 
-  /* THE GATE. A transition the machine refuses simply does not fire. */
+  /* A control whose moment has not come simply does not fire. */
   const fireEvent = (eventId, ep) => {
     const t = TRANSITIONS.find((x) => x.event === eventId);
-    if (!t || !canFire(t, st, ui, ep)) return;
-    t.fire(ctx, ep);
+    const e = ep || runTarget(st);
+    if (!t || !canFire(t, st, ui, e)) return;
+    t.fire(ctx, e);
   };
 
   let view = null;
@@ -305,7 +375,8 @@ export default function App() {
     <Coach onBack={() => setFlow('home')} onDone={completeIntake} />
   );
   else if (flow === 'booking') view = (
-    <BookConsult onBack={() => setFlow('coach')} onBooked={bookConsult}
+    <BookConsult onBack={() => setFlow(st.qa.titration ? 'app' : 'coach')} onBooked={bookConsult}
+      titration={!!st.qa.titration}
       reasons={(st.qa && st.qa.reasons) || []} />
   );
   else if (flow === 'consultation') view = (
@@ -320,7 +391,8 @@ export default function App() {
   );
   else if (flow === 'placed') view = (
     <OrderPlaced med={paid && paid.med} duration={paid && paid.duration}
-      eligible={paid && paid.eligible} onDone={enterApp} />
+      eligible={paid && paid.eligible} renewal={paid && paid.renewal}
+      onDone={enterApp} />
   );
   else if (flow === 'plan') view = (
     <PlanScreen plan={st.plan} eligible={!!st.qa.eligible}
@@ -347,12 +419,14 @@ export default function App() {
                 {tab === 'plan' ? (
                   <Program st={st}
                     onGo={setTab}
-                    onRenew={() => { dispatch({ type: 'renew', protocol: GLP_PKEY }); setFlow('placed'); setPaid({ med: (focusRun(st) || {}).run?.med, duration: (focusRun(st) || {}).run?.duration, eligible: true }); }}
-                    onBookTitration={() => setFlow('booking')}
+                    onRenew={renewCycle}
+                    onBookTitration={bookTitration}
                     onNewGoal={() => setFlow('coach')} />
                 ) : (
                 <Today st={st} dispatch={dispatch} onGo={setTab}
                        onJoinConsult={() => setFlow('consultation')}
+                       onBookTitration={bookTitration}
+                       onRenewCycle={renewCycle}
                        onBrief={() => {}}
                        onCheckpointCall={() => {}}
                        onActivate={() => {}}
@@ -371,10 +445,10 @@ export default function App() {
           ) : view}
         </Phone>
 
-        {/* ── right of the phone: the flow, or the console ── */}
+        {/* ── right of the phone: the controls, or the plan console ── */}
         <Box sx={{ width: 470, flexShrink: 0 }}>
           <Stack direction="row" spacing={0.5} sx={{ mb: 1.5 }}>
-            {[['flow', 'The flow'], ['plans', 'Plans · category manager']].map(([k, t]) => (
+            {[['flow', 'Drive the flow'], ['plans', 'Plans · category manager']].map(([k, t]) => (
               <Box key={k} onClick={() => setPanel(k)} sx={{
                 flex: 1, textAlign: 'center', py: 0.8, borderRadius: '10px', cursor: 'pointer',
                 fontSize: 11.5, fontWeight: panel === k ? 700 : 500,
@@ -385,7 +459,7 @@ export default function App() {
             ))}
           </Stack>
           {panel === 'flow'
-            ? <FlowTable st={st} ui={ui} fireEvent={fireEvent} />
+            ? <Controls st={st} ui={ui} fireEvent={fireEvent} />
             : (
               <Box sx={{ maxHeight: 800, overflowY: 'auto', pr: 0.5 }}>
                 <CatMan st={st} dispatch={dispatch} />

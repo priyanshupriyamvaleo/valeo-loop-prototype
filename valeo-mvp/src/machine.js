@@ -1,77 +1,25 @@
 import { GLP_PKEY } from './data';
 
 /* ══════════════════════════════════════════════════════════════════════════
-   THE MACHINE — MVP: weight loss, known intent, one plan.
+   THE CONTROLS — the moves that are not the patient's.
 
-   Eight states. The doctor appears in exactly two of them, and in both his
-   only verb is eligibility: yes or no. The plan is fixed and owned by the
-   category manager; nothing in this file prices or describes it.
+   This file is not a model of the product. It is the remote control for the
+   demo: the handful of things a clinician, a pharmacy, a nurse or the clock
+   would do off-screen, so the prototype can be driven all the way through
+   without waiting a month for week four to arrive.
 
-   The flow table on the right of the phone renders these `enter`/`exit`
-   strings verbatim, so the table can never disagree with the product.
+   Everything the patient does happens on the phone. Nothing here describes
+   the flow; the protocol in the admin panel does that.
    ══════════════════════════════════════════════════════════════════════════ */
 
-export const STATES = [
-  { id: 'NEW', t: 'Start',
-    enter: 'The patient opens weight loss. An episode exists.',
-    exit: 'Intake begins.' },
-  { id: 'INTAKE', t: 'Intake & safety',
-    enter: 'About you, your why, then the safety screen. Every answer feeds a decision: eligibility by BMI, dosing, or the doctor gate.',
-    exit: 'Eligible and clean goes to the plan. Any flag goes to a doctor first. Out of range ends honestly.' },
-  { id: 'FLAGGED_CALL', t: 'Eligibility call',
-    enter: 'A safety answer needs a doctor. Ten minutes, included, before any payment.',
-    exit: 'The doctor confirms eligibility: yes or no. The plan itself never changes.' },
-  { id: 'PLAN_VIEW', t: 'The plan',
-    enter: 'One plan from the category manager’s config: Wegovy or Mounjaro, medication included. No blood test in this plan.',
-    exit: 'Patient picks the medication and the term, then subscribes: monthly, renewing until stopped, or 3 months in one payment.' },
-  { id: 'REVIEW', t: 'Doctor review',
-    enter: 'Paid. The order is in the doctor’s queue, same day. Nothing ships unsigned.',
-    exit: 'Approved: dispatch begins. Declined: the payment is returned, said plainly.' },
-  { id: 'NOT_ELIGIBLE', t: 'Not eligible',
-    enter: 'The doctor said no.',
-    exit: 'Refund issued in full. The episode closes.' },
-  { id: 'FULFILMENT', t: 'Delivery',
-    enter: 'A signed order with the pharmacy.',
-    exit: 'Dispensed, shipped, delivered in cold chain. On the 3-month plan a nurse gives the first dose.' },
-  { id: 'TREATMENT', t: 'Treatment',
-    enter: 'First dose taken. The subscription is active.',
-    exit: 'Each month: a doctor check-in, the dose reviewed, the next delivery, the next renewal.' },
-];
-
-export const stateOf = (id) => STATES.find((s) => s.id === id);
-
-/* ── the projection: prototype state → machine state ── */
-function runState(r) {
-  switch (r.status) {
-    case 'programme':
-      if (r.checkpoint === 'declined') return 'NOT_ELIGIBLE';
-      return 'REVIEW';
-    case 'shipping': return 'FULFILMENT';
-    default: return 'TREATMENT';   /* running and beyond */
-  }
+/* The run the controls act on: the focused one, or the only one. */
+export function target(st) {
+  const keys = Object.keys(st.runs || {});
+  const pKey = st.focus && st.runs[st.focus] ? st.focus : keys[0] || null;
+  return pKey ? { pKey, run: st.runs[pKey] } : { pKey: null, run: null };
 }
 
-export function episodesOf(st, ui) {
-  const eps = [];
-  const inFunnel = ['between', 'coach', 'consultation', 'plan'].includes(ui.flow);
-  if (inFunnel && !st.runs[GLP_PKEY]) {
-    eps.push({
-      id: 'funnel', pKey: null, goal: 'Weight Loss',
-      flagged: !!st.qa.flagged,
-      state: ui.flow === 'between' ? 'NEW'
-        : ui.flow === 'coach' ? 'INTAKE'
-        : ui.flow === 'consultation' ? 'FLAGGED_CALL'
-          : 'PLAN_VIEW',
-    });
-  }
-  Object.keys(st.runs).forEach((pKey) => {
-    const r = st.runs[pKey];
-    eps.push({ id: pKey, pKey, goal: 'Weight Loss', state: runState(r), run: r });
-  });
-  return eps;
-}
-
-/* SIM intake answers, for driving the funnel from the table. Same shape the
+/* SIM intake answers, for driving the funnel from the panel. Same shape the
    chat produces. */
 export function simIntake(flagged) {
   return {
@@ -82,89 +30,115 @@ export function simIntake(flagged) {
     conditions: flagged ? ['History of pancreatitis'] : ['None of these'],
     meds: 'None',
     flagged: !!flagged, eligible: false,
+    reasons: flagged ? ['a safety answer'] : [],
   };
 }
 
-/* ── the transitions: guards, plain-word reasons, effects ── */
+/* ── the moves, grouped by who makes them ── */
 export const TRANSITIONS = [
-  { event: 'EPISODE_CREATED', actor: 'system', from: null, to: 'NEW', sim: false,
-    writes: 'Episode row',
-    reason: 'An episode is already open',
-    guard: (st, ui) => ['home', 'app'].includes(ui.flow) && !st.runs[GLP_PKEY],
-    fire: (ctx) => ctx.startIntake() },
-
-  { event: 'INTAKE_SUBMITTED · CLEAN', actor: 'patient', from: 'INTAKE', to: 'PLAN_VIEW', sim: true,
-    writes: 'intake_answers, safety_screen (clean)',
+  { event: 'SKIP INTAKE · CLEAN', actor: 'patient', group: 'Funnel',
+    hint: 'Fills the questionnaire with clean answers and opens the plan',
     reason: 'The intake is not open',
     guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(false)) },
 
-  { event: 'INTAKE_SUBMITTED · FLAGGED', actor: 'patient', from: 'INTAKE', to: 'FLAGGED_CALL', sim: true,
-    writes: 'intake_answers, safety_screen (flagged)',
+  { event: 'SKIP INTAKE · FLAGGED', actor: 'patient', group: 'Funnel',
+    hint: 'Fills it with an answer that needs a clinician, and goes to booking',
     reason: 'The intake is not open',
     guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(true)) },
 
-  { event: 'ELIGIBILITY_CONFIRMED', actor: 'clinician', from: 'FLAGGED_CALL', to: 'PLAN_VIEW', sim: true,
-    writes: 'eligibility note: yes',
+  { event: 'OPEN THE CONSULT LINK', actor: 'system', group: 'Funnel',
+    hint: 'Normally opens ten minutes before the slot',
+    reason: 'No consultation is booked',
+    guard: (st, ui) => !!(st.qa && st.qa.slotAt) && !st.qa.eligible && ui.flow === 'app',
+    fire: (ctx) => ctx.openConsult() },
+
+  { event: 'CLINICIAN SAYS YES', actor: 'clinician', group: 'Funnel',
+    hint: 'Eligibility confirmed, the plan unlocks',
     reason: 'No eligibility call is open',
     guard: (st, ui) => ui.flow === 'consultation',
     fire: (ctx) => ctx.confirmEligible() },
 
-  { event: 'PLAN_PAID', actor: 'patient', from: 'PLAN_VIEW', to: 'REVIEW', sim: true,
-    writes: 'Order PAID (sim: Wegovy, monthly). Straight to dispatch if already confirmed eligible.',
+  { event: 'CLINICIAN SAYS NO', actor: 'clinician', group: 'Funnel',
+    hint: 'The no comes back in their words, with another goal offered',
+    reason: 'No eligibility call is open',
+    guard: (st, ui) => ui.flow === 'consultation',
+    fire: (ctx) => ctx.declineEligibility() },
+
+  { event: 'PAY THE PLAN', actor: 'patient', group: 'Funnel',
+    hint: 'Subscribes to Wegovy, monthly',
     reason: 'The plan is not open',
     guard: (st, ui) => ui.flow === 'plan',
     fire: (ctx) => ctx.payPlan('monthly', { name: 'Wegovy' }) },
 
-  { event: 'ORDER_APPROVED', actor: 'clinician', from: 'REVIEW', to: 'FULFILMENT', sim: false,
-    writes: 'signature; dispatch begins',
+  { event: 'APPROVE THE ORDER', actor: 'clinician', group: 'Order',
+    hint: 'Signs the prescription, dispatch begins',
     reason: 'No paid order is waiting for review',
-    guard: (st, ui, ep) => !!ep && ep.state === 'REVIEW',
+    guard: (st, ui, ep) => !!ep.run && ep.run.status === 'programme' && ep.run.checkpoint !== 'declined',
     fire: (ctx, ep) => ctx.approveOrder(ep.pKey) },
 
-  { event: 'ORDER_DECLINED', actor: 'clinician', from: 'REVIEW', to: 'NOT_ELIGIBLE', sim: false,
-    writes: 'eligibility note: no; refund issued in full',
+  { event: 'DECLINE THE ORDER', actor: 'clinician', group: 'Order',
+    hint: 'Refuses it, and the payment is returned',
     reason: 'No paid order is waiting for review',
-    guard: (st, ui, ep) => !!ep && ep.state === 'REVIEW',
+    guard: (st, ui, ep) => !!ep.run && ep.run.status === 'programme' && ep.run.checkpoint !== 'declined',
     fire: (ctx, ep) => ctx.declineOrder(ep.pKey) },
 
-  { event: 'MEDICATION_DISPENSED', actor: 'pharmacy', from: 'FULFILMENT', to: 'FULFILMENT', sim: true,
-    writes: 'shipment: preparing',
+  { event: 'PHARMACY PACKS IT', actor: 'pharmacy', group: 'Delivery',
+    hint: 'Dispensed and packed in cold chain',
     reason: 'Nothing is with the pharmacy',
-    guard: (st, ui, ep) => !!ep && ep.run && ep.run.status === 'shipping' && (ep.run.ship || 'confirmed') === 'confirmed',
+    guard: (st, ui, ep) => !!ep.run && ep.run.status === 'shipping' && (ep.run.ship || 'confirmed') === 'confirmed',
     fire: (ctx, ep) => ctx.dispatch({ type: 'ship', protocol: ep.pKey, stage: 'preparing' }) },
 
-  { event: 'SHIPMENT_OUT', actor: 'pharmacy', from: 'FULFILMENT', to: 'FULFILMENT', sim: true,
-    writes: 'shipment: out for delivery',
+  { event: 'OUT FOR DELIVERY', actor: 'pharmacy', group: 'Delivery',
+    hint: 'On its way, with an arrival window',
     reason: 'Nothing is packed',
-    guard: (st, ui, ep) => !!ep && ep.run && ep.run.status === 'shipping' && ep.run.ship === 'preparing',
+    guard: (st, ui, ep) => !!ep.run && ep.run.status === 'shipping' && ep.run.ship === 'preparing',
     fire: (ctx, ep) => ctx.dispatch({ type: 'ship', protocol: ep.pKey, stage: 'out' }) },
 
-  { event: 'DELIVERY_CONFIRMED', actor: 'nurse', from: 'FULFILMENT', to: 'FULFILMENT', sim: true,
-    writes: 'delivery record; nurse gives the first dose on the 3-month plan',
+  { event: 'NURSE DELIVERS IT', actor: 'nurse', group: 'Delivery',
+    hint: 'Handed over, and the first dose given on the 3-month plan',
     reason: 'Nothing is out for delivery',
-    guard: (st, ui, ep) => !!ep && ep.run && ep.run.status === 'shipping' && ep.run.ship === 'out',
+    guard: (st, ui, ep) => !!ep.run && ep.run.status === 'shipping' && ep.run.ship === 'out',
     fire: (ctx, ep) => ctx.dispatch({ type: 'ship', protocol: ep.pKey, stage: 'delivered' }) },
 
-  { event: 'TREATMENT_STARTED', actor: 'patient', from: 'FULFILMENT', to: 'TREATMENT', sim: false,
-    writes: 'day 1 of the monthly cycle',
+  { event: 'START TREATMENT', actor: 'patient', group: 'Delivery',
+    hint: 'First dose taken, day 1 of the cycle',
     reason: 'The medication has not been delivered',
-    guard: (st, ui, ep) => !!ep && ep.run && ep.run.status === 'shipping' && ep.run.ship === 'delivered',
+    guard: (st, ui, ep) => !!ep.run && ep.run.status === 'shipping' && ep.run.ship === 'delivered',
     fire: (ctx, ep) => ctx.dispatch({ type: 'deliver', protocol: ep.pKey }) },
 
-  { event: 'WEEK_ADVANCED', actor: 'system', from: 'TREATMENT', to: 'TREATMENT', sim: true,
-    writes: 'adherence_log (a week of doses)',
+  { event: 'A WEEK PASSES', actor: 'clock', group: 'The cycle',
+    hint: 'A week of doses logged. Week 3 raises the renewal, week 4 the dose review',
     reason: 'Treatment is not running',
-    guard: (st, ui, ep) => !!ep && ep.run && ep.run.status === 'running',
+    guard: (st, ui, ep) => !!ep.run && ep.run.status === 'running',
     fire: (ctx, ep) => ctx.dispatch({ type: 'advance', protocol: ep.pKey }) },
+
+  { event: 'JUMP TO WEEK 4', actor: 'clock', group: 'The cycle',
+    hint: 'Straight to the dose review',
+    reason: 'Treatment is not running',
+    guard: (st, ui, ep) => !!ep.run && ep.run.status === 'running' && (ep.run.day || 1) < 22,
+    fire: (ctx, ep) => ctx.dispatch({ type: 'setDay', protocol: ep.pKey, day: 22 }) },
+
+  { event: 'CLINICIAN SETS THE DOSE', actor: 'clinician', group: 'The cycle',
+    hint: 'The dose review happens: the dose goes up, and the next order is raised at it',
+    reason: 'No dose review is booked',
+    guard: (st, ui, ep) => !!ep.run && !!ep.run.titrationSlot,
+    fire: (ctx, ep) => ctx.dispatch({
+      type: 'titration', protocol: ep.pKey, dose: '1 mg weekly' }) },
+
+  { event: 'JUMP TO THE CYCLE END', actor: 'clock', group: 'The cycle',
+    hint: 'The last week of the term, when renewal is due',
+    reason: 'Treatment is not running',
+    guard: (st, ui, ep) => !!ep.run && ep.run.status === 'running',
+    fire: (ctx, ep) => ctx.dispatch({
+      type: 'setDay', protocol: ep.pKey,
+      day: (ep.run.duration === 'quarter' ? 12 : 4) * 7,
+    }) },
 ];
 
-export function allowedEvents(st, ui, ep) {
-  return TRANSITIONS.filter((t) => {
-    try { return t.guard(st, ui, ep); } catch { return false; }
-  });
-}
+export const GLP = GLP_PKEY;
+
 export const canFire = (t, st, ui, ep) => {
   try { return t.guard(st, ui, ep); } catch { return false; }
 };

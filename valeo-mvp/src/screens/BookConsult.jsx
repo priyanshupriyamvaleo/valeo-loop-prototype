@@ -25,7 +25,7 @@ const SLOT_OFFSETS = [30, 45, 60];   /* minutes from now */
 const fmt = (d) => d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true })
   .replace(' ', ' ').toLowerCase();
 
-export default function BookConsult({ onBack, onBooked, reasons = [] }) {
+export default function BookConsult({ onBack, onBooked, reasons = [], titration = false }) {
   const doc = COACHES.C_LAYLA;
   const [picked, setPicked] = useState(null);
 
@@ -51,8 +51,11 @@ export default function BookConsult({ onBack, onBooked, reasons = [] }) {
           Pick a time, {USER.first}.
         </Typography>
         <Typography sx={{ fontSize: 14.5, lineHeight: 1.55, color: C.ink2, mt: 1.25 }}>
-          Ten minutes with a DHA-licensed doctor, included in your plan. Nothing to
-          pay before it, and nothing is prescribed until you have spoken.
+          {titration
+            ? `Ten minutes with ${doc.short} to set your dose for the month ahead, `
+              + 'included in your plan. She will have read your logs before you speak.'
+            : 'Ten minutes with a DHA-licensed doctor, included in your plan. Nothing to '
+              + 'pay before it, and nothing is prescribed until you have spoken.'}
         </Typography>
 
         {/* who you are actually meeting */}

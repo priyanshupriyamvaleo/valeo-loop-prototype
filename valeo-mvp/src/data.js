@@ -4407,10 +4407,18 @@ export function carePlan(pKey, opts = {}) {
    nobody is surprised by a charge.
    ══════════════════════════════════════════════════════════════════════════ */
 export function cycleState(rx) {
+  /* TWO CLOCKS, AND THEY ARE NOT THE SAME ONE.
+     `day` counts the treatment from the first dose and never goes back: it is
+     what the run arc and the titration schedule are drawn from. The billing
+     cycle restarts at every renewal, so it counts from `cycleStart`. Sharing
+     one field between them was how a renewal used to throw a patient back to
+     week 1 of a programme they were three months into. */
   const weeks = rx.duration === 'quarter' ? 12 : 4;
   const day = Math.max(1, rx.day || 1);
-  const week = Math.min(weeks, Math.ceil(day / 7));
-  const daysLeft = Math.max(0, weeks * 7 - day);
+  const start = Math.max(1, rx.cycleStart || 1);
+  const inCycle = Math.max(1, day - start + 1);
+  const week = Math.min(weeks, Math.ceil(inCycle / 7));
+  const daysLeft = Math.max(0, weeks * 7 - inCycle);
 
   /* Renewal is raised a week out on monthly, a fortnight out on the quarter. */
   const warnAt = rx.duration === 'quarter' ? 14 : 7;
@@ -4419,6 +4427,7 @@ export function cycleState(rx) {
 
   /* The dose review sits at week four of every cycle. */
   const titrationDue = !rx.titrationDone && week >= 4 && !ended;
+  const cycleNo = Math.floor((start - 1) / (weeks * 7)) + 1;
 
   const addDays = (n) => {
     const d = new Date(Date.now() + n * 86400e3);
@@ -4426,11 +4435,11 @@ export function cycleState(rx) {
   };
 
   return {
-    weeks, week, day, daysLeft, ended, endingSoon, titrationDue,
+    weeks, week, day, inCycle, cycleNo, daysLeft, ended, endingSoon, titrationDue,
     doseLabel: rx.dose || '0.5 mg weekly',
     renewsOn: ended ? 'Today' : addDays(daysLeft),
-    nextDelivery: rx.duration === 'quarter' ? addDays(Math.max(1, 28 - (day % 28))) : addDays(daysLeft || 1),
-    nextConsult: titrationDue ? 'Due now' : addDays(Math.max(1, 28 - day)),
+    nextDelivery: rx.duration === 'quarter' ? addDays(Math.max(1, 28 - (inCycle % 28))) : addDays(daysLeft || 1),
+    nextConsult: titrationDue ? 'Due now' : addDays(Math.max(1, 28 - inCycle)),
   };
 }
 

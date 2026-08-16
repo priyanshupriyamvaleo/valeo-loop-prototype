@@ -19,12 +19,23 @@ import { C } from '../theme';
  * exclamation marks doing work the sentence should do, and the doctor gate is
  * stated as reassurance rather than a caveat — it is the reason this is safe.
  */
-export default function OrderPlaced({ med, duration, eligible, onDone }) {
+export default function OrderPlaced({ med, duration, eligible, renewal, onDone }) {
   const [shown, setShown] = useState(false);
   useEffect(() => { const t = setTimeout(() => setShown(true), 80); return () => clearTimeout(t); }, []);
 
-  const term = duration === 'quarter' ? 'three months' : 'first month';
-  const steps = eligible
+  const quarter = duration === 'quarter';
+  const term = renewal
+    ? (quarter ? 'next three months' : 'next month')
+    : (quarter ? 'three months' : 'first month');
+  const steps = renewal
+    ? [
+      'Your prescription is signed at the dose your clinician set.',
+      'We dispense and pack it in cold chain.',
+      quarter
+        ? 'A nurse brings it to you and stays for your first dose.'
+        : 'It arrives at your door, and we tell you the moment it is on its way.',
+    ]
+    : eligible
     ? [
       'Your prescription is already signed, so we go straight to the pharmacy.',
       'We dispense and pack it in cold chain.',
@@ -59,7 +70,7 @@ export default function OrderPlaced({ med, duration, eligible, onDone }) {
           fontFamily: '"Fraunces", serif', fontSize: 32, fontWeight: 600,
           lineHeight: 1.12, color: C.deep, mt: 3,
         }}>
-          You’re in, {USER.first}.
+          {renewal ? `Renewed, ${USER.first}.` : `You’re in, ${USER.first}.`}
         </Typography>
 
         <Typography sx={{ fontSize: 15.5, lineHeight: 1.6, color: C.ink, mt: 1.5 }}>

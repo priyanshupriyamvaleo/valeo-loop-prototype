@@ -4,7 +4,11 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5174 },
+  /* `node_modules` here is a symlink to ../valeo-v1/node_modules, so every
+     font file resolves outside this project root and the dev server refuses
+     it with a 403. The build inlines them and never noticed; the dev server
+     was quietly serving the whole prototype in Times New Roman. */
+  server: { port: 5174, fs: { allow: ['..'] } },
 
   /* ── GITHUB PAGES ──
      Pages serves this repo from https://<user>.github.io/valeo-loop-prototype/,
