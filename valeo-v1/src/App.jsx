@@ -23,8 +23,11 @@ import BuyScreen from './screens/Buy';
 import BottomNav from './components/BottomNav';
 import Feedback from './components/Feedback';
 import PushToast from './components/PushToast';
+import Clinic from './dock/Clinic';
+import MachinePanel from './dock/Machine';
 import { screenOf } from './lib/screen';
-import { PROTOCOLS, DEMO_QA, focusRun, activeRuns, synthObserved,
+import { TRANSITIONS, canFire, episodesOf } from './machine';
+import { PROTOCOLS, DEMO_QA, GOALS, focusRun, activeRuns, synthObserved,
          PHASES_APP, phaseHas, leadFor, doorOf } from './data';
 
 const INIT = {
@@ -42,7 +45,58 @@ const INIT = {
      → shipping → running → verdict → reviewing → done */
   runs: {},
   focus: null,     /* which run Today is showing */
+  /* The event log. State is a fold over this list; the Machine tab renders
+     it as the ticker. Sequence numbers, not wall-clock — the demo jumps
+     time, and a fake timestamp would be a small lie. */
+  log: [],
 };
+
+/* ── EVERY ACTION THAT IS AN EVENT, NAMED AS ONE ──
+   The reducer wrapper below appends a log entry for each of these, which is
+   what keeps the ticker honest across ALL surfaces: the phone, the clinic
+   queue, the machine levers and the harness beats all dispatch these same
+   actions, so they all land in the same log with the right actor. */
+const EVENT_OF = {
+  consulted: () => ({ event: 'CONSULT_COMPLETED', actor: 'clinician' }),
+  orderPlaced: () => ({ event: 'PAYMENT_COMPLETED', actor: 'patient' }),
+  programme: () => ({ event: 'PAYMENT_COMPLETED', actor: 'patient' }),
+  checkpoint: (a) => (a.v === 'approved'
+    ? { event: 'ORDER_APPROVED', actor: 'clinician' }
+    : { event: 'CALL_REQUESTED', actor: 'clinician' }),
+  bookBloods: () => ({ event: 'NURSE_BOOKED', actor: 'patient' }),
+  bloodsDone: () => ({ event: 'SAMPLE_COLLECTED', actor: 'nurse' }),
+  bookFollow: () => ({ event: 'FOLLOWUP_BOOKED', actor: 'patient' }),
+  labsReady: () => ({ event: 'LABS_UPLOADED', actor: 'lab' }),
+  reviewed: () => ({ event: 'PRESCRIPTION_SIGNED', actor: 'clinician' }),
+  activate: () => ({ event: 'PLAN_ACTIVATED', actor: 'patient' }),
+  ship: (a) => ({ event: { preparing: 'MEDICATION_DISPENSED', out: 'SHIPMENT_OUT',
+                           delivered: 'DELIVERY_CONFIRMED' }[a.stage],
+                  actor: a.stage === 'delivered' ? 'nurse' : 'pharmacy' }),
+  deliver: () => ({ event: 'TREATMENT_STARTED', actor: 'patient' }),
+  advance: () => ({ event: 'WEEK_ADVANCED', actor: 'system' }),
+  bookReview: () => ({ event: 'RETEST_BOOKED', actor: 'patient' }),
+  results: () => ({ event: 'VERDICT_PUBLISHED', actor: 'clinician' }),
+  loopOpened: () => ({ event: 'LOOP_OPENED', actor: 'system' }),
+  answers: (a) => (a.qa && a.qa.door
+    ? (a.qa.escalated
+      ? { event: 'ESCALATION_RAISED', actor: 'ai' }
+      : { event: `INTENT_CHOSEN · ${a.qa.door === 'known' ? 'KNOWN' : 'DIAGNOSIS'}`,
+          actor: 'patient' })
+    : null),
+};
+
+/* The logging decorator. One place, so no dispatch can forget to log. */
+function withLog(reduce) {
+  return (s, a) => {
+    const next = reduce(s, a);
+    const entry = a.type === 'log'
+      ? { event: a.event, actor: a.actor }
+      : (EVENT_OF[a.type] ? EVENT_OF[a.type](a) : null);
+    if (!entry || !entry.event) return next;
+    const log = next.log || [];
+    return { ...next, log: [...log, { seq: log.length + 1, pKey: a.protocol || s.focus || null, ...entry }] };
+  };
+}
 
 /* Write into one protocol's run without touching any other. Every lifecycle
    action goes through this, which is what makes the N-protocol case safe: there
@@ -128,10 +182,19 @@ function reducer(s, a) {
         focus: s.focus || a.protocol,
       };
     /* 'approved' clears the gate; 'call' is the escalation beat — the doctor
-       caught a disguised resolver post-payment and wants two minutes. */
+       caught a disguised resolver post-payment and wants two minutes.
+       `checkpointWasCall` survives approval, so the machine graph can show
+       the call node as genuinely visited rather than skipped. */
     case 'checkpoint':
-      return patchRun(s, target(s, a), { checkpoint: a.v });
+      return patchRun(s, target(s, a), {
+        checkpoint: a.v, ...(a.v === 'call' ? { checkpointWasCall: true } : {}),
+      });
     case 'reviewed':  return patchRun(s, target(s, a), { status: 'ready' });
+    /* The event log accepts explicit entries for pure-navigation events
+       (opening the funnel, joining a call) that no lifecycle action covers. */
+    case 'log': return s;
+    /* Closing the loop: the verdict spawned the next question. */
+    case 'loopOpened': return patchRun(s, target(s, a), { loopOpened: true });
     /* ── the middle of the journey ── */
 
     /* ── THE PRACTICE THREAD LIVES IN STATE ──
@@ -251,7 +314,7 @@ function Phone({ children }) {
 }
 
 export default function App() {
-  const [st, dispatch] = useReducer(reducer, INIT);
+  const [st, dispatch] = useReducer(withLog(reducer), INIT);
   /* `flow` is the linear onboarding; `tab` is the app proper. */
   /* ── PHASE ──
      Three demos from one build. ?phase=1|2|3, default 1, switchable in the rail.
@@ -300,12 +363,24 @@ export default function App() {
      call ends by confirming the order, not by writing a care brief. */
   const [ckCall, setCkCall] = useState(false);
 
+  /* ── THE DOCK ──
+     Controls (the demo rail), Clinic (Jamie's queues) and Machine (the state
+     graph with levers) share the panel beside the phone. ?view= opens one on
+     load so a link can arrive with the right surface up. */
+  const [dock, setDock] = useState(() => {
+    const v = new URLSearchParams(window.location.search).get('view');
+    return ['clinic', 'machine', 'controls'].includes(v) ? v : 'controls';
+  });
+
   const goQuestions = (r) => { setReveal(r || null); setFlow('questions'); };
 
   /* Where a tap on the home card lands. The resolver decides which of these is
      right for the current lifecycle state; this only routes. */
   const fromCard = (go, pKey) => {
-    if (go === 'start') return setFlow('between');
+    if (go === 'start') {
+      dispatch({ type: 'log', event: 'EPISODE_CREATED', actor: 'system' });
+      return setFlow('between');
+    }
     if (go === 'plan') { setFlow('app'); return setTab(home); }
     if (go === 'today') { setFlow('app'); return setTab('today'); }
     if (go === 'results') return openResults(pKey);
@@ -360,6 +435,107 @@ export default function App() {
     const pk = reviewKey;
     dispatch({ type: 'bookReview', protocol: pk, slot });
     setFlow('app'); setTab('today');
+  };
+
+  /* ══════════════════════════════════════════════════════════════════════
+     ONE STORE, ONE PROJECTION, ONE GATE.
+
+     These helpers are the ONLY code that moves the journey. The phone's own
+     handlers call them, the clinic's action buttons call them, the machine's
+     levers call them — through fireEvent, which refuses any transition whose
+     guard fails. Three surfaces, one gate, zero drift.
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /* The end of the intake chat, whether typed on the phone or SIM-autofilled
+     from the machine tab. Fork keys written authoritatively: a re-run must
+     not inherit an escalation or a product choice from a previous run. */
+  const completeIntake = (a) => {
+    dispatch({ type: 'answers', qa: {
+      escalated: false, escAt: null,
+      wants: null, wantsPkey: null, wantsShort: null,
+      ...a,
+    } });
+    setMatched(a.goal);
+    if (a.door === 'known' && !a.escalated) {
+      setDetail(a.wantsPkey || leadFor(a.goal));
+      setFlow('buy');
+    } else {
+      setMeetKey(leadFor(a.goal));
+      setFlow('assess');
+    }
+  };
+
+  /* Joining the live room, from the AI summary or from Meet. */
+  const joinConsult = () => {
+    const pk = meetKey || leadFor(st.qa.goal);
+    setDetail(pk); setMeetKey(pk);
+    setMatchFail(false);
+    dispatch({ type: 'log', event: 'CONSULT_JOINED', actor: 'patient', protocol: pk });
+    setFlow('consultation');
+  };
+
+  /* The consultation ends: door B writes the brief; a checkpoint call ends
+     by confirming the order — no blood test on that door, so approval starts
+     fulfilment directly. */
+  const endConsult = () => {
+    dispatch({ type: 'consulted', protocol: detail });
+    dispatch({ type: 'focus', protocol: detail });
+    setFlow('brief');
+  };
+  const approveAfterCall = (pk) => {
+    dispatch({ type: 'checkpoint', protocol: pk, v: 'approved' });
+    dispatch({ type: 'activate', protocol: pk });
+    if (ckCall) { setCkCall(false); setFlow('app'); setTab('today'); }
+  };
+
+  const openPlan = (pk) => {
+    dispatch({ type: 'log', event: 'PLAN_OPENED', actor: 'patient', protocol: pk });
+    setDetail(pk); setFlow('buy');
+  };
+
+  /* Payment, for both doors — the same logic whether the patient pays on the
+     phone's sheet or the machine SIM-fires it. */
+  const completePayment = () => {
+    if (doorOf(st.qa) === 'known' && !st.runs[detail]) {
+      dispatch({ type: 'orderPlaced', protocol: detail });
+    } else {
+      dispatch({ type: 'programme', protocol: detail });
+    }
+    dispatch({ type: 'focus', protocol: detail });
+    setFlow('app'); setTab('today');
+  };
+
+  const approveOrder = (pk) => {
+    dispatch({ type: 'checkpoint', protocol: pk, v: 'approved' });
+    dispatch({ type: 'activate', protocol: pk });
+  };
+  const requestCall = (pk) => dispatch({ type: 'checkpoint', protocol: pk, v: 'call' });
+  const startCheckpointCall = (pk) => {
+    dispatch({ type: 'log', event: 'CALL_STARTED', actor: 'patient', protocol: pk });
+    setDetail(pk); setCkCall(true); setMatchFail(false); setFlow('consultation');
+  };
+
+  /* Everything the machine's fire() functions may touch. */
+  const ui = { flow, detail, ckCall, tab };
+  const ctx = {
+    dispatch, setFlow, setTab, setDetail, setCkCall, setMatchFail,
+    completeIntake, joinConsult, endConsult, approveAfterCall, openPlan,
+    completePayment, approveOrder, requestCall, startCheckpointCall,
+    /* SIM intake opens an episode in a category with no run in flight —
+       one episode per category, like the spec's Episode rows. The prototype
+       keys runs by protocol, so replaying a category would clobber the run
+       already walking the loop. */
+    simGoal: () => {
+      const free = GOALS.find((g) => !st.runs[leadFor(g.k)]);
+      return free ? free.k : (st.qa.goal || preGoal || 'fat');
+    },
+  };
+
+  /* THE GATE. A lever that is not allowed simply does not fire. */
+  const fireEvent = (eventId, ep) => {
+    const t = TRANSITIONS.find((x) => x.event === eventId);
+    if (!t || !canFire(t, st, ui, ep)) return;
+    t.fire(ctx, ep);
   };
 
   /* Landing follows state, not habit: with a protocol in flight the only
@@ -457,31 +633,11 @@ export default function App() {
       onBack={() => setFlow('home')} />
   );
   else if (flow === 'coach') view = (
+    /* The chat's exit is the same gate the machine's SIM levers use —
+       completeIntake routes the fork, and escalated answers go through the
+       AI summary to the doctor, exactly as the spec's D1 defines. */
     <Coach preGoal={preGoal} onBack={() => setFlow('between')}
-      onDone={(a) => {
-        /* The fork keys are written authoritatively. `answers` merges into
-           qa, and a re-run of the intake must not inherit an escalation or a
-           product choice from a previous run: a happy-path `a` simply lacks
-           those keys, and the merge would keep the stale ones. */
-        dispatch({ type: 'answers', qa: {
-          escalated: false, escAt: null,
-          wants: null, wantsPkey: null, wantsShort: null,
-          ...a,
-        } });
-        setMatched(a.goal);
-        /* ── THE FORK LANDS HERE ──
-           Known door: straight to the plan — he told us what he wants, and
-           the doctor's checkpoint comes after payment. Everyone else — the
-           resolvers, and the known-door answers the intake escalated — goes
-           to the person, via the AI's investigation. */
-        if (doorOf(a) === 'known') {
-          setDetail(a.wantsPkey || leadFor(a.goal));
-          setFlow('buy');
-        } else {
-          setMeetKey(leadFor(a.goal));
-          setFlow(a.escalated ? 'meet' : 'assess');
-        }
-      }} />
+      onDone={completeIntake} />
   );
   else if (flow === 'assess') view = (
     <Assess goal={matched || st.qa.goal} pKey={meetKey}
@@ -510,34 +666,20 @@ export default function App() {
        met the team and answered the questions; the next thing is the talk. */
     <Meet pKey={meetKey}
       onBack={() => setFlow('coach')}
-      onBook={(pk) => { setDetail(pk); setMatchFail(false); setFlow('consultation'); }} />
+      onBook={joinConsult} />
   );
   else if (flow === 'consultation') view = (
+    /* One room, two exits: a checkpoint call ends by confirming the paid
+       order (no brief, fulfilment starts); the instant consult ends by
+       creating the run and writing the brief. Both exits are the same
+       helpers the clinic and the machine fire. */
     <Consultation pKey={detail} failed={matchFail}
-      onDone={() => {
-        /* A checkpoint call ends by confirming the order the patient already
-           paid for — the run exists, so it must not be reset to 'consulted'
-           and no brief follows. The doctor said yes; care continues. */
-        if (ckCall) {
-          dispatch({ type: 'checkpoint', protocol: detail, v: 'approved' });
-          /* No blood test on this door. Approval starts fulfilment: the next
-             thing that happens to this patient is medication arriving. */
-          dispatch({ type: 'activate', protocol: detail });
-          setCkCall(false);
-          setFlow('app'); setTab('today');
-          return;
-        }
-        /* The run begins here, at `consulted`. Nothing was booked and nothing
-           was paid, so there is no earlier state to record. */
-        dispatch({ type: 'consulted', protocol: detail });
-        dispatch({ type: 'focus', protocol: detail });
-        setFlow('brief');
-      }} />
+      onDone={() => (ckCall ? approveAfterCall(detail) : endConsult())} />
   );
   else if (flow === 'brief') view = (
     <Brief pKey={detail} st={st}
       onBack={() => { setFlow('app'); setTab('today'); }}
-      onStart={() => setFlow('buy')} />
+      onStart={() => openPlan(detail)} />
   );
   else if (flow === 'detail') view = (
     <ProtocolDetail st={st} pKey={detail} view={detailView} onView={setDetailView}
@@ -573,18 +715,7 @@ export default function App() {
       wants={doorOf(st.qa) === 'known' && st.qa.wantsPkey ? (st.qa.wants || null) : null}
       wantsShort={doorOf(st.qa) === 'known' ? (st.qa.wantsShort || null) : null}
       onBack={() => setFlow(doorOf(st.qa) === 'known' ? 'between' : 'detail')}
-      onPaid={() => {
-        /* Door A's run is created here, at payment, with the doctor's
-           checkpoint pending. Door B's run has existed since the
-           consultation, so paying just moves it forward. */
-        if (doorOf(st.qa) === 'known') {
-          dispatch({ type: 'orderPlaced', protocol: detail });
-        } else {
-          dispatch({ type: 'programme', protocol: detail });
-        }
-        dispatch({ type: 'focus', protocol: detail });
-        setFlow('app'); setTab('today');
-      }} />
+      onPaid={completePayment} />
   );
   else if (flow === 'baseline') view = (
     <Baseline onBack={() => { setFlow('app'); setTab(home); }} onDone={baselineDone} />
@@ -624,10 +755,7 @@ export default function App() {
                 {tab === 'today' && (
                   <Today st={st} dispatch={dispatch} onGo={setTab}
                          onBrief={(pk) => { setDetail(pk); setFlow('brief'); }}
-                         onCheckpointCall={(pk) => {
-                           setDetail(pk); setMatchFail(false);
-                           setCkCall(true); setFlow('consultation');
-                         }}
+                         onCheckpointCall={startCheckpointCall}
                          onBookBloods={(pk) => {
                            setDetail(pk); setBooking('bloods'); setFlow('consult');
                          }}
@@ -660,7 +788,33 @@ export default function App() {
           ) : view}
         </Phone>
 
-        <Box sx={{ maxWidth: 230, display: { xs: 'none', md: 'block' } }}>
+        <Box sx={{
+          width: dock === 'controls' ? 230 : 430, maxWidth: 430, flexShrink: 0,
+          display: { xs: 'none', md: 'block' },
+          maxHeight: 844, overflowY: 'auto', pr: 0.5,
+          transition: 'width .25s ease',
+        }}>
+          {/* ── THE DOCK ──
+              Three surfaces, one store. Controls drives the demo, Clinic is
+              Jamie's queue, Machine is the state graph with levers. They can
+              never disagree with the phone, because none of them holds state
+              of its own. */}
+          <Stack direction="row" spacing={0.5} sx={{ mb: 2 }}>
+            {[['controls', 'Controls'], ['clinic', 'Clinic'], ['machine', 'Machine']].map(([k, t]) => (
+              <Box key={k} onClick={() => setDock(k)} sx={{
+                flex: 1, textAlign: 'center', py: 0.75, borderRadius: '9px', cursor: 'pointer',
+                fontSize: 11.5, fontWeight: dock === k ? 700 : 500,
+                bgcolor: dock === k ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.05)',
+                color: dock === k ? '#fff' : '#93A9C2',
+                border: dock === k ? '1px solid rgba(255,255,255,.25)' : '1px solid transparent',
+              }}>{t}</Box>
+            ))}
+          </Stack>
+
+          {dock === 'clinic' && <Clinic st={st} ui={ui} fireEvent={fireEvent} />}
+          {dock === 'machine' && <MachinePanel st={st} ui={ui} fireEvent={fireEvent} />}
+
+          <Box sx={{ display: dock === 'controls' ? 'block' : 'none' }}>
           <Typography sx={{
             fontSize: 11, fontWeight: 800, letterSpacing: '.18em',
             textTransform: 'uppercase', color: C.yellow,
@@ -733,6 +887,7 @@ export default function App() {
           <Typography sx={{ fontSize: 11, color: '#5D7793', mt: 1, lineHeight: 1.5 }}>
             Fills every signal so all six layers render.
           </Typography>
+          </Box>
         </Box>
       </Box>
     </ThemeProvider>

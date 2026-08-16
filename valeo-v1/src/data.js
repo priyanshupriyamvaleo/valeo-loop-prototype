@@ -3328,8 +3328,8 @@ export function practiceScript(st, pKey) {
     } : {
       key: 'checkpoint-pending', clinician: c, first,
       lines: ['Your order is in. Thank you.',
-              `${first} reviews it today — nothing is dispensed until a `
-                + 'doctor has signed it off. You’ll hear from us today.'],
+              `${first} reviews it today. Nothing is dispensed until a `
+                + 'doctor has signed it off, and you’ll hear from us today.'],
       chips: [
         { ic: '🩺', q: 'What is being reviewed?',
           a: ['Your answers, your safety screen and the treatment you chose.',
