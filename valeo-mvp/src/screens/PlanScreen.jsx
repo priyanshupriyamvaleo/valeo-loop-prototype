@@ -26,7 +26,11 @@ export default function PlanScreen({ plan, eligible, onBack, onPaid }) {
 
   const perMonth3 = Math.round(plan.quarterTotal / 3);
   const price = dur === 'monthly' ? plan.monthly : plan.quarterTotal;
-  const priceLabel = `SAR ${price.toLocaleString()}`;
+  /* The CTA carries the cadence, not just the number: a subscription must
+     never read as a one-time month. */
+  const priceLabel = dur === 'monthly'
+    ? `SAR ${price.toLocaleString()} a month`
+    : `SAR ${price.toLocaleString()}`;
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FAF6ED' }}>
@@ -64,9 +68,10 @@ export default function PlanScreen({ plan, eligible, onBack, onPaid }) {
         <Stack direction="row" spacing={1} sx={{ mt: 2.25 }}>
           {[
             { k: 'monthly', t: 'Monthly', big: `SAR ${plan.monthly.toLocaleString()}`,
-              sub: 'a month, rolling' },
+              sub: 'a month', renew: 'Renews monthly until you stop.' },
             { k: 'quarter', t: '3 months', big: `SAR ${plan.quarterTotal.toLocaleString()}`,
-              sub: `one payment · SAR ${perMonth3.toLocaleString()} a month` },
+              sub: `SAR ${perMonth3.toLocaleString()} a month`,
+              renew: 'One payment. Renews every 3 months.' },
           ].map((o) => {
             const on = dur === o.k;
             return (
@@ -85,6 +90,9 @@ export default function PlanScreen({ plan, eligible, onBack, onPaid }) {
                   color: C.deep, mt: 0.4, lineHeight: 1.1,
                 }}>{o.big}</Typography>
                 <Typography sx={{ fontSize: 10.5, color: C.ink2, mt: 0.3 }}>{o.sub}</Typography>
+                <Typography sx={{ fontSize: 9.5, color: C.ink2, mt: 0.5, lineHeight: 1.35 }}>
+                  {o.renew}
+                </Typography>
               </Box>
             );
           })}
@@ -140,9 +148,11 @@ export default function PlanScreen({ plan, eligible, onBack, onPaid }) {
       </Box>
 
       <PaySheet open={pay}
-        item={`${plan.name} · ${dur === 'monthly' ? 'monthly' : '3 months'}`}
-        fee={price.toLocaleString()}
-        note={plan.guarantee}
+        item={`${plan.name} · ${dur === 'monthly' ? 'monthly subscription' : '3 months, one payment'}`}
+        fee={dur === 'monthly' ? `${price.toLocaleString()} a month` : price.toLocaleString()}
+        note={`${dur === 'monthly'
+          ? 'Renews monthly until you stop.'
+          : 'One payment for 3 months. Renews every 3 months unless you stop.'} ${plan.guarantee}`}
         onClose={() => setPay(false)} onDone={() => onPaid(dur)} />
     </Box>
   );

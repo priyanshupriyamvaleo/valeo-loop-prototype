@@ -23,7 +23,7 @@ export const STATES = [
     exit: 'The doctor confirms eligibility: yes or no. The plan itself never changes.' },
   { id: 'PLAN_VIEW', t: 'The plan',
     enter: 'One plan, rendered from the category manager’s config. Medication included.',
-    exit: 'Patient pays: monthly, or 3 months in one payment. Full refund if declined.' },
+    exit: 'Patient subscribes: monthly, renewing until stopped, or 3 months in one payment. Full refund if declined.' },
   { id: 'REVIEW', t: 'Doctor review',
     enter: 'Paid. The order is in the doctor’s queue, same day. Nothing ships unsigned.',
     exit: 'Approved: dispatch begins. Declined: full refund, said plainly.' },
@@ -34,8 +34,8 @@ export const STATES = [
     enter: 'A signed order with the pharmacy.',
     exit: 'Dispensed, shipped, delivered in cold chain. Nurse stays for the first dose.' },
   { id: 'TREATMENT', t: 'Treatment',
-    enter: 'First dose taken. The monthly cycle begins.',
-    exit: 'Each month: a doctor check-in, the dose reviewed, the next delivery.' },
+    enter: 'First dose taken. The subscription is active.',
+    exit: 'Each month: a doctor check-in, the dose reviewed, the next delivery, the next renewal.' },
 ];
 
 export const stateOf = (id) => STATES.find((s) => s.id === id);

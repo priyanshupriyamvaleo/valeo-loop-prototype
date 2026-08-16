@@ -59,7 +59,7 @@ export default function CatMan({ st, dispatch }) {
       <Field label="Medication" value={plan.medication} onChange={(v) => patch({ medication: v })} />
 
       <Stack direction="row" spacing={1}>
-        <NumField label="Monthly (SAR)" value={plan.monthly}
+        <NumField label="Monthly subscription (SAR)" value={plan.monthly}
           onChange={(v) => patch({ monthly: v })} />
         <NumField label="3 months, one payment (SAR)" value={plan.quarterTotal}
           onChange={(v) => patch({ quarterTotal: v })} />
