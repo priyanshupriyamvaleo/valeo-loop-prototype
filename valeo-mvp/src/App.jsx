@@ -2,6 +2,7 @@ import { useReducer, useState } from 'react';
 import { Box, CssBaseline, ThemeProvider, Stack, Typography } from '@mui/material';
 import theme, { C } from './theme';
 import ValeoHome from './screens/ValeoHome';
+import Between from './screens/Between';
 import Coach from './screens/Coach';
 import Consultation from './screens/Consultation';
 import PlanScreen from './screens/PlanScreen';
@@ -198,9 +199,10 @@ export default function App() {
   const enterApp = () => { setFlow('app'); setTab('today'); };
 
   /* ── the gate helpers: the only code that moves the journey ── */
+  /* The greeting first: the doctors' faces before any question. */
   const startIntake = () => {
     dispatch({ type: 'emit', event: 'EPISODE_CREATED', actor: 'system' });
-    setFlow('coach');
+    setFlow('between');
   };
 
   /* The end of the six questions: clean sees the plan, flagged sees the
@@ -254,8 +256,13 @@ export default function App() {
       }}
       onServices={() => {}} />
   );
+  else if (flow === 'between') view = (
+    /* Both ways in lead to the same six questions: the chat is where
+       questions get asked either way. */
+    <Between onStart={() => setFlow('coach')} onBack={() => setFlow('home')} />
+  );
   else if (flow === 'coach') view = (
-    <Coach onBack={() => setFlow('home')} onDone={completeIntake} />
+    <Coach onBack={() => setFlow('between')} onDone={completeIntake} />
   );
   else if (flow === 'consultation') view = (
     /* The eligibility call. The doctor's one job here is yes or no; ending

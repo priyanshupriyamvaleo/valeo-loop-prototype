@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import { GLP_ASK, GLP_FLAGGED, LIVE, USER, coachOf } from '../data';
+import { COACHES, GLP_ASK, GLP_FLAGGED, USER } from '../data';
 import { C, meter } from '../theme';
 
 /**
@@ -70,7 +70,8 @@ export default function Coach({ onBack, onDone }) {
   const done = i >= steps.length;
   const left = steps.length - start;
   const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six'][left] || String(left);
-  const team = [...new Set(LIVE.map((pk) => coachOf(pk)))];
+  /* the same weight-loss trio the greeting introduced */
+  const team = ['C_LAYLA', 'C_MAHMOUD', 'C_OMAR'].map((k) => COACHES[k]);
   const flagged = GLP_FLAGGED(a);
 
   /* A beat before each reply. Without it the questions render like form fields

@@ -53,12 +53,13 @@ function runState(r) {
 
 export function episodesOf(st, ui) {
   const eps = [];
-  const inFunnel = ['coach', 'consultation', 'plan'].includes(ui.flow);
+  const inFunnel = ['between', 'coach', 'consultation', 'plan'].includes(ui.flow);
   if (inFunnel && !st.runs[GLP_PKEY]) {
     eps.push({
       id: 'funnel', pKey: null, goal: 'Weight Loss',
       flagged: !!st.qa.flagged,
-      state: ui.flow === 'coach' ? 'INTAKE'
+      state: ui.flow === 'between' ? 'NEW'
+        : ui.flow === 'coach' ? 'INTAKE'
         : ui.flow === 'consultation' ? 'FLAGGED_CALL'
           : 'PLAN_VIEW',
     });
@@ -95,14 +96,14 @@ export const TRANSITIONS = [
 
   { event: 'INTAKE_SUBMITTED · CLEAN', actor: 'patient', from: 'INTAKE', to: 'PLAN_VIEW', sim: true,
     writes: 'intake_answers, safety_screen (clean)',
-    reason: 'The intake chat is not open',
-    guard: (st, ui) => ui.flow === 'coach',
+    reason: 'The intake is not open',
+    guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(false)) },
 
   { event: 'INTAKE_SUBMITTED · FLAGGED', actor: 'patient', from: 'INTAKE', to: 'FLAGGED_CALL', sim: true,
     writes: 'intake_answers, safety_screen (flagged)',
-    reason: 'The intake chat is not open',
-    guard: (st, ui) => ui.flow === 'coach',
+    reason: 'The intake is not open',
+    guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(true)) },
 
   { event: 'ELIGIBILITY_CONFIRMED', actor: 'clinician', from: 'FLAGGED_CALL', to: 'PLAN_VIEW', sim: true,
