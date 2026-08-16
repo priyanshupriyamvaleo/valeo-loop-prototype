@@ -16,13 +16,10 @@ import { C } from '../theme';
  */
 
 const GROUPS = [
-  { t: 'Start', ids: ['NEW', 'INTAKE'], lane: null },
-  { t: 'Weight loss · I know what I want', lane: 'known',
-    ids: ['K1_SAFETY', 'K2_PLAN', 'K4_REVIEW', 'K4A_CALL'] },
-  { t: 'The long flow · everything else', lane: 'resolve',
-    ids: ['D1_AI', 'D2_CONSULT', 'D3_RECOMMENDED', 'D5_LABS', 'D6_REVIEW'] },
-  { t: 'Both doors, from here', ids: ['M1_FULFILMENT', 'M2_TREATMENT'], lane: null },
-  { t: 'The loop', ids: ['P1_RETEST', 'P2_RESULTS', 'P3_PROOF', 'P4_LOOP'], lane: null },
+  { t: 'Start', ids: ['NEW', 'INTAKE'] },
+  { t: 'Eligibility, when flagged', ids: ['FLAGGED_CALL'] },
+  { t: 'The plan', ids: ['PLAN_VIEW', 'REVIEW', 'NOT_ELIGIBLE'] },
+  { t: 'Delivery & treatment', ids: ['FULFILMENT', 'TREATMENT'] },
 ];
 
 export default function FlowTable({ st, ui, fireEvent }) {
@@ -31,7 +28,6 @@ export default function FlowTable({ st, ui, fireEvent }) {
   const ep = eps.find((e) => e.id === 'funnel')
     || eps.find((e) => e.pKey === st.focus)
     || eps[0] || null;
-  const intent = ep ? ep.intent : null;
 
   const sys = ep
     ? allowedEvents(st, ui, ep).filter((t) => t.actor !== 'patient')
@@ -64,11 +60,11 @@ export default function FlowTable({ st, ui, fireEvent }) {
       </Stack>
 
       {GROUPS.map((g) => {
-        const dimmed = g.lane && intent && ep && ep.state !== 'NEW' && ep.state !== 'INTAKE'
-          && ((g.lane === 'known' && intent !== 'known')
-            || (g.lane === 'resolve' && intent === 'known'));
+        /* the flagged detour dims once a clean path has moved past it */
+        const dimmed = g.ids[0] === 'FLAGGED_CALL' && ep
+          && !['NEW', 'INTAKE', 'FLAGGED_CALL'].includes(ep.state) && !st.qa.flagged;
         return (
-          <Box key={g.t} sx={{ opacity: dimmed ? 0.32 : 1, transition: 'opacity .3s' }}>
+          <Box key={g.t} sx={{ opacity: dimmed ? 0.35 : 1, transition: 'opacity .3s' }}>
             <Typography sx={{
               fontSize: 9, fontWeight: 800, letterSpacing: '.13em',
               textTransform: 'uppercase', color: C.ink2, mt: 1.5, mb: 0.4,

@@ -2036,6 +2036,15 @@ export function nextStep(st, pKey) {
          The call substate is the escalation beat: the disguised resolver
          caught at the checkpoint, offered a doctor instead of a dispatch. */
       if (r && r.door === 'known' && r.checkpoint !== 'approved') {
+        /* The doctor said no. The refund is the headline, because the money
+           is the thing the patient is now worried about. */
+        if (r.checkpoint === 'declined') return {
+          kind: 'declined', tag: 'Doctor review complete',
+          title: 'This plan isn’t right for you.',
+          body: `${who} decided GLP-1 isn’t suitable for you right now. `
+              + 'Your payment has been refunded in full.',
+          cta: null,
+        };
         if (r.checkpoint === 'call') return {
           kind: 'checkpointCall', tag: 'A quick word first',
           title: `${who} wants two minutes with you before confirming.`,
@@ -2047,7 +2056,7 @@ export function nextStep(st, pKey) {
           kind: 'checkpoint', tag: 'Doctor review today',
           title: `${who} is reviewing your order.`,
           body: 'Nothing is dispensed until a doctor signs it off. You’ll '
-              + 'hear back today.',
+              + 'hear back today. Full refund if it’s not right for you.',
           cta: null,
         };
       }
@@ -3313,6 +3322,21 @@ export function practiceScript(st, pKey) {
      substate so each message fires once, and the ordinary 'programme' script
      follows naturally on approval. */
   if (r && r.door === 'known' && status === 'programme' && r.checkpoint !== 'approved') {
+    if (r.checkpoint === 'declined') return {
+      key: 'checkpoint-declined', clinician: c, first,
+      lines: [`${first} reviewed your order and decided this plan isn’t right `
+                + 'for you at the moment.',
+              'Your payment has been refunded in full. If anything changes, '
+                + 'we’re here.'],
+      chips: [
+        { ic: '💰', q: 'When do I get the refund?',
+          a: ['It’s already issued, in full.',
+              'It reaches your card in 3 to 5 working days.'] },
+        { ic: '💬', q: 'Why was I declined?',
+          a: [`${first} will message you the reason here.`,
+              'It’s a safety decision, not a final one.'] },
+      ],
+    };
     return r.checkpoint === 'call' ? {
       key: 'checkpoint-call', clinician: c, first,
       lines: [`${first} looked at your order and wants two minutes with you `
@@ -3593,6 +3617,60 @@ export function nextOnPlan(st, pKey) {
    PROGRAMME_FEE and nothing else breaks.
    ══════════════════════════════════════════════════════════════════════════ */
 export const PROGRAMME_FEE = 999;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE PLAN (MVP · weight loss · known intent)
+
+   One plan object, owned by the category manager. The patient PDP, the pay
+   sheet and the practice thread's money answers all render from it, so a
+   console edit changes the shop in the same second. Structure per
+   docs/PLAN_STRUCTURE.md: all-in monthly with medication included, a
+   3-month prepay as the only second option, flat price at every dose, and
+   the refund guarantee that makes pay-before-approval clean.
+
+   The clinician owns none of this. His verbs are eligibility only.
+   ══════════════════════════════════════════════════════════════════════════ */
+export const GLP_PKEY = 'P_WEIGHT';
+
+export const DEFAULT_PLAN = {
+  status: 'live',                       /* live | draft */
+  name: 'GLP-1 Weight Loss Plan',
+  medication: 'GLP-1 weekly injection',
+  tagline: 'Doctor reviewed. Medication included. Delivered monthly.',
+  monthly: 1349,                        /* SAR per month, rolling */
+  quarterTotal: 3597,                   /* SAR, one payment for 3 months */
+  includes: [
+    'GLP-1 medication, delivered monthly in cold chain',
+    'Doctor review of every order before it ships',
+    'Monthly doctor check-in to keep your dose right',
+    'Dose adjustments included, same price at every dose',
+    'Message the practice any time',
+    'Free delivery',
+  ],
+  guarantee: 'Full refund if the doctor decides it’s not right for you.',
+};
+
+/* The intake: six questions, no fork, no goal picker. Weight loss is the
+   whole shop. Any flag, or a prior course that failed, routes to a doctor
+   BEFORE any payment. The flag list is a PLACEHOLDER pending clinical
+   sign-off, like every clinical list in this prototype. */
+export const GLP_ASK = [
+  { k: 'wants',  kind: 'choice', q: 'What would you like to start?',
+    o: ['GLP-1 weekly injection', 'Not sure, recommend one'] },
+  { k: 'sex',    kind: 'choice', q: 'Are you male or female?',
+    o: ['Male', 'Female'] },
+  { k: 'height', kind: 'number', q: 'How tall are you?', ph: '175', suffix: 'cm', min: 120, max: 220 },
+  { k: 'weight', kind: 'number', q: 'And roughly what do you weigh?', ph: '96', suffix: 'kg', min: 35, max: 250 },
+  { k: 'prior',  kind: 'choice', q: 'Have you used GLP-1 before?',
+    o: ['Never', 'Currently using it', 'Used it before, it didn’t work'] },
+  { k: 'flags',  kind: 'choice', q: 'Quick safety check. Do any of these apply to you?',
+    o: ['History of pancreatitis', 'Thyroid cancer in my family',
+        'Pregnant or breastfeeding', 'Type 1 diabetes', 'None of these'] },
+];
+
+export const GLP_FLAGGED = (a) =>
+  (a.flags && a.flags !== 'None of these')
+  || /didn’t work/.test(a.prior || '');
 
 /* ── THE SPLIT (MVP) ──
    The long flow sells the blood test first and the programme at the results

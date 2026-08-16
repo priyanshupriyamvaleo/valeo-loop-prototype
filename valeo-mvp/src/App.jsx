@@ -1,83 +1,61 @@
 import { useReducer, useState } from 'react';
-import { Box, CssBaseline, ThemeProvider } from '@mui/material';
+import { Box, CssBaseline, ThemeProvider, Stack, Typography } from '@mui/material';
 import theme, { C } from './theme';
 import ValeoHome from './screens/ValeoHome';
-import Between from './screens/Between';
 import Coach from './screens/Coach';
-import Assess from './screens/Assess';
-import Meet from './screens/Meet';
 import Consultation from './screens/Consultation';
-import Brief from './screens/Brief';
-import BuyScreen from './screens/Buy';
-import Activate from './screens/Activate';
-import Consult from './screens/Consult';
-import ProtocolDetail from './screens/ProtocolDetail';
+import PlanScreen from './screens/PlanScreen';
 import Today from './screens/Today';
 import BottomNav from './components/BottomNav';
 import PushToast from './components/PushToast';
 import FlowTable from './dock/FlowTable';
+import CatMan from './dock/CatMan';
 import { TRANSITIONS, canFire } from './machine';
-import { PROTOCOLS, GOALS, focusRun, activeRuns, synthObserved, leadFor, doorOf }
-  from './data';
+import { PROTOCOLS, DEFAULT_PLAN, GLP_PKEY, focusRun, synthObserved } from './data';
 
 /* ══════════════════════════════════════════════════════════════════════════
-   VALEO MVP — the launchable cut.
+   VALEO MVP — weight loss, known intent, one plan.
 
-   Two flows, one store. Weight loss carries the fork (GLP-1 monthly plan
-   with a doctor checkpoint, no labs). Every other goal takes the long flow:
-   free consult → care brief → blood test SAR 499 applied toward the
-   programme → results review → activation (the balance) → treatment.
+   The patient answers six questions. Clean answers see the plan and pay;
+   the doctor reviews in the background, same day, and either signs or
+   refunds in full. A flagged answer sees the doctor FIRST, ten minutes,
+   included, before any payment. The doctor's only verbs are yes and no.
 
-   The demo surface is the phone plus the flow table. No feedback panel, no
-   twins, no machine infra: the table shows each step's entry and exit
-   conditions and offers exactly one control, the system's next move.
+   The plan itself is content: one object in the store, edited live in the
+   category manager's console on the right, rendered by the PDP on the phone.
+
+   Right of the phone: two tabs. Flow — every step with its entry and exit
+   conditions, current row highlighted, one control for the system's next
+   move. Plans — the category manager's console.
    ══════════════════════════════════════════════════════════════════════════ */
 
 const INIT = {
   qa: {},
-  saved: [], supps: [], devices: [],
-  blood: false, tier: 'open',
+  plan: DEFAULT_PLAN,
   runs: {},
   focus: null,
+  saved: [], supps: [], devices: [], blood: false, tier: 'open',
   log: [],
 };
 
-/* Every action that is an event, named as one, with its actor. The reducer
-   wrapper appends these to the log, which is what keeps the phone, the flow
-   table and any future clinician surface in one history. */
+/* Every action that is an event, named with its actor, appended to the log
+   by the reducer wrapper. One history for the phone and both panels. */
 const EVENT_OF = {
-  consulted: () => ({ event: 'CONSULT_COMPLETED', actor: 'clinician' }),
-  orderPlaced: () => ({ event: 'PAYMENT_COMPLETED', actor: 'patient' }),
-  /* the resolve door's first payment is the blood test */
-  programme: () => ({ event: 'TEST_PAID', actor: 'patient' }),
+  orderPlaced: () => ({ event: 'PLAN_PAID', actor: 'patient' }),
   checkpoint: (a) => (a.v === 'approved'
     ? { event: 'ORDER_APPROVED', actor: 'clinician' }
-    : { event: 'CALL_REQUESTED', actor: 'clinician' }),
-  bookBloods: () => ({ event: 'NURSE_BOOKED', actor: 'patient' }),
-  bloodsDone: () => ({ event: 'SAMPLE_COLLECTED', actor: 'nurse' }),
-  bookFollow: () => ({ event: 'FOLLOWUP_BOOKED', actor: 'patient' }),
-  labsReady: () => ({ event: 'LABS_UPLOADED', actor: 'lab' }),
-  reviewed: () => ({ event: 'PRESCRIPTION_SIGNED', actor: 'clinician' }),
-  /* the balance: known-door activation is part of the doctor's approval and
-     is logged there, so it stays silent here */
-  activate: (a, s) => {
-    const r = s.runs[a.protocol || s.focus];
-    return r && r.door === 'known' ? null
-      : { event: 'PROGRAMME_ACTIVATED', actor: 'patient' };
-  },
+    : a.v === 'declined'
+      ? { event: 'ORDER_DECLINED', actor: 'clinician' }
+      : null),
   ship: (a) => ({ event: { preparing: 'MEDICATION_DISPENSED', out: 'SHIPMENT_OUT',
                            delivered: 'DELIVERY_CONFIRMED' }[a.stage],
                   actor: a.stage === 'delivered' ? 'nurse' : 'pharmacy' }),
   deliver: () => ({ event: 'TREATMENT_STARTED', actor: 'patient' }),
   advance: () => ({ event: 'WEEK_ADVANCED', actor: 'system' }),
-  bookReview: () => ({ event: 'RETEST_BOOKED', actor: 'patient' }),
-  results: () => ({ event: 'VERDICT_PUBLISHED', actor: 'clinician' }),
-  loopOpened: () => ({ event: 'LOOP_OPENED', actor: 'system' }),
-  answers: (a) => (a.qa && a.qa.door
-    ? (a.qa.escalated
-      ? { event: 'ESCALATION_RAISED', actor: 'ai' }
-      : { event: `INTENT_CHOSEN · ${a.qa.door === 'known' ? 'KNOWN' : 'DIAGNOSIS'}`,
-          actor: 'patient' })
+  planPatch: () => ({ event: 'PLAN_EDITED', actor: 'system' }),
+  answers: (a) => (a.qa && a.qa.flags
+    ? { event: a.qa.flagged ? 'INTAKE_SUBMITTED · FLAGGED' : 'INTAKE_SUBMITTED · CLEAN',
+        actor: 'patient' }
     : null),
 };
 
@@ -104,33 +82,22 @@ function reducer(s, a) {
   switch (a.type) {
     case 'answers': return { ...s, qa: { ...s.qa, ...a.qa } };
     case 'focus':   return { ...s, focus: a.protocol };
+    /* the category manager's pen */
+    case 'planPatch': return { ...s, plan: { ...s.plan, ...a.patch } };
 
-    /* ── one episode's lifecycle ── */
-    case 'consulted':
-      return {
-        ...s,
-        runs: { ...s.runs, [a.protocol]: { ...(s.runs[a.protocol] || {}),
-                                           status: 'consulted' } },
-        focus: s.focus || a.protocol,
-      };
-    /* The long flow's first payment: the blood test, applied toward the
-       programme. The run moves to 'programme' with the test paid. */
-    case 'programme': return patchRun(s, target(s, a), { status: 'programme' });
-    /* The known door's run is born at payment, checkpoint pending. */
+    /* The run is born at payment. `eligible` means a doctor already said
+       yes on the pre-payment call, so review is complete at birth. */
     case 'orderPlaced':
       return {
         ...s,
         runs: { ...s.runs, [a.protocol]: {
-          status: 'programme', door: 'known', checkpoint: 'pending' } },
+          status: 'programme', door: 'known', duration: a.duration || 'monthly',
+          checkpoint: a.eligible ? 'approved' : 'pending' } },
         focus: s.focus || a.protocol,
       };
     case 'checkpoint':
-      return patchRun(s, target(s, a), {
-        checkpoint: a.v, ...(a.v === 'call' ? { checkpointWasCall: true } : {}),
-      });
-    case 'reviewed':  return patchRun(s, target(s, a), { status: 'ready' });
+      return patchRun(s, target(s, a), { checkpoint: a.v });
     case 'emit': return s;
-    case 'loopOpened': return patchRun(s, target(s, a), { loopOpened: true });
 
     case 'say': {
       const k = target(s, a);
@@ -144,13 +111,6 @@ function reducer(s, a) {
       });
     }
     case 'seen': return patchRun(s, target(s, a), { seen: a.n });
-    case 'bookBloods': return patchRun(s, target(s, a),
-      { status: 'bloodsBooked', bloodSlot: a.slot });
-    case 'bloodsDone': return patchRun(s, target(s, a),
-      { status: 'bloodsDone', labs: 'processing' });
-    case 'labsReady': return patchRun(s, target(s, a), { labs: 'ready' });
-    case 'bookFollow': return patchRun(s, target(s, a),
-      { status: 'followup', followSlot: a.slot });
     case 'activate':  return patchRun(s, target(s, a),
       { status: 'shipping', ship: 'confirmed' });
     case 'ship':      return patchRun(s, target(s, a), { ship: a.stage });
@@ -199,20 +159,15 @@ function reducer(s, a) {
         logs.push({ day: d, kind: d <= 21 ? 'felt' : 'taken', v: true });
         if (d % 7 === 1) body.push({ day: d, kg: 96 - Math.round((d / 7) * 0.9 * 10) / 10, waist: 96 });
       }
-      return patchRun(s, k, {
-        day, logs, body, doneItems: [],
-        status: day >= r.total ? 'verdict' : 'running',
-      });
+      return patchRun(s, k, { day, logs, body, doneItems: [], status: 'running' });
     }
-    case 'bookReview':
-      return patchRun(s, target(s, a), { status: 'reviewing', reviewSlot: a.slot });
     case 'results': {
       const k = target(s, a); const r = s.runs[k];
       if (!r) return s;
       const adherence = r.day ? Math.round((r.logs.length / r.day) * 100) : 90;
       return patchRun(s, k, {
         status: 'done',
-        observed: r.observed || (k === 'P_LONG' ? null : synthObserved(k, adherence)),
+        observed: r.observed || synthObserved(k, adherence),
       });
     }
     default: return s;
@@ -229,112 +184,59 @@ function Phone({ children }) {
   );
 }
 
-/* One run only in the log reducer per action — the version above is final. */
 export default function App() {
   const [st, dispatch] = useReducer(withLog(reducer), INIT);
 
   const [flow, setFlow] = useState('home');
   const [tab, setTab] = useState('today');
-  const [preGoal, setPreGoal] = useState(null);
-  const [matched, setMatched] = useState(null);
-  const [meetKey, setMeetKey] = useState(null);
-  const [booking, setBooking] = useState('consult');
-  const [matchFail, setMatchFail] = useState(false);
-  const [ckCall, setCkCall] = useState(false);
-  const [detail, setDetail] = useState(null);
-  const [reviewKey, setReviewKey] = useState(null);
-  const [detailView, setDetailView] = useState('plan');
+  const [panel, setPanel] = useState(() => {
+    const v = new URLSearchParams(window.location.search).get('view');
+    return ['flow', 'plans'].includes(v) ? v : 'flow';
+  });
   const [push, setPush] = useState(null);
-
-  const openDetail = (pk) => { setDetail(pk); setDetailView('plan'); setFlow('detail'); };
-  const openResults = (pk) => { setDetail(pk); setDetailView('results'); setFlow('detail'); };
-
-  const fromCard = (go, pKey) => {
-    if (go === 'start') {
-      dispatch({ type: 'emit', event: 'EPISODE_CREATED', actor: 'system' });
-      return setFlow('between');
-    }
-    if (go === 'results') return openResults(pKey);
-    if (go === 'detail') return openDetail(pKey);
-    setFlow('app'); return setTab('today');
-  };
 
   const enterApp = () => { setFlow('app'); setTab('today'); };
 
   /* ── the gate helpers: the only code that moves the journey ── */
+  const startIntake = () => {
+    dispatch({ type: 'emit', event: 'EPISODE_CREATED', actor: 'system' });
+    setFlow('coach');
+  };
+
+  /* The end of the six questions: clean sees the plan, flagged sees the
+     doctor first. Fork keys written authoritatively so a re-run cannot
+     inherit a stale flag. */
   const completeIntake = (a) => {
-    dispatch({ type: 'answers', qa: {
-      escalated: false, escAt: null,
-      wants: null, wantsPkey: null, wantsShort: null,
-      ...a,
-    } });
-    setMatched(a.goal);
-    if (a.door === 'known' && !a.escalated) {
-      setDetail(a.wantsPkey || leadFor(a.goal));
-      setFlow('buy');
-    } else {
-      setMeetKey(leadFor(a.goal));
-      setFlow('assess');
-    }
+    dispatch({ type: 'answers', qa: { flagged: false, eligible: false, ...a } });
+    setFlow(a.flagged ? 'consultation' : 'plan');
   };
 
-  const joinConsult = () => {
-    const pk = meetKey || leadFor(st.qa.goal);
-    setDetail(pk); setMeetKey(pk);
-    setMatchFail(false);
-    dispatch({ type: 'emit', event: 'CONSULT_JOINED', actor: 'patient', protocol: pk });
-    setFlow('consultation');
+  /* The eligibility call ends one of two ways, and both are the doctor's. */
+  const confirmEligible = () => {
+    dispatch({ type: 'answers', qa: { eligible: true } });
+    dispatch({ type: 'emit', event: 'ELIGIBILITY_CONFIRMED', actor: 'clinician' });
+    setFlow('plan');
   };
 
-  const endConsult = () => {
-    dispatch({ type: 'consulted', protocol: detail });
-    dispatch({ type: 'focus', protocol: detail });
-    setFlow('brief');
-  };
-  const approveAfterCall = (pk) => {
-    dispatch({ type: 'checkpoint', protocol: pk, v: 'approved' });
-    dispatch({ type: 'activate', protocol: pk });
-    if (ckCall) { setCkCall(false); setFlow('app'); setTab('today'); }
-  };
-
-  /* The long flow's first payment: the blood test, SAR 499, applied. */
-  const payTest = (pk) => {
-    const k = pk || detail;
-    dispatch({ type: 'programme', protocol: k });
-    dispatch({ type: 'focus', protocol: k });
-    setFlow('app'); setTab('today');
-  };
-
-  /* The known door's one payment: the monthly plan. */
-  const completePayment = () => {
-    dispatch({ type: 'orderPlaced', protocol: detail });
-    dispatch({ type: 'focus', protocol: detail });
-    setFlow('app'); setTab('today');
+  /* Payment. If a doctor already said yes on the call, review is complete
+     and dispatch begins at once; otherwise the order enters review. */
+  const payPlan = (duration) => {
+    dispatch({ type: 'orderPlaced', protocol: GLP_PKEY, duration,
+               eligible: !!st.qa.eligible });
+    dispatch({ type: 'focus', protocol: GLP_PKEY });
+    if (st.qa.eligible) dispatch({ type: 'activate', protocol: GLP_PKEY });
+    enterApp();
   };
 
   const approveOrder = (pk) => {
     dispatch({ type: 'checkpoint', protocol: pk, v: 'approved' });
     dispatch({ type: 'activate', protocol: pk });
   };
-  const requestCall = (pk) => dispatch({ type: 'checkpoint', protocol: pk, v: 'call' });
-  const startCheckpointCall = (pk) => {
-    dispatch({ type: 'emit', event: 'CALL_STARTED', actor: 'patient', protocol: pk });
-    setDetail(pk); setCkCall(true); setMatchFail(false); setFlow('consultation');
-  };
+  const declineOrder = (pk) => dispatch({ type: 'checkpoint', protocol: pk, v: 'declined' });
 
-  /* The activation screen: results reviewed, pay the balance. */
-  const onActivate = (pk) => { setDetail(pk); setFlow('activate'); };
-
-  const ui = { flow, detail, ckCall, tab };
-  const ctx = {
-    dispatch, setFlow, setTab, setDetail, setCkCall, setMatchFail,
-    completeIntake, joinConsult, endConsult, approveAfterCall,
-    payTest, completePayment, approveOrder, requestCall, startCheckpointCall,
-    simGoal: () => {
-      const free = GOALS.find((g) => !st.runs[leadFor(g.k)]);
-      return free ? free.k : (st.qa.goal || preGoal || 'fat');
-    },
-  };
+  const ui = { flow, tab };
+  const ctx = { dispatch, setFlow, setTab, startIntake, completeIntake,
+                confirmEligible, payPlan, approveOrder, declineOrder };
 
   /* THE GATE. A transition the machine refuses simply does not fire. */
   const fireEvent = (eventId, ep) => {
@@ -345,81 +247,27 @@ export default function App() {
 
   let view = null;
   if (flow === 'home') view = (
-    <ValeoHome st={st} phase={1} onGo={fromCard} onServices={() => {}} />
-  );
-  else if (flow === 'between') view = (
-    <Between onStart={(g) => { setPreGoal(g); setFlow('coach'); }}
-      onBack={() => setFlow('home')} />
+    <ValeoHome st={st} phase={1}
+      onGo={(go, pKey) => {
+        if (go === 'start') return startIntake();
+        enterApp();
+      }}
+      onServices={() => {}} />
   );
   else if (flow === 'coach') view = (
-    <Coach preGoal={preGoal} onBack={() => setFlow('between')}
-      onDone={completeIntake} />
-  );
-  else if (flow === 'assess') view = (
-    <Assess goal={matched || st.qa.goal} pKey={meetKey}
-      onBack={() => setFlow('coach')}
-      onDone={() => setFlow('meet')} />
-  );
-  else if (flow === 'meet') view = (
-    <Meet pKey={meetKey}
-      onBack={() => setFlow('coach')}
-      onBook={joinConsult} />
+    <Coach onBack={() => setFlow('home')} onDone={completeIntake} />
   );
   else if (flow === 'consultation') view = (
-    <Consultation pKey={detail} failed={matchFail}
-      onDone={() => (ckCall ? approveAfterCall(detail) : endConsult())} />
+    /* The eligibility call. The doctor's one job here is yes or no; ending
+       the call is the yes (the no is the table's ORDER_DECLINED beat after
+       payment, or simply no plan offered — SIM keeps the happy path). */
+    <Consultation pKey={GLP_PKEY} failed={false}
+      onDone={confirmEligible} />
   );
-  else if (flow === 'brief') view = (
-    /* The care brief carries the split: programme shown, blood test asked. */
-    <Brief pKey={detail} st={st}
-      onBack={() => { setFlow('app'); setTab('today'); }}
-      onTestPaid={() => payTest(detail)} />
-  );
-  else if (flow === 'buy') view = (
-    /* Known door only: the monthly plan. */
-    <BuyScreen st={st} pKey={detail} door="known"
-      wants={st.qa.wantsPkey ? (st.qa.wants || null) : null}
-      wantsShort={st.qa.wantsShort || null}
-      onBack={() => setFlow('between')}
-      onPaid={completePayment} />
-  );
-  else if (flow === 'activate') view = (
-    <Activate pKey={detail}
-      onBack={() => { setFlow('app'); setTab('today'); }}
-      onPaid={() => {
-        dispatch({ type: 'activate', protocol: detail });
-        setFlow('app'); setTab('today');
-      }} />
-  );
-  else if (flow === 'detail') view = (
-    <ProtocolDetail st={st} pKey={detail} view={detailView} onView={setDetailView}
-      onBack={() => { setFlow('app'); setTab('today'); }}
-      onConsult={() => setFlow('consult')}
-      onTrack={() => { dispatch({ type: 'focus', protocol: detail }); enterApp(); }}
-      onBuy={() => {
-        dispatch({ type: 'activate', protocol: detail });
-        enterApp();
-      }} />
-  );
-  else if (flow === 'consult') view = (
-    <Consult mode={booking === 'consult' ? 'start' : booking === 'bloods' ? 'bloods' : 'review'}
-      onBack={() => { setFlow('app'); setTab('today'); }}
-      onBooked={(slot) => {
-        if (booking === 'bloods') {
-          dispatch({ type: 'bookBloods', protocol: detail, slot });
-        } else if (booking === 'follow') {
-          dispatch({ type: 'bookFollow', protocol: detail, slot });
-        }
-        setFlow('app'); setTab('today');
-      }} />
-  );
-  else if (flow === 'review') view = (
-    <Consult mode="review" pKey={reviewKey}
-      onBack={() => { setFlow('app'); setTab('today'); }}
-      onBooked={(slot) => {
-        dispatch({ type: 'bookReview', protocol: reviewKey, slot });
-        setFlow('app'); setTab('today');
-      }} />
+  else if (flow === 'plan') view = (
+    <PlanScreen plan={st.plan} eligible={!!st.qa.eligible}
+      onBack={() => setFlow('coach')}
+      onPaid={payPlan} />
   );
 
   const chrome = flow === 'app';
@@ -433,29 +281,21 @@ export default function App() {
         gap: 5, p: 4, bgcolor: '#0E1D2E',
       }}>
         <Phone>
-          <PushToast push={push} onOpen={() => {
-            const go = push && push.go;
-            setPush(null);
-            if (go) return go();
-            enterApp();
-          }} onDismiss={() => setPush(null)} />
+          <PushToast push={push} onOpen={() => { setPush(null); enterApp(); }}
+            onDismiss={() => setPush(null)} />
           {chrome ? (
             <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ flex: '1 1 auto', minHeight: 0, position: 'relative' }}>
                 <Today st={st} dispatch={dispatch} onGo={setTab}
-                       onBrief={(pk) => { setDetail(pk); setFlow('brief'); }}
-                       onCheckpointCall={startCheckpointCall}
-                       onActivate={onActivate}
-                       onBookBloods={(pk) => {
-                         setDetail(pk); setBooking('bloods'); setFlow('consult');
-                       }}
-                       onBookFollow={(pk) => {
-                         setDetail(pk); setBooking('follow'); setFlow('consult');
-                       }}
+                       onBrief={() => {}}
+                       onCheckpointCall={() => {}}
+                       onActivate={() => {}}
+                       onBookBloods={() => {}}
+                       onBookFollow={() => {}}
                        onBuy={(pk) => dispatch({ type: 'activate', protocol: pk })}
-                       onDetail={(pk) => openDetail(pk)}
-                       onReview={(pk) => { setReviewKey(pk); setFlow('review'); }}
-                       onResults={(pk) => openResults(pk)}
+                       onDetail={() => {}}
+                       onReview={() => {}}
+                       onResults={() => {}}
                        onFocus={(pk) => dispatch({ type: 'focus', protocol: pk })} />
               </Box>
               <BottomNav active={tab} onGo={setTab} dark={false} tabs={['today']}
@@ -464,7 +304,27 @@ export default function App() {
           ) : view}
         </Phone>
 
-        <FlowTable st={st} ui={ui} fireEvent={fireEvent} />
+        {/* ── right of the phone: the flow, or the console ── */}
+        <Box sx={{ width: 470, flexShrink: 0 }}>
+          <Stack direction="row" spacing={0.5} sx={{ mb: 1.5 }}>
+            {[['flow', 'The flow'], ['plans', 'Plans · category manager']].map(([k, t]) => (
+              <Box key={k} onClick={() => setPanel(k)} sx={{
+                flex: 1, textAlign: 'center', py: 0.8, borderRadius: '10px', cursor: 'pointer',
+                fontSize: 11.5, fontWeight: panel === k ? 700 : 500,
+                bgcolor: panel === k ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.05)',
+                color: panel === k ? '#fff' : '#93A9C2',
+                border: panel === k ? '1px solid rgba(255,255,255,.25)' : '1px solid transparent',
+              }}>{t}</Box>
+            ))}
+          </Stack>
+          {panel === 'flow'
+            ? <FlowTable st={st} ui={ui} fireEvent={fireEvent} />
+            : (
+              <Box sx={{ maxHeight: 800, overflowY: 'auto', pr: 0.5 }}>
+                <CatMan st={st} dispatch={dispatch} />
+              </Box>
+            )}
+        </Box>
       </Box>
     </ThemeProvider>
   );
