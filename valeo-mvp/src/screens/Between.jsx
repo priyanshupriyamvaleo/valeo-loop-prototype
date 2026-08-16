@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -35,24 +35,14 @@ import { C } from '../theme';
  * roughly equal weight and the screen shouted in four directions at once.
  *
  * ── SPACING IS EMOTIONAL, NOT EVEN ──
- * Question and goals sit close, because they're one thought — a question and its
- * answers. Big gaps separate the greeting from the note from the way out.
- * Even rhythm is what makes a layout read as generated.
+ * Big gaps separate the greeting from the note from the way out. Even rhythm
+ * is what makes a layout read as generated.
  *
- * ── GOALS AS DRIFTING SUGGESTIONS, NOT PILLS ──
- * A pill is a UI component; it announces a control. These are bare — emoji and
- * words, no border, no fill — so they read as thoughts on offer rather than
- * buttons to press. They drift slowly, and the drift is real scroll position, so
- * the first touch stops it and the row becomes an ordinary swipeable list. A
- * target that slides away as you reach for it is a cruelty; ambience must yield
- * to intent the instant intent appears.
- *
- * ── NO PRIMARY BUTTON ──
- * The yellow bar was the last piece of app furniture on the screen. Tapping a
- * goal opens the chat carrying that goal, so a separate "continue" is redundant
- * — and answering a question is a more natural human act than pressing a button.
- * "Say hi" survives only as a quiet line, because a user whose goal isn't among
- * the four still needs a way in, and there is never an excuse to trap someone.
+ * ── NO PRIMARY BUTTON, NO MENU ──
+ * There used to be a question here ("Shall we get you started?") with entry
+ * chips. It was removed: one shop, one flow, so a choice that isn't one is
+ * furniture. The composer at the foot is the single way in — the doctor's
+ * words above, your reply below, the oldest layout in messaging.
  *
  * NOTE: two of the three portraits are placeholders. The claim here is that these
  * are real people who will remember you; monograms quietly contradict it.
@@ -63,19 +53,15 @@ const SCRIPT = [
   { at: 250,  b: 'hi' },
   { at: 800,  b: 'typ1' },
   { at: 1500, b: 'glad' },
-  { at: 1900, b: 'typ2' },
-  { at: 2550, b: 'ask' },
-  { at: 2850, b: 'goals' },
-  /* THE PAUSE. Nothing happens for ~850ms after the goals land, then the dots
-     start again. That silence is the "before we begin, I want you to know
-     something" beat — delivered as timing rather than as a line of copy, so the
-     finalised wording is untouched and the moment still reads as the doctor
-     stopping to add one last thing. */
-  { at: 3700, b: 'typ3' },
-  { at: 4500, b: 'note' },
-  { at: 5000, b: 'reply' },
+  /* THE PAUSE. Nothing happens for a beat after the greeting lands, then the
+     dots start again. That silence is the "before we begin, I want you to
+     know something" moment — delivered as timing rather than as a line of
+     copy, so it reads as the doctor stopping to add one last thing. */
+  { at: 2400, b: 'typ3' },
+  { at: 3200, b: 'note' },
+  { at: 3700, b: 'reply' },
 ];
-const ORDER = ['none', 'hi', 'typ1', 'glad', 'typ2', 'ask', 'goals', 'typ3', 'note', 'reply'];
+const ORDER = ['none', 'hi', 'typ1', 'glad', 'typ3', 'note', 'reply'];
 
 export default function Between({ onStart, onBack }) {
   /* The weight-loss care team only: the endocrinologist who leads it, the
@@ -149,21 +135,7 @@ export default function Between({ onStart, onBack }) {
             </Typography>
           </Rise>
 
-          {beat === 'typ2' && <Dots />}
-
-          {/* the question and its answers are ONE thought — they sit close */}
-          <Rise on={at('ask')}>
-            <Typography sx={{
-              fontSize: 18, lineHeight: 1.45, color: C.deep, fontWeight: 600, mt: 3,
-            }}>
-              Shall we get you started?
-            </Typography>
-          </Rise>
         </Box>
-
-        <Rise on={at('goals')}>
-          <Drift onPick={go} />
-        </Rise>
 
         {/* ── the pause, then one last thing ── */}
         <Box sx={{ px: 3 }}>
@@ -295,74 +267,6 @@ function Dots() {
         }} />
       ))}
     </Stack>
-  );
-}
-
-/**
- * The goals, drifting.
- *
- * No pill, no border, no fill — a pill announces itself as a control, and these
- * should read as suggestions someone is offering, not a form's options.
- *
- * The drift is real scroll position rather than a transform, which matters: the
- * first touch stops it and the row is instantly an ordinary swipeable list, so
- * every goal stays reachable. A transform-based marquee looks the same and traps
- * you — you cannot swipe it, and pausing mid-cycle can leave an option
- * permanently off screen.
- */
-const ENTRIES = [
-  { k: 'start', ic: '⚖️', t: 'I want to start GLP-1' },
-  { k: 'curious', ic: '💬', t: 'I have a few questions first' },
-];
-
-function Drift({ onPick }) {
-  const ref = useRef(null);
-  /* A row that runs off the edge with a hard cut reads as a layout fault. The
-     mask fades the last few millimetres so the edge reads as "there is more",
-     which is the only affordance a drifting row needs. */
-  const fade = 'linear-gradient(90deg,transparent 0,#000 18px,#000 calc(100% - 34px),transparent 100%)';
-  const [held, setHeld] = useState(false);
-  /* doubled so the scroll can wrap without a visible seam */
-  const items = [...ENTRIES, ...ENTRIES];
-
-  useEffect(() => {
-    if (held) return undefined;
-    let raf;
-    const step = () => {
-      const el = ref.current;
-      if (el) {
-        const half = el.scrollWidth / 2;
-        el.scrollLeft = el.scrollLeft >= half ? el.scrollLeft - half : el.scrollLeft + 0.32;
-      }
-      raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [held]);
-
-  return (
-    <Box ref={ref}
-      onPointerDown={() => setHeld(true)}
-      onWheel={() => setHeld(true)}
-      sx={{
-        display: 'flex', gap: 3, overflowX: 'auto', mt: 2, pl: 3, pr: 3,
-        WebkitMaskImage: fade, maskImage: fade,
-        '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none',
-      }}>
-      {items.map((g, i) => (
-        <Stack key={`${g.k}-${i}`} direction="row" spacing={1}
-          onClick={(e) => { e.stopPropagation(); onPick(g.k); }}
-          sx={{
-            alignItems: 'center', flexShrink: 0, cursor: 'pointer', py: 0.5,
-            transition: 'opacity .15s', '&:active': { opacity: 0.55 },
-          }}>
-          <Box sx={{ fontSize: 19, lineHeight: 1 }}>{g.ic}</Box>
-          <Typography sx={{
-            fontSize: 17, fontWeight: 500, color: C.deep, whiteSpace: 'nowrap',
-          }}>{g.t}</Typography>
-        </Stack>
-      ))}
-    </Box>
   );
 }
 
