@@ -130,8 +130,14 @@ export default function Between({ onStart, onBack }) {
             <Typography sx={{
               fontSize: 15, lineHeight: 1.55, color: C.ink2, mt: 1.25,
             }}>
-              GLP-1 weight loss, prescribed by a doctor and delivered to your
-              door.
+              Clinically proven weight loss with DHA-licensed doctors. FDA and
+              EDE approved GLP-1 injections, delivered to your door.
+            </Typography>
+            <Typography sx={{
+              fontSize: 14, lineHeight: 1.55, color: C.ink2, mt: 1.25,
+            }}>
+              Millions of success stories. Don’t wait for motivation. Start
+              today and lose up to 25% of your body weight.
             </Typography>
           </Rise>
 
@@ -172,7 +178,7 @@ export default function Between({ onStart, onBack }) {
               </Typography>
 
               <Typography sx={{ fontSize: 14.5, lineHeight: 1.6, color: C.ink, mt: 1.75 }}>
-                A licensed doctor reviews every order before it ships.
+                A DHA-licensed doctor reviews every order before it ships.
               </Typography>
 
               {/* the breaks are breath, not wrapping */}

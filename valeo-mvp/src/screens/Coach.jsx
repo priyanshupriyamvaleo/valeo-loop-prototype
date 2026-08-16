@@ -45,7 +45,7 @@ export default function Coach({ onBack, onDone }) {
       `Hi ${USER.first}! 👋`,
       'I’m glad you’re here.',
       'I have a few quick questions so your doctor can see the full picture.',
-      'Every answer goes to a real clinician.',
+      'Every answer is read by a DHA-licensed doctor.',
       GLP_QUIZ[0].q,
     ], strongLast: true }]);
   }, []);
@@ -85,7 +85,7 @@ export default function Coach({ onBack, onDone }) {
           `Your BMI is ${b}.`,
           ok30 ? 'That qualifies you for GLP-1 treatment.'
             : 'With the condition you named, that qualifies you for GLP-1 treatment.',
-          'People on weekly GLP-1 typically lose 10 to 15% of their body weight over the first year, reviewed with a doctor as they go.',
+          'People on weekly GLP-1 typically lose 10 to 15% of their body weight in the first year, and up to 25% on the strongest medications, with a doctor reviewing your dose as you go.',
         ] });
       }
     }
@@ -112,7 +112,7 @@ export default function Coach({ onBack, onDone }) {
         `You’re a match, ${USER.first}.`,
         `✓ Your BMI of ${bmiOf(next)} qualifies for GLP-1`,
         '✓ No safety flags in your answers',
-        '✓ A doctor reviews your order before it ships',
+        '✓ A DHA-licensed doctor reviews your order before it ships',
         [{ b: 'Here’s the plan for you.' }],
       ] });
       setEnding('plan');

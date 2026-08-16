@@ -64,8 +64,8 @@ export default function PlanScreen({ plan, eligible, onBack, onPaid }) {
           textTransform: 'uppercase', color: C.yellowDeep, mt: 2,
         }}>{eligible ? 'Confirmed by your doctor' : 'Based on your answers'}</Typography>
         <Typography sx={{
-          fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 600,
-          lineHeight: 1.15, color: C.deep, mt: 0.75,
+          fontFamily: '"Fraunces", serif', fontSize: 24, fontWeight: 600,
+          lineHeight: 1.18, color: C.deep, mt: 0.75,
         }}>{plan.name}</Typography>
         <Typography sx={{ fontSize: 13, lineHeight: 1.5, color: C.ink2, mt: 0.75 }}>
           {plan.tagline}
@@ -220,7 +220,7 @@ export default function PlanScreen({ plan, eligible, onBack, onPaid }) {
           <Typography sx={{ fontSize: 11, color: C.ink2, textAlign: 'center', lineHeight: 1.45 }}>
             {eligible
               ? 'Your doctor has confirmed your eligibility. Dispatch follows payment.'
-              : 'A doctor reviews your order today, before anything ships.'}
+              : 'A DHA-licensed doctor reviews your order today, before anything ships.'}
           </Typography>
         </Stack>
       </Box>

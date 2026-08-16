@@ -559,14 +559,13 @@ export function homeCard(st, phase = 1) {
   return {
     kind: 'intro', go: 'start',
     tag: 'New at Valeo',
-    title: 'Personalized health plans built by doctors.',
-    /* ACQUISITION LANGUAGE ≠ PRODUCT LANGUAGE.
-       "Protocol" is our word, not theirs — nobody wakes up wanting one. It is
-       gone from every surface before commitment and kept everywhere after,
-       where it names something precise: the thing a doctor amends and we
-       retest. The CTA names the PERSON, because the person is the product. */
-    sub: 'Tell us your goal. A doctor builds your plan. Your AI coach keeps you on track.',
-    cta: phaseHas(phase, 'twin') ? buildWords(phase).cta : 'Find my doctor',
+    title: 'Weight loss with GLP-1 injections.',
+    /* ACQUISITION LANGUAGE = THE PLATFORM'S OWN. The live Valeo site sells
+       this with named credentials, not generic doctors: DHA-licensed
+       physicians, clinically proven, up to 25%. The MVP card says the same,
+       in sentence case. */
+    sub: 'Clinically proven, with DHA-licensed doctors. Start today and lose up to 25% of your body weight.',
+    cta: phaseHas(phase, 'twin') ? buildWords(phase).cta : 'Start today',
     tone: 'yellow',
   };
 }
@@ -2055,8 +2054,8 @@ export function nextStep(st, pKey) {
         return {
           kind: 'checkpoint', tag: 'Doctor review today',
           title: `${who} is reviewing your order.`,
-          body: 'Nothing is dispensed until a doctor signs it off. You’ll '
-              + 'hear back today.',
+          body: 'Nothing is dispensed until a DHA-licensed doctor signs it '
+              + 'off. You’ll hear back today.',
           cta: null,
         };
       }
@@ -3374,11 +3373,11 @@ export function practiceScript(st, pKey) {
       key: 'checkpoint-pending', clinician: c, first,
       lines: ['Your order is in. Thank you.',
               `${first} reviews it today. Nothing is dispensed until a `
-                + 'doctor has signed it off, and you’ll hear from us today.'],
+                + 'DHA-licensed doctor has signed it off, and you’ll hear from us today.'],
       chips: [
         { ic: '🩺', q: 'What is being reviewed?',
           a: ['Your answers, your safety screen and the treatment you chose.',
-              'A doctor signs off every order before the pharmacy touches it.'] },
+              'A DHA-licensed doctor signs off every order before the pharmacy touches it.'] },
         { ic: '⏳', q: 'How long does it take?',
           a: ['Same day, almost always within a few hours.',
               'We’ll message you here the moment it’s confirmed.'] },
@@ -3653,8 +3652,9 @@ export const GLP_PKEY = 'P_WEIGHT';
 
 export const DEFAULT_PLAN = {
   status: 'live',                       /* live | draft */
-  name: 'GLP-1 Weight Loss Plan',
-  tagline: 'Doctor reviewed. Medication included. Delivered monthly.',
+  /* U+2011 non-breaking hyphen: "GLP‑1" must never split across lines. */
+  name: 'Weight Loss Program with GLP‑1 Injections',
+  tagline: 'Clinically proven weight loss with DHA-licensed doctors. Medication included, delivered monthly.',
   /* Two medications, one plan. Prices in SAR, per the live platform. */
   meds: [
     { key: 'wegovy', name: 'Wegovy', generic: 'semaglutide · weekly',
@@ -3676,7 +3676,7 @@ export const DEFAULT_PLAN = {
       { t: 'Message the practice any time', m: true, q: true },
     ] },
     { h: 'Your medication', rows: [
-      { t: 'Weekly injections, delivered monthly in cold chain', m: true, q: true },
+      { t: 'FDA and EDE approved injections, delivered monthly in cold chain', m: true, q: true },
       { t: 'Essential supplement pack every month', m: true, q: true },
       { t: 'GLP-1 starter kit', m: false, q: true },
       { t: 'Free delivery', m: true, q: true },
