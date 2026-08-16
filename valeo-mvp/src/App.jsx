@@ -3,7 +3,7 @@ import { Box, CssBaseline, ThemeProvider, Stack, Typography } from '@mui/materia
 import theme, { C } from './theme';
 import ValeoHome from './screens/ValeoHome';
 import Between from './screens/Between';
-import Quiz from './screens/Quiz';
+import Coach from './screens/Coach';
 import Consultation from './screens/Consultation';
 import PlanScreen from './screens/PlanScreen';
 import Today from './screens/Today';
@@ -257,12 +257,12 @@ export default function App() {
       onServices={() => {}} />
   );
   else if (flow === 'between') view = (
-    /* Both ways in open the same wizard: the questions ARE the answers to
+    /* Both ways in open the same chat: the questions ARE the answers to
        "I have a few questions first". */
-    <Between onStart={() => setFlow('quiz')} onBack={() => setFlow('home')} />
+    <Between onStart={() => setFlow('coach')} onBack={() => setFlow('home')} />
   );
-  else if (flow === 'quiz') view = (
-    <Quiz onClose={() => setFlow('home')} onDone={completeIntake} />
+  else if (flow === 'coach') view = (
+    <Coach onBack={() => setFlow('home')} onDone={completeIntake} />
   );
   else if (flow === 'consultation') view = (
     /* The eligibility call. The doctor's one job here is yes or no; ending

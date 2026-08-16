@@ -11,7 +11,7 @@ import { C } from '../theme';
  * chart — hence the reference line at the retest day, labelled for what it is.
  */
 export default function Trend({ points, total, unit = 'kg', caption, color = C.teal,
-                               tail = ' — the retest is what decides.' }) {
+                               tail = ', the retest is what decides.' }) {
   const W = 320, H = 118, PAD_L = 6, PAD_R = 34, PAD_T = 10, PAD_B = 20;
   if (!points.length) return null;
 

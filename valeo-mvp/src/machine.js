@@ -23,10 +23,10 @@ export const STATES = [
     exit: 'The doctor confirms eligibility: yes or no. The plan itself never changes.' },
   { id: 'PLAN_VIEW', t: 'The plan',
     enter: 'One plan, rendered from the category manager’s config. Medication included.',
-    exit: 'Patient subscribes: monthly, renewing until stopped, or 3 months in one payment. Full refund if declined.' },
+    exit: 'Patient subscribes: monthly, renewing until stopped, or 3 months in one payment.' },
   { id: 'REVIEW', t: 'Doctor review',
     enter: 'Paid. The order is in the doctor’s queue, same day. Nothing ships unsigned.',
-    exit: 'Approved: dispatch begins. Declined: full refund, said plainly.' },
+    exit: 'Approved: dispatch begins. Declined: the payment is returned, said plainly.' },
   { id: 'NOT_ELIGIBLE', t: 'Not eligible',
     enter: 'The doctor said no.',
     exit: 'Refund issued in full. The episode closes.' },
@@ -53,13 +53,13 @@ function runState(r) {
 
 export function episodesOf(st, ui) {
   const eps = [];
-  const inFunnel = ['between', 'quiz', 'consultation', 'plan'].includes(ui.flow);
+  const inFunnel = ['between', 'coach', 'consultation', 'plan'].includes(ui.flow);
   if (inFunnel && !st.runs[GLP_PKEY]) {
     eps.push({
       id: 'funnel', pKey: null, goal: 'Weight Loss',
       flagged: !!st.qa.flagged,
       state: ui.flow === 'between' ? 'NEW'
-        : ui.flow === 'quiz' ? 'INTAKE'
+        : ui.flow === 'coach' ? 'INTAKE'
         : ui.flow === 'consultation' ? 'FLAGGED_CALL'
           : 'PLAN_VIEW',
     });
@@ -72,7 +72,7 @@ export function episodesOf(st, ui) {
 }
 
 /* SIM intake answers, for driving the funnel from the table. Same shape the
-   wizard produces. */
+   chat produces. */
 export function simIntake(flagged) {
   return {
     sex: 'Male', age: 34, height: 175, weight: 96,
@@ -96,13 +96,13 @@ export const TRANSITIONS = [
   { event: 'INTAKE_SUBMITTED · CLEAN', actor: 'patient', from: 'INTAKE', to: 'PLAN_VIEW', sim: true,
     writes: 'intake_answers, safety_screen (clean)',
     reason: 'The intake is not open',
-    guard: (st, ui) => ['between', 'quiz'].includes(ui.flow),
+    guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(false)) },
 
   { event: 'INTAKE_SUBMITTED · FLAGGED', actor: 'patient', from: 'INTAKE', to: 'FLAGGED_CALL', sim: true,
     writes: 'intake_answers, safety_screen (flagged)',
     reason: 'The intake is not open',
-    guard: (st, ui) => ['between', 'quiz'].includes(ui.flow),
+    guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(true)) },
 
   { event: 'ELIGIBILITY_CONFIRMED', actor: 'clinician', from: 'FLAGGED_CALL', to: 'PLAN_VIEW', sim: true,

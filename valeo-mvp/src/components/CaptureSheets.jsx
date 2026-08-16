@@ -181,7 +181,7 @@ export function CheckinSheet({ open, onClose, day, onSave }) {
 export function DeviceSheet({ open, onClose, paired, onPair }) {
   return (
     <Sheet open={open} onClose={onClose} title="Connect a device"
-           sub="Passive beats manual — every time" cta="Done" onCta={onClose}>
+           sub="Passive beats manual, every time" cta="Done" onCta={onClose}>
       <Stack spacing={1.1}>
         {DEVICE_ORDER.map((k) => {
           const d = DEVICES[k];

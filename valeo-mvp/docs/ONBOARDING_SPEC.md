@@ -39,10 +39,11 @@ decisions this intake exists to make:
 
 ## The sequence
 
-Paged wizard, one question per screen (the Hims pattern; a chat cannot carry
-multi-select, branches and computed interstitials without breaking voice).
-Valeo skin. X closes to home, back steps back, a thin progress bar tells the
-truth.
+Rendered as a chat: the chat is the product's fundamental surface, so the
+intake speaks it too. One question per message, answers as suggested replies,
+multi-select as toggle chips with a send arrow, and the computed moments (BMI,
+the match) arrive as messages from the practice. Same brain, conversational
+body: the table below drives the thread exactly as it would drive a wizard.
 
 | # | Screen | Type | Feeds | Branch logic |
 |---|---|---|---|---|
@@ -69,8 +70,9 @@ patient as a consequence.
 
 ## The two exits (unchanged product rule)
 
-- **Clean** → plan → pay → doctor reviews the order after payment, same day,
-  full refund if declined.
+- **Clean** → plan → pay → doctor reviews the order after payment, same day.
+  If declined, the payment is returned; we state that at the decline, never
+  as a selling line before it.
 - **Flagged** → doctor call first, before any payment. If the doctor
   confirms, the plan shows "Confirmed by your doctor" and payment goes
   STRAIGHT to dispatch. There is no second review; the review already

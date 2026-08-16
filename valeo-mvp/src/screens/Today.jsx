@@ -237,7 +237,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                 {ns.free && (
                   <Typography sx={{
                     fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 0.9,
-                  }}>Included — no charge for this one</Typography>
+                  }}>Included, no charge for this one</Typography>
                 )}
               </Box>
             )}
@@ -663,7 +663,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
           </Box>
 
           <Typography sx={{ fontSize: 12.5, color: C.ink2, mt: 2.5, lineHeight: 1.6 }}>
-            It lives with the protocol from now on, under Completed — the plan and what
+            It lives with the protocol from now on, under Completed: the plan and what
             it did, side by side.
           </Typography>
 
@@ -785,7 +785,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
             <Step n="2" t="Dr. Mahmoud reads it against day one"
                   s="Same doctor, same numbers, side by side" />
             <Step n="3" t="You get a verdict"
-                  s="It worked, it did not, or it needs longer — plainly" />
+                  s="It worked, it did not, or it needs longer, plainly" />
           </Stack>
 
           <Box sx={{
@@ -944,7 +944,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                                v={`${ds.pts[ds.pts.length - 1].v} ${ds.unit}`} />
                     <Trend points={ds.pts} total={rx.total} unit={` ${ds.unit}`}
                            caption={`Straight from your ${DEVICES[d].t}.`}
-                           tail=" — no logging needed." />
+                           tail=", no logging needed." />
                   </Box>
                 );
               })}

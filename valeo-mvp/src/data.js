@@ -20,8 +20,8 @@ export const PROTOCOLS = {
       { k: 'hab', t: 'Caffeine cut-off',     d: '10h before sleep', w: 'pm' },
     ],
     amend: {
-      changed: ['DSIP held back to week 3 — sleep hygiene first'],
-      added:   ['Ferritin check — low iron mimics poor sleep'],
+      changed: ['DSIP held back to week 3, sleep hygiene first'],
+      added:   ['Ferritin check, low iron mimics poor sleep'],
       flagged: ['If HRV drops two weeks running, stop and call'],
     },
     t: 'Sleep & Recovery', wk: 8, cat: 'sleep', mk: 'HRV + sleep latency',
@@ -29,7 +29,7 @@ export const PROTOCOLS = {
     stack: ['Magnesium threonate, 2h before bed', 'Morning light, 10 min within an hour of waking',
             'Caffeine cut-off 10h before sleep', 'Room to 18°C, blackout'],
     risk: 'Magnesium can loosen stools for the first week. We start at half dose and step up.',
-    wrongFor: 'Shift workers on rotating nights — the light timing does more harm than good.',
+    wrongFor: 'Shift workers on rotating nights, the light timing does more harm than good.',
   },
   P_WEIGHT: {
     arc: [
@@ -52,7 +52,7 @@ export const PROTOCOLS = {
     amend: {
       changed: ['Tirzepatide starts at 2.5 mg for 4 weeks, not 2'],
       added:   ['Anti-nausea cover for weeks 1–3'],
-      flagged: ['Muscle loss if protein slips — we retest body composition'],
+      flagged: ['Muscle loss if protein slips, we retest body composition'],
     },
     t: 'Weight Loss', wk: 12, cat: 'fat', mk: 'HbA1c',
     goal: 'Drop fasting glucose and lose fat without losing muscle',
@@ -71,20 +71,20 @@ export const PROTOCOLS = {
       { k: 'hab', t: 'SPF 50',               d: 'Every morning, non-negotiable', w: 'am' },
     ],
     amend: {
-      changed: ['Tretinoin every third night to week 4 — your skin is reactive'],
-      added:   ['Ferritin correction — under 50 stalls collagen'],
+      changed: ['Tretinoin every third night to week 4, your skin is reactive'],
+      added:   ['Ferritin correction, under 50 stalls collagen'],
       flagged: ['Purge for 4–6 weeks. It gets worse before better.'],
     },
     t: 'Skin & Anti-Ageing', wk: 12, cat: 'looks', mk: 'Collagen density',
     goal: 'Rebuild collagen density instead of masking the surface',
     stack: ['Tretinoin 0.05%, nights, buffered', 'Oral collagen peptides 10 g daily',
             'SPF 50 every morning, non-negotiable', 'Ferritin correction if under 50'],
-    risk: 'Retinoid purge for 4–6 weeks — it gets worse before it gets better.',
+    risk: 'Retinoid purge for 4–6 weeks, it gets worse before it gets better.',
     wrongFor: 'Pregnancy, breastfeeding, or active eczema on the face.',
   },
   P_ATH: {
     arc: [
-      { to: 4,  t: 'Base', b: 'You are building mitochondrial density. It will not feel like progress yet — that is expected.' },
+      { to: 4,  t: 'Base', b: 'You are building mitochondrial density. It will not feel like progress yet, that is expected.' },
       { to: 8,  t: 'Load', b: 'Intervals are in. HRV decides whether you go hard on any given day.' },
       { to: 12, t: 'Sharpen', b: 'Lactate clearance improves before VO₂max does. Pace at threshold should feel easier.' },
       { to: 16, t: 'Peak', b: 'Adaptations consolidate. Volume drops, quality holds.' },
@@ -96,13 +96,13 @@ export const PROTOCOLS = {
     price: 2750, blood: 'no',
     items: [
       { k: 'pep', t: 'BPC-157',              d: '250 mcg daily, 6 week block', w: 'am' },
-      { k: 'iv',  t: 'Recovery drip',        d: 'Saline, magnesium, B12 — weekly' },
+      { k: 'iv',  t: 'Recovery drip',        d: 'Saline, magnesium, B12, weekly' },
       { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily', w: 'am' },
       { k: 'hab', t: 'Zone 2 base',          d: '180 min a week', w: 'wk' },
       { k: 'hab', t: 'VO₂max intervals',     d: '1 session weekly, from week 5', w: 'wk' },
     ],
     amend: {
-      changed: ['Intervals held to week 5 — base first'],
+      changed: ['Intervals held to week 5, base first'],
       added:   ['Weekly HRV gate before hard sessions'],
       flagged: ['Ferritin is borderline. It caps aerobic gains.'],
     },
@@ -123,7 +123,7 @@ export const PROTOCOLS = {
       { k: 'hab', t: 'Zone 2 + resistance',  d: '5 days a week', w: 'wk' },
     ],
     amend: {
-      changed: ['Rapamycin deferred to month 2 — ApoB first'],
+      changed: ['Rapamycin deferred to month 2, ApoB first'],
       added:   ['Monthly bloods while on rapamycin'],
       flagged: ['Stop immediately if you get an infection'],
     },
@@ -137,11 +137,11 @@ export const PROTOCOLS = {
   P_TEST: {
     price: 2400, blood: 'maybe',
     items: [
-      { k: 'glp', t: 'Enclomiphene',         d: '12.5 mg, alternate days — only if labs justify it', w: 'am' },
+      { k: 'glp', t: 'Enclomiphene',         d: '12.5 mg, alternate days, only if labs justify it', w: 'am' },
       { k: 'sup', t: 'Zinc + vitamin D',     d: 'To sufficiency, retested at week 8', w: 'food' },
       { k: 'sup', t: 'Boron',                d: '6 mg daily', w: 'am' },
       { k: 'hab', t: 'Compound lifts',       d: '3× weekly', w: 'wk' },
-      { k: 'hab', t: 'Sleep floor',          d: '7 hours — this one does most of the work', w: 'pm' },
+      { k: 'hab', t: 'Sleep floor',          d: '7 hours, this one does most of the work', w: 'pm' },
     ],
     amend: {
       changed: ['Enclomiphene held pending SHBG'],
@@ -150,7 +150,7 @@ export const PROTOCOLS = {
     },
     t: 'Testosterone', wk: 16, cat: 'energy', mk: 'Total + free T',
     goal: 'Raise free testosterone without shutting down your own production',
-    stack: ['Sleep first — 7h floor before anything else', 'Zinc + vitamin D to sufficiency',
+    stack: ['Sleep first, 7h floor before anything else', 'Zinc + vitamin D to sufficiency',
             'Compound lifts 3× weekly', 'Enclomiphene only if labs justify it'],
     risk: 'Haematocrit can climb. We retest at week 8 and pull back if it does.',
     wrongFor: 'Anyone trying to conceive in the next 12 months without a fertility review first.',
@@ -159,22 +159,22 @@ export const PROTOCOLS = {
     price: 1950, blood: 'no',
     items: [
       { k: 'pep', t: 'Semax',                d: '300 mcg, mornings, 4 week block', w: 'am' },
-      { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily — cognitive, not just muscular', w: 'am' },
+      { k: 'sup', t: 'Creatine monohydrate', d: '5 g daily, cognitive, not just muscular', w: 'am' },
       { k: 'sup', t: 'Omega-3 (high DHA)',   d: '2 g daily', w: 'food' },
       { k: 'hab', t: 'Zone 2 cardio',        d: '150 min a week', w: 'wk' },
       { k: 'hab', t: 'Caffeine timing',      d: 'Matched to your chronotype', w: 'am' },
     ],
     amend: {
       changed: ['Semax to a 4 week block, then reassess'],
-      added:   ['Sleep apnoea screen — fix the airway first'],
+      added:   ['Sleep apnoea screen, fix the airway first'],
       flagged: ['Nothing here is stimulant-led. Gains are slower, they hold.'],
     },
     t: 'Focus & Brain', wk: 12, cat: 'energy', mk: 'Reaction time',
     goal: 'Hold deep focus for longer without the 3pm collapse',
-    stack: ['Creatine 5 g daily — cognitive, not just muscular', 'Zone 2 cardio 150 min a week',
+    stack: ['Creatine 5 g daily, cognitive, not just muscular', 'Zone 2 cardio 150 min a week',
             'Glucose variability under control', 'Caffeine timed to your chronotype'],
     risk: 'Nothing here is stimulant-led, so gains are slower and hold longer.',
-    wrongFor: 'Untreated sleep apnoea — fix the airway before anything else.',
+    wrongFor: 'Untreated sleep apnoea, fix the airway before anything else.',
   },
 
   /* ── THE GENERATED ONE ──
@@ -192,7 +192,7 @@ export const PROTOCOLS = {
     own: true,
     arc: [
       { to: 4,  t: 'Aerobic base', b: 'Nothing hard yet. Zone 2 is the foundation everything else is built on, and rushing it is the most common way this fails.' },
-      { to: 10, t: 'Intervals in', b: 'One hard session a week. VO₂max moves slowly and then all at once — expect nothing for six weeks.' },
+      { to: 10, t: 'Intervals in', b: 'One hard session a week. VO₂max moves slowly and then all at once, expect nothing for six weeks.' },
       { to: 16, t: 'Composition', b: 'Strength and protein are now doing the work. Fat goes down while muscle holds, which is what the retest checks.' },
     ],
     milestones: [
@@ -209,15 +209,15 @@ export const PROTOCOLS = {
       { k: 'sup', t: 'Magnesium threonate',  d: '400 mg, 2h before bed', w: 'pm' },
     ],
     amend: {
-      changed: ['Intervals held to week 4 — the base comes first'],
-      added:   ['Ferritin recheck at week 8 — iron caps VO₂max'],
+      changed: ['Intervals held to week 4, the base comes first'],
+      added:   ['Ferritin recheck at week 8, iron caps VO₂max'],
       flagged: ['If resting heart rate climbs two weeks running, the volume comes down'],
     },
     t: "Faisal's protocol", wk: 16, cat: 'perf', mk: 'VO₂max + body fat %',
     goal: 'Build the aerobic engine and lose fat without losing muscle',
     stack: ['Zone 2, 180 min a week', 'VO₂max intervals once a week',
             'Compound lifts 3× a week', 'Creatine 5 g daily', 'Protein floor 1.6 g/kg'],
-    risk: 'Doing the intervals before the base is built is how people stall. Creatine adds 1–2 kg of water in the first fortnight — that is not fat.',
+    risk: 'Doing the intervals before the base is built is how people stall. Creatine adds 1–2 kg of water in the first fortnight, that is not fat.',
     wrongFor: 'Anyone with uncontrolled blood pressure, until that is handled first.',
   },
 };
@@ -357,7 +357,7 @@ export const SIGNALS = [
   { k: 'sleep',  t: 'Sleep',              pct: 10, via: 'questions', sub: 'Hours and quality' },
   { k: 'stress', t: 'Stress',             pct: 10, via: 'questions', sub: 'Load and where it comes from' },
   { k: 'goal',   t: 'Your goal',          pct: 10, via: 'questions', sub: 'What you want changed' },
-  { k: 'blood',  t: 'Blood baseline',     pct: 25, via: 'blood',     sub: 'One draw at home — the biggest single jump' },
+  { k: 'blood',  t: 'Blood baseline',     pct: 25, via: 'blood',     sub: 'One draw at home, the biggest single jump' },
 ];
 
 export function signalDone(k, st) {
@@ -749,7 +749,7 @@ export function phaseOf(active) {
 export const TWIN_CHAT = [
   { me: false, t: 'I know your protocol, your logs and your last panel. Ask me anything.' },
   { me: true,  t: 'Nausea is bad this week. Should I drop the dose?' },
-  { me: false, t: 'You logged nausea on 4 of the last 6 days. On tirzepatide that peaks around day 10 and usually settles by week 3 — you are on day 12.' },
+  { me: false, t: 'You logged nausea on 4 of the last 6 days. On tirzepatide that peaks around day 10 and usually settles by week 3, you are on day 12.' },
   { me: false, t: 'Two things you can do without changing anything: take it after food, and split your evening meal. Both cut nausea in most people.' },
   { me: false, t: 'Changing the dose is a prescriber decision and I will not guess at it. If it is not easing by day 18, send this to Dr. Mahmoud.', offer: true },
 ];
@@ -998,7 +998,7 @@ export const SYSTEMS = [
   { k: 'inflam', t: 'Inflammation', mk: 'hsCRP', tgt: 'optimal under 1.0', whyOk: 'Inflammation is optimal now. Correcting iron is what moved it.', fix: { kind: 'supp', t: 'Omega-3 to an index above 8%', sub: 'Added to your next protocol' }, region: 'chest', needs: ['blood'], lever: 2,
     g: 'B', src: 'Panel · 12 Mar', ref: 'hsCRP 1.4 mg/L · optimal under 1.0',
     why: 'Low-grade inflammation slows recovery from everything else you do.',
-    move: 'Ferritin first — iron deficiency raises hsCRP' },
+    move: 'Ferritin first, iron deficiency raises hsCRP' },
   { k: 'sleep', t: 'Sleep & recovery', fix: { kind: 'device', t: 'Pair a ring or a watch', sub: 'Stops this being a guess' }, region: 'headneck', needs: ['sleep'], lever: 3,
     reported: true, sayKey: 'sleep',
     why: 'Short sleep blunts every other lever you pull.',
@@ -1224,14 +1224,14 @@ export const TWIN_ASKS = [
   {
     q: 'Can I take creatine?',
     v: 'yes',
-    a: ['Nothing in your panel argues against it. Kidney markers are clean — creatinine 84 µmol/L, eGFR 98.',
+    a: ['Nothing in your panel argues against it. Kidney markers are clean, creatinine 84 µmol/L, eGFR 98.',
         'It is already in two of the protocols your twin scored highly, so it fits the direction you are going.'],
     marker: { t: 'eGFR', v: 98, lo: 90, hi: 120, unit: '', good: true },
   },
   {
     q: 'Can I take ashwagandha?',
     v: 'no',
-    a: ['Not for you. Your last panel put TSH at 4.2 mIU/L — that is above range and your thyroid is already working hard.',
+    a: ['Not for you. Your last panel put TSH at 4.2 mIU/L, that is above range and your thyroid is already working hard.',
         'Ashwagandha pushes thyroid output. On a borderline TSH that is the wrong direction.',
         'If you want the stress effect, magnesium and breathwork do it without touching the thyroid.'],
     marker: { t: 'TSH', v: 4.2, lo: 0.4, hi: 4.0, unit: ' mIU/L', good: false },
@@ -1247,7 +1247,7 @@ export const TWIN_ASKS = [
   {
     q: 'Why is this protocol right for me?',
     v: 'yes',
-    a: ['You said skin was the goal, and your ferritin came back at 38 µg/L — under 50 stalls collagen synthesis.',
+    a: ['You said skin was the goal, and your ferritin came back at 38 µg/L, under 50 stalls collagen synthesis.',
         'That is why the protocol corrects iron before anything topical. Most plans skip it.'],
     marker: { t: 'Ferritin', v: 38, lo: 50, hi: 150, unit: ' µg/L', good: false },
   },
@@ -1344,7 +1344,7 @@ export const COHORT = {
     { band: 'No change',        pct: 26 },
     { band: 'Went backwards',   pct: 9 },
   ],
-  note: 'Of 312 twins who started with ferritin under 50, most moved one grade in twelve weeks. Nine per cent got worse — usually adherence, occasionally the wrong protocol.',
+  note: 'Of 312 twins who started with ferritin under 50, most moved one grade in twelve weeks. Nine per cent got worse, usually adherence, occasionally the wrong protocol.',
 };
 
 /* ── THE LADDER ──
@@ -1360,7 +1360,7 @@ export const LADDER = [
 ];
 export const LADDER_FIXED = [
   'Height, frame and bone structure',
-  'ACTN3 — your sprint/endurance bias',
+  'ACTN3, your sprint/endurance bias',
   'APOE genotype',
   'Age, which only moves one way',
 ];
@@ -1813,29 +1813,29 @@ export const VERDICTS = {
    clinician committing to an interpretation, which is the thing being sold. */
 export const RESULTS_READ = {
   P_ATH: {
-    read: 'VO₂max responded, which is the harder of the two to move at your age. Body composition lagged it — that is usually protein, not training. Worth checking intake before adding volume.',
+    read: 'VO₂max responded, which is the harder of the two to move at your age. Body composition lagged it, that is usually protein, not training. Worth checking intake before adding volume.',
     next: { t: 'Repeat with a protein floor', s: '16 weeks, 1.6 g/kg tracked, same retest' },
     stop: [],
   },
   P_SLEEP: {
-    read: 'Latency came down and HRV followed. Nothing here argues for the peptide staying in — the hygiene changes did most of it, and they are free.',
+    read: 'Latency came down and HRV followed. Nothing here argues for the peptide staying in, the hygiene changes did most of it, and they are free.',
     next: { t: 'Hold the habits, drop the stack', s: 'Retest HRV in 8 weeks to confirm it holds without support' },
-    stop: ['DSIP — the effect held without it'],
+    stop: ['DSIP, the effect held without it'],
   },
   P_LONG: {
-    read: 'Ferritin corrected first and inflammation followed it down. That order matters — low iron was holding hsCRP up, so treating the iron did both jobs. ApoB moved less than I wanted. At 64 it is out of the range that concerns me, but it is not where I would leave it.',
+    read: 'Ferritin corrected first and inflammation followed it down. That order matters, low iron was holding hsCRP up, so treating the iron did both jobs. ApoB moved less than I wanted. At 64 it is out of the range that concerns me, but it is not where I would leave it.',
     next: { t: 'A second loop on ApoB alone', s: '16 weeks, omega-3 raised, and a statin conversation if it stalls again' },
-    stop: ['Iron and vitamin C — ferritin holds on diet from here'],
+    stop: ['Iron and vitamin C, ferritin holds on diet from here'],
   },
   P_ATH: {
-    read: 'VO₂max responded, which is the harder of the two to move at your age. Body composition lagged it — that is usually protein, not training. Worth checking intake before adding volume.',
+    read: 'VO₂max responded, which is the harder of the two to move at your age. Body composition lagged it, that is usually protein, not training. Worth checking intake before adding volume.',
     next: { t: 'Repeat with a protein floor', s: '16 weeks, 1.6 g/kg tracked, same retest' },
     stop: [],
   },
   P_SLEEP: {
-    read: 'Latency came down and HRV followed. Nothing here argues for the peptide staying in — the hygiene changes did most of it, and they are free.',
+    read: 'Latency came down and HRV followed. Nothing here argues for the peptide staying in, the hygiene changes did most of it, and they are free.',
     next: { t: 'Hold the habits, drop the stack', s: 'Retest HRV in 8 weeks to confirm it holds without support' },
-    stop: ['DSIP — the effect held without it'],
+    stop: ['DSIP, the effect held without it'],
   },
   P_FAISAL: {
     read: 'The aerobic base held and body composition moved with it. Nothing here argues for changing the plan.',
@@ -1870,7 +1870,7 @@ export function resultsFor(st, pKey) {
      as contradiction, so where the gap is real the verdict says both. */
   let line = basis === 'markers' ? V.s : `${V.d} ${d.share}% of it, measured.`;
   if (basis === 'markers' && k === 'worked' && d.share < 70) {
-    line = `Every marker moved the right way — though it delivered ${d.share}% of the size we predicted.`;
+    line = `Every marker moved the right way, though it delivered ${d.share}% of the size we predicted.`;
   }
 
   return {
@@ -1891,7 +1891,7 @@ function summarise(d, p) {
   if (best.sys === worst.sys) {
     return `${best.t} landed at ${best.share}% of the predicted move. ${p.mk} is what the next loop should be scored on.`;
   }
-  return `${best.t} came closest to prediction at ${best.share}%. ${worst.t} was the shortfall at ${worst.share}% — that is the one worth taking to a consult before running this again.`;
+  return `${best.t} came closest to prediction at ${best.share}%. ${worst.t} was the shortfall at ${worst.share}%, that is the one worth taking to a consult before running this again.`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2040,7 +2040,7 @@ export function nextStep(st, pKey) {
            is the thing the patient is now worried about. */
         if (r.checkpoint === 'declined') return {
           kind: 'declined', tag: 'Doctor review complete',
-          title: 'This plan isn’t right for you.',
+          title: 'The doctor said no.',
           body: `${who} decided GLP-1 isn’t suitable for you right now. `
               + 'Your payment has been refunded in full.',
           cta: null,
@@ -2056,7 +2056,7 @@ export function nextStep(st, pKey) {
           kind: 'checkpoint', tag: 'Doctor review today',
           title: `${who} is reviewing your order.`,
           body: 'Nothing is dispensed until a doctor signs it off. You’ll '
-              + 'hear back today. Full refund if it’s not right for you.',
+              + 'hear back today.',
           cta: null,
         };
       }
@@ -2072,7 +2072,7 @@ export function nextStep(st, pKey) {
       kind: 'bloods', tag: 'Blood draw scheduled',
       when: r && r.bloodSlot, cta: null,
       prepList: [
-        'Fast for 10 hours — water is fine',
+        'Fast for 10 hours, water is fine',
         'Drink water before the nurse arrives',
         'Have your ID ready',
         'The nurse comes to you',
@@ -2494,7 +2494,7 @@ const V1_PROTOCOLS = {
       { k: 'hab', t: 'Lift three times',     d: '45 min, full body', w: 'am' },
     ],
     amend: {
-      changed: ['Dropped to two sessions a week — your travel weeks made three unrealistic'],
+      changed: ['Dropped to two sessions a week, your travel weeks made three unrealistic'],
       added:   ['Creatine from week 1 rather than week 4'],
       flagged: ['If the scale does not move by week 6, that is expected. Waist is the read-out.'],
     },
@@ -2552,9 +2552,9 @@ export const KIND_LABEL = {
 export const PLANS = {
   P_WEIGHT: {
     meal: { t: 'Kabsa-friendly deficit', b: '400 kcal under maintenance without cutting rice. Protein floor 130g.',
-            pts: ['Rice stays — portion by fist, not by cup', 'Protein at every meal, 130g floor', 'Eat before Maghrib, not after'] },
+            pts: ['Rice stays, portion by fist, not by cup', 'Protein at every meal, 130g floor', 'Eat before Maghrib, not after'] },
     exer: { t: '3 lifts + 8k steps', b: 'Enough resistance work to keep muscle while losing fat. Steps do the rest.',
-            pts: ['3 full-body lifts a week, 45 min', '8,000 steps daily average', 'No cardio blocks — steps are the cardio'] },
+            pts: ['3 full-body lifts a week, 45 min', '8,000 steps daily average', 'No cardio blocks, steps are the cardio'] },
   },
   P_LONG: {
     meal: { t: 'Mediterranean, Gulf pantry', b: 'Olive oil, fish twice a week, legumes. Built from what is actually in Tamimi.',
@@ -2643,7 +2643,7 @@ export function breakdown(pKey) {
    walk into a call blind, which is the exact "doctor as aesthetic" failure
    this whole rework exists to avoid. */
 export const INTAKE_SCRIPT = [
-  { k: 'age', kind: 'number', q: 'First — how old are you?', ph: 'Age', suffix: 'years' },
+  { k: 'age', kind: 'number', q: 'First, how old are you?', ph: 'Age', suffix: 'years' },
   { k: 'height', kind: 'number', q: 'Height?', ph: 'e.g. 175', suffix: 'cm' },
   { k: 'weight', kind: 'number', q: 'And your current weight?', ph: 'e.g. 82', suffix: 'kg' },
   {
@@ -2653,7 +2653,7 @@ export const INTAKE_SCRIPT = [
   {
     k: 'note', kind: 'text', optional: true,
     q: 'Anything specific you want them to know before the call?',
-    ph: 'Optional — type or skip',
+    ph: 'Optional, type or skip',
   },
 ];
 
@@ -2718,8 +2718,8 @@ Object.assign(PROTOCOLS, {
       { k: 'hab', t: 'Protein floor',       d: '100 g a day, more if breastfeeding', w: 'am' },
     ],
     amend: {
-      changed: ['Iron moved to alternate days — daily dosing absorbs worse and upsets your stomach more'],
-      added:   ['Thyroid panel added — postpartum thyroiditis is common and missed'],
+      changed: ['Iron moved to alternate days, daily dosing absorbs worse and upsets your stomach more'],
+      added:   ['Thyroid panel added, postpartum thyroiditis is common and missed'],
       flagged: ['If you are breastfeeding, nothing here changes without me saying so'],
     },
     t: 'Postpartum Recovery', wk: 16, cat: 'post', mk: 'Ferritin + thyroid panel',
@@ -2727,7 +2727,7 @@ Object.assign(PROTOCOLS, {
     stack: ['Iron bisglycinate on alternate days', 'Vitamin D3 + K2 daily',
             'Omega-3 2 g daily', 'Pelvic floor work, 10 min daily'],
     risk: 'Iron can cause constipation and nausea. Alternate-day dosing is specifically to reduce that, and we start low.',
-    wrongFor: 'Anyone still in the first six weeks after birth — that is a medical review, not a protocol. Book a consultation instead.',
+    wrongFor: 'Anyone still in the first six weeks after birth, that is a medical review, not a protocol. Book a consultation instead.',
   },
 });
 
@@ -2960,7 +2960,7 @@ export const MEET = {
     ],
     why: [
       'Weight and metabolic health is what she does every day, not a sideline',
-      'Starts everything at half dose and steps up — far fewer of her patients quit',
+      'Starts everything at half dose and steps up, far fewer of her patients quit',
       'Will tell you plainly if medication isn’t the right route for you',
     ],
   },
@@ -2973,7 +2973,7 @@ export const MEET = {
     ],
     why: [
       'Men’s health and performance is the whole of his practice',
-      'Fixes sleep and blood pressure before anything else — most men feel it inside a month',
+      'Fixes sleep and blood pressure before anything else, most men feel it inside a month',
       'Straight with you about what a protocol can and can’t change',
     ],
   },
@@ -3188,10 +3188,10 @@ export function practiceScript(st, pKey) {
           a: [`${(r && r.bloodSlot) || 'Your slot'}, at the address on your account.`,
               'They’ll call when they’re close.'] },
         { ic: '🍽', q: 'Do I need to fast?',
-          a: ['Yes — ten hours, water is fine.',
+          a: ['Yes, ten hours, water is fine.',
               'Eating beforehand skews the markers your plan is built on, so it would mean redoing it.'] },
         { ic: '☕️', q: 'Can I drink coffee?',
-          a: ['Black coffee is best avoided too — it moves glucose and lipids enough to matter.',
+          a: ['Black coffee is best avoided too, it moves glucose and lipids enough to matter.',
               'Water, then coffee the moment the nurse leaves.'] },
         { ic: '💊', q: 'Should I take my usual medication?',
           a: ['Keep taking anything you’re already prescribed unless a clinician told you otherwise.',
@@ -3205,7 +3205,7 @@ export function practiceScript(st, pKey) {
               'We’ll let you know as soon as the laboratory sends the results.'],
       chips: [
         { ic: '📦', q: 'Have my results arrived?',
-          a: ['Not yet — the sample reached the lab and is being analysed now.',
+          a: ['Not yet, the sample reached the lab and is being analysed now.',
               'You can watch it move on your next-step card, and we’ll message you the moment it’s in.'] },
         { ic: '📈', q: 'How long does it take?',
           a: ['Typically 24 to 48 hours from the draw.',
@@ -3223,9 +3223,9 @@ export function practiceScript(st, pKey) {
       chips: [
         { ic: '📊', q: 'Can you explain my report?',
           a: ['We can walk you through any marker in plain English.',
-              `Which one is on your mind — or shall ${first} take you through the whole thing on the call?`] },
+              `Which one is on your mind, or shall ${first} take you through the whole thing on the call?`] },
         { ic: '🗓', q: 'When is my follow-up?',
-          a: [`${(r && r.followSlot) || 'Your slot'} — thirty minutes with ${first}.`,
+          a: [`${(r && r.followSlot) || 'Your slot'}, thirty minutes with ${first}.`,
               'Same place, here in the app.'] },
         { ic: '📝', q: 'What should I ask about?',
           a: ['Anything that’s been bothering you, and anything you’ve noticed since we last spoke.',
@@ -3248,7 +3248,7 @@ export function practiceScript(st, pKey) {
         out:       ['Your package is out for delivery.',
                     'A nurse brings it to you and stays for the first dose.'],
         delivered: ['Your package has arrived.',
-                    'Start whenever you’re ready — we’ll be here through the whole run.'],
+                    'Start whenever you’re ready, we’ll be here through the whole run.'],
       }[ship];
       return {
         key: `shipping-${ship}`,
@@ -3256,11 +3256,11 @@ export function practiceScript(st, pKey) {
         chips: [
           { ic: '📦', q: 'Where is my package?',
             a: [ship === 'out' ? 'On its way to you now.'
-                  : ship === 'delivered' ? 'It’s with you — the nurse confirmed delivery.'
+                  : ship === 'delivered' ? 'It’s with you, the nurse confirmed delivery.'
                     : 'With the pharmacy, being prepared.',
                 'We’ll message you at every step rather than make you check.'] },
           { ic: '🚪', q: 'Do I need to be home?',
-            a: ['Yes — a nurse hands it over and stays for the first dose.',
+            a: ['Yes, a nurse hands it over and stays for the first dose.',
                 'If the timing doesn’t work, tell us and we’ll move it.'] },
           { ic: '💊', q: 'When do I take the first dose?',
             a: ['With the nurse, on the day it arrives.',
@@ -3280,7 +3280,7 @@ export function practiceScript(st, pKey) {
           a: ['Each one is there for a marker or a habit you and the doctor talked about.',
               'Name one and we’ll tell you which.'] },
         { ic: '💬', q: 'I want to change something.',
-          a: [`That’s ${first}’s call rather than ours — but tell us what and we’ll get it in front of the team today.`] },
+          a: [`That’s ${first}’s call rather than ours, but tell us what and we’ll get it in front of the team today.`] },
       ],
     },
 
@@ -3296,9 +3296,9 @@ export function practiceScript(st, pKey) {
               'We’ll also tell you whether yours moved, and whether that matters.'] },
         { ic: '🥗', q: 'Can I eat this?',
           a: ['Tell us what it is and we’ll check it against your plan.',
-              'Most things are fine — it’s the timing that usually matters.'] },
+              'Most things are fine, it’s the timing that usually matters.'] },
         { ic: '📉', q: 'I’ve started feeling worse.',
-          a: ['Thanks for telling us — that’s exactly the kind of thing we want to hear early.',
+          a: ['Thanks for telling us, that’s exactly the kind of thing we want to hear early.',
               `We’ve flagged it for ${first}. Tell us what changed and when it started.`] },
       ],
     },
@@ -3312,7 +3312,7 @@ export function practiceScript(st, pKey) {
         a: ['Everything scheduled is on your Today page.',
             'Tell us what you’d like to change and we’ll sort it.'] },
       { ic: '💬', q: 'I have a question.',
-        a: ['Go ahead — we’ll answer if we can, and get the right person if we can’t.'] },
+        a: ['Go ahead, we’ll answer if we can, and get the right person if we can’t.'] },
     ],
   };
 
@@ -3388,7 +3388,7 @@ export function practiceScript(st, pKey) {
 export function prepClosing(first) {
   return [
     `That’s everything ${first} needs before you meet.`,
-    'If anything comes up before then — a question, a concern, an update — just '
+    'If anything comes up before then, a question, a concern, an update, just '
       + 'message us here anytime.',
     'We’re always around.',
   ];
@@ -3458,7 +3458,7 @@ export const RECOMMEND = {
       lines: ['Resets the appetite signalling that has been working against you.',
               'Started low and stepped up slowly, so your gut has time to adapt.'],
     },
-    note: 'The goal is fat, not weight — which is why we start low, hold the protein '
+    note: 'The goal is fat, not weight, which is why we start low, hold the protein '
         + 'floor and lift three times a week rather than chase the scale. I’d rather you '
         + 'lose it slower and keep it off than lose it fast and rebuild it next year.',
   },
@@ -3469,7 +3469,7 @@ export const RECOMMEND = {
             'Hold onto strength and aerobic capacity',
             'Measure it, rather than assume it'],
     why: {
-      symptoms: 'No symptoms yet — which is the point of starting now.',
+      symptoms: 'No symptoms yet, which is the point of starting now.',
       priorities: 'Your family history means acting earlier than we otherwise would.',
       approach: 'We’ll bring ApoB down first, and only then introduce anything supervised.',
     },
@@ -3489,7 +3489,7 @@ export const RECOMMEND = {
             'Rebuild strength safely, in the right order',
             'Feel like yourself again'],
     why: {
-      symptoms: 'Fatigue since birth — usually a deficiency rather than a discipline problem.',
+      symptoms: 'Fatigue since birth, usually a deficiency rather than a discipline problem.',
       priorities: 'Feeling like yourself again comes before anything about weight.',
       approach: 'We’ll replete iron and check thyroid first, then rebuild strength in order.',
     },
@@ -3626,7 +3626,7 @@ export const PROGRAMME_FEE = 999;
    console edit changes the shop in the same second. Structure per
    docs/PLAN_STRUCTURE.md: all-in monthly with medication included, a
    3-month prepay as the only second option, flat price at every dose, and
-   the refund guarantee that makes pay-before-approval clean.
+   the cancel-anytime line every competitor puts under the subscribe button.
 
    The clinician owns none of this. His verbs are eligibility only.
    ══════════════════════════════════════════════════════════════════════════ */
@@ -3647,7 +3647,7 @@ export const DEFAULT_PLAN = {
     'Message the practice any time',
     'Free delivery',
   ],
-  guarantee: 'Full refund if the doctor decides it’s not right for you.',
+  guarantee: 'Pause or cancel anytime.',
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -3659,7 +3659,7 @@ export const DEFAULT_PLAN = {
    BEFORE payment. The motivation question and the interstitials feed
    conversion and never route.
 
-   The wizard walks this list. `show(a)` hides a step whose branch is not
+   The chat walks this list. `show(a)` hides a step whose branch is not
    taken, so a man is never asked about pregnancy and a first-timer is never
    asked why he stopped. Clinical lists are PLACEHOLDERS pending sign-off,
    like every clinical list in this prototype.
@@ -4073,7 +4073,7 @@ Object.assign(RECOMMEND.P_WEIGHT, {
         + 'metabolic markers back in range through structured, ongoing care.',
     think: 'Everything you’ve tried has worked until it stopped, and the '
          + 'weight has come back each time. That pattern usually isn’t about '
-         + 'discipline — and you told me you’d rather go slower than lose '
+         + 'discipline, and you told me you’d rather go slower than lose '
          + 'muscle getting there. I agree. I want to see your metabolic '
          + 'markers before deciding exactly how we treat this.',
     marks: ['the weight has come back', 'lose muscle'],
@@ -4095,7 +4095,7 @@ Object.assign(RECOMMEND.P_LONG, {
         + 'in your family and act on them early, through structured, ongoing care.',
     think: 'You feel fine today, and that’s exactly the right time to act. '
          + 'With your family history, I want a clear picture of your '
-         + 'cardiovascular risk — ApoB above all — before we assume anything.',
+         + 'cardiovascular risk, ApoB above all, before we assume anything.',
     marks: ['family history', 'cardiovascular risk'],
     why: 'This is the care plan I recommend for you.',
     points: [

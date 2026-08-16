@@ -62,7 +62,7 @@ const TAB = {
 export function screenOf({ flow, tab, st, booking, detail }) {
   if (flow === 'consult') {
     const m = booking === 'bloods' ? 'blood draw' : 'follow-up';
-    return { key: `consult:${booking || 'review'}`, label: `Scheduling — ${m}` };
+    return { key: `consult:${booking || 'review'}`, label: `Scheduling, ${m}` };
   }
 
   if (flow === 'detail') {
@@ -73,8 +73,8 @@ export function screenOf({ flow, tab, st, booking, detail }) {
       && ['ready', 'shipping', 'running'].includes(status);
     if (plan) {
       return status === 'ready'
-        ? { key: 'careplan:ready', label: 'Care plan — before purchase' }
-        : { key: 'careplan:live', label: 'Care plan — during treatment' };
+        ? { key: 'careplan:ready', label: 'Care plan, before purchase' }
+        : { key: 'careplan:live', label: 'Care plan, during treatment' };
     }
     return { key: 'protocol', label: 'Protocol detail' };
   }
@@ -88,7 +88,7 @@ export function screenOf({ flow, tab, st, booking, detail }) {
       const sub = s === 'shipping' && f.run && f.run.ship === 'delivered'
         ? 'delivered' : s;
       const name = s === 'empty' ? 'nothing running' : (TODAY[sub] || TODAY[s] || s);
-      return { key: `today:${sub}`, label: `Today — ${name}` };
+      return { key: `today:${sub}`, label: `Today, ${name}` };
     }
     return { key: `tab:${tab}`, label: TAB[tab] || tab };
   }

@@ -15,7 +15,7 @@ import { C } from '../theme';
  * checklist and the guarantee all come from `plan` (st.plan), which the
  * console edits live. Structure per docs/PLAN_STRUCTURE.md: all-in with
  * medication included, monthly or 3 months in one payment, flat price at
- * every dose, and the refund guarantee that makes pay-before-approval clean.
+ * every dose, and the cancel-anytime line under everything money.
  *
  * One number per moment: the selector shows each option's own price; the CTA
  * carries only the selected one.

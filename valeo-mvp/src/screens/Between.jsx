@@ -196,24 +196,24 @@ export default function Between({ onStart, onBack }) {
                 fontFamily: '"Fraunces", serif', fontSize: 21, fontWeight: 600,
                 lineHeight: 1.35, color: C.deep,
               }}>
-                A doctor reviews every order.
+                You’ll be in good hands.
               </Typography>
 
               <Typography sx={{ fontSize: 14.5, lineHeight: 1.6, color: C.ink, mt: 1.75 }}>
-                Nothing ships until it’s signed off.
+                A licensed doctor reviews every order before it ships.
               </Typography>
 
               {/* the breaks are breath, not wrapping */}
               <Typography sx={{ fontSize: 14, lineHeight: 1.8, color: C.ink2, mt: 1.75 }}>
-                If GLP-1 isn’t right for you,<br />
-                the doctor will say so,<br />
-                and you get a full refund…
+                Real doctors reading your answers,<br />
+                medication delivered to your door,<br />
+                check-ins that keep your dose right…
               </Typography>
 
               <Typography sx={{
                 fontSize: 15, lineHeight: 1.6, color: C.deep, mt: 1.75, fontWeight: 500,
               }}>
-                and either way, we’re only a message away.
+                and we’re only a message away.
               </Typography>
             </Box>
           </Rise>

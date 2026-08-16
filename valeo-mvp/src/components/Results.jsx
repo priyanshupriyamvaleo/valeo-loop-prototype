@@ -52,7 +52,7 @@ export default function Results({ st, pKey }) {
               ? [`${r.hit} of ${r.scored.length}`, 'Markers hit']
               : [`${r.delivery.share}%`, 'Of prediction'],
             [`${r.p.wk} wk`, 'Run length'],
-            [adherence != null ? `${adherence}%` : '—', 'Adherence']].map(([v, k], i) => (
+            [adherence != null ? `${adherence}%` : ', ', 'Adherence']].map(([v, k], i) => (
             <Box key={k} sx={{ flex: 1, minWidth: 0, pl: i ? 1.5 : 0, pr: 1.5 }}>
               <Typography sx={{
                 fontFamily: meter, fontSize: 18, fontWeight: 700, lineHeight: 1,

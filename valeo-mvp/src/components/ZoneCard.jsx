@@ -99,7 +99,7 @@ export default function ZoneCard({ zone, worst, onAct }) {
               <Typography sx={{
                 fontSize: 10.5, fontWeight: 800,
                 color: r.grade ? GRADE_C[r.grade] : C.ink2,
-              }}>{r.grade || (r.said ? '·' : '—')}</Typography>
+              }}>{r.grade || (r.said ? '·' : ', ')}</Typography>
             </Stack>
           ))}
         </Stack>
