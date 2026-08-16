@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import { COACH_OPENING, GOALS, KNOWN, KNOWN_FAILED, LIVE, USER,
-         coachOf, doorAskFor, leadFor } from '../data';
+import { GLP_ASK, GLP_FLAGGED, LIVE, USER, coachOf } from '../data';
 import { C, meter } from '../theme';
 
 /**
@@ -44,17 +43,13 @@ import { C, meter } from '../theme';
  * scheduling, week nine of a protocol — happens in one thread with one name on
  * it. See components/Practice.jsx.
  */
-export default function Coach({ onBack, onDone, preGoal = null }) {
-  /* A goal chosen on the greeting screen means the user's opening line was that
-     goal, not "hi" — and the first question is already behind us. Asking it again
-     would restart a conversation that is meant to continue. */
-  const seed = preGoal ? GOALS.find((g) => g.k === preGoal) : null;
-  const start = seed ? 1 : 0;
+export default function Coach({ onBack, onDone }) {
+  /* Weight loss is the whole shop: the patient's opening line IS the goal,
+     so the conversation starts at the first real question. */
+  const start = 0;
 
   const [i, setI] = useState(start);
-  const [a, setA] = useState(seed
-    ? { goal: seed.k, goal_label: seed.say || seed.t }
-    : {});
+  const [a, setA] = useState({ goal: 'fat', goal_label: 'Lose weight' });
   const [typing, setTyping] = useState(true);
   /* A Valeo line is "settled" only once it has finished typing. The reply rail
      stays hidden until then — offering answers while someone is still mid-
@@ -65,47 +60,18 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
   const [skip, setSkip] = useState(0);
   const feed = useRef(null);
 
-  const goal = GOALS.find((g) => g.k === a.goal);
-
-  /* ── THE QUESTION LIST IS DYNAMIC ──
-     The shared basics end with the fork. "I know what I want" appends the
-     structured intake — what, prior use, red flags — and an escalating answer
-     truncates the list at the question that triggered it, so the conversation
-     ends there and hands over to a doctor. The list only ever changes at the
-     index being answered, which is what keeps the replay below valid. */
-  /* ── MVP: THE FORK EXISTS ONLY FOR WEIGHT LOSS ──
-     GLP-1 is the one category where "I know what I want" arrives at volume.
-     Every other goal goes the long way by design, so the door question is
-     simply not asked there and doorOf defaults to resolve. */
-  const forked = !goal || goal.k === 'fat';
-  const OPENING = forked ? COACH_OPENING
-    : COACH_OPENING.filter((s) => s.k !== 'door');
-
-  const kAsk = a.door === 'known' && goal ? KNOWN[goal.k] : null;
-  const steps = kAsk
-    ? [...OPENING,
-       { k: 'wants', kind: 'wants', q: kAsk.wants.q },
-       { k: 'prior', kind: 'choice', q: kAsk.prior.q, o: kAsk.prior.o },
-       ...(a.escAt === 'prior' ? []
-         : [{ k: 'flags', kind: 'choice', q: kAsk.flags.q, o: kAsk.flags.o }]),
-      ]
-    : OPENING;
+  /* ── SIX QUESTIONS, FIXED ──
+     What you want, sex, height, weight, prior use, red flags. No goal
+     picker, no fork. The flag rule routes at the end: any flag, or a prior
+     course that failed, goes to a doctor before any payment. */
+  const steps = GLP_ASK;
 
   const step = steps[i];
   const done = i >= steps.length;
-  /* The welcome's "N quick questions" counts the opening set only, PINNED at
-     mount: the list may shrink when a non-weight goal is picked mid-chat,
-     and a sentence already in the history must never rewrite itself. */
-  const [left] = useState(() =>
-    (seed && seed.k !== 'fat' ? COACH_OPENING.length - 1 : COACH_OPENING.length) - start);
+  const left = steps.length - start;
   const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six'][left] || String(left);
   const team = [...new Set(LIVE.map((pk) => coachOf(pk)))];
-  /* Resolved exactly the way the match screen resolves it, so the name spoken
-     here is guaranteed to be the name on the next screen. Deriving it twice by
-     two different routes is how the closing line and the match quietly drift
-     apart. */
-  const leadKey = goal ? leadFor(goal.k) : null;
-  const lead = leadKey ? coachOf(leadKey) : null;
+  const flagged = GLP_FLAGGED(a);
 
   /* A beat before each reply. Without it the questions render like form fields
      appearing, which is the thing this screen exists not to be. */
@@ -130,7 +96,7 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
      line, our single welcome (which carries the first question), then a strict
      alternation of answer and question. */
   const thread = [];
-  thread.push({ me: true, ic: seed ? seed.ic : '👋', t: seed ? (seed.say || seed.t) : 'Hi' });
+  thread.push({ me: true, ic: '⚖️', t: 'Lose weight' });
   thread.push({ welcome: true, q: steps[start].q });
   for (let s = start; s < i; s += 1) {
     thread.push({ me: true, t: a[`${steps[s].k}_label`] });
@@ -181,7 +147,7 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
           <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
             <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: C.green }} />
             <Typography sx={{ fontSize: 10.5, color: C.ink2 }}>
-              {done ? 'Finding your match' : 'Online'}
+              {done ? (flagged ? 'Arranging your doctor' : 'Preparing your plan') : 'Online'}
             </Typography>
           </Stack>
         </Box>
@@ -236,26 +202,19 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
 
         {done && !typing && (
           <Bubble>
-            {/* Three endings for three exits. The escalation is written to
-                read as being taken more seriously, never as a rejection —
-                that one sentence is the difference between a safety rule and
-                a bounce. */}
+            {/* Two endings for two exits. The flagged one is written to read
+                as being taken more seriously, never as a rejection — that
+                sentence is the difference between a safety rule and a
+                bounce. */}
             <Typed
-              paras={a.escalated ? [
-                'Thank you for telling me. That changes what I’d recommend.',
-                ['I want ', { b: `${lead ? lead.short : 'a doctor'}` },
-                  ' to look at this with you before anything is prescribed.'],
-                'It takes about ten minutes, and it’s included.',
-              ] : a.door === 'known' ? [
-                `Thank you, ${USER.first}.`,
-                ['Based on your answers, I’ve put together ',
-                  { b: 'the plan I’d recommend.' }],
-                'It’s ready for you to review.',
+              paras={flagged ? [
+                'Thank you for telling me.',
+                [{ b: 'One of your answers needs a doctor’s eyes before we go further.' }],
+                'It takes about ten minutes, it’s included, and there’s nothing to pay before it.',
               ] : [
                 `Thank you, ${USER.first}.`,
-                ['Based on what you’ve shared, I think I’d like to introduce you to ',
-                  { b: `${lead ? lead.short : 'your doctor'}’s team.` }],
-                'I think you’ll be in good hands.',
+                ['Based on your answers, here’s ', { b: 'the plan for you.' }],
+                'A doctor reviews every order before it ships.',
               ]}
               skip={skip} feed={feed} onDone={() => setReady(true)} />
           </Bubble>
@@ -272,62 +231,17 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
         borderTop: `1px solid ${C.line}`, bgcolor: C.cream,
       }}>
         {done ? (
-          <Box onClick={() => onDone(a)} sx={{
+          <Box onClick={() => onDone({ ...a, flagged })} sx={{
             py: 1.55, borderRadius: '999px', textAlign: 'center', cursor: 'pointer',
             bgcolor: C.deep, color: '#fff', fontSize: 14.5, fontWeight: 600,
           }}>
-            {a.door === 'known' && !a.escalated ? 'See my plan' : 'Meet my doctor'}
+            {flagged ? 'Talk to the doctor' : 'See my plan'}
           </Box>
         ) : (typing || !ready) ? (
           <Box sx={{ height: 44 }} />
-        ) : step.kind === 'goal' ? (
-          <Suggest opts={GOALS.map((g) => ({ k: g.k, ic: g.ic, t: g.say || g.t }))}
-            onPick={(o) => answer('goal', o.t, o.k)} />
-        ) : step.kind === 'sub' ? (
-          <Suggest opts={(goal ? goal.sub : []).map((o) => ({ k: o, t: o }))}
-            onPick={(o) => answer('sub', o.t)} />
-        ) : step.kind === 'door' ? (
-          /* The fork. Two of the user's own sentences, each with its quiet
-             second line — stacked and full-width because they are longer
-             thoughts than the pill rail is made for. */
-          <Stack spacing={0.8}>
-            {['known', 'resolve'].map((d) => {
-              const o = doorAskFor(a.goal)[d];
-              return (
-                <Box key={d} onClick={() => answer('door', o.t, d)} sx={{
-                  px: 1.8, py: 1.25, borderRadius: '16px', cursor: 'pointer',
-                  bgcolor: '#fff', border: '1px solid rgba(27,57,91,.22)',
-                  '&:active': { bgcolor: 'rgba(27,57,91,.05)' },
-                }}>
-                  <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>
-                    {o.t}
-                  </Typography>
-                  <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.2 }}>
-                    {o.s}
-                  </Typography>
-                </Box>
-              );
-            })}
-          </Stack>
-        ) : step.kind === 'wants' ? (
-          <Suggest opts={kAsk.wants.o.map((o) => ({ k: o.t, t: o.t, pKey: o.pKey, short: o.short }))}
-            onPick={(o) => {
-              setA((prev) => ({
-                ...prev, wantsPkey: o.pKey || null, wantsShort: o.short || null,
-              }));
-              answer('wants', o.t);
-            }} />
         ) : step.kind === 'choice' ? (
           <Suggest opts={step.o.map((o) => ({ k: o, t: o }))}
-            onPick={(o) => {
-              /* The escalation rule. "It didn't work" is a disguised
-                 resolver; a red flag is a safety stop. Both end the intake
-                 here and hand over to a doctor. */
-              const esc = (step.k === 'prior' && KNOWN_FAILED.test(o.t))
-                       || (step.k === 'flags' && o.t !== 'None of these');
-              if (esc) setA((prev) => ({ ...prev, escalated: true, escAt: step.k }));
-              answer(step.k, o.t);
-            }} />
+            onPick={(o) => answer(step.k, o.t)} />
         ) : (
           <NumberRail step={step} onPick={(v) => answer(step.k, `${v} ${step.suffix}`, v)} />
         )}
