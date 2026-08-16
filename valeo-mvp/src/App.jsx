@@ -3,7 +3,7 @@ import { Box, CssBaseline, ThemeProvider, Stack, Typography } from '@mui/materia
 import theme, { C } from './theme';
 import ValeoHome from './screens/ValeoHome';
 import Between from './screens/Between';
-import Coach from './screens/Coach';
+import Quiz from './screens/Quiz';
 import Consultation from './screens/Consultation';
 import PlanScreen from './screens/PlanScreen';
 import Today from './screens/Today';
@@ -54,7 +54,7 @@ const EVENT_OF = {
   deliver: () => ({ event: 'TREATMENT_STARTED', actor: 'patient' }),
   advance: () => ({ event: 'WEEK_ADVANCED', actor: 'system' }),
   planPatch: () => ({ event: 'PLAN_EDITED', actor: 'system' }),
-  answers: (a) => (a.qa && a.qa.flags
+  answers: (a) => (a.qa && a.qa.conditions
     ? { event: a.qa.flagged ? 'INTAKE_SUBMITTED · FLAGGED' : 'INTAKE_SUBMITTED · CLEAN',
         actor: 'patient' }
     : null),
@@ -257,12 +257,12 @@ export default function App() {
       onServices={() => {}} />
   );
   else if (flow === 'between') view = (
-    /* Both ways in lead to the same six questions: the chat is where
-       questions get asked either way. */
-    <Between onStart={() => setFlow('coach')} onBack={() => setFlow('home')} />
+    /* Both ways in open the same wizard: the questions ARE the answers to
+       "I have a few questions first". */
+    <Between onStart={() => setFlow('quiz')} onBack={() => setFlow('home')} />
   );
-  else if (flow === 'coach') view = (
-    <Coach onBack={() => setFlow('between')} onDone={completeIntake} />
+  else if (flow === 'quiz') view = (
+    <Quiz onClose={() => setFlow('home')} onDone={completeIntake} />
   );
   else if (flow === 'consultation') view = (
     /* The eligibility call. The doctor's one job here is yes or no; ending
