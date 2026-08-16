@@ -93,6 +93,7 @@ function reducer(s, a) {
         ...s,
         runs: { ...s.runs, [a.protocol]: {
           status: 'programme', door: 'known', duration: a.duration || 'monthly',
+          med: a.med || null,
           checkpoint: a.eligible ? 'approved' : 'pending' } },
         focus: s.focus || a.protocol,
       };
@@ -222,9 +223,9 @@ export default function App() {
 
   /* Payment. If a doctor already said yes on the call, review is complete
      and dispatch begins at once; otherwise the order enters review. */
-  const payPlan = (duration) => {
+  const payPlan = (duration, med) => {
     dispatch({ type: 'orderPlaced', protocol: GLP_PKEY, duration,
-               eligible: !!st.qa.eligible });
+               med: (med && med.name) || null, eligible: !!st.qa.eligible });
     dispatch({ type: 'focus', protocol: GLP_PKEY });
     if (st.qa.eligible) dispatch({ type: 'activate', protocol: GLP_PKEY });
     enterApp();

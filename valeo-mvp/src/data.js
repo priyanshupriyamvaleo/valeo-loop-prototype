@@ -2133,13 +2133,17 @@ export function nextStep(st, pKey) {
       return ship === 'out' ? {
         kind: 'fulfil', tag: 'Out for delivery',
         title: 'Your package is on its way.',
-        body: 'A nurse brings it to you and stays for the first dose.',
+        /* The nurse's first-dose visit belongs to the 3-month plan only, so
+           the monthly path must never promise her. */
+        body: r.duration === 'quarter'
+          ? 'A nurse brings it to you and stays for the first dose.'
+          : 'It travels in cold chain, straight to your door.',
         ship: fulfilment(st, pKey),
       } : {
         kind: 'fulfil', tag: 'Preparing your treatment',
         title: `${who} has everything ready.`,
-        body: 'We’re preparing your first month. We’ll tell you the moment it’s '
-            + 'on its way.',
+        body: `We’re preparing your first month of ${r.med || 'your medication'}. `
+            + 'We’ll tell you the moment it’s on its way.',
         ship: fulfilment(st, pKey),
       };
     }
@@ -3056,11 +3060,14 @@ export const PREP_SCRIPT = [
 export const SHIP_FLOW = ['confirmed', 'preparing', 'out', 'delivered'];
 
 export function fulfilment(st, pKey) {
-  const at = Math.max(0, SHIP_FLOW.indexOf((runOf(st, pKey) || {}).ship || 'confirmed'));
+  const r = runOf(st, pKey) || {};
+  const at = Math.max(0, SHIP_FLOW.indexOf(r.ship || 'confirmed'));
   return [
     { t: 'Plan confirmed', s: 'Paid, and with the pharmacy' },
-    { t: 'Preparing your medication', s: 'Dispensed and checked against your plan' },
-    { t: 'Out for delivery', s: 'A nurse brings it to you' },
+    { t: r.med ? `Preparing your ${r.med}` : 'Preparing your medication',
+      s: 'Dispensed and checked against your plan' },
+    { t: 'Out for delivery', s: r.duration === 'quarter'
+        ? 'A nurse brings it to you' : 'Cold chain, to your door' },
     { t: 'Delivered', s: 'Day 1 starts when it arrives' },
   ].map((x, i) => ({ ...x, s: i < at ? 'done' : i === at ? 'now' : 'wait', note: x.s }));
 }
@@ -3240,13 +3247,17 @@ export function practiceScript(st, pKey) {
        difference between a concierge and an order-status page. */
     shipping: (() => {
       const ship = (r && r.ship) || 'confirmed';
+      /* The nurse's first-dose visit comes with the 3-month plan only. */
+      const nurse = (r && r.duration) === 'quarter';
+      const med = (r && r.med) || 'your medication';
       const lines = {
-        confirmed: ['Your plan is confirmed and we’re preparing your first month.',
+        confirmed: [`Your plan is confirmed and we’re preparing your first month of ${med}.`,
                     'We’ll message you the moment it leaves us.'],
         preparing: ['Your medication is being dispensed and checked against your plan.',
                     'Not long now.'],
         out:       ['Your package is out for delivery.',
-                    'A nurse brings it to you and stays for the first dose.'],
+                    nurse ? 'A nurse brings it to you and stays for the first dose.'
+                      : 'It travels in cold chain, straight to your door.'],
         delivered: ['Your package has arrived.',
                     'Start whenever you’re ready, we’ll be here through the whole run.'],
       }[ship];
@@ -3256,15 +3267,20 @@ export function practiceScript(st, pKey) {
         chips: [
           { ic: '📦', q: 'Where is my package?',
             a: [ship === 'out' ? 'On its way to you now.'
-                  : ship === 'delivered' ? 'It’s with you, the nurse confirmed delivery.'
+                  : ship === 'delivered'
+                    ? (nurse ? 'It’s with you, the nurse confirmed delivery.'
+                        : 'It’s with you, delivered and confirmed.')
                     : 'With the pharmacy, being prepared.',
                 'We’ll message you at every step rather than make you check.'] },
           { ic: '🚪', q: 'Do I need to be home?',
-            a: ['Yes, a nurse hands it over and stays for the first dose.',
+            a: [nurse ? 'Yes, a nurse hands it over and stays for the first dose.'
+                  : 'Someone should take the delivery, it travels in cold chain.',
                 'If the timing doesn’t work, tell us and we’ll move it.'] },
           { ic: '💊', q: 'When do I take the first dose?',
-            a: ['With the nurse, on the day it arrives.',
-                `They’ll show you how, and ${first} sees your first week either way.`] },
+            a: [nurse ? 'With the nurse, on the day it arrives.'
+                  : 'The day it arrives, whenever you’re ready.',
+                nurse ? `They’ll show you how, and ${first} sees your first week either way.`
+                  : `Message us when you’re set and we’ll walk you through it, and ${first} sees your first week either way.`] },
         ],
       };
     })(),
@@ -3622,11 +3638,14 @@ export const PROGRAMME_FEE = 999;
    THE PLAN (MVP · weight loss · known intent)
 
    One plan object, owned by the category manager. The patient PDP, the pay
-   sheet and the practice thread's money answers all render from it, so a
-   console edit changes the shop in the same second. Structure per
-   docs/PLAN_STRUCTURE.md: all-in monthly with medication included, a
-   3-month prepay as the only second option, flat price at every dose, and
-   the cancel-anytime line every competitor puts under the subscribe button.
+   sheet and the run's fulfilment copy all render from it, so a console edit
+   changes the shop in the same second. Structure mirrors the live Valeo
+   platform: two medications (Wegovy, Mounjaro), two terms (monthly rolling,
+   3 months in one payment), medication included, no blood test in this
+   plan. The includes are one table in three sections, with a tick column
+   per term, because the starter kit and the nurse's first-dose visit come
+   with the 3-month plan only. No strikethrough pricing anywhere: the
+   protocol is the offer.
 
    The clinician owns none of this. His verbs are eligibility only.
    ══════════════════════════════════════════════════════════════════════════ */
@@ -3635,17 +3654,33 @@ export const GLP_PKEY = 'P_WEIGHT';
 export const DEFAULT_PLAN = {
   status: 'live',                       /* live | draft */
   name: 'GLP-1 Weight Loss Plan',
-  medication: 'GLP-1 weekly injection',
   tagline: 'Doctor reviewed. Medication included. Delivered monthly.',
-  monthly: 1349,                        /* SAR per month, rolling */
-  quarterTotal: 3597,                   /* SAR, one payment for 3 months */
-  includes: [
-    'GLP-1 medication, delivered monthly in cold chain',
-    'Doctor review of every order before it ships',
-    'Monthly doctor check-in to keep your dose right',
-    'Dose adjustments included, same price at every dose',
-    'Message the practice any time',
-    'Free delivery',
+  /* Two medications, one plan. Prices in SAR, per the live platform. */
+  meds: [
+    { key: 'wegovy', name: 'Wegovy', generic: 'semaglutide · weekly',
+      monthly: 1529, quarter: 4449 },
+    { key: 'mounjaro', name: 'Mounjaro', generic: 'tirzepatide · weekly',
+      monthly: 2499, quarter: 6599 },
+  ],
+  /* The includes, in the practice's three voices. `m` and `q` are the tick
+     columns: the monthly subscription and the 3-month plan. */
+  sections: [
+    { h: 'Your doctors', rows: [
+      { t: 'Doctor consultation every month', m: true, q: true },
+      { t: 'Doctor review of every order before it ships', m: true, q: true },
+      { t: 'Dose adjustments included, same price at every dose', m: true, q: true },
+      { t: 'First dose given by a nurse, at home', m: false, q: true },
+    ] },
+    { h: 'Your coaches', rows: [
+      { t: 'Dietitian consultation every month', m: true, q: true },
+      { t: 'Message the practice any time', m: true, q: true },
+    ] },
+    { h: 'Your medication', rows: [
+      { t: 'Weekly injections, delivered monthly in cold chain', m: true, q: true },
+      { t: 'Essential supplement pack every month', m: true, q: true },
+      { t: 'GLP-1 starter kit', m: false, q: true },
+      { t: 'Free delivery', m: true, q: true },
+    ] },
   ],
   guarantee: 'Pause or cancel anytime.',
 };
@@ -3700,7 +3735,7 @@ export const GLP_QUIZ = [
     o: ['Side effects', 'It didn’t work for me', 'Cost or availability',
         'Something else'] },
   { k: 'conditions', kind: 'multi', q: 'Do any of these apply to you?',
-    sub: 'Your safety screen. A doctor reads every answer.', none: 'None of these',
+    none: 'None of these',
     o: ['Thyroid cancer, in me or my family', 'History of pancreatitis',
         'Type 1 diabetes', 'A severe stomach or digestive condition',
         'History of an eating disorder', 'None of these'] },

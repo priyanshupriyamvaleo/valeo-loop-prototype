@@ -79,3 +79,44 @@ healthfactsjournal.com, hims.com), Ro pricing (ro.co/weight-loss/pricing,
 therxindex.com, talktomira.com), Noom Med (glpchart.com, noom.com), Sequence
 (trytrimi.com), Juniper (myjuniper.co.uk/articles/how-much-does-juniper-cost),
 Voy (joinvoy.com).
+
+## 5. The two-medication update (mirror of the live Valeo platform)
+
+The live platform sells this category as one program with a medication
+choice and a term choice, so the MVP now does the same. Structure taken
+from the official Valeo GLP-1 page, adapted to the MVP's rules.
+
+**The choices**
+
+| Medication | Monthly, rolling | 3 months, one payment | per month, derived |
+|---|---|---|---|
+| Wegovy (semaglutide, weekly) | SAR 1,529 | SAR 4,449 | SAR 1,483 |
+| Mounjaro (tirzepatide, weekly) | SAR 2,499 | SAR 6,599 | SAR 2,200 |
+
+Prices are the platform's current numbers. The platform shows strikethrough
+"was" prices; the MVP does not, because the protocol is the offer, never a
+discount. The platform's "Most Popular" tag on the 3-month term is kept.
+
+**The includes, one table in three sections**
+
+Same pattern as the long-protocol page: one table, subtle section headers,
+here with a tick column per term because the terms differ.
+
+- Your doctors: monthly doctor consultation · order review before dispatch ·
+  dose adjustments at the same price · first dose given by a nurse at home
+  (3-month only).
+- Your coaches: monthly dietitian consultation · message the practice any
+  time.
+- Your medication: weekly injections delivered monthly in cold chain ·
+  essential supplement pack monthly · GLP-1 starter kit (3-month only) ·
+  free delivery.
+
+**Not in this plan: the blood test.** The platform's GLP-1 program lists an
+at-home blood test; this plan deliberately does not. The known-intent flow
+is pay → onboard → doctor review → dispatch, and nothing in it books a draw.
+
+The plan object grew accordingly: `meds[] {name, generic, monthly, quarter}`
+and `sections[] {h, rows[] {t, m, q}}` replace the single price pair and the
+flat includes list. The run stores `med` and `duration` at payment, so the
+Today page and the practice thread only promise the nurse's first-dose visit
+on the 3-month plan.
