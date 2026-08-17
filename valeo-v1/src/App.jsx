@@ -199,6 +199,15 @@ function reducer(s, a) {
        caught a disguised resolver post-payment and wants two minutes.
        `checkpointWasCall` survives approval, so the machine graph can show
        the call node as genuinely visited rather than skipped. */
+    /* A declined order does not linger as a dead run: the payment is
+       returned and the episode goes back to the conversation. */
+    case 'orderDeclined': {
+      const runs = { ...s.runs }; delete runs[target(s, a)];
+      return { ...s, runs,
+        focus: s.focus === target(s, a) ? null : s.focus,
+        qa: { ...s.qa, reviewed: 'declined' } };
+    }
+
     case 'checkpoint':
       return patchRun(s, target(s, a), {
         checkpoint: a.v, ...(a.v === 'call' ? { checkpointWasCall: true } : {}),
@@ -540,6 +549,17 @@ export default function App() {
     setFlow('buy');
   };
 
+  /* The post-payment no. Same landing as the pre-payment one — the chat,
+     with everything they said still in it — plus one fact that only exists
+     here: the money is already on its way back. */
+  const declineOrder = (pk) => {
+    dispatch({ type: 'orderDeclined', protocol: pk });
+    dispatch({ type: 'log', event: 'ORDER_DECLINED', actor: 'clinician', protocol: pk });
+    setResume({ qa: { ...st.qa, reviewed: 'declined' }, refunded: true });
+    setReview(false); setCkCall(false);
+    setFlow('coach');
+  };
+
   const declineReview = () => {
     dispatch({ type: 'answers', qa: { reviewed: 'declined' } });
     dispatch({ type: 'log', event: 'SAFETY_DECLINED', actor: 'clinician', protocol: detail });
@@ -687,7 +707,7 @@ export default function App() {
       /* The third outcome, which had no control at all: the order is refused
          after payment. Without it the queue could only ever say yes. */
       { t: 'Doctor declines the order',
-        run: (k) => dispatch({ type: 'checkpoint', protocol: k, v: 'declined' }) },
+        run: (k) => declineOrder(k) },
     ];
   }
   let steps = (f && NEXT[f.status]) || [];

@@ -157,7 +157,13 @@ export default function Coach({ onBack, onDone, preGoal = null, resume = null })
     /* The clinician's no lands between the last thing the patient said and
        the question it raises, which is where it happened. */
     if (back && s === asked.length - 1) {
-      thread.push({ paras: declineSaid(a.goal, lead ? lead.short : 'your doctor') });
+      const paras = declineSaid(a.goal, lead ? lead.short : 'your doctor');
+      /* Money was taken on the post-payment decline; that fact leads. */
+      if (resume.refunded) {
+        paras.splice(2, 0,
+          'Your payment has already been refunded in full. Nothing was dispensed.');
+      }
+      thread.push({ paras });
     }
     if (s + 1 < steps.length) thread.push({ t: steps[s + 1].q });
   }
