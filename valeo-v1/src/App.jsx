@@ -678,13 +678,13 @@ export default function App() {
     ];
   }
   let steps = (f && NEXT[f.status]) || [];
-  /* While the consultation screen is open there is no run yet, so the rail has
-     nothing to advance. The control it needs there is the clinician's other
-     answer: "No clinician free" belonged to a connect that no longer exists,
-     and the safety review's no is the outcome a reviewer would otherwise never
-     reach. */
-  if (flow === 'consultation' && review) {
-    steps = [{ t: 'Clinician cannot approve', run: () => declineReview() }];
+  /* The clinician's other answer. It stays on the rail for as long as the
+     safety review is unresolved — during the call and on the plan screen
+     straight after it — because "not compatible" is the outcome a reviewer
+     would otherwise never reach, and it should not need the demo to be on
+     exactly the right screen to be reachable. */
+  if (review) {
+    steps = [{ t: 'Doctor says not compatible', run: () => declineReview() }, ...steps];
   }
 
   const dark = false;
@@ -949,7 +949,7 @@ export default function App() {
 
           <Stack spacing={0.6} sx={{ mt: 2.5 }}>
             {steps.length ? steps.map((sp) => (
-              <Box key={sp.t} onClick={() => sp.run(f.k)} sx={{
+              <Box key={sp.t} onClick={() => sp.run(f && f.k)} sx={{
                 px: 1.5, py: 1.1, borderRadius: '10px', cursor: 'pointer',
                 fontSize: 12.5, fontWeight: 700, textAlign: 'center',
                 bgcolor: C.yellow, color: C.deep,
