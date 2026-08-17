@@ -2143,10 +2143,18 @@ export function nextStep(st, pKey) {
        app asking the patient to do work that was never theirs. */
     case 'shipping': {
       const ship = (r && r.ship) || 'confirmed';
+      /* A monthly plan runs in 4-week cycles; renewals say "next month"
+         because the app remembering which month this is, is the difference
+         between a subscription and a succession of first purchases. */
+      const wks = r && r.term === 'monthly' ? 4 : p.wk;
+      const renewal = r && (r.cycle || 1) > 1;
       if (ship === 'delivered') return {
         kind: 'start', tag: 'Your treatment starts today',
-        title: `Day 1 of ${p.wk} weeks.`,
-        body: `Everything ${who} prescribed is with you. Start whenever you're ready.`,
+        title: `Day 1 of ${wks} weeks.`,
+        body: renewal
+          ? `Your next month is with you, at the dose ${who} set on your review. `
+            + 'Start whenever you\u2019re ready.'
+          : `Everything ${who} prescribed is with you. Start whenever you're ready.`,
         cta: 'Start Day 1', ctaKind: 'startDay',
       };
       /* The headline moves with the parcel. Leaving "we're preparing your
@@ -2158,10 +2166,12 @@ export function nextStep(st, pKey) {
         body: 'A nurse brings it to you and stays for the first dose.',
         ship: fulfilment(st, pKey),
       } : {
-        kind: 'fulfil', tag: 'Preparing your treatment',
-        title: `${who} has everything ready.`,
-        body: 'We’re preparing your first month. We’ll tell you the moment it’s '
-            + 'on its way.',
+        kind: 'fulfil', tag: renewal ? 'Preparing your next month' : 'Preparing your treatment',
+        title: renewal
+          ? `${who} has signed off your dose.`
+          : `${who} has everything ready.`,
+        body: `We\u2019re preparing your ${renewal ? 'next' : 'first'} month. `
+            + 'We\u2019ll tell you the moment it\u2019s on its way.',
         ship: fulfilment(st, pKey),
       };
     }

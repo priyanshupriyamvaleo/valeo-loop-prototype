@@ -142,21 +142,32 @@ export default function Programs({ st, onRenew, onNewGoal, onDetail }) {
           );
         })}
 
-        {/* ── the second growth moment ── */}
-        <Stack direction="row" spacing={1.5} onClick={onNewGoal} sx={{
-          alignItems: 'center', px: 2.25, py: 2, borderRadius: '20px', cursor: 'pointer',
-          bgcolor: '#fff', border: `1.5px dashed rgba(27,57,91,.25)`,
+        {/* ── the second growth moment. Deep navy like the greeting's hero
+            card, because this is the same object: the front door, seen from
+            inside the house. ── */}
+        <Stack direction="row" spacing={1.75} onClick={onNewGoal} sx={{
+          alignItems: 'center', px: 2.25, py: 2.1, borderRadius: '20px', cursor: 'pointer',
+          bgcolor: C.deep, boxShadow: '0 14px 30px -18px rgba(11,27,46,.65)',
+          transition: 'transform .15s', '&:active': { transform: 'scale(.985)' },
         }}>
-          <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: 20, color: C.deep }} />
+          <Box sx={{
+            width: 40, height: 40, borderRadius: '13px', flexShrink: 0,
+            bgcolor: 'rgba(255,185,0,.16)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: 19, color: C.yellow }} />
+          </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: C.deep }}>
+            <Typography sx={{
+              fontFamily: '"Fraunces", serif', fontSize: 16.5, fontWeight: 600, color: '#fff',
+            }}>
               Start something new
             </Typography>
-            <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.2 }}>
+            <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,.65)', mt: 0.25, lineHeight: 1.45 }}>
               Another goal, alongside what you are already running.
             </Typography>
           </Box>
-          <ArrowForwardIcon sx={{ fontSize: 17, color: C.ink2 }} />
+          <ArrowForwardIcon sx={{ fontSize: 17, color: C.yellow }} />
         </Stack>
       </Stack>
     </Box>

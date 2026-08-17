@@ -31,6 +31,7 @@ import { C, meter } from '../theme';
  *   verdict  → retest day
  */
 export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults, onJoinConsult,
+  onMonthResults, onRenewSub,
   onBookBloods, onBookFollow, onBrief, onCheckpointCall,
                                 onFocus }) {
   const [coach, setCoach] = useState(false);
@@ -606,7 +607,13 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
   const doneCount = rx.doneItems.length;
 
   const arc = arcFor(p, rx.day);
-  const milestone = nextMilestone(p, rx.day);
+  /* A monthly cycle's only fixed date is its own end: the dose review and the
+     renewal. The 12-week milestones belong to the clinician-led programmes. */
+  const monthly = rx.term === 'monthly';
+  const cycleEnded = monthly && rx.day >= rx.total;
+  const milestone = monthly
+    ? { t: 'Dose review & renewal', d: rx.total }
+    : nextMilestone(p, rx.day);
   const streak = streakOf(rx);
 
   /* capture state, with notes written from what's actually true */
@@ -866,9 +873,41 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
             })()}
             onTwin={() => setCoach(true)} dot={unread} below={switcher} />
       <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
+        {/* ── THE END OF THE MONTH ──
+            The cycle is complete and the day list has nothing left to ask.
+            What the patient gets is what they earned: the month, measured,
+            from their own logs. */}
+        {cycleEnded && (
+          <Box onClick={() => onMonthResults && onMonthResults(pKey)} sx={{
+            mb: 1.5, px: 2.25, py: 2, borderRadius: '18px', cursor: 'pointer',
+            bgcolor: 'rgba(39,153,91,.1)', border: '1.5px solid rgba(39,153,91,.4)',
+          }}>
+            <Typography sx={{
+              fontSize: 9.5, fontWeight: 800, letterSpacing: '.14em',
+              textTransform: 'uppercase', color: C.green,
+            }}>Your month is complete</Typography>
+            <Typography sx={{
+              fontFamily: '"Fraunces", serif', fontSize: 20, fontWeight: 600,
+              lineHeight: 1.25, color: C.deep, mt: 0.6,
+            }}>See what four weeks changed.</Typography>
+            <Typography sx={{ fontSize: 12.5, color: C.ink2, mt: 0.5, lineHeight: 1.5 }}>
+              Your results, from your own logs. Renewing starts there.
+            </Typography>
+            <Stack direction="row" spacing={0.75} sx={{
+              alignItems: 'center', justifyContent: 'center', mt: 1.5, py: 1.2,
+              borderRadius: '999px', bgcolor: C.deep, color: '#fff',
+            }}>
+              <Typography sx={{ fontSize: 13.5, fontWeight: 700 }}>See my results</Typography>
+              <ChevronRightIcon sx={{ fontSize: 17 }} />
+            </Stack>
+          </Box>
+        )}
+
         <RunHero day={rx.day} total={rx.total} week={Math.ceil(rx.day / 7)}
                  weeks={Math.ceil((rx.total || p.wk * 7) / 7)}
-                 arc={arc} logs={rx.logs} milestone={milestone} streak={streak} />
+                 arc={arc} logs={rx.logs} milestone={milestone} streak={streak}
+                 onRenew={monthly && !cycleEnded && Math.ceil(rx.day / 7) >= 3 && onRenewSub
+                   ? () => onRenewSub(pKey) : null} />
 
         {/* ── what today asks of you ── */}
         <Label sx={{ mt: 3 }}>Capture</Label>

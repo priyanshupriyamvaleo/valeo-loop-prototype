@@ -1,4 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { C } from '../theme';
 
 /**
@@ -14,7 +15,7 @@ import { C } from '../theme';
  * The week strip below it is Whoop's consistency calendar: gaps are as
  * informative as streaks, so they're shown rather than hidden.
  */
-export default function RunHero({ day, total, week, weeks, arc, logs, milestone, streak }) {
+export default function RunHero({ day, total, week, weeks, arc, logs, milestone, streak, onRenew }) {
   /* last seven days, oldest first */
   const strip = Array.from({ length: 7 }, (_, i) => {
     const d = day - 6 + i;
@@ -99,8 +100,23 @@ export default function RunHero({ day, total, week, weeks, arc, logs, milestone,
             Next · {milestone.t}
           </Typography>
           <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: C.yellow, flexShrink: 0 }}>
-            {milestone.d - day} days
+            {Math.max(0, milestone.d - day)} days
           </Typography>
+        </Stack>
+      )}
+
+      {/* ── the renewal, on the card that owns the cycle. From week 3, because
+          the next month is dispensed, reviewed and driven over before the last
+          pen is used. ── */}
+      {onRenew && (
+        <Stack direction="row" spacing={1} onClick={onRenew} sx={{
+          alignItems: 'center', mt: 1.75, px: 1.75, py: 1.2,
+          borderRadius: '12px', cursor: 'pointer', bgcolor: C.yellow,
+        }}>
+          <Typography sx={{ flex: 1, fontSize: 13, fontWeight: 700, color: C.deep }}>
+            Renew subscription
+          </Typography>
+          <ArrowForwardIcon sx={{ fontSize: 16, color: C.deep }} />
         </Stack>
       )}
     </Box>

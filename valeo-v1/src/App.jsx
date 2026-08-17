@@ -10,6 +10,7 @@ import ValeoHome from './screens/ValeoHome';
 import Baseline from './screens/Baseline';
 import Today from './screens/Today';
 import Programs from './screens/Programs';
+import MonthResults from './screens/MonthResults';
 import Protocols from './screens/Protocols';
 import Twin from './screens/Twin';
 import ProtocolDetail from './screens/ProtocolDetail';
@@ -74,7 +75,8 @@ const EVENT_OF = {
                            delivered: 'DELIVERY_CONFIRMED' }[a.stage],
                   actor: a.stage === 'delivered' ? 'nurse' : 'pharmacy' }),
   deliver: () => ({ event: 'TREATMENT_STARTED', actor: 'patient' }),
-  renew: () => ({ event: 'CYCLE_RENEWED', actor: 'patient' }),
+  renewPaid: () => ({ event: 'CYCLE_RENEWED', actor: 'patient' }),
+  renewShip: () => ({ event: 'RENEWAL_ORDER_RAISED', actor: 'clinician' }),
   advance: () => ({ event: 'WEEK_ADVANCED', actor: 'system' }),
   bookReview: () => ({ event: 'RETEST_BOOKED', actor: 'patient' }),
   results: () => ({ event: 'VERDICT_PUBLISHED', actor: 'clinician' }),
@@ -311,14 +313,19 @@ function reducer(s, a) {
         status: day >= r.total ? (r.term === 'monthly' ? 'running' : 'verdict') : 'running',
       });
     }
-    /* A renewal opens the next 4-week cycle: same medication, fresh logs,
-       and a dose review booked right after payment. */
-    case 'renew': {
+    /* Renewal happens in two moves. Payment holds the place; nothing about
+       the cycle changes until the dose review has happened, because the next
+       order is raised AT the reviewed dose. The review's end opens the next
+       cycle and hands the order to the pharmacy, so Today shows the same
+       waiting-for-your-order it showed the first time. */
+    case 'renewPaid':
+      return patchRun(s, target(s, a), { renewalPaid: true });
+    case 'renewShip': {
       const k = target(s, a); const r = s.runs[k];
       if (!r) return s;
       return patchRun(s, k, {
-        status: 'running', day: 1, total: 28, cycle: (r.cycle || 1) + 1,
-        logs: [], doneItems: [], meals: [], body: [], checkin: [],
+        status: 'shipping', ship: 'confirmed',
+        cycle: (r.cycle || 1) + 1, renewalPaid: false,
       });
     }
     /* ── closing the loop ──
@@ -582,9 +589,11 @@ export default function App() {
     setFlow('coach');
   };
 
-  /* The dose review ends with the dose recorded, and the day carries on. */
+  /* The dose review ends with the dose recorded, and the next order goes to
+     the pharmacy at that dose. Today shows the delivery, like the first time. */
   const endRenewCall = () => {
     dispatch({ type: 'log', event: 'DOSE_SET', actor: 'clinician', protocol: detail });
+    dispatch({ type: 'renewShip', protocol: detail });
     setRenewCall(false);
     setFlow('app'); setTab('today');
   };
@@ -623,7 +632,7 @@ export default function App() {
     /* A renewal is not a new order: the cycle reopens and the next step is
        the dose review, booked into the next hour like every consultation. */
     if (renewing) {
-      dispatch({ type: 'renew', protocol: detail });
+      dispatch({ type: 'renewPaid', protocol: detail });
       dispatch({ type: 'focus', protocol: detail });
       setRenewing(false); setRenewCall(true);
       setReview(false); setCkCall(false); setMeetKey(detail);
@@ -911,6 +920,11 @@ export default function App() {
       }}
       onPaid={completePayment} />
   );
+  else if (flow === 'monthResults') view = (
+    <MonthResults st={st} pKey={detail}
+      onRenew={(pk) => renewProgramme(pk)}
+      onLater={() => { setFlow('app'); setTab('today'); }} />
+  );
   else if (flow === 'baseline') view = (
     <Baseline onBack={() => { setFlow('app'); setTab(home); }} onDone={baselineDone} />
   );
@@ -948,6 +962,8 @@ export default function App() {
                 )}
                 {tab === 'today' && (
                   <Today st={st} dispatch={dispatch} onGo={setTab}
+                         onMonthResults={(pk) => { setDetail(pk); setFlow('monthResults'); }}
+                         onRenewSub={renewProgramme}
                          onJoinConsult={() => {
                            if (!detail) setDetail(st.qa.wantsPkey || leadFor(st.qa.goal) || 'P_WEIGHT');
                            dispatch({ type: 'answers', qa: { consultSlot: null } });
