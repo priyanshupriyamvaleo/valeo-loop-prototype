@@ -1,4 +1,4 @@
-import { useReducer, useState } from 'react';
+import { useMemo, useReducer, useState } from 'react';
 import { Box, CssBaseline, ThemeProvider, Stack, Typography } from '@mui/material';
 import theme, { C } from './theme';
 import Intro from './screens/Intro';
@@ -378,8 +378,8 @@ export default function App() {
      in a phone nav reads as none. The home card's 'plan' destination resolves to
      whichever of the two that phase actually ships. */
   const tabsFor = (n) => (n === 1
-    ? ['today', 'programs']
-    : n === 2 ? ['discover', 'today', 'programs']
+    ? ['today', 'programs', 'twin']
+    : n === 2 ? ['discover', 'today', 'programs', 'twin']
       : ['discover', 'today', 'programs', 'twin']);
   const tabs = tabsFor(phase);
   const home = tabs[0];
@@ -670,6 +670,14 @@ export default function App() {
       setBooking('consult'); setFlow('consult');
     }
   };
+
+  /* ── THE TWIN'S OWN STATE ──
+     The Twin tab is a demo surface: it must render fully loaded in every
+     phase, whatever the patient journey is doing. So it reads a state of its
+     own, built once by running the demo-fill through the same reducer, and it
+     never touches the session's real state. Separate and independent, on
+     purpose. */
+  const twinSt = useMemo(() => reducer(structuredClone(INIT), { type: 'demoFull' }), []);
 
   /* Everything the machine's fire() functions may touch. */
   const ui = { flow, detail, ckCall, review, tab };
@@ -993,11 +1001,11 @@ export default function App() {
                   <Protocols st={st} onGo={setTab} home={home} onDetail={openDetail}
                              onResults={openResults} onTrack={trackOn} />
                 )}
-                {tab === 'twin' && phaseHas(phase, 'twin') && (
-                  <Twin st={st} onGo={setTab} onBlood={bookBlood}
-                        onQuestions={() => goQuestions(null)} onGenerate={generate}
-                        onProtocol={openDetail}
-                        onBuySupp={(k) => dispatch({ type: 'supp', supp: k })} />
+                {tab === 'twin' && (
+                  <Twin st={twinSt} onGo={setTab} onBlood={() => {}}
+                        onQuestions={() => {}} onGenerate={() => {}}
+                        onProtocol={() => {}}
+                        onBuySupp={() => {}} />
                 )}
               </Box>
               <BottomNav active={tab} onGo={setTab} dark={dark} tabs={tabs}
