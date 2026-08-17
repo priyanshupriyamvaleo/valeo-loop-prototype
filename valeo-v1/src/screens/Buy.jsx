@@ -74,7 +74,7 @@ const TONES = {
  * comparison columns, no "best value". "Protocol" appears nowhere.
  */
 export default function Buy({ pKey, onBack, onPaid, door = 'resolve',
-                              wants = null, wantsShort = null }) {
+                              wants = null, wantsShort = null, renew = false }) {
   const c = coachOf(pKey);
   const [pay, setPay] = useState(false);
   const [tour, setTour] = useState(false);
@@ -223,7 +223,7 @@ export default function Buy({ pKey, onBack, onPaid, door = 'resolve',
           <Button fullWidth variant="contained" color="secondary" onClick={() => setPay(true)}
             endIcon={<ArrowForwardIcon sx={{ fontSize: 18 }} />}
             sx={{ py: 1.4, fontSize: 15.5 }}>
-            Start my plan · SAR {kprice}
+            {renew ? 'Renew my plan' : 'Start my plan'} · SAR {kprice}
           </Button>
           <Stack direction="row" spacing={0.6} sx={{
             alignItems: 'center', justifyContent: 'center', mt: 1,

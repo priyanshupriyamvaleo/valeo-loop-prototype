@@ -9,6 +9,7 @@ import Find from './screens/Find';
 import ValeoHome from './screens/ValeoHome';
 import Baseline from './screens/Baseline';
 import Today from './screens/Today';
+import Programs from './screens/Programs';
 import Protocols from './screens/Protocols';
 import Twin from './screens/Twin';
 import ProtocolDetail from './screens/ProtocolDetail';
@@ -73,6 +74,7 @@ const EVENT_OF = {
                            delivered: 'DELIVERY_CONFIRMED' }[a.stage],
                   actor: a.stage === 'delivered' ? 'nurse' : 'pharmacy' }),
   deliver: () => ({ event: 'TREATMENT_STARTED', actor: 'patient' }),
+  renew: () => ({ event: 'CYCLE_RENEWED', actor: 'patient' }),
   advance: () => ({ event: 'WEEK_ADVANCED', actor: 'system' }),
   bookReview: () => ({ event: 'RETEST_BOOKED', actor: 'patient' }),
   results: () => ({ event: 'VERDICT_PUBLISHED', actor: 'clinician' }),
@@ -187,7 +189,7 @@ function reducer(s, a) {
       return {
         ...s,
         runs: { ...s.runs, [a.protocol]: {
-          status: 'programme', door: 'known',
+          status: 'programme', door: 'known', term: 'monthly', cycle: 1,
           /* A clinician who has already sat on a call with this patient does
              not need to review the same order in a queue afterwards. When the
              safety review approved it, the order is signed at birth and goes
@@ -256,8 +258,11 @@ function reducer(s, a) {
     case 'ship':      return patchRun(s, target(s, a), { ship: a.stage });
     case 'deliver': {
       const k = target(s, a);
+      /* A monthly subscription runs in 4-week cycles; the 12-week arc belongs
+         to the clinician-led programmes with a retest at the end. */
+      const monthly = s.runs[k] && s.runs[k].term === 'monthly';
       return patchRun(s, k, {
-        status: 'running', day: 1, total: PROTOCOLS[k].wk * 7,
+        status: 'running', day: 1, total: monthly ? 28 : PROTOCOLS[k].wk * 7,
         logs: [], doneItems: [], meals: [], body: [], checkin: [],
       });
     }
@@ -301,7 +306,19 @@ function reducer(s, a) {
       }
       return patchRun(s, k, {
         day, logs, body, doneItems: [],
-        status: day >= r.total ? 'verdict' : 'running',
+        /* The verdict is the clinician-led ending. A finished month simply
+           waits for its renewal, which lives on the Programs tab. */
+        status: day >= r.total ? (r.term === 'monthly' ? 'running' : 'verdict') : 'running',
+      });
+    }
+    /* A renewal opens the next 4-week cycle: same medication, fresh logs,
+       and a dose review booked right after payment. */
+    case 'renew': {
+      const k = target(s, a); const r = s.runs[k];
+      if (!r) return s;
+      return patchRun(s, k, {
+        status: 'running', day: 1, total: 28, cycle: (r.cycle || 1) + 1,
+        logs: [], doneItems: [], meals: [], body: [], checkin: [],
       });
     }
     /* ── closing the loop ──
@@ -354,9 +371,9 @@ export default function App() {
      in a phone nav reads as none. The home card's 'plan' destination resolves to
      whichever of the two that phase actually ships. */
   const tabsFor = (n) => (n === 1
-    ? ['plan', 'today', 'protocols']
-    : n === 2 ? ['discover', 'today', 'protocols']
-      : ['discover', 'today', 'protocols', 'twin']);
+    ? ['today', 'programs']
+    : n === 2 ? ['discover', 'today', 'programs']
+      : ['discover', 'today', 'programs', 'twin']);
   const tabs = tabsFor(phase);
   const home = tabs[0];
 
@@ -388,6 +405,11 @@ export default function App() {
   /* The clinician's no, carried back into the chat the patient was already
      having rather than shown on a screen of its own. */
   const [resume, setResume] = useState(null);
+  /* Renewing an existing programme: the plan page, then payment, then the
+     dose-review booking. And the returning patient's new-goal chat. */
+  const [renewing, setRenewing] = useState(false);
+  const [renewCall, setRenewCall] = useState(false);
+  const [again, setAgain] = useState(false);
 
   /* ── THE DOCK ──
      Controls (the demo rail), Clinic (Jamie's queues) and Machine (the state
@@ -560,11 +582,33 @@ export default function App() {
     setFlow('coach');
   };
 
+  /* The dose review ends with the dose recorded, and the day carries on. */
+  const endRenewCall = () => {
+    dispatch({ type: 'log', event: 'DOSE_SET', actor: 'clinician', protocol: detail });
+    setRenewCall(false);
+    setFlow('app'); setTab('today');
+  };
+
   const declineReview = () => {
     dispatch({ type: 'answers', qa: { reviewed: 'declined' } });
     dispatch({ type: 'log', event: 'SAFETY_DECLINED', actor: 'clinician', protocol: detail });
     setReview(false); setSlot(null);
     setResume({ qa: { ...st.qa } });
+    setFlow('coach');
+  };
+
+  /* Renew: the plan page first, so the price is agreed before anything else. */
+  const renewProgramme = (pk) => {
+    setDetail(pk); setMeetKey(pk); setRenewing(true);
+    dispatch({ type: 'log', event: 'RENEWAL_OPENED', actor: 'patient', protocol: pk });
+    setFlow('buy');
+  };
+
+  /* Start something new: the same chat, already knowing who they are, asking
+     only the question that is actually open. */
+  const startNewGoal = () => {
+    setResume(null); setPreGoal(null); setAgain(true);
+    setReview(false); setRenewing(false);
     setFlow('coach');
   };
 
@@ -576,6 +620,16 @@ export default function App() {
   /* Payment, for both doors — the same logic whether the patient pays on the
      phone's sheet or the machine SIM-fires it. */
   const completePayment = () => {
+    /* A renewal is not a new order: the cycle reopens and the next step is
+       the dose review, booked into the next hour like every consultation. */
+    if (renewing) {
+      dispatch({ type: 'renew', protocol: detail });
+      dispatch({ type: 'focus', protocol: detail });
+      setRenewing(false); setRenewCall(true);
+      setReview(false); setCkCall(false); setMeetKey(detail);
+      setBooking('consult'); setFlow('consult');
+      return;
+    }
     if (doorOf(st.qa) === 'known' && !st.runs[detail]) {
       const seen = st.qa.reviewed === 'approved';
       dispatch({ type: 'orderPlaced', protocol: detail, reviewed: seen });
@@ -743,11 +797,18 @@ export default function App() {
     /* The chat's exit is the same gate the machine's SIM levers use —
        completeIntake routes the fork, and escalated answers go through the
        AI summary to the doctor, exactly as the spec's D1 defines. */
-    <Coach preGoal={preGoal} resume={resume}
-      onBack={() => setFlow(resume ? 'home' : 'between')}
-      onDone={(a) => (a.alt === 'stop'
-        ? (setResume(null), setFlow('home'))
-        : completeIntake(a))} />
+    <Coach preGoal={preGoal} resume={resume} again={again} prior={st.qa}
+      exclude={again ? GOALS.filter((g) => st.runs[leadFor(g.k)]).map((g) => g.k) : []}
+      onBack={() => {
+        if (again) { setAgain(false); setFlow('app'); return setTab('programs'); }
+        return setFlow(resume ? 'home' : 'between');
+      }}
+      onDone={(a) => {
+        setAgain(false);
+        return a.alt === 'stop'
+          ? (setResume(null), setFlow('home'))
+          : completeIntake(a);
+      }} />
   );
   else if (flow === 'assess') view = (
     <Assess goal={matched || st.qa.goal} pKey={meetKey}
@@ -786,7 +847,8 @@ export default function App() {
        fire. */
     <Consultation pKey={detail} review={review}
       onDone={() => (review ? approveReview()
-        : ckCall ? approveAfterCall(detail) : endConsult())}
+        : ckCall ? approveAfterCall(detail)
+          : renewCall ? endRenewCall() : endConsult())}
       onDecline={declineReview} />
   );
   else if (flow === 'brief') view = (
@@ -796,7 +858,7 @@ export default function App() {
   );
   else if (flow === 'detail') view = (
     <ProtocolDetail st={st} pKey={detail} view={detailView} onView={setDetailView}
-      onBack={() => { setFlow('app'); setTab('protocols'); }}
+      onBack={() => { setFlow('app'); setTab('programs'); }}
       onConsult={() => setFlow('consult')}
       onTrack={() => trackOn(detail)}
       onBuy={() => {
@@ -839,10 +901,14 @@ export default function App() {
       onBack={() => { setFlow('app'); setTab('today'); }} onBooked={bookReview} />
   );
   else if (flow === 'buy') view = (
-    <BuyScreen st={st} pKey={detail} door={doorOf(st.qa)}
+    <BuyScreen st={st} pKey={detail} door={renewing ? 'known' : doorOf(st.qa)}
+      renew={renewing}
       wants={doorOf(st.qa) === 'known' && st.qa.wantsPkey ? (st.qa.wants || null) : null}
       wantsShort={doorOf(st.qa) === 'known' ? (st.qa.wantsShort || null) : null}
-      onBack={() => setFlow(doorOf(st.qa) === 'known' ? 'between' : 'detail')}
+      onBack={() => {
+        if (renewing) { setRenewing(false); setFlow('app'); return setTab('programs'); }
+        return setFlow(doorOf(st.qa) === 'known' ? 'between' : 'detail');
+      }}
       onPaid={completePayment} />
   );
   else if (flow === 'baseline') view = (
@@ -902,6 +968,10 @@ export default function App() {
                          onReview={(pk) => { setReviewKey(pk); setFlow('review'); }}
                          onResults={(pk) => openResults(pk)}
                          onFocus={(pk) => dispatch({ type: 'focus', protocol: pk })} />
+                )}
+                {tab === 'programs' && (
+                  <Programs st={st} onRenew={renewProgramme} onNewGoal={startNewGoal}
+                    onDetail={openDetail} />
                 )}
                 {tab === 'protocols' && (
                   <Protocols st={st} onGo={setTab} home={home} onDetail={openDetail}
@@ -991,7 +1061,7 @@ export default function App() {
 
           <Rail label="App" items={tabs.map((k) => [k, ({
             plan: 'Plan', discover: 'Discover', today: 'Today',
-            protocols: 'Protocols', twin: 'Twin' })[k]])}
+            programs: 'Programs', protocols: 'Protocols', twin: 'Twin' })[k]])}
             active={chrome ? tab : null}
             onGo={(k) => { setFlow('app'); setTab(k); }} />
 

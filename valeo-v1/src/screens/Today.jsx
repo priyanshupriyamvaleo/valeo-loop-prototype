@@ -11,7 +11,7 @@ import Practice from '../components/Practice';
 import Trend from '../components/Trend';
 import LogSheet from '../components/LogSheet';
 import CaptureGrid from '../components/CaptureGrid';
-import { MealSheet, BodySheet, CheckinSheet, DeviceSheet } from '../components/CaptureSheets';
+import { MealSheet, BodySheet, CheckinSheet } from '../components/CaptureSheets';
 import { PROTOCOLS, KINDS, DOCTOR, coachOf, nextStep, behindScenes, logKindFor, LOG_KINDS, arcFor, nextMilestone,
          WHEN, WHEN_ORDER, DEVICES, DEVICE_ORDER, capturesFor, streakOf,
          deviceSeries, subsystemMoves, heroStreams, focusRun, activeRuns, RX_LABEL,
@@ -76,7 +76,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
   /* ── A BOOKED CONSULTATION IS A NEXT STEP ──
      There is no run yet, so this has to be resolved before the empty state
      gets a chance to claim the screen. */
-  if (!rx && st.qa.consultSlot) {
+  if (st.qa.consultSlot) {
     /* The doctor named here must be the one whose room opens: the booking
        recorded which practice took the slot. */
     const who = coachOf(st.qa.consultPkey || pKey || st.qa.wantsPkey) || DOCTOR;
@@ -866,7 +866,8 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
             })()}
             onTwin={() => setCoach(true)} dot={unread} below={switcher} />
       <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
-        <RunHero day={rx.day} total={rx.total} week={Math.ceil(rx.day / 7)} weeks={p.wk}
+        <RunHero day={rx.day} total={rx.total} week={Math.ceil(rx.day / 7)}
+                 weeks={Math.ceil((rx.total || p.wk * 7) / 7)}
                  arc={arc} logs={rx.logs} milestone={milestone} streak={streak} />
 
         {/* ── what today asks of you ── */}
@@ -993,87 +994,6 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
           </>
         )}
 
-        {/* ── passive capture. Top of the hierarchy, so it earns a section. ── */}
-        <Label sx={{ mt: 3 }}>Continuous monitoring</Label>
-        {st.devices.length === 0 ? (
-          <Stack direction="row" spacing={1.75} onClick={() => setSheet('devices')} sx={{
-            alignItems: 'center', px: 1.9, py: 1.9, borderRadius: '18px', cursor: 'pointer',
-            bgcolor: 'rgba(64,143,164,.09)', border: '1.5px dashed rgba(64,143,164,.45)',
-          }}>
-            <Box sx={{ fontSize: 20, flexShrink: 0 }}>⌚</Box>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 700, color: C.deep }}>
-                Connect a watch, ring or sensor
-              </Typography>
-              <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.25 }}>
-                Every stream you pair is one thing you stop logging
-              </Typography>
-            </Box>
-            <ChevronRightIcon sx={{ fontSize: 19, color: C.teal, flexShrink: 0 }} />
-          </Stack>
-        ) : (
-          <Stack spacing={0.9}>
-            {st.devices.map((d) => (
-              <Stack key={d} direction="row" spacing={1.5} sx={{
-                alignItems: 'center', px: 1.9, py: 1.5, borderRadius: '16px',
-                bgcolor: 'rgba(39,153,91,.07)', border: '1.5px solid rgba(39,153,91,.3)',
-              }}>
-                <Box sx={{ fontSize: 18, flexShrink: 0 }}>{DEVICES[d].ic}</Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>
-                    {DEVICES[d].t}
-                  </Typography>
-                  <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.15 }}>
-                    {DEVICES[d].gives}
-                  </Typography>
-                </Box>
-                <Stack direction="row" spacing={0.6} sx={{ alignItems: 'center', flexShrink: 0 }}>
-                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: C.green }} />
-                  <Typography sx={{ fontSize: 10.5, fontWeight: 800, color: C.green,
-                                    letterSpacing: '.06em', textTransform: 'uppercase' }}>
-                    Synced
-                  </Typography>
-                </Stack>
-              </Stack>
-            ))}
-            <Button fullWidth variant="text" onClick={() => setSheet('devices')}
-                    sx={{ fontSize: 12.5, color: C.ink2, minHeight: 40 }}>
-              Add another
-            </Button>
-          </Stack>
-        )}
-
-        <Label sx={{ mt: 3 }}>The whole run</Label>
-        <Stack spacing={0.9}>
-          {arc.all.map((a, i) => {
-            const done = i < arc.idx;
-            const now = i === arc.idx;
-            return (
-              <Stack key={a.t} direction="row" spacing={1.5} sx={{
-                alignItems: 'center', px: 1.75, py: 1.4, borderRadius: '14px',
-                bgcolor: now ? 'rgba(255,185,0,.12)' : '#fff',
-                border: `1px solid ${now ? 'rgba(255,185,0,.45)' : 'transparent'}`,
-                boxShadow: now ? 'none' : '0 2px 10px -6px rgba(27,57,91,.24)',
-                opacity: done ? 0.55 : 1,
-              }}>
-                <Box sx={{
-                  width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  bgcolor: done ? C.green : now ? C.yellow : 'rgba(27,57,91,.08)',
-                }}>
-                  {done && <CheckIcon sx={{ fontSize: 12, color: '#fff' }} />}
-                </Box>
-                <Typography sx={{
-                  flex: 1, fontSize: 13, fontWeight: now ? 700 : 500, color: C.deep,
-                }}>{a.t}</Typography>
-                <Typography sx={{ fontSize: 11, color: C.ink2, flexShrink: 0 }}>
-                  to week {a.to}
-                </Typography>
-              </Stack>
-            );
-          })}
-        </Stack>
-
         <Button fullWidth variant="text" onClick={() => dispatch({ type: 'advance', protocol: pKey })}
                 sx={{ mt: 2, fontSize: 12.5, color: C.ink2 }}>
           Skip ahead a week →
@@ -1088,8 +1008,6 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                  onSave={(v) => { dispatch({ type: 'body', protocol: pKey, v }); setSheet(null); }} />
       <CheckinSheet open={sheet === 'checkin'} onClose={() => setSheet(null)} day={rx.day}
                     onSave={(v) => { dispatch({ type: 'checkin', protocol: pKey, v }); setSheet(null); }} />
-      <DeviceSheet open={sheet === 'devices'} onClose={() => setSheet(null)}
-                   paired={st.devices} onPair={(d) => dispatch({ type: 'pair', dev: d })} />
     </Shell>
   );
 }

@@ -44,7 +44,8 @@ import { C, meter } from '../theme';
  * scheduling, week nine of a protocol — happens in one thread with one name on
  * it. See components/Practice.jsx.
  */
-export default function Coach({ onBack, onDone, preGoal = null, resume = null }) {
+export default function Coach({ onBack, onDone, preGoal = null, resume = null,
+                                again = false, prior = null, exclude = [] }) {
   /* A goal chosen on the greeting screen means the user's opening line was that
      goal, not "hi" — and the first question is already behind us. Asking it again
      would restart a conversation that is meant to continue. */
@@ -63,6 +64,19 @@ export default function Coach({ onBack, onDone, preGoal = null, resume = null })
      named is the route that just closed. */
   const back = resume && resume.qa ? resume.qa : null;
 
+  /* ── STARTING SOMETHING NEW ──
+     A patient with a running programme opens this chat knowing us and being
+     known. Asking their height again would be the product forgetting them, so
+     the basics carry over silently and the only questions left are the ones
+     that are actually open: the new goal, and everything that follows from it. */
+  const KNOWN_BASICS = ['sex', 'height', 'weight'];
+  const OPENING = again && !back
+    ? COACH_OPENING
+      .filter((q) => !KNOWN_BASICS.includes(q.k))
+      .map((q) => (q.k === 'goal'
+        ? { ...q, q: 'What new goal would you like to start?' } : q))
+    : COACH_OPENING;
+
   /* How many questions are already behind them: the shared opening, and on the
      known door the three that follow it, minus the safety screen when the
      intake ended at "it didn't work before". Counted here rather than read off
@@ -76,9 +90,12 @@ export default function Coach({ onBack, onDone, preGoal = null, resume = null })
   const [i, setI] = useState(back ? answered : start);
   const [a, setA] = useState(back
     ? { ...back }
-    : seed
-      ? { goal: seed.k, goal_label: seed.say || seed.t }
-      : {});
+    : again && prior
+      ? Object.fromEntries(Object.entries(prior).filter(([k]) =>
+          KNOWN_BASICS.some((b) => k === b || k === `${b}_label`)))
+      : seed
+        ? { goal: seed.k, goal_label: seed.say || seed.t }
+        : {});
   const [typing, setTyping] = useState(true);
   /* A Valeo line is "settled" only once it has finished typing. The reply rail
      stays hidden until then — offering answers while someone is still mid-
@@ -99,13 +116,13 @@ export default function Coach({ onBack, onDone, preGoal = null, resume = null })
      index being answered, which is what keeps the replay below valid. */
   const kAsk = a.door === 'known' && goal ? KNOWN[goal.k] : null;
   const asked = kAsk
-    ? [...COACH_OPENING,
+    ? [...OPENING,
        { k: 'wants', kind: 'wants', q: kAsk.wants.q },
        { k: 'prior', kind: 'choice', q: kAsk.prior.q, o: kAsk.prior.o },
        ...(a.escAt === 'prior' ? []
          : [{ k: 'flags', kind: 'choice', q: kAsk.flags.q, o: kAsk.flags.o }]),
       ]
-    : COACH_OPENING;
+    : OPENING;
   /* Everything above is behind a returning patient. The clinician's no, and
      the one question that follows from it, are all that is left to ask. */
   const steps = back
@@ -117,7 +134,7 @@ export default function Coach({ onBack, onDone, preGoal = null, resume = null })
   /* The welcome's "N quick questions" counts the opening set only. The
      door-A follow-ups extend `steps` after that promise has been made, and a
      sentence in the history must never rewrite itself. */
-  const left = COACH_OPENING.length - start;
+  const left = OPENING.length - start;
   const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six'][left] || String(left);
   const team = [...new Set(LIVE.map((pk) => coachOf(pk)))];
   /* Resolved exactly the way the match screen resolves it, so the name spoken
@@ -228,7 +245,11 @@ export default function Coach({ onBack, onDone, preGoal = null, resume = null })
             return (
               <Bubble key={n}>
                 <Typed
-                  paras={[
+                  paras={again ? [
+                    `Welcome back, ${USER.first}! 👋`,
+                    'Good to see you again. Your programme keeps running exactly as it is.',
+                    m.q,
+                  ] : [
                     `Hi ${USER.first}! 👋`,
                     'I’m glad you’re here.',
                     'I’ll help you every step of the way and make sure you always have the right support when you need it.',
@@ -316,7 +337,8 @@ export default function Coach({ onBack, onDone, preGoal = null, resume = null })
         ) : (typing || !ready) ? (
           <Box sx={{ height: 44 }} />
         ) : step.kind === 'goal' ? (
-          <Suggest opts={GOALS.map((g) => ({ k: g.k, ic: g.ic, t: g.say || g.t }))}
+          <Suggest opts={GOALS.filter((g) => !exclude.includes(g.k))
+            .map((g) => ({ k: g.k, ic: g.ic, t: g.say || g.t }))}
             onPick={(o) => answer('goal', o.t, o.k)} />
         ) : step.kind === 'sub' ? (
           <Suggest opts={(goal ? goal.sub : []).map((o) => ({ k: o, t: o }))}

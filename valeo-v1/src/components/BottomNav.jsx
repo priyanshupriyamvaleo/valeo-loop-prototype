@@ -14,6 +14,7 @@ const ALL_TABS = [
   { k: 'plan',      t: 'Plan',      Icon: ChecklistOutlinedIcon },
   { k: 'discover',  t: 'Discover',  Icon: ExploreOutlinedIcon },
   { k: 'today',     t: 'Today',     Icon: TodayOutlinedIcon },
+  { k: 'programs',  t: 'Programs',  Icon: ListAltOutlinedIcon },
   { k: 'protocols', t: 'Protocols', Icon: ListAltOutlinedIcon },
   { k: 'twin',      t: 'Twin',      Icon: BlurOnOutlinedIcon },
 ];
