@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Box, Drawer, IconButton, InputBase, Stack, Typography } from '@mui/material';
+import { Box, Drawer, IconButton, Stack, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { practiceScript, runOf, statusOf } from '../data';
 import { C } from '../theme';
 
@@ -33,9 +33,11 @@ import { C } from '../theme';
  * operations or from the clinician is ours to know; the moment the product
  * explains which, it stops being a clinic and becomes software again.
  *
- * The composer is present and inert. It is the honest shape of the thing — a
- * practice you can write to — and hiding it would be pretending the suggestions
- * are the whole product.
+ * There is no composer. This surface is deliberately not a live chat: the
+ * practice sends updates, the FAQ chips answer the questions people actually
+ * have, and anything beyond that goes to support on WhatsApp — one green chip,
+ * where every patient in the region already expects support to live. A text
+ * box here would promise a reply SLA nobody is staffed to keep.
  */
 export default function Practice({ open, onClose, st, pKey, dispatch }) {
   const feed = useRef(null);
@@ -131,7 +133,7 @@ export default function Practice({ open, onClose, st, pKey, dispatch }) {
           <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
             <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: C.green }} />
             <Typography sx={{ fontSize: 10.5, color: C.ink2 }}>
-              Usually replies instantly
+              Updates and quick answers
             </Typography>
           </Stack>
         </Box>
@@ -148,50 +150,49 @@ export default function Practice({ open, onClose, st, pKey, dispatch }) {
         {typing && <Dots />}
       </Box>
 
-      {/* ── what you're probably wondering right now ── */}
+      {/* ── strictly the questions, plus the one door to a human ── */}
       <Box sx={{
         px: 2.25, pt: 1.5, pb: 2.5, flexShrink: 0, borderTop: `1px solid ${C.line}`,
       }}>
-        <>
-            {chips.length > 0 && (
-              <Box sx={{
-                display: 'flex', gap: 0.8, overflowX: 'auto', mb: 1.5, pb: 0.5,
-                '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none',
-              }}>
-                {chips.map((x) => (
-                  <Stack key={x.q} direction="row" spacing={0.7}
-                    onClick={() => say([{ w: 'me', t: x.q },
-                                        ...x.a.map((t) => ({ w: 'them', t }))])}
-                    sx={{
-                      alignItems: 'center', flexShrink: 0, px: 1.5, py: 0.9,
-                      borderRadius: '999px', cursor: 'pointer', bgcolor: '#fff',
-                      border: '1px solid rgba(27,57,91,.16)',
-                      '&:active': { bgcolor: 'rgba(27,57,91,.05)' },
-                    }}>
-                    <Box sx={{ fontSize: 13, lineHeight: 1 }}>{x.ic}</Box>
-                    <Typography sx={{
-                      fontSize: 13, fontWeight: 500, color: C.deep, whiteSpace: 'nowrap',
-                    }}>{x.q}</Typography>
-                  </Stack>
-                ))}
-              </Box>
-            )}
+        <Typography sx={{
+          fontSize: 9.5, fontWeight: 800, letterSpacing: '.13em',
+          textTransform: 'uppercase', color: C.ink2, mb: 1,
+        }}>Common questions</Typography>
 
-            <Stack direction="row" spacing={1} sx={{
-              alignItems: 'center', pl: 2, pr: 0.6, py: 0.55, borderRadius: '999px',
-              bgcolor: '#fff', border: '1px solid rgba(27,57,91,.12)',
-            }}>
-              <InputBase readOnly placeholder={`Message ${c.short}’s practice`}
-                sx={{ flex: 1, fontSize: 14, color: C.deep,
-                      '& input::placeholder': { color: C.ink2, opacity: 1 } }} />
-              <Box sx={{
-                width: 34, height: 34, borderRadius: '50%', flexShrink: 0, bgcolor: C.yellow,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <ArrowUpwardIcon sx={{ fontSize: 17, color: C.deep }} />
-              </Box>
-            </Stack>
-        </>
+        {chips.length > 0 && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8, mb: 1.25 }}>
+            {chips.map((x) => (
+              <Stack key={x.q} direction="row" spacing={0.7}
+                onClick={() => say([{ w: 'me', t: x.q },
+                                    ...x.a.map((t) => ({ w: 'them', t }))])}
+                sx={{
+                  alignItems: 'center', flexShrink: 0, px: 1.5, py: 0.9,
+                  borderRadius: '999px', cursor: 'pointer', bgcolor: '#fff',
+                  border: '1px solid rgba(27,57,91,.16)',
+                  '&:active': { bgcolor: 'rgba(27,57,91,.05)' },
+                }}>
+                <Box sx={{ fontSize: 13, lineHeight: 1 }}>{x.ic}</Box>
+                <Typography sx={{
+                  fontSize: 13, fontWeight: 500, color: C.deep, whiteSpace: 'nowrap',
+                }}>{x.q}</Typography>
+              </Stack>
+            ))}
+          </Box>
+        )}
+
+        {/* Static in this build: the chip is the design, the deep link comes
+            with the real WhatsApp Business number. */}
+        <Stack direction="row" spacing={1} sx={{
+          alignItems: 'center', justifyContent: 'center', px: 1.75, py: 1.15,
+          borderRadius: '999px', cursor: 'pointer',
+          bgcolor: 'rgba(37,211,102,.13)', border: '1.5px solid rgba(37,211,102,.55)',
+          '&:active': { bgcolor: 'rgba(37,211,102,.2)' },
+        }}>
+          <WhatsAppIcon sx={{ fontSize: 18, color: '#1DA851' }} />
+          <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: '#128C4B' }}>
+            Chat with support on WhatsApp
+          </Typography>
+        </Stack>
       </Box>
     </Drawer>
   );
