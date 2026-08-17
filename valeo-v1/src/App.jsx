@@ -675,15 +675,25 @@ export default function App() {
         } },
       { t: 'Doctor asks for a quick call',
         run: (k) => dispatch({ type: 'checkpoint', protocol: k, v: 'call' }) },
+      /* The third outcome, which had no control at all: the order is refused
+         after payment. Without it the queue could only ever say yes. */
+      { t: 'Doctor declines the order',
+        run: (k) => dispatch({ type: 'checkpoint', protocol: k, v: 'declined' }) },
     ];
   }
   let steps = (f && NEXT[f.status]) || [];
-  /* The clinician's other answer. It stays on the rail for as long as the
-     safety review is unresolved — during the call and on the plan screen
-     straight after it — because "not compatible" is the outcome a reviewer
-     would otherwise never reach, and it should not need the demo to be on
-     exactly the right screen to be reachable. */
-  if (review) {
+  /* ── THE CLINICIAN'S OTHER ANSWER ──
+     It has to outlive the call. Approving the review ends the call and opens
+     the plan, and that plan screen is exactly where somebody demonstrating
+     this wants to say "and if she had not been happy?" — so the control stays
+     on the rail until the patient actually pays, at which point the order's
+     own decline takes over.
+
+     Keyed off the answers rather than the transient call flag, because the
+     flag is cleared the moment the call ends. */
+  const reviewOpen = review
+    || (st.qa.reviewed === 'approved' && !st.runs[detail]);
+  if (reviewOpen) {
     steps = [{ t: 'Doctor says not compatible', run: () => declineReview() }, ...steps];
   }
 
