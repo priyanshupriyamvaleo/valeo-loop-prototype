@@ -3,6 +3,7 @@ import { Box, Stack, Typography } from '@mui/material';
 import MicIcon from '@mui/icons-material/MicNone';
 import VideocamIcon from '@mui/icons-material/VideocamOutlined';
 import CallEndIcon from '@mui/icons-material/CallEnd';
+import CheckIcon from '@mui/icons-material/Check';
 import { CALL_TOPICS, USER, givenNameOf, onCallNow } from '../data';
 import { C } from '../theme';
 
