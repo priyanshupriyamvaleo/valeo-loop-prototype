@@ -77,7 +77,9 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
      There is no run yet, so this has to be resolved before the empty state
      gets a chance to claim the screen. */
   if (!rx && st.qa.consultSlot) {
-    const who = coachOf(pKey || st.qa.wantsPkey) || DOCTOR;
+    /* The doctor named here must be the one whose room opens: the booking
+       recorded which practice took the slot. */
+    const who = coachOf(st.qa.consultPkey || pKey || st.qa.wantsPkey) || DOCTOR;
     return (
       <Shell coach={coach} setCoach={setCoach} st={st} pKey={pKey} dispatch={dispatch}>
         <Head sub="Tuesday 28 July" title="Your next step"

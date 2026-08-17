@@ -41,7 +41,9 @@ import { C } from '../theme';
  * than anywhere else — this screen's whole job is "trust this person".
  */
 export default function Meet({ pKey, onBook, onBack }) {
-  const c = coachOf(pKey);
+  /* A rail jump can arrive here with no episode at all. The demo must show a
+     doctor, not a blank phone, so the weight-loss lead stands in. */
+  const c = coachOf(pKey) || coachOf('P_WEIGHT');
   const [inn, setInn] = useState(false);
   useEffect(() => { const t = setTimeout(() => setInn(true), 40); return () => clearTimeout(t); }, []);
 

@@ -180,6 +180,7 @@ function reducer(s, a) {
       return { ...s, qa: { ...s.qa,
         consultSlot: a.slot ? a.slot.t : null,
         consultIn: a.slot ? a.slot.mins : null,
+        consultPkey: a.protocol || null,
         consultReview: !!a.review } };
 
     case 'orderPlaced':
@@ -576,7 +577,15 @@ export default function App() {
   const startCheckpointCall = (pk) => {
     dispatch({ type: 'log', event: 'CALL_STARTED', actor: 'patient', protocol: pk });
     setDetail(pk); setMeetKey(pk); setCkCall(true); setReview(false);
-    setBooking('consult'); setFlow('consult');
+    /* First tap books the slot; once one exists, the same card joins it.
+       Without this the card and the booking screen handed the patient back
+       and forth forever. */
+    if (st.qa.consultSlot) {
+      dispatch({ type: 'answers', qa: { consultSlot: null } });
+      setFlow('consultation');
+    } else {
+      setBooking('consult'); setFlow('consult');
+    }
   };
 
   /* Everything the machine's fire() functions may touch. */
@@ -854,6 +863,7 @@ export default function App() {
                 {tab === 'today' && (
                   <Today st={st} dispatch={dispatch} onGo={setTab}
                          onJoinConsult={() => {
+                           if (!detail) setDetail(st.qa.wantsPkey || leadFor(st.qa.goal) || 'P_WEIGHT');
                            dispatch({ type: 'answers', qa: { consultSlot: null } });
                            setFlow('consultation');
                          }}
@@ -949,7 +959,15 @@ export default function App() {
           <Rail label="Funnel" items={[['between', 'Greeting'], ['coach', 'Intake chat'],
             ['assess', 'AI assessment'], ['meet', 'Meet your doctor'],
             ['baseline', 'Blood test']]}
-            active={flow} onGo={(k) => { setReveal(null); setFlow(k); }} />
+            active={flow} onGo={(k) => {
+              setReveal(null);
+              /* A cold jump into the middle of the funnel primes what the
+                 earlier screens would have set, so nothing renders blank. */
+              if ((k === 'meet' || k === 'assess') && !meetKey) {
+                setMeetKey(leadFor(st.qa.goal || 'fat'));
+              }
+              setFlow(k);
+            }} />
 
           <Rail label="App" items={tabs.map((k) => [k, ({
             plan: 'Plan', discover: 'Discover', today: 'Today',

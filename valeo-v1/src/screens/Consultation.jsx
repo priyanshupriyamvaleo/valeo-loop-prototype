@@ -3,7 +3,7 @@ import { Box, Stack, Typography } from '@mui/material';
 import MicIcon from '@mui/icons-material/MicNone';
 import VideocamIcon from '@mui/icons-material/VideocamOutlined';
 import CallEndIcon from '@mui/icons-material/CallEnd';
-import { CALL_TOPICS, USER, coachOf, givenNameOf, onCallNow } from '../data';
+import { CALL_TOPICS, USER, givenNameOf, onCallNow } from '../data';
 import { C } from '../theme';
 
 /**
@@ -30,7 +30,9 @@ import { C } from '../theme';
  * the conversation the patient was already having.
  */
 export default function Consultation({ pKey, onDone, onDecline, review }) {
-  const c = coachOf(pKey);
+  /* onCallNow falls back to the practice lead, so the room can always open.
+     The old `if (!coach) return null` guard here was the blank screen: any
+     path that arrived without a protocol key rendered nothing at all. */
   const doc = onCallNow(pKey);
   const first = givenNameOf(doc);
 
@@ -52,8 +54,6 @@ export default function Consultation({ pKey, onDone, onDecline, review }) {
     const t = setTimeout(() => setCovered((n) => n + 1), covered === 0 ? 2600 : 2300);
     return () => clearTimeout(t);
   }, [phase, covered]);
-
-  if (!c) return null;
 
   /* ── THE CALL ─────────────────────────────────────────────────────── */
   const done = covered >= CALL_TOPICS.length;

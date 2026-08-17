@@ -326,6 +326,7 @@ export const SWIPE_TARGET = 20;
    panel feel like care rather than a data grab. */
 export const DOCTOR = {
   name: 'Dr. Mahmoud Hassan',
+  short: 'Dr. Mahmoud',
   img: asset('team/mahmoud.jpg'),
   role: 'Internal Medicine · Valeo',
   reg: 'SCFHS 24-118940',

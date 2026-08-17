@@ -27,7 +27,7 @@ import { C } from '../theme';
  * an agenda the patient has already seen.
  */
 export default function Assess({ goal, pKey, onBack, onDone }) {
-  const c = coachOf(pKey);
+  const c = coachOf(pKey) || coachOf('P_WEIGHT');
   const rows = INVESTIGATE[goal] || INVESTIGATE.test;
   const first = c ? givenNameOf(c) : 'your doctor';
   /* rows reveal one by one — visible reasoning, not a spinner */
