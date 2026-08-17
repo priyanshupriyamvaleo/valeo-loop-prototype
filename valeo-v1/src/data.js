@@ -1717,7 +1717,10 @@ export function optimumOf(zoneKey) {
    transition, and running both makes the head fight the band around it. */
 export const REGION_MEDIA = {
   headneck: {
-    clip: '/hairgrowth.mp4', from: 0, to: 9.5, ms: 6000,
+    /* Through asset(), like every other plain-string path in this file: a
+       leading slash resolves to the domain root, and this app is served from
+       a subpath both in dev and on Pages — the face simply never loaded. */
+    clip: asset('hairgrowth.mp4'), from: 0, to: 9.5, ms: 6000,
     /* A tighter isolate crop than the band would give. Keeping full body width
        is what makes a torso section read as a torso — but a head reads as a head
        on its own, and at band width the portrait renders about 38px wide, which
