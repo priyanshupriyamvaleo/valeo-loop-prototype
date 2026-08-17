@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Button, Drawer, IconButton, Stack, TextField, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
@@ -22,7 +23,7 @@ import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
 import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
 import PaySheet from '../components/PaySheet';
-import { carePlan, knownPlan, coachOf } from '../data';
+import { USER, carePlan, knownPlan, coachOf } from '../data';
 import { C } from '../theme';
 
 /* Data names a concept, this maps it to a glyph — so data.js never imports
@@ -78,6 +79,20 @@ export default function Buy({ pKey, onBack, onPaid, door = 'resolve',
   const c = coachOf(pKey);
   const [pay, setPay] = useState(false);
   const [tour, setTour] = useState(false);
+  /* ── THE DELIVERY ADDRESS ──
+     Medication in cold chain has to land somewhere specific, and every
+     checkout a person has ever used asks before taking money — so this one
+     does too, in the same shape: a saved address selected by default, a
+     Change affordance, and an add-new form behind it. GLP flow only; the
+     programme checkout has a nurse visit scheduled separately. */
+  const [addrs, setAddrs] = useState([
+    { tag: 'Home', name: USER.full, line: 'Villa 23, Al Nakheel District',
+      city: 'Riyadh 12381', phone: '+966 50 123 4567' },
+    { tag: 'Office', name: USER.full, line: 'Olaya Towers, Tower B, Floor 14',
+      city: 'Riyadh 12213', phone: '+966 50 123 4567' },
+  ]);
+  const [addrAt, setAddrAt] = useState(0);
+  const [addrOpen, setAddrOpen] = useState(false);
 
   if (!c) return null;
 
@@ -203,6 +218,39 @@ export default function Buy({ pKey, onBack, onPaid, door = 'resolve',
             ))}
           </Stack>
 
+          {/* ── deliver to ── */}
+          <Typography sx={{
+            fontSize: 10, fontWeight: 800, letterSpacing: '.14em',
+            textTransform: 'uppercase', color: C.ink2, mt: 3, mb: 1,
+          }}>Deliver to</Typography>
+          <Stack direction="row" spacing={1.5} sx={{
+            alignItems: 'flex-start', px: 1.9, py: 1.7, borderRadius: '16px',
+            bgcolor: '#fff', boxShadow: '0 8px 26px -20px rgba(27,57,91,.5)',
+          }}>
+            <HomeOutlinedIcon sx={{ fontSize: 19, color: C.deep, flexShrink: 0, mt: '2px' }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center' }}>
+                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>
+                  {addrs[addrAt].tag}
+                </Typography>
+                <Typography sx={{ fontSize: 12, color: C.ink2 }}>· {addrs[addrAt].name}</Typography>
+              </Stack>
+              <Typography sx={{ fontSize: 12.5, color: C.ink, mt: 0.4, lineHeight: 1.5 }}>
+                {addrs[addrAt].line}, {addrs[addrAt].city}
+              </Typography>
+              <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.2 }}>
+                {addrs[addrAt].phone}
+              </Typography>
+            </Box>
+            <Typography onClick={() => setAddrOpen(true)} sx={{
+              fontSize: 12.5, fontWeight: 700, color: C.teal, cursor: 'pointer',
+              flexShrink: 0, mt: '2px',
+            }}>Change</Typography>
+          </Stack>
+          <Typography sx={{ fontSize: 11, color: C.ink2, mt: 0.8, ml: 0.5 }}>
+            Delivered in cold chain. Someone should be home to receive it.
+          </Typography>
+
           {/* No blood test to start. Said plainly, because it is the whole
               difference between this plan and the programme. */}
           <Stack direction="row" spacing={1.25} sx={{
@@ -234,6 +282,11 @@ export default function Buy({ pKey, onBack, onPaid, door = 'resolve',
             </Typography>
           </Stack>
         </Box>
+
+        <AddressSheet open={addrOpen} addrs={addrs} at={addrAt}
+          onPick={(i) => { setAddrAt(i); setAddrOpen(false); }}
+          onAdd={(a) => { setAddrs((xs) => [...xs, a]); setAddrAt(addrs.length); setAddrOpen(false); }}
+          onClose={() => setAddrOpen(false)} />
 
         <PaySheet open={pay}
           item={`${kp.title} with ${c.short}`}
@@ -489,5 +542,92 @@ export default function Buy({ pKey, onBack, onPaid, door = 'resolve',
         fee={price}
         onClose={() => setPay(false)} onDone={onPaid} />
     </Box>
+  );
+}
+
+
+/*
+ * THE ADDRESS SHEET — the shape every checkout has taught.
+ *
+ * Saved addresses first, selected with one tap. The add-new form stays behind
+ * a row rather than greeting the user with four empty fields, because in the
+ * common case the address already exists and the form is noise.
+ */
+function AddressSheet({ open, addrs, at, onPick, onAdd, onClose }) {
+  const [adding, setAdding] = useState(false);
+  const [f, setF] = useState({ tag: '', line: '', city: '', phone: '' });
+  const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
+  const ok = f.tag && f.line && f.city;
+
+  return (
+    <Drawer anchor="bottom" open={open} onClose={onClose}
+      slotProps={{
+        root: { disablePortal: true, sx: { position: 'absolute' } },
+        backdrop: { sx: { position: 'absolute', bgcolor: 'rgba(0,0,0,.45)' } },
+        paper: {
+          sx: {
+            position: 'absolute', borderTopLeftRadius: 14, borderTopRightRadius: 14,
+            bgcolor: C.cream, backgroundImage: 'none',
+          },
+        },
+      }}>
+      <Box sx={{ px: 2.5, pt: 2.25, pb: 3.5 }}>
+        <Typography sx={{
+          fontFamily: '"Fraunces", serif', fontSize: 19, fontWeight: 600, color: C.deep, mb: 1.75,
+        }}>{adding ? 'Add a new address' : 'Deliver to'}</Typography>
+
+        {!adding ? (
+          <>
+            <Stack spacing={0.9}>
+              {addrs.map((a, i) => {
+                const on = i === at;
+                return (
+                  <Stack key={a.tag + i} direction="row" spacing={1.4} onClick={() => onPick(i)} sx={{
+                    alignItems: 'flex-start', px: 1.75, py: 1.5, borderRadius: '14px',
+                    cursor: 'pointer', bgcolor: '#fff',
+                    border: `1.5px solid ${on ? C.deep : 'rgba(27,57,91,.12)'}`,
+                  }}>
+                    <Box sx={{
+                      width: 18, height: 18, borderRadius: '50%', flexShrink: 0, mt: '2px',
+                      border: `2px solid ${on ? C.deep : 'rgba(27,57,91,.3)'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {on && <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: C.deep }} />}
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>{a.tag}</Typography>
+                      <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.25, lineHeight: 1.45 }}>
+                        {a.line}, {a.city}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                );
+              })}
+            </Stack>
+            <Typography onClick={() => setAdding(true)} sx={{
+              fontSize: 13.5, fontWeight: 700, color: C.teal, mt: 1.75,
+              cursor: 'pointer', textAlign: 'center',
+            }}>+ Add a new address</Typography>
+          </>
+        ) : (
+          <>
+            <Stack spacing={1.25}>
+              <TextField size="small" label="Label (Home, Office…)" value={f.tag} onChange={set('tag')} />
+              <TextField size="small" label="Street and building" value={f.line} onChange={set('line')} />
+              <TextField size="small" label="City and district" value={f.city} onChange={set('city')} />
+              <TextField size="small" label="Phone for the courier" value={f.phone} onChange={set('phone')} />
+            </Stack>
+            <Button fullWidth variant="contained" color="secondary" disabled={!ok}
+              onClick={() => { onAdd({ ...f, name: USER.full, phone: f.phone || '+966 50 123 4567' }); setAdding(false); setF({ tag: '', line: '', city: '', phone: '' }); }}
+              sx={{ mt: 2, py: 1.25 }}>
+              Save and deliver here
+            </Button>
+            <Typography onClick={() => setAdding(false)} sx={{
+              fontSize: 12.5, color: C.ink2, mt: 1.25, cursor: 'pointer', textAlign: 'center',
+            }}>Back to saved addresses</Typography>
+          </>
+        )}
+      </Box>
+    </Drawer>
   );
 }

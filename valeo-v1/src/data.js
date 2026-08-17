@@ -567,7 +567,7 @@ export function homeCard(st, phase = 1) {
        where it names something precise: the thing a doctor amends and we
        retest. The CTA names the PERSON, because the person is the product. */
     sub: 'Tell us your goal. A doctor builds your plan. Your AI coach keeps you on track.',
-    cta: phaseHas(phase, 'twin') ? buildWords(phase).cta : 'Find my doctor',
+    cta: phaseHas(phase, 'twin') ? buildWords(phase).cta : 'Find my plan',
     tone: 'yellow',
   };
 }
