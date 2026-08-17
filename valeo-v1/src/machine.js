@@ -1,4 +1,4 @@
-import { GOALS, PROTOCOLS, doorOf, leadFor, coachOf, givenNameOf, statusOf } from './data';
+import { GOALS, KNOWN, PROTOCOLS, doorOf, leadFor, coachOf, givenNameOf, statusOf } from './data';
 
 /* ══════════════════════════════════════════════════════════════════════════
    THE MACHINE — docs/STATE_MACHINE_V1.md as executable data.
@@ -34,7 +34,10 @@ export const STATES = [
 
   { id: 'K1_SAFETY', lane: 'known', t: 'Safety screen',
     enter: 'Intent = KNOWN_SOLUTION.',
-    exit: 'Wants, prior use and red flags answered. Any flag escalates.' },
+    exit: 'Wants, prior use and red flags answered. A flag books a clinician review; the door does not change.' },
+  { id: 'K1B_REVIEW', lane: 'known', t: 'Safety review',
+    enter: 'A red flag was answered. A slot is taken from the next hour.',
+    exit: 'The clinician clears the flag and the plan opens, or declines and the episode returns to intake on the clinician-led door.' },
   { id: 'K2_PLAN', lane: 'known', t: 'Plan recommended',
     enter: 'Safety screen clean. Monthly plan resolved from wants.',
     exit: 'Patient pays.' },
@@ -42,14 +45,14 @@ export const STATES = [
     enter: 'Order paid. Episode in the Needs Signature queue.',
     exit: 'Doctor approves, or requests a call. Same day.' },
   { id: 'K4A_CALL', lane: 'known', t: 'Checkpoint call',
-    enter: 'Doctor requested two minutes before confirming.',
+    enter: 'Doctor requested two minutes before confirming. Booked like every other call.',
     exit: 'Call complete and order approved.' },
 
   { id: 'D1_AI', lane: 'resolve', t: 'AI summary',
     enter: 'Intent = NEED_DIAGNOSIS (chosen or escalated).',
     exit: 'Three investigation areas written and on the clinician dashboard.' },
-  { id: 'D2_CONSULT', lane: 'resolve', t: 'Consult live',
-    enter: 'Intake + AI summary visible to the clinician before the call.',
+  { id: 'D2_CONSULT', lane: 'resolve', t: 'Consult booked',
+    enter: 'A slot is taken from the next hour. Intake + AI summary visible to the clinician before it.',
     exit: 'Transcript uploaded and assessment written.' },
   { id: 'D3_RECOMMENDED', lane: 'resolve', t: 'Care recommended',
     enter: 'Assessment exists. Programme linked.',
@@ -89,7 +92,7 @@ export const stateOf = (id) => STATES.find((s) => s.id === id);
 
 /* ── the projection: prototype state → machine state ──
    Reads exactly the fields the phone renders from, so it cannot drift. */
-const FUNNEL_FLOWS = ['between', 'coach', 'assess', 'meet', 'consultation'];
+const FUNNEL_FLOWS = ['between', 'coach', 'assess', 'meet', 'consult', 'consultation'];
 
 function runState(r, pKey, ui) {
   switch (r.status) {
@@ -122,10 +125,16 @@ export function episodesOf(st, ui) {
   if (inFunnel || knownBuy) {
     const intent = doorOf(st.qa);
     const cat = st.qa.goal || null;
+    /* A flagged known-door episode is in the safety review, not on the
+       clinician-led door: the booking and the call look the same from the
+       outside, and the difference is which lane the patient is standing in. */
+    const flagged = st.qa.door === 'known' && st.qa.escAt === 'flags'
+      && st.qa.reviewed !== 'approved';
     const state = ui.flow === 'between' ? 'NEW'
       : ui.flow === 'coach' ? 'INTAKE'
         : ui.flow === 'assess' ? 'D1_AI'
-          : (ui.flow === 'meet' || ui.flow === 'consultation') ? 'D2_CONSULT'
+          : (ui.flow === 'consult' || ui.flow === 'meet' || ui.flow === 'consultation')
+            ? (flagged ? 'K1B_REVIEW' : 'D2_CONSULT')
             : 'K2_PLAN';
     eps.push({
       id: 'funnel', pKey: null, cat,
@@ -176,8 +185,11 @@ export function simIntake(goalKey, intent, escalate) {
     Object.assign(base, {
       wants: w.t, wants_label: w.t, wantsShort: w.short, wantsPkey: w.pKey,
       prior: 'Never', prior_label: 'Never',
-      flags: escalate ? 'Escalating answer' : 'None of these',
-      flags_label: escalate ? 'Escalating answer' : 'None of these',
+      /* The real first flag for the goal, not the word "escalating" — the SIM
+         answer ends up in the patient's own thread, and a returning patient
+         reads it back. */
+      flags: escalate ? KNOWN[g.k].flags.o[0] : 'None of these',
+      flags_label: escalate ? KNOWN[g.k].flags.o[0] : 'None of these',
       escalated: !!escalate, escAt: escalate ? 'flags' : null,
     });
   }
@@ -208,11 +220,29 @@ export const TRANSITIONS = [
     guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(ctx.simGoal(), 'resolve', false)) },
 
-  { event: 'ESCALATION_RAISED', actor: 'ai', from: 'K1_SAFETY', to: 'D1_AI', sim: true,
-    writes: 'safety_screen (flagged), episode.escalated, intent rewritten',
-    reason: 'Escalation happens during a known-solution intake',
+  { event: 'SAFETY_FLAG_RAISED', actor: 'ai', from: 'K1_SAFETY', to: 'K1B_REVIEW', sim: true,
+    writes: 'safety_screen (flagged), episode.review_required. Intent is NOT rewritten',
+    reason: 'A safety flag is raised during a known-solution intake',
     guard: (st, ui) => ['between', 'coach'].includes(ui.flow),
     fire: (ctx) => ctx.completeIntake(simIntake(ctx.simGoal(), 'known', true)) },
+
+  { event: 'SAFETY_APPROVED', actor: 'clinician', from: 'K1B_REVIEW', to: 'K2_PLAN', sim: true,
+    writes: 'eligibility note; flag cleared',
+    reason: 'No safety review is on the call',
+    guard: (st, ui) => ui.flow === 'consultation' && ui.review,
+    fire: (ctx) => ctx.approveReview() },
+
+  { event: 'SAFETY_DECLINED', actor: 'clinician', from: 'K1B_REVIEW', to: 'INTAKE', sim: true,
+    writes: 'eligibility note: no; intent rewritten to NEED_DIAGNOSIS',
+    reason: 'No safety review is on the call',
+    guard: (st, ui) => ui.flow === 'consultation' && ui.review,
+    fire: (ctx) => ctx.declineReview() },
+
+  { event: 'CONSULT_BOOKED', actor: 'patient', from: 'D1_AI', to: 'D2_CONSULT', sim: true,
+    writes: 'consult slot (next hour)',
+    reason: 'The patient is not choosing a time',
+    guard: (st, ui) => ui.flow === 'consult',
+    fire: (ctx) => ctx.setFlow('consultation') },
 
   { event: 'CONSULT_JOINED', actor: 'patient', from: 'D1_AI', to: 'D2_CONSULT', sim: false,
     writes: 'consult session',

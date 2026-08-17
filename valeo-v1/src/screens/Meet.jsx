@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import CheckIcon from '@mui/icons-material/Check';
-import { coachOf, availableNow } from '../data';
+import { coachOf, SLOT_OFFSETS } from '../data';
 import { C } from '../theme';
 
 /**
@@ -42,7 +42,6 @@ import { C } from '../theme';
  */
 export default function Meet({ pKey, onBook, onBack }) {
   const c = coachOf(pKey);
-  const free = availableNow();
   const [inn, setInn] = useState(false);
   useEffect(() => { const t = setTimeout(() => setInn(true), 40); return () => clearTimeout(t); }, []);
 
@@ -173,19 +172,20 @@ export default function Meet({ pKey, onBook, onBack }) {
         px: 3, pt: 2, pb: 3, flexShrink: 0,
         background: `linear-gradient(180deg,rgba(255,253,245,0) 0%,${C.cream} 40%)`,
       }}>
-        {/* The consultation is free and it starts now. "Continue" used to lead
-            to a slot picker and a SAR 200 charge. Both sat in front of the
-            relationship instead of in front of the treatment.
+        {/* The consultation is free. "Continue" used to lead to a slot picker
+            and a SAR 200 charge; both sat in front of the relationship instead
+            of in front of the treatment, so both went.
 
-            The line under the button states a count, not a promise. "Someone is
-            available" asks for trust. "3 clinicians available now" is a fact,
-            and it is the same claim an on-demand service makes at the moment a
-            person decides to tap. */}
+            What replaced them was "Start your consultation" and a live count of
+            who was free — an on-demand claim, and the wrong promise for a
+            clinic to make. The button now leads to three real times in the next
+            hour, and the line under it says when the first one is rather than
+            how many people are standing by. */}
         <Button fullWidth variant="contained" color="secondary" onClick={() => onBook(pKey)}>
-          Start your consultation
+          Pick a time
         </Button>
         <Typography sx={{ fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1.3 }}>
-          {free} clinician{free === 1 ? '' : 's'} available now
+          Next available in {SLOT_OFFSETS[0]} minutes · included
         </Typography>
       </Box>
 

@@ -816,6 +816,38 @@ export const RX_LABEL = {
 };
 
 /* Consult slots. Same-day is the point — the call is what unblocks everything. */
+/* ── SCHEDULED, NOT CONNECTED ──
+   The consultation used to begin by looking for whoever was free at that
+   second. That is a marketplace behaviour: it makes the patient wait on a
+   queue they cannot see, and it fails in the one way a clinic must not, by
+   having nobody there.
+
+   So every consultation is booked, and the times offered are the next hour:
+   in 30, 45 or 60 minutes. It is still same-day care — the difference is that
+   the patient leaves with a time in their hand instead of a spinner.
+
+   Computed at the moment the picker opens, in the patient's own clock. */
+export const SLOT_OFFSETS = [30, 45, 60];
+
+export function immediateSlots(now = new Date()) {
+  return SLOT_OFFSETS.map((mins) => {
+    const at = new Date(now.getTime() + mins * 60000);
+    return { d: 'Today', t: clockOf(at), mins, at: at.getTime(),
+             note: `in ${mins} minutes` };
+  });
+}
+
+export function clockOf(d) {
+  let h = d.getHours();
+  const ampm = h >= 12 ? 'pm' : 'am';
+  h = h % 12 || 12;
+  return `${h}:${String(d.getMinutes()).padStart(2, '0')} ${ampm}`;
+}
+
+/* The link opens ten minutes before the slot, which is the only honest thing
+   to tell someone who books a call for later this hour. */
+export const LINK_OPENS_MINUTES = 10;
+
 export const CONSULT_SLOTS = [
   { d: 'Today',    t: '6:30 pm', note: 'Next available' },
   { d: 'Today',    t: '8:00 pm' },
@@ -2873,6 +2905,46 @@ export const KNOWN = {
 /* The known-door answer that means "it failed before" — the doc calls this
    person a disguised resolver, and catching them is the fork's whole job. */
 export const KNOWN_FAILED = /didn’t (work|help|change)/;
+
+/* ── THE CLINICIAN'S NO, AND WHERE IT LEAVES SOMEBODY ──
+   A safety flag no longer ends the known door by itself; a clinician reviews
+   it and decides. When the answer is no, the worst version of this moment is
+   a screen that says "you are not eligible" and stops. The patient came here
+   with a goal, and the goal has not gone away — only one route to it has.
+
+   So the no goes back into the conversation they were already having. The
+   thread is still there, the answers are still there, and the next message
+   says what changed and asks the only question that still matters. From that
+   answer on they are on the clinician-led door: a doctor and a coach work out
+   the route instead of the patient naming it.
+
+   `declineSaid` is the coach speaking, not the clinician: the clinician's own
+   words were said on the call. Written per goal so the alternative offered is
+   a real one rather than "something else". */
+export function declineSaid(goalKey, docShort = 'your doctor') {
+  const alt = {
+    fat: 'your weight',
+    test: 'your energy and hormones',
+    long: 'your long-term health',
+    post: 'your recovery',
+  }[goalKey] || 'your health';
+  return [
+    `I have just heard from ${docShort}.`,
+    ['That plan ', { b: 'is not the right one for you' },
+      ', and prescribing it would not have been safe.'],
+    `That does not close the door on ${alt}. There are other ways to work on `
+      + 'it, and they start with a doctor and a coach rather than with a '
+      + 'medication.',
+  ];
+}
+
+export const DECLINE_ASK = {
+  q: 'Would you like to look at the other options with them?',
+  o: [
+    { t: 'Yes, show me what else there is', go: 'resolve' },
+    { t: 'Not right now', go: 'stop' },
+  ],
+};
 
 /* ── DOOR B · WHAT THE AI WORKED OUT ──
    Three areas worth investigating per goal, shown on the Assess screen

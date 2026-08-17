@@ -3,7 +3,7 @@ import { Box, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import { COACH_OPENING, GOALS, KNOWN, KNOWN_FAILED, LIVE, USER,
-         coachOf, doorAskFor, leadFor } from '../data';
+         coachOf, doorAskFor, leadFor, declineSaid, DECLINE_ASK } from '../data';
 import { C, meter } from '../theme';
 
 /**
@@ -44,17 +44,41 @@ import { C, meter } from '../theme';
  * scheduling, week nine of a protocol — happens in one thread with one name on
  * it. See components/Practice.jsx.
  */
-export default function Coach({ onBack, onDone, preGoal = null }) {
+export default function Coach({ onBack, onDone, preGoal = null, resume = null }) {
   /* A goal chosen on the greeting screen means the user's opening line was that
      goal, not "hi" — and the first question is already behind us. Asking it again
      would restart a conversation that is meant to continue. */
   const seed = preGoal ? GOALS.find((g) => g.k === preGoal) : null;
   const start = seed ? 1 : 0;
 
-  const [i, setI] = useState(start);
-  const [a, setA] = useState(seed
-    ? { goal: seed.k, goal_label: seed.say || seed.t }
-    : {});
+  /* ── COMING BACK ──
+     A clinician has said no to the thing this patient asked for. Starting the
+     conversation again from "what would you like to work on" would make the
+     product forget a person it had just spent ten minutes with, and would ask
+     them to type their weight in a second time on the worst possible day.
+
+     So the thread is still theirs. Every answer stays, the questions are
+     behind them, and what arrives is one more message and one more question.
+     The door is rewritten to `resolve` on the way out, because the route they
+     named is the route that just closed. */
+  const back = resume && resume.qa ? resume.qa : null;
+
+  /* How many questions are already behind them: the shared opening, and on the
+     known door the three that follow it, minus the safety screen when the
+     intake ended at "it didn't work before". Counted here rather than read off
+     `asked` below, because the index has to be right on the very first render
+     or the conversation restarts itself. */
+  const answered = !back ? 0
+    : COACH_OPENING.length + (back.door === 'known'
+      ? (back.escAt === 'prior' ? 2 : 3)
+      : 0);
+
+  const [i, setI] = useState(back ? answered : start);
+  const [a, setA] = useState(back
+    ? { ...back }
+    : seed
+      ? { goal: seed.k, goal_label: seed.say || seed.t }
+      : {});
   const [typing, setTyping] = useState(true);
   /* A Valeo line is "settled" only once it has finished typing. The reply rail
      stays hidden until then — offering answers while someone is still mid-
@@ -74,7 +98,7 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
      ends there and hands over to a doctor. The list only ever changes at the
      index being answered, which is what keeps the replay below valid. */
   const kAsk = a.door === 'known' && goal ? KNOWN[goal.k] : null;
-  const steps = kAsk
+  const asked = kAsk
     ? [...COACH_OPENING,
        { k: 'wants', kind: 'wants', q: kAsk.wants.q },
        { k: 'prior', kind: 'choice', q: kAsk.prior.q, o: kAsk.prior.o },
@@ -82,6 +106,11 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
          : [{ k: 'flags', kind: 'choice', q: kAsk.flags.q, o: kAsk.flags.o }]),
       ]
     : COACH_OPENING;
+  /* Everything above is behind a returning patient. The clinician's no, and
+     the one question that follows from it, are all that is left to ask. */
+  const steps = back
+    ? [...asked, { k: 'alt', kind: 'alt', q: DECLINE_ASK.q }]
+    : asked;
 
   const step = steps[i];
   const done = i >= steps.length;
@@ -125,6 +154,11 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
   thread.push({ welcome: true, q: steps[start].q });
   for (let s = start; s < i; s += 1) {
     thread.push({ me: true, t: a[`${steps[s].k}_label`] });
+    /* The clinician's no lands between the last thing the patient said and
+       the question it raises, which is where it happened. */
+    if (back && s === asked.length - 1) {
+      thread.push({ paras: declineSaid(a.goal, lead ? lead.short : 'your doctor') });
+    }
     if (s + 1 < steps.length) thread.push({ t: steps[s + 1].q });
   }
 
@@ -213,11 +247,15 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
           }
           /* only the newest line types; everything above it has already been said */
           const last = n === thread.length - 1;
+          const paras = m.paras || [m.t];
           return (
             <Bubble key={n}>
               {last
-                ? <Typed paras={[m.t]} skip={skip} feed={feed} onDone={() => setReady(true)} />
-                : <P>{m.t}</P>}
+                ? <Typed paras={paras} skip={skip} feed={feed} onDone={() => setReady(true)} />
+                : paras.map((x, k) => (
+                  <P key={k}>{typeof x === 'string' ? x : x.map((y) => (
+                    typeof y === 'string' ? y : y.b)).join('')}</P>
+                ))}
             </Bubble>
           );
         })}
@@ -308,6 +346,17 @@ export default function Coach({ onBack, onDone, preGoal = null }) {
               }));
               answer('wants', o.t);
             }} />
+        ) : step.kind === 'alt' ? (
+          /* Two answers, and neither of them is "eligible". Yes hands the
+             episode to the doctor-and-coach route; not now leaves without
+             asking a person who has just been told no to keep going. */
+          <Suggest opts={DECLINE_ASK.o.map((o) => ({ k: o.t, t: o.t, go: o.go }))}
+            onPick={(o) => onDone({
+              ...a, alt: o.go, declined: true,
+              door: o.go === 'resolve' ? 'resolve' : a.door,
+              escalated: false, escAt: null,
+              wants: null, wantsPkey: null, wantsShort: null,
+            })} />
         ) : step.kind === 'choice' ? (
           <Suggest opts={step.o.map((o) => ({ k: o, t: o }))}
             onPick={(o) => {

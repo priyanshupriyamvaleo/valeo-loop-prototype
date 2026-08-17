@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import { CONSULT_SLOTS, BLOOD_SLOTS, CONSULT_FEE, BLOOD_FEE, slotsByDay } from '../data';
+import { CONSULT_SLOTS, BLOOD_SLOTS, CONSULT_FEE, BLOOD_FEE, slotsByDay,
+         immediateSlots, LINK_OPENS_MINUTES } from '../data';
 import PaySheet from '../components/PaySheet';
 import { C } from '../theme';
 
@@ -30,8 +31,12 @@ import { C } from '../theme';
  * Review mode is kept. Closing a protocol books the same way it opened, and the
  * booking experience is the part that should not vary.
  */
-export default function Consult({ onBack, onBooked, mode = 'start' }) {
+export default function Consult({ onBack, onBooked, mode = 'start', doc = null }) {
   const [slot, setSlot] = useState(0);
+  /* Held still for as long as the screen is open. Times that slide forward
+     while somebody is reading them are the reason booking screens feel like
+     they are arguing with you. */
+  const [soon] = useState(() => immediateSlots());
   /* Payment is an ACTION, not a destination.
      There was a review screen between this and the booking, and it asked the
      user to re-read the time, price and format they had just chosen. Airbnb,
@@ -61,6 +66,15 @@ export default function Consult({ onBack, onBooked, mode = 'start' }) {
     review: { sub: 'Pick a time to go through your results together.',
               foot: '30-minute video consultation', price: 'Included',
               cta: 'Confirm', pays: false, list: CONSULT_SLOTS },
+    /* The consultation itself: the next hour, nothing to pay, and no queue to
+       wait in. The three times are 15 minutes apart because a real rota is
+       what makes same-day care believable — "any second now" is not a time. */
+    now:    { sub: doc
+                ? `${doc.short} has time in the next hour. Nothing is prescribed until you have spoken.`
+                : 'A doctor has time in the next hour. Nothing is prescribed until you have spoken.',
+              foot: `10-minute video consultation · link opens ${LINK_OPENS_MINUTES} minutes before`,
+              price: 'Included',
+              cta: 'Confirm my consultation', pays: false, list: soon },
   }[mode] || {};
   const days = slotsByDay(M.list);
   const picked = M.list[slot] || M.list[0];
@@ -75,7 +89,7 @@ export default function Consult({ onBack, onBooked, mode = 'start' }) {
 
       <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.75, pt: 1.5, pb: 2 }}>
         <Typography variant="h2" sx={{ color: C.deep }}>
-          Choose a time
+          {mode === 'now' ? 'Pick a time' : 'Choose a time'}
         </Typography>
         <Typography sx={{ fontSize: 14.5, color: C.ink2, mt: 1, lineHeight: 1.5 }}>
           {M.sub}
@@ -85,7 +99,7 @@ export default function Consult({ onBack, onBooked, mode = 'start' }) {
           fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase',
           color: C.ink2, mt: 4, mb: 2,
         }}>
-          Available times
+          {mode === 'now' ? 'The next hour' : 'Available times'}
         </Typography>
 
         <Stack spacing={2.75}>
@@ -141,14 +155,14 @@ export default function Consult({ onBack, onBooked, mode = 'start' }) {
         </Stack>
 
         <Button fullWidth variant="contained" color="secondary"
-          onClick={() => (M.pays ? setPay(true) : onBooked(`${picked.d} ${picked.t}`))}>
+          onClick={() => (M.pays ? setPay(true) : onBooked(`${picked.d} ${picked.t}`, picked))}>
           {M.cta}
         </Button>
       </Box>
 
       <PaySheet open={pay} slot={picked} item={M.item} fee={M.fee}
         onClose={() => setPay(false)}
-        onDone={() => onBooked(`${picked.d} ${picked.t}`)} />
+        onDone={() => onBooked(`${picked.d} ${picked.t}`, picked)} />
     </Box>
   );
 }

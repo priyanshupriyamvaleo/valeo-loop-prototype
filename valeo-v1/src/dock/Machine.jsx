@@ -31,7 +31,7 @@ const LANE_STYLE = {
 /* The graph's reading order, per lane. */
 const ORDER = {
   trunk: ['NEW', 'INTAKE'],
-  known: ['K1_SAFETY', 'K2_PLAN', 'K4_REVIEW', 'K4A_CALL'],
+  known: ['K1_SAFETY', 'K1B_REVIEW', 'K2_PLAN', 'K4_REVIEW', 'K4A_CALL'],
   resolve: ['D1_AI', 'D2_CONSULT', 'D3_RECOMMENDED', 'D4_PAYMENT', 'D5_LABS', 'D6_REVIEW'],
   merged: ['M1_FULFILMENT', 'M2_TREATMENT'],
   post: ['P1_RETEST', 'P2_RESULTS', 'P3_PROOF', 'P4_LOOP'],
@@ -39,7 +39,7 @@ const ORDER = {
 
 /* Which states are behind the current one, for the "done" fill. */
 const SEQ = {
-  known: ['NEW', 'INTAKE', 'K1_SAFETY', 'K2_PLAN', 'K4_REVIEW', 'K4A_CALL',
+  known: ['NEW', 'INTAKE', 'K1_SAFETY', 'K1B_REVIEW', 'K2_PLAN', 'K4_REVIEW', 'K4A_CALL',
           'M1_FULFILMENT', 'M2_TREATMENT', 'P1_RETEST', 'P2_RESULTS', 'P3_PROOF', 'P4_LOOP'],
   resolve: ['NEW', 'INTAKE', 'D1_AI', 'D2_CONSULT', 'D3_RECOMMENDED', 'D4_PAYMENT',
             'D5_LABS', 'D6_REVIEW', 'M1_FULFILMENT', 'M2_TREATMENT',

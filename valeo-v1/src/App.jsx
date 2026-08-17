@@ -28,7 +28,7 @@ import MachinePanel from './dock/Machine';
 import { screenOf } from './lib/screen';
 import { TRANSITIONS, canFire, episodesOf } from './machine';
 import { PROTOCOLS, DEMO_QA, GOALS, focusRun, activeRuns, synthObserved,
-         PHASES_APP, phaseHas, leadFor, doorOf } from './data';
+         PHASES_APP, phaseHas, leadFor, doorOf, coachOf } from './data';
 
 const INIT = {
   qa: {},          /* answers — the single source of truth for the twin */
@@ -354,14 +354,17 @@ export default function App() {
      reuse the same screen — one booking experience, three occasions — so the
      mode says what to do with the slot that comes back. */
   const [booking, setBooking] = useState('consult');
-  /* Demo only. The fallback is the state that matters most, and a reviewer
-     would never reach it because the happy path always connects. The rail
-     forces it. */
-  const [matchFail, setMatchFail] = useState(false);
   /* The consultation screen serves two occasions: the door-B instant consult
      and the door-A checkpoint call. Same room, different exit — a checkpoint
      call ends by confirming the order, not by writing a care brief. */
   const [ckCall, setCkCall] = useState(false);
+  /* The slot the consultation was booked into, and whether the call is the
+     safety review that stands between a flagged answer and the plan. */
+  const [slot, setSlot] = useState(null);
+  const [review, setReview] = useState(false);
+  /* The clinician's no, carried back into the chat the patient was already
+     having rather than shown on a screen of its own. */
+  const [resume, setResume] = useState(null);
 
   /* ── THE DOCK ──
      Controls (the demo rail), Clinic (Jamie's queues) and Machine (the state
@@ -456,22 +459,40 @@ export default function App() {
       ...a,
     } });
     setMatched(a.goal);
+    setResume(null);
     if (a.door === 'known' && !a.escalated) {
       setDetail(a.wantsPkey || leadFor(a.goal));
       setFlow('buy');
+    } else if (a.door === 'known' && a.escAt === 'flags') {
+      /* ── A SAFETY ANSWER IS NOT A CHANGE OF DOOR ──
+         A red flag used to rewrite the whole episode: the patient who arrived
+         knowing what they wanted was moved onto the twelve-week discovery
+         route, blood test and all, because of one tick box. That is a heavier
+         answer than the question deserves, and it reads as a punishment for
+         telling the truth.
+
+         What a flag actually needs is a clinician to look at it. So the plan
+         stays exactly where it was and a review is booked in front of it: the
+         clinician approves and the patient carries on to the plan they came
+         for, or declines, and only then does the route change. */
+      const pk = a.wantsPkey || leadFor(a.goal);
+      setDetail(pk); setMeetKey(pk);
+      setReview(true); setBooking('review-call'); setFlow('consult');
     } else {
       setMeetKey(leadFor(a.goal));
       setFlow('assess');
     }
   };
 
-  /* Joining the live room, from the AI summary or from Meet. */
+  /* Picking a time, from the AI summary or from Meet. There is no live room
+     to join any more: every consultation is booked into the next hour and
+     held until it comes round. */
   const joinConsult = () => {
     const pk = meetKey || leadFor(st.qa.goal);
     setDetail(pk); setMeetKey(pk);
-    setMatchFail(false);
+    setReview(false); setBooking('consult');
     dispatch({ type: 'log', event: 'CONSULT_JOINED', actor: 'patient', protocol: pk });
-    setFlow('consultation');
+    setFlow('consult');
   };
 
   /* The consultation ends: door B writes the brief; a checkpoint call ends
@@ -486,6 +507,31 @@ export default function App() {
     dispatch({ type: 'checkpoint', protocol: pk, v: 'approved' });
     dispatch({ type: 'activate', protocol: pk });
     if (ckCall) { setCkCall(false); setFlow('app'); setTab('today'); }
+  };
+
+  /* ── THE SAFETY REVIEW'S TWO ENDINGS ──
+     Approved: the flag is cleared and the patient carries on to the plan they
+     came for. Nothing about the plan changed; a clinician just read the answer
+     that raised the question.
+
+     Declined: nothing is refused by a screen. The clinician's decision goes
+     back into the conversation the patient was already having, with every
+     answer they gave still in it, and the route ahead becomes the one a doctor
+     and a coach work out together. */
+  const approveReview = () => {
+    dispatch({ type: 'answers', qa: { escalated: false, escAt: null, reviewed: 'approved' } });
+    dispatch({ type: 'log', event: 'SAFETY_APPROVED', actor: 'clinician', protocol: detail });
+    setReview(false); setSlot(null);
+    setDetail(st.qa.wantsPkey || detail || leadFor(st.qa.goal));
+    setFlow('buy');
+  };
+
+  const declineReview = () => {
+    dispatch({ type: 'answers', qa: { reviewed: 'declined' } });
+    dispatch({ type: 'log', event: 'SAFETY_DECLINED', actor: 'clinician', protocol: detail });
+    setReview(false); setSlot(null);
+    setResume({ qa: { ...st.qa } });
+    setFlow('coach');
   };
 
   const openPlan = (pk) => {
@@ -510,16 +556,20 @@ export default function App() {
     dispatch({ type: 'activate', protocol: pk });
   };
   const requestCall = (pk) => dispatch({ type: 'checkpoint', protocol: pk, v: 'call' });
+  /* The doctor's quick call before signing an order. It is a consultation, so
+     it is booked like every other one rather than dialled. */
   const startCheckpointCall = (pk) => {
     dispatch({ type: 'log', event: 'CALL_STARTED', actor: 'patient', protocol: pk });
-    setDetail(pk); setCkCall(true); setMatchFail(false); setFlow('consultation');
+    setDetail(pk); setMeetKey(pk); setCkCall(true); setReview(false);
+    setBooking('consult'); setFlow('consult');
   };
 
   /* Everything the machine's fire() functions may touch. */
-  const ui = { flow, detail, ckCall, tab };
+  const ui = { flow, detail, ckCall, review, tab };
   const ctx = {
-    dispatch, setFlow, setTab, setDetail, setCkCall, setMatchFail,
+    dispatch, setFlow, setTab, setDetail, setCkCall,
     completeIntake, joinConsult, endConsult, approveAfterCall, openPlan,
+    approveReview, declineReview,
     completePayment, approveOrder, requestCall, startCheckpointCall,
     /* SIM intake opens an episode in a category with no run in flight —
        one episode per category, like the spec's Episode rows. The prototype
@@ -614,9 +664,12 @@ export default function App() {
   }
   let steps = (f && NEXT[f.status]) || [];
   /* While the consultation screen is open there is no run yet, so the rail has
-     nothing to advance. This is the one control it needs there. */
-  if (flow === 'consultation' && !matchFail) {
-    steps = [{ t: 'No clinician free', run: () => setMatchFail(true) }];
+     nothing to advance. The control it needs there is the clinician's other
+     answer: "No clinician free" belonged to a connect that no longer exists,
+     and the safety review's no is the outcome a reviewer would otherwise never
+     reach. */
+  if (flow === 'consultation' && review) {
+    steps = [{ t: 'Clinician cannot approve', run: () => declineReview() }];
   }
 
   const dark = false;
@@ -636,8 +689,11 @@ export default function App() {
     /* The chat's exit is the same gate the machine's SIM levers use —
        completeIntake routes the fork, and escalated answers go through the
        AI summary to the doctor, exactly as the spec's D1 defines. */
-    <Coach preGoal={preGoal} onBack={() => setFlow('between')}
-      onDone={completeIntake} />
+    <Coach preGoal={preGoal} resume={resume}
+      onBack={() => setFlow(resume ? 'home' : 'between')}
+      onDone={(a) => (a.alt === 'stop'
+        ? (setResume(null), setFlow('home'))
+        : completeIntake(a))} />
   );
   else if (flow === 'assess') view = (
     <Assess goal={matched || st.qa.goal} pKey={meetKey}
@@ -669,12 +725,15 @@ export default function App() {
       onBook={joinConsult} />
   );
   else if (flow === 'consultation') view = (
-    /* One room, two exits: a checkpoint call ends by confirming the paid
-       order (no brief, fulfilment starts); the instant consult ends by
-       creating the run and writing the brief. Both exits are the same
-       helpers the clinic and the machine fire. */
-    <Consultation pKey={detail} failed={matchFail}
-      onDone={() => (ckCall ? approveAfterCall(detail) : endConsult())} />
+    /* One room, three exits. A checkpoint call confirms the paid order. A
+       safety review either clears the flag and opens the plan, or does not
+       and hands the episode back to the chat. Everything else writes the care
+       brief. All of them are the same helpers the clinic and the machine
+       fire. */
+    <Consultation pKey={detail} slot={slot} review={review}
+      onDone={() => (review ? approveReview()
+        : ckCall ? approveAfterCall(detail) : endConsult())}
+      onDecline={declineReview} />
   );
   else if (flow === 'brief') view = (
     <Brief pKey={detail} st={st}
@@ -693,16 +752,28 @@ export default function App() {
       }} />
   );
   else if (flow === 'consult') view = (
-    <Consult mode={booking === 'consult' ? 'start' : booking === 'bloods' ? 'bloods' : 'review'}
-      onBack={() => { if (booking === 'consult') return setFlow('meet');
-        setFlow('app'); return setTab('today'); }}
-      onBooked={(slot) => {
+    <Consult
+      mode={booking === 'consult' || booking === 'review-call' ? 'now'
+        : booking === 'bloods' ? 'bloods' : 'review'}
+      doc={coachOf(meetKey || detail)}
+      onBack={() => {
+        if (booking === 'review-call') return setFlow('coach');
+        if (booking === 'consult' && !ckCall) return setFlow('meet');
+        setFlow('app'); return setTab('today');
+      }}
+      onBooked={(label, picked) => {
         if (booking === 'bloods') {
-          dispatch({ type: 'bookBloods', protocol: detail, slot });
+          dispatch({ type: 'bookBloods', protocol: detail, slot: label });
           setFlow('app'); setTab('today');
         } else if (booking === 'follow') {
-          dispatch({ type: 'bookFollow', protocol: detail, slot });
+          dispatch({ type: 'bookFollow', protocol: detail, slot: label });
           setFlow('app'); setTab('today');
+        } else {
+          /* The consultation itself. Booked, then held until the time comes. */
+          const pk = meetKey || detail || leadFor(st.qa.goal);
+          setDetail(pk); setMeetKey(pk); setSlot(picked);
+          dispatch({ type: 'log', event: 'CONSULT_BOOKED', actor: 'patient', protocol: pk });
+          setFlow('consultation');
         }
       }} />
   );
