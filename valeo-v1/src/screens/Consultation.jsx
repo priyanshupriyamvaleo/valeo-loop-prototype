@@ -3,9 +3,7 @@ import { Box, Stack, Typography } from '@mui/material';
 import MicIcon from '@mui/icons-material/MicNone';
 import VideocamIcon from '@mui/icons-material/VideocamOutlined';
 import CallEndIcon from '@mui/icons-material/CallEnd';
-import CheckIcon from '@mui/icons-material/Check';
-import { CALL_TOPICS, LINK_OPENS_MINUTES, USER,
-         coachOf, givenNameOf, onCallNow } from '../data';
+import { CALL_TOPICS, USER, coachOf, givenNameOf, onCallNow } from '../data';
 import { C } from '../theme';
 
 /**
@@ -17,16 +15,13 @@ import { C } from '../theme';
  * marketplace, and it failed in the one way a clinic must not — by having
  * nobody there.
  *
- * A time replaces all of it. The slot was taken on the screen before this one,
- * from the next hour, and this screen is what the patient sees until it comes
- * round: who they are seeing, when, and the one honest fact about the link,
- * which is that it opens ten minutes early. Nothing pulses. There is nothing
- * to wait through, because waiting is no longer the product.
+ * A time replaces all of it. The slot is taken from the next hour on the
+ * booking screen, and the appointment then sits on Today with every other
+ * appointment this product makes. Nothing pulses and there is nothing to wait
+ * through, because waiting is no longer the product.
  *
- * ── CREAM, THEN DARK ──
- * The held screen is warm cream like every screen around it. The call itself
- * stays dark, which is correct for video and is still the only dark screen in
- * the flow.
+ * What is left here is the room itself, which stays dark: correct for video,
+ * and still the only dark screen in the flow.
  *
  * ── TWO ENDINGS, BOTH THE CLINICIAN'S ──
  * A consultation that can only end in yes is a formality with a camera on it.
@@ -34,13 +29,14 @@ import { C } from '../theme';
  * no is not a dead end and never appears on this screen, because it belongs in
  * the conversation the patient was already having.
  */
-export default function Consultation({ pKey, onDone, onDecline, slot, review }) {
+export default function Consultation({ pKey, onDone, onDecline, review }) {
   const c = coachOf(pKey);
   const doc = onCallNow(pKey);
   const first = givenNameOf(doc);
 
-  /* held → the slot is booked and the link is not open yet. call → in it. */
-  const [phase, setPhase] = useState(slot ? 'held' : 'call');
+  /* The room, and only the room. The booking and the wait for it live on
+     Today, where every other appointment in this product lives. */
+  const [phase] = useState('call');
   const [secs, setSecs] = useState(0);
   const [covered, setCovered] = useState(0);
   const timer = useRef(null);
@@ -58,95 +54,6 @@ export default function Consultation({ pKey, onDone, onDecline, slot, review }) 
   }, [phase, covered]);
 
   if (!c) return null;
-
-  const face = (size, ring) => (
-    <Box sx={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      {ring && [0, 1].map((n) => (
-        <Box key={n} sx={{
-          position: 'absolute', inset: -6, borderRadius: '50%',
-          border: '1.5px solid rgba(224,164,0,.45)',
-          animation: 'halo 3s cubic-bezier(.2,.7,.3,1) infinite',
-          animationDelay: `${n * 1.5}s`,
-          '@keyframes halo': {
-            '0%': { transform: 'scale(.86)', opacity: 0 },
-            '30%': { opacity: .75 },
-            '100%': { transform: 'scale(1.14)', opacity: 0 },
-          },
-        }} />
-      ))}
-      <Box sx={{
-        width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden',
-        border: `2.5px solid ${ring ? 'rgba(224,164,0,.55)' : 'rgba(39,153,91,.75)'}`,
-        background: `linear-gradient(155deg,${doc.tone} 0%,rgba(11,21,34,.7) 145%)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        {doc.img
-          ? <Box component="img" src={doc.img} alt="" sx={{
-              width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
-            }} />
-          : <Typography sx={{
-              fontFamily: '"Fraunces", serif', fontSize: size * 0.3,
-              color: 'rgba(255,255,255,.9)',
-            }}>{doc.mono}</Typography>}
-      </Box>
-    </Box>
-  );
-
-  /* ── BOOKED, AND NOT YET TIME ───────────────────────────────────── */
-  if (phase === 'held') {
-    return (
-      <Box sx={{
-        height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center',
-        px: 3.25, background: `linear-gradient(180deg,#FFF6E4 0%,${C.cream} 26%)`,
-      }}>
-        <Box sx={{
-          width: 52, height: 52, borderRadius: '50%', bgcolor: C.greenSoft,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3,
-        }}><CheckIcon sx={{ fontSize: 26, color: C.green }} /></Box>
-
-        <Typography variant="h1" sx={{ fontSize: 26, lineHeight: 1.2, color: C.deep }}>
-          You’re booked for {slot.t}.
-        </Typography>
-
-        <Stack direction="row" spacing={1.75} sx={{
-          alignItems: 'center', mt: 3.25, px: 2, py: 2.25, borderRadius: '18px',
-          bgcolor: '#fff', boxShadow: '0 3px 16px -11px rgba(27,57,91,.45)',
-        }}>
-          {face(46, false)}
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: 15, fontWeight: 700, lineHeight: 1.35, color: C.deep }}>
-              {doc.name}
-            </Typography>
-            <Typography sx={{ fontSize: 12.5, color: C.ink2, mt: 0.4, lineHeight: 1.45 }}>
-              {doc.role} · {doc.reg}
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Typography sx={{ fontSize: 14, color: C.ink2, mt: 2.75, lineHeight: 1.55 }}>
-          {review
-            ? `Your link opens ${LINK_OPENS_MINUTES} minutes before. ${doc.short} has `
-              + 'your answers already and will go through the safety question with you.'
-            : `Your link opens ${LINK_OPENS_MINUTES} minutes before. We will send a `
-              + 'WhatsApp message when it does.'}
-        </Typography>
-
-        {/* The demo cannot wait half an hour, and pretending otherwise would
-            make this screen impossible to review. The label says what the
-            control really is. */}
-        <Box onClick={() => setPhase('call')} sx={{
-          mt: 3.5, py: 1.6, borderRadius: '999px', textAlign: 'center', cursor: 'pointer',
-          bgcolor: C.deep, color: '#fff', fontSize: 15, fontWeight: 700,
-        }}>Join now</Box>
-
-        <Typography sx={{
-          fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1.5, lineHeight: 1.5,
-        }}>
-          Nothing is charged, and nothing is prescribed until you have spoken.
-        </Typography>
-      </Box>
-    );
-  }
 
   /* ── THE CALL ─────────────────────────────────────────────────────── */
   const done = covered >= CALL_TOPICS.length;

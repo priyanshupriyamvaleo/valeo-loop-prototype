@@ -30,7 +30,7 @@ import { C, meter } from '../theme';
  *   running  → log it, watch it move
  *   verdict  → retest day
  */
-export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults,
+export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults, onJoinConsult,
   onBookBloods, onBookFollow, onBrief, onCheckpointCall,
                                 onFocus }) {
   const [coach, setCoach] = useState(false);
@@ -72,6 +72,46 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
       })}
     </Stack>
   ) : null;
+
+  /* ── A BOOKED CONSULTATION IS A NEXT STEP ──
+     There is no run yet, so this has to be resolved before the empty state
+     gets a chance to claim the screen. */
+  if (!rx && st.qa.consultSlot) {
+    const who = coachOf(pKey || st.qa.wantsPkey) || DOCTOR;
+    return (
+      <Shell coach={coach} setCoach={setCoach} st={st} pKey={pKey} dispatch={dispatch}>
+        <Head sub="Tuesday 28 July" title="Your next step"
+              onTwin={() => setCoach(true)} dot={unread} />
+        <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
+          <Box sx={{
+            px: 2.25, py: 2.25, borderRadius: '20px', bgcolor: '#fff',
+            border: `1.5px solid ${C.line}`,
+          }}>
+            <Typography sx={{
+              fontSize: 9.5, fontWeight: 800, letterSpacing: '.14em',
+              textTransform: 'uppercase', color: C.yellowDeep,
+            }}>Consultation booked</Typography>
+            <Typography sx={{
+              fontFamily: '"Fraunces", serif', fontSize: 22, fontWeight: 600,
+              lineHeight: 1.2, color: C.deep, mt: 0.75,
+            }}>Today at {st.qa.consultSlot}.</Typography>
+            <Typography sx={{ fontSize: 13.5, lineHeight: 1.6, color: C.ink2, mt: 1 }}>
+              {st.qa.consultReview
+                ? `${who.short} will go through your safety answer with you. `
+                  + 'Your link opens ten minutes before, and nothing is prescribed '
+                  + 'until you have spoken.'
+                : `Ten minutes with ${who.short}, included. Your link opens ten `
+                  + 'minutes before.'}
+            </Typography>
+            <Box onClick={onJoinConsult} sx={{
+              mt: 2, py: 1.4, borderRadius: '999px', textAlign: 'center', cursor: 'pointer',
+              bgcolor: C.deep, color: '#fff', fontSize: 14.5, fontWeight: 700,
+            }}>Join the call</Box>
+          </Box>
+        </Box>
+      </Shell>
+    );
+  }
 
   /* ── nothing committed ── */
   if (!rx) {

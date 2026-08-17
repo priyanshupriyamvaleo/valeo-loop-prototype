@@ -174,11 +174,24 @@ function reducer(s, a) {
        it earlier, and patchRun deliberately no-ops on runs that don't exist.
        It lands at 'programme' like every paid run, but with the checkpoint
        pending: nothing is dispensed until a doctor signs the order off. */
+    /* The consultation lives on `qa`, not on a run: at this point in the
+       funnel there is nothing bought and no run to hang it off. */
+    case 'bookConsult':
+      return { ...s, qa: { ...s.qa,
+        consultSlot: a.slot ? a.slot.t : null,
+        consultIn: a.slot ? a.slot.mins : null,
+        consultReview: !!a.review } };
+
     case 'orderPlaced':
       return {
         ...s,
         runs: { ...s.runs, [a.protocol]: {
-          status: 'programme', door: 'known', checkpoint: 'pending' } },
+          status: 'programme', door: 'known',
+          /* A clinician who has already sat on a call with this patient does
+             not need to review the same order in a queue afterwards. When the
+             safety review approved it, the order is signed at birth and goes
+             straight to fulfilment. */
+          checkpoint: a.reviewed ? 'approved' : 'pending' } },
         focus: s.focus || a.protocol,
       };
     /* 'approved' clears the gate; 'call' is the escalation beat — the doctor
@@ -543,7 +556,9 @@ export default function App() {
      phone's sheet or the machine SIM-fires it. */
   const completePayment = () => {
     if (doorOf(st.qa) === 'known' && !st.runs[detail]) {
-      dispatch({ type: 'orderPlaced', protocol: detail });
+      const seen = st.qa.reviewed === 'approved';
+      dispatch({ type: 'orderPlaced', protocol: detail, reviewed: seen });
+      if (seen) dispatch({ type: 'activate', protocol: detail });
     } else {
       dispatch({ type: 'programme', protocol: detail });
     }
@@ -730,7 +745,7 @@ export default function App() {
        and hands the episode back to the chat. Everything else writes the care
        brief. All of them are the same helpers the clinic and the machine
        fire. */
-    <Consultation pKey={detail} slot={slot} review={review}
+    <Consultation pKey={detail} review={review}
       onDone={() => (review ? approveReview()
         : ckCall ? approveAfterCall(detail) : endConsult())}
       onDecline={declineReview} />
@@ -769,11 +784,14 @@ export default function App() {
           dispatch({ type: 'bookFollow', protocol: detail, slot: label });
           setFlow('app'); setTab('today');
         } else {
-          /* The consultation itself. Booked, then held until the time comes. */
+          /* The consultation itself. Booked, and then the patient goes back to
+             Today, which is where every other booking in this product leaves
+             them. The call is reached from the card there when it is time. */
           const pk = meetKey || detail || leadFor(st.qa.goal);
           setDetail(pk); setMeetKey(pk); setSlot(picked);
+          dispatch({ type: 'bookConsult', protocol: pk, slot: picked, review });
           dispatch({ type: 'log', event: 'CONSULT_BOOKED', actor: 'patient', protocol: pk });
-          setFlow('consultation');
+          setFlow('app'); setTab('today');
         }
       }} />
   );
@@ -825,6 +843,10 @@ export default function App() {
                 )}
                 {tab === 'today' && (
                   <Today st={st} dispatch={dispatch} onGo={setTab}
+                         onJoinConsult={() => {
+                           dispatch({ type: 'answers', qa: { consultSlot: null } });
+                           setFlow('consultation');
+                         }}
                          onBrief={(pk) => { setDetail(pk); setFlow('brief'); }}
                          onCheckpointCall={startCheckpointCall}
                          onBookBloods={(pk) => {
