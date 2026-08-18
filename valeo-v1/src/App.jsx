@@ -53,6 +53,73 @@ const INIT = {
   log: [],
 };
 
+/* ══════════════════════════════════════════════════════════════════════════
+   THE AGENT-LED DEMO LINKS — ?demo=short and ?demo=long
+
+   In this demo the patient phones in and a Valeo agent asks the onboarding
+   questions on the call. So the app opens AFTER the intake, on the screen the
+   agent sends them to, with the answers already in the store.
+
+   Two links, ONE build. Two repositories of the same prototype diverge inside
+   a week, and the investor then looks at whichever one went stale. The seeded
+   answers below are the exact keys and values the intake chat writes at the
+   same point, which is why every screen downstream behaves as it always did:
+   nothing here is a special case, it is the same store arriving early.
+
+   ?demo=short  weight loss, known door, clean  → the monthly plan
+   ?demo=long   longevity, clinician-led door   → the assessment, then the doctor
+   ?dock=1      puts our own panels back on a demo link
+   ══════════════════════════════════════════════════════════════════════════ */
+const QS = new URLSearchParams(window.location.search);
+const DEMO = ['short', 'long'].includes(QS.get('demo')) ? QS.get('demo') : null;
+/* The feedback rail and the dock are internal furniture. An investor link
+   shows the phone alone. */
+const BARE = Boolean(DEMO) && QS.get('dock') !== '1';
+
+/* The store as the call left it. Named for the call, not for the demo: the
+   file already imports a DEMO_QA, which is the twin-era fixture. */
+const CALL_QA = {
+  short: {
+    goal: 'fat', goal_label: 'Lose weight',
+    sub: '10–20 kg to lose', sub_label: '10–20 kg to lose',
+    sex: 'Male', sex_label: 'Male',
+    height: 175, height_label: '175 cm',
+    weight: 96, weight_label: '96 kg',
+    door: 'known', door_label: 'I want to start GLP-1 treatment',
+    wants: 'GLP-1 weekly injection', wants_label: 'GLP-1 weekly injection',
+    wantsPkey: 'P_WEIGHT', wantsShort: 'GLP-1',
+    prior: 'Never', prior_label: 'Never',
+    flags: 'None of these', flags_label: 'None of these',
+    escalated: false, escAt: null,
+  },
+  long: {
+    goal: 'long', goal_label: 'Live longer',
+    sub: 'Heart and metabolic health', sub_label: 'Heart and metabolic health',
+    sex: 'Male', sex_label: 'Male',
+    height: 175, height_label: '175 cm',
+    weight: 96, weight_label: '96 kg',
+    door: 'resolve', door_label: 'I’m not sure what’s right for me',
+    escalated: false, escAt: null,
+  },
+};
+
+/* The events the call itself produced, so the Machine graph and the Clinic
+   queue agree with the screen the link opened on. */
+const DEMO_LOG = (d) => [
+  { seq: 1, pKey: null, event: 'EPISODE_CREATED', actor: 'system' },
+  { seq: 2, pKey: null, event: 'INTAKE_COMPLETED', actor: 'agent' },
+  { seq: 3, pKey: null, actor: 'patient',
+    event: `INTENT_CHOSEN · ${d === 'short' ? 'KNOWN' : 'DIAGNOSIS'}` },
+];
+
+/* Where each link lands, and what that screen needs in hand to render. */
+const DEMO_ENTRY = {
+  short: { flow: 'buy', detail: 'P_WEIGHT', matched: 'fat', meetKey: null },
+  long: { flow: 'assess', detail: null, matched: 'long', meetKey: leadFor('long') },
+};
+const ENTRY = DEMO ? DEMO_ENTRY[DEMO] : null;
+const DEMO_INIT = DEMO ? { ...INIT, qa: CALL_QA[DEMO], log: DEMO_LOG(DEMO) } : INIT;
+
 /* ── EVERY ACTION THAT IS AN EVENT, NAMED AS ONE ──
    The reducer wrapper below appends a log entry for each of these, which is
    what keeps the ticker honest across ALL surfaces: the phone, the clinic
@@ -361,7 +428,7 @@ function Phone({ children }) {
 }
 
 export default function App() {
-  const [st, dispatch] = useReducer(withLog(reducer), INIT);
+  const [st, dispatch] = useReducer(withLog(reducer), DEMO_INIT);
   /* `flow` is the linear onboarding; `tab` is the app proper. */
   /* ── PHASE ──
      Three demos from one build. ?phase=1|2|3, default 1, switchable in the rail.
@@ -387,16 +454,18 @@ export default function App() {
   /* Every phase starts on Valeo's home screen, because that is where this
      actually lands: protocols are a module inside an app that already exists,
      and a demo that opens on our own intro screen quietly assumes otherwise. */
-  const [flow, setFlow] = useState('home');
+  /* A demo link opens on its own screen rather than on Valeo's home, because
+     on that link the greeting and the intake already happened on the phone. */
+  const [flow, setFlow] = useState(ENTRY ? ENTRY.flow : 'home');
   const [tab, setTab] = useState(home);
   const [reveal, setReveal] = useState(null);
   /* The goal the coach established, which is what Find answers with. Held here
      rather than in Find so returning to the tab later still shows the match. */
-  const [matched, setMatched] = useState(null);
+  const [matched, setMatched] = useState(ENTRY ? ENTRY.matched : null);
   /* a goal answered on the greeting screen, before the coach even opens */
   const [preGoal, setPreGoal] = useState(null);
   /* the clinician being introduced */
-  const [meetKey, setMeetKey] = useState(null);
+  const [meetKey, setMeetKey] = useState(ENTRY ? ENTRY.meetKey : null);
   /* Which booking the scheduler is currently serving. Bloods and the follow-up
      reuse the same screen — one booking experience, three occasions — so the
      mode says what to do with the slot that comes back. */
@@ -464,7 +533,7 @@ export default function App() {
   };
 
   /* ── protocol lifecycle ── */
-  const [detail, setDetail] = useState(null);
+  const [detail, setDetail] = useState(ENTRY ? ENTRY.detail : null);
   /* the protocol whose end-of-run review is being booked */
   const [reviewKey, setReviewKey] = useState(null);
   /* 'plan' | 'results' — which face of a finished protocol to open on */
@@ -829,7 +898,9 @@ export default function App() {
   );
   else if (flow === 'assess') view = (
     <Assess goal={matched || st.qa.goal} pKey={meetKey}
-      onBack={() => setFlow('coach')}
+      /* On the long demo link this IS the first screen, so back has nowhere
+         to go: the chat it would open never happened in that demo. */
+      onBack={() => (DEMO === 'long' ? null : setFlow('coach'))}
       onDone={() => setFlow('meet')} />
   );
   else if (flow === 'intro') view = (
@@ -924,6 +995,9 @@ export default function App() {
       wantsShort={doorOf(st.qa) === 'known' ? (st.qa.wantsShort || null) : null}
       onBack={() => {
         if (renewing) { setRenewing(false); setFlow('app'); return setTab('programs'); }
+        /* Same reason as Assess: on the short demo link the plan is where the
+           agent's message drops the patient, so there is no screen behind it. */
+        if (DEMO === 'short') return null;
         return setFlow(doorOf(st.qa) === 'known' ? 'between' : 'detail');
       }}
       onPaid={completePayment} />
@@ -949,7 +1023,7 @@ export default function App() {
         {/* Reviewers on the left, demo controls on the right, the product in
             the middle. The panel reads the same state the app renders from, so
             a comment always lands on the screen the reviewer was looking at. */}
-        <Feedback screen={screenOf({ flow, tab, st, booking, detail })} />
+        {!BARE && <Feedback screen={screenOf({ flow, tab, st, booking, detail })} />}
 
         <Phone>
           <PushToast push={push} onOpen={() => {
@@ -1017,7 +1091,7 @@ export default function App() {
 
         <Box sx={{
           width: dock === 'controls' ? 230 : 430, maxWidth: 430, flexShrink: 0,
-          display: { xs: 'none', md: 'block' },
+          display: BARE ? 'none' : { xs: 'none', md: 'block' },
           maxHeight: 844, overflowY: 'auto', pr: 0.5,
           transition: 'width .25s ease',
         }}>
