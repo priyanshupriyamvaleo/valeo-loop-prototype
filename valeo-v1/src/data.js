@@ -1,5 +1,27 @@
 /* Kept deliberately small — enough to drive the prototype, no schema. */
 
+/* ── ?name= ──
+   One build, any patient. The link we hand out carries the name, so a demo can
+   be addressed to the person watching it instead of to our fixture. The first
+   word is the given name every screen greets; the whole string is the legal
+   name the delivery block prints.
+
+   Resolved here, at the top of the data module, because two fixtures below
+   carry the patient's own name in their title and they are defined before
+   USER is. One source, read once, and no screen has to know about the URL. */
+const NAME_Q = (() => {
+  try {
+    const raw = new URLSearchParams(window.location.search).get('name') || '';
+    /* Collapsed and capped: a name is a name, not a paragraph. React escapes
+       it on the way to the DOM, so the cap is tidiness, not safety. */
+    return raw.trim().replace(/\s+/g, ' ').slice(0, 40) || null;
+  } catch {
+    return null;
+  }
+})();
+export const FIRST_NAME = NAME_Q ? NAME_Q.split(' ')[0] : 'Faisal';
+export const FULL_NAME = NAME_Q || 'Faisal Al-Otaibi';
+
 export const PROTOCOLS = {
   P_SLEEP: {
     arc: [
@@ -188,7 +210,7 @@ export const PROTOCOLS = {
      what the simulation just established is not a generated protocol, it is a
      template with a new title. */
   P_FAISAL: {
-    byline: 'Faisal',
+    byline: FIRST_NAME,
     own: true,
     arc: [
       { to: 4,  t: 'Aerobic base', b: 'Nothing hard yet. Zone 2 is the foundation everything else is built on, and rushing it is the most common way this fails.' },
@@ -213,7 +235,7 @@ export const PROTOCOLS = {
       added:   ['Ferritin recheck at week 8 — iron caps VO₂max'],
       flagged: ['If resting heart rate climbs two weeks running, the volume comes down'],
     },
-    t: "Faisal's protocol", wk: 16, cat: 'perf', mk: 'VO₂max + body fat %',
+    t: `${FIRST_NAME}'s protocol`, wk: 16, cat: 'perf', mk: 'VO₂max + body fat %',
     goal: 'Build the aerobic engine and lose fat without losing muscle',
     stack: ['Zone 2, 180 min a week', 'VO₂max intervals once a week',
             'Compound lifts 3× a week', 'Creatine 5 g daily', 'Protein floor 1.6 g/kg'],
@@ -932,7 +954,7 @@ export const DEVICE_ORDER = ['oura', 'watch', 'whoop', 'cgm'];
    of "roughly what was it" survives twelve. */
 /* The demo user. One record, because a name hardcoded into a greeting is a name
    that drifts out of step with everything else that refers to him. */
-export const USER = { first: 'Faisal', full: 'Faisal Al-Otaibi', city: 'Riyadh' };
+export const USER = { first: FIRST_NAME, full: FULL_NAME, city: 'Riyadh' };
 
 export const MEAL_SLOTS = [
   { k: 'b', t: 'Breakfast' },

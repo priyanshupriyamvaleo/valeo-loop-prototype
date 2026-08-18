@@ -68,13 +68,18 @@ const INIT = {
 
    ?demo=short  weight loss, known door, clean  → the monthly plan
    ?demo=long   longevity, clinician-led door   → the assessment, then the doctor
-   ?dock=1      puts our own panels back on a demo link
+   ?name=       the patient this link is addressed to (resolved in data.js)
+   ?bare=1      hides the dock too, for a screenshot with nothing else in it
    ══════════════════════════════════════════════════════════════════════════ */
 const QS = new URLSearchParams(window.location.search);
 const DEMO = ['short', 'long'].includes(QS.get('demo')) ? QS.get('demo') : null;
-/* The feedback rail and the dock are internal furniture. An investor link
-   shows the phone alone. */
-const BARE = Boolean(DEMO) && QS.get('dock') !== '1';
+/* The reviewers' rail is for reviewers, so a demo link never carries it.
+   The dock STAYS: its levers are how the person driving the demo advances the
+   journey past the steps the world would have taken care of — a doctor
+   signing, a lab uploading, a parcel arriving. Without them the demo stops at
+   the first thing that is not a tap. ?bare=1 drops it as well. */
+const HIDE_FEEDBACK = Boolean(DEMO);
+const HIDE_DOCK = Boolean(DEMO) && QS.get('bare') === '1';
 
 /* The store as the call left it. Named for the call, not for the demo: the
    file already imports a DEMO_QA, which is the twin-era fixture. */
@@ -1023,7 +1028,7 @@ export default function App() {
         {/* Reviewers on the left, demo controls on the right, the product in
             the middle. The panel reads the same state the app renders from, so
             a comment always lands on the screen the reviewer was looking at. */}
-        {!BARE && <Feedback screen={screenOf({ flow, tab, st, booking, detail })} />}
+        {!HIDE_FEEDBACK && <Feedback screen={screenOf({ flow, tab, st, booking, detail })} />}
 
         <Phone>
           <PushToast push={push} onOpen={() => {
@@ -1091,7 +1096,7 @@ export default function App() {
 
         <Box sx={{
           width: dock === 'controls' ? 230 : 430, maxWidth: 430, flexShrink: 0,
-          display: BARE ? 'none' : { xs: 'none', md: 'block' },
+          display: HIDE_DOCK ? 'none' : { xs: 'none', md: 'block' },
           maxHeight: 844, overflowY: 'auto', pr: 0.5,
           transition: 'width .25s ease',
         }}>

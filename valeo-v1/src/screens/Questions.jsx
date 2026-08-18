@@ -7,7 +7,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import CheckIcon from '@mui/icons-material/Check';
 import Drum from '../components/Drum';
-import { GROUPS, GOALS, buildWords, phaseHas } from '../data';
+import { GROUPS, GOALS, USER, buildWords, phaseHas } from '../data';
 import { C } from '../theme';
 
 /* Steps. `centre` means the input is a wheel and belongs optically centred;
@@ -21,7 +21,7 @@ const FULL = [
   { type: 'place',  k: 'place',  q: 'Where should the nurse come?' },
   { type: 'height', k: 'height', q: 'What’s your height?', centre: true },
   { type: 'weight', k: 'weight', q: 'And your weight?', centre: true },
-  { type: 'cheer',  h: 'Off to a good start, Faisal.' },
+  { type: 'cheer',  h: `Off to a good start, ${USER.first}.` },
   /* `deep` = asked only where something reads the answer. Phase 1 scores the
      shortlist off the stated goal alone, so these two screens buy nothing there
      and cost two screens of drop-off before the first thing we sell. */
