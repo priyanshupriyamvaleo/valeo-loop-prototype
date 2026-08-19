@@ -149,7 +149,7 @@ export const PROTOCOLS = {
       added:   ['Monthly bloods while on rapamycin'],
       flagged: ['Stop immediately if you get an infection'],
     },
-    t: 'Longevity', wk: 24, cat: 'long', mk: 'ApoB, hsCRP',
+    t: 'Longevity', wk: 12, cat: 'long', mk: 'ApoB, hsCRP',
     goal: 'Move the markers that actually predict lifespan',
     stack: ['ApoB target under 60 mg/dL', 'Rapamycin, weekly pulse, physician-supervised',
             'Zone 2 + resistance, 5 days a week', 'Omega-3 index above 8%'],
@@ -3724,6 +3724,66 @@ const MARKERS = {
     { ic: 'scale', t: 'Pelvic strength', base: 'Grade 2', target: 'Grade 4+' },
   ],
 };
+
+/* ── WHAT THE LOOP ACHIEVED ──
+   The verdict screen's numbers. `from` is the baseline the plan quoted and `to`
+   is where the retest landed, so the two screens can be held side by side and
+   read as one promise kept or missed.
+
+   Deliberately NOT all at target. ApoB lands at 82 against a target of 70, and
+   the copy says so. A prototype whose every marker hits its number is a
+   brochure, and the one thing this product sells is a verdict you can believe
+   when it is bad. Placeholders pending clinical sign-off, like every number
+   here. */
+const RESULT = {
+  P_LONG: {
+    score: { from: 58, to: 74, label: 'Improved' },
+    read: 'ApoB and inflammation both moved, and they moved together — that is '
+        + 'the pattern worth having. You are not at the ApoB target yet, so the '
+        + 'next loop keeps the same lever and gives it longer.',
+    markers: [
+      { ic: 'heart', t: 'ApoB', from: '128 mg/dL', to: '82 mg/dL', good: true, at: false },
+      { ic: 'drop', t: 'hs-CRP', from: '2.4 mg/L', to: '0.9 mg/L', good: true, at: true },
+      { ic: 'scale', t: 'Body Fat', from: '24 %', to: '19 %', good: true, at: false },
+      { ic: 'bolt', t: 'VO\u2082 Max', from: '32 mL/kg/min', to: '38 mL/kg/min', good: true, at: false },
+    ],
+  },
+  P_WEIGHT: {
+    score: { from: 54, to: 72, label: 'Improved' },
+    read: 'The weight came down and so did HbA1c, which means the loss is '
+        + 'metabolic rather than just scale weight.',
+    markers: [
+      { ic: 'scale', t: 'Body Weight', from: '96 kg', to: '84 kg', good: true, at: false },
+      { ic: 'drop', t: 'HbA1c', from: '6.1 %', to: '5.5 %', good: true, at: true },
+      { ic: 'heart', t: 'Waist', from: '108 cm', to: '97 cm', good: true, at: false },
+      { ic: 'bolt', t: 'Fasting insulin', from: '18 mIU/L', to: '9 mIU/L', good: true, at: false },
+    ],
+  },
+  P_TEST: {
+    score: { from: 61, to: 78, label: 'Improved' },
+    read: 'Free testosterone responded without shutting down your own '
+        + 'production, which was the whole reason we started where we did.',
+    markers: [
+      { ic: 'bolt', t: 'Total T', from: '11 nmol/L', to: '19 nmol/L', good: true, at: true },
+      { ic: 'drop', t: 'Free T', from: '210 pmol/L', to: '330 pmol/L', good: true, at: false },
+      { ic: 'scale', t: 'Body Fat', from: '26 %', to: '21 %', good: true, at: false },
+      { ic: 'heart', t: 'SHBG', from: '52 nmol/L', to: '41 nmol/L', good: true, at: false },
+    ],
+  },
+  P_POST: {
+    score: { from: 56, to: 75, label: 'Improved' },
+    read: 'Ferritin is the one that mattered and it moved furthest. The energy '
+        + 'you have noticed is that number, not willpower.',
+    markers: [
+      { ic: 'drop', t: 'Ferritin', from: '14 ng/mL', to: '46 ng/mL', good: true, at: false },
+      { ic: 'bolt', t: 'TSH', from: '4.8 mIU/L', to: '2.2 mIU/L', good: true, at: true },
+      { ic: 'heart', t: 'Haemoglobin', from: '10.6 g/dL', to: '12.4 g/dL', good: true, at: true },
+      { ic: 'scale', t: 'Pelvic strength', from: 'Grade 2', to: 'Grade 4', good: true, at: true },
+    ],
+  },
+};
+
+export const resultFor = (pKey) => RESULT[pKey] || null;
 
 export const outlookFor = (pKey) => OUTLOOK[pKey] || null;
 export const markersFor = (pKey) => MARKERS[pKey] || null;

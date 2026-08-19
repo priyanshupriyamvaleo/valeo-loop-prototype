@@ -410,6 +410,29 @@ function reducer(s, a) {
        The retest is booked the same way the first consult was and lands in the
        same kind of holding state: the run is over, the numbers exist, and nobody
        has read them. That gap is the product's whole claim. */
+    /* ── THE END OF THE LOOP, IN ONE MOVE ──
+       A demo cannot press "jump one week" twelve times. This lands on the last
+       day with a plausible logging history behind it, because the verdict screen
+       reads adherence off the log and a run with an empty log reports 0% —
+       which would make the honest caveat ("coverage is thin") fire on a run the
+       patient supposedly completed. */
+    case 'finishRun': {
+      const k = target(s, a); const r = s.runs[k]; if (!r) return s;
+      const total = r.total || 84;
+      const logs = [];
+      for (let d = 1; d <= total; d += 1) {
+        /* Six days in seven. Nobody logs perfectly, and a 100% run would be the
+           least believable number on the screen. */
+        if (d % 7 !== 3) logs.push({ day: d, kind: 'took' });
+      }
+      return patchRun(s, k, { status: 'verdict', day: total, logs });
+    }
+    /* The retest nurse has been. Same event as the baseline draw, at the other
+       end of the loop, and it is what unlocks the closing call. */
+    case 'retestDone': {
+      const k = target(s, a); const r = s.runs[k]; if (!r) return s;
+      return patchRun(s, k, { retestDone: true });
+    }
     case 'bookReview':
       return patchRun(s, target(s, a), { status: 'reviewing', reviewSlot: a.slot });
     /* The read has happened. What it found is written onto the run here rather
@@ -485,6 +508,9 @@ export default function App() {
      and the door-A checkpoint call. Same room, different exit — a checkpoint
      call ends by confirming the order, not by writing a care brief. */
   const [ckCall, setCkCall] = useState(false);
+  /* The call that closes a loop. Same room as every other consultation; the only
+     thing that differs is where it lets you out — into the report. */
+  const [finalCall, setFinalCall] = useState(false);
   /* The slot the consultation was booked into, and whether the call is the
      safety review that stands between a flagged answer and the plan. */
   const [slot, setSlot] = useState(null);
@@ -497,6 +523,9 @@ export default function App() {
   const [renewing, setRenewing] = useState(false);
   const [renewCall, setRenewCall] = useState(false);
   const [again, setAgain] = useState(false);
+  /* The return is a CLOSED loop rather than a second goal alongside a running
+     one. Different greeting, because the difference is the whole point. */
+  const [looped, setLooped] = useState(false);
 
   /* ── THE DOCK ──
      Controls (the demo rail), Clinic (Jamie's queues) and Machine (the state
@@ -640,6 +669,27 @@ export default function App() {
     setFlow('consultation');
   };
 
+  /* ── THE CLOSING CALL ──
+     Opened from the reviewing card once the retest has been drawn, and it ends
+     by publishing the verdict and opening the report. Straight into the report
+     rather than back to Today: the patient has just been told the answer out
+     loud, and making them find it again on a card is the one place this flow
+     could lose the moment it spent twelve weeks earning. */
+  const startFinalCall = (pk) => {
+    setDetail(pk); setMeetKey(pk);
+    setReview(false); setCkCall(false); setRenewCall(false); setFinalCall(true);
+    dispatch({ type: 'answers', qa: { consultSlot: null } });
+    dispatch({ type: 'log', event: 'CONSULT_JOINED', actor: 'patient', protocol: pk });
+    setFlow('consultation');
+  };
+  const endFinalCall = () => {
+    setFinalCall(false);
+    dispatch({ type: 'consulted', protocol: detail });
+    dispatch({ type: 'results', protocol: detail });
+    setDetailView('results');
+    setFlow('detail');
+  };
+
   /* The consultation ends: door B writes the brief; a checkpoint call ends
      by confirming the order — no blood test on that door, so approval starts
      fulfilment directly. */
@@ -708,8 +758,8 @@ export default function App() {
 
   /* Start something new: the same chat, already knowing who they are, asking
      only the question that is actually open. */
-  const startNewGoal = () => {
-    setResume(null); setPreGoal(null); setAgain(true);
+  const startNewGoal = (fromLoop = false) => {
+    setResume(null); setPreGoal(null); setAgain(true); setLooped(fromLoop);
     setReview(false); setRenewing(false);
     setFlow('coach');
   };
@@ -840,8 +890,16 @@ export default function App() {
     /* One control per real event, so the demo can show the thread and the
        fulfilment strip changing rather than jumping straight to day 1. */
     shipping:  [],
-    running:   [{ t: 'Jump one week', main: true, run: (k) => dispatch({ type: 'advance', protocol: k }) }],
-    reviewing: [{ t: 'Results are read', main: true, run: (k) => {
+    running:   [
+      /* A demo link shows only `main`, and what a demo needs from a running
+         programme is the end of it. The week-by-week control stays for the rail,
+         where somebody is actually inspecting the middle. */
+      { t: 'Finish the 12 weeks', main: true, run: (k) => dispatch({ type: 'finishRun', protocol: k }) },
+      { t: 'Jump one week', run: (k) => dispatch({ type: 'advance', protocol: k }) },
+    ],
+    reviewing: [{ t: 'Retest nurse visit complete', main: true,
+      run: (k) => dispatch({ type: 'retestDone', protocol: k }) }],
+    reviewingRead: [{ t: 'Results are read', run: (k) => {
       dispatch({ type: 'results', protocol: k });
     } }],
   };
@@ -853,6 +911,11 @@ export default function App() {
     NEXT.shipping = nx
       ? [{ t: nx[1], main: true, run: (k) => dispatch({ type: 'ship', protocol: k, stage: nx[0] }) }]
       : [];
+  }
+  /* Once the retest nurse has been, the closing call is the patient's move and
+     the button for it is on the phone. Nothing left for Next to fire. */
+  if (f && f.status === 'reviewing' && f.run && f.run.retestDone) {
+    NEXT.reviewing = [];
   }
   /* the lab finishing is a background event, so it gets its own control rather
      than being bundled into whatever the patient does next */
@@ -915,7 +978,7 @@ export default function App() {
     /* The chat's exit is the same gate the machine's SIM levers use —
        completeIntake routes the fork, and escalated answers go through the
        AI summary to the doctor, exactly as the spec's D1 defines. */
-    <Coach preGoal={preGoal} resume={resume} again={again} prior={st.qa}
+    <Coach preGoal={preGoal} resume={resume} again={again} looped={looped} prior={st.qa}
       exclude={again ? GOALS.filter((g) => st.runs[leadFor(g.k)]).map((g) => g.k) : []}
       onBack={() => {
         if (again) { setAgain(false); setFlow('app'); return setTab('programs'); }
@@ -966,9 +1029,10 @@ export default function App() {
        brief. All of them are the same helpers the clinic and the machine
        fire. */
     <Consultation pKey={detail} review={review}
-      onDone={() => (review ? approveReview()
-        : ckCall ? approveAfterCall(detail)
-          : renewCall ? endRenewCall() : endConsult())}
+      onDone={() => (finalCall ? endFinalCall()
+        : review ? approveReview()
+          : ckCall ? approveAfterCall(detail)
+            : renewCall ? endRenewCall() : endConsult())}
       onDecline={declineReview} />
   );
   else if (flow === 'brief') view = (
@@ -981,6 +1045,13 @@ export default function App() {
       onBack={() => { setFlow('app'); setTab('programs'); }}
       onConsult={() => setFlow('consult')}
       onTrack={() => trackOn(detail)}
+      /* The loop closed, so the chat reopens knowing it did. Coach.jsx reads
+         `again` and greets a returning patient instead of a new one — the
+         basics carry over and the only question left is the new goal. */
+      onLoop={() => {
+        dispatch({ type: 'loopOpened', protocol: detail });
+        startNewGoal(true);
+      }}
       onBuy={() => {
         /* ── "ACTIVATE MY PLAN" STARTS THE PLAN ──
            The programme was paid for at the Care Brief, so this button is not a
@@ -1030,7 +1101,11 @@ export default function App() {
       }} />
   );
   else if (flow === 'review') view = (
-    <Consult mode="review" pKey={reviewKey}
+    /* The retest IS a blood draw, so it books like the baseline one did: same
+       screen, same fasting badge, same nurse. Booking the last sample through a
+       different-looking picker than the first would make the loop feel like two
+       products. */
+    <Consult mode="retest" pKey={reviewKey}
       onBack={() => { setFlow('app'); setTab('today'); }} onBooked={bookReview} />
   );
   else if (flow === 'buy') view = (
@@ -1155,6 +1230,7 @@ export default function App() {
                 )}
                 {tab === 'today' && (
                   <Today st={st} dispatch={dispatch} onGo={setTab} onImmersive={setImmersive}
+                         onFinalCall={startFinalCall}
                          onMonthResults={(pk) => { setDetail(pk); setFlow('monthResults'); }}
                          onRenewSub={renewProgramme}
                          onJoinConsult={() => {
@@ -1179,7 +1255,7 @@ export default function App() {
                          onFocus={(pk) => dispatch({ type: 'focus', protocol: pk })} />
                 )}
                 {tab === 'programs' && (
-                  <Programs st={st} onRenew={renewProgramme} onNewGoal={startNewGoal}
+                  <Programs st={st} onRenew={renewProgramme} onNewGoal={() => startNewGoal(false)}
                     onDetail={openDetail} />
                 )}
                 {tab === 'protocols' && (

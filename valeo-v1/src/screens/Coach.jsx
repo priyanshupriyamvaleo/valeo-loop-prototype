@@ -45,7 +45,7 @@ import { C, meter } from '../theme';
  * it. See components/Practice.jsx.
  */
 export default function Coach({ onBack, onDone, preGoal = null, resume = null,
-                                again = false, prior = null, exclude = [] }) {
+                                again = false, looped = false, prior = null, exclude = [] }) {
   /* A goal chosen on the greeting screen means the user's opening line was that
      goal, not "hi" — and the first question is already behind us. Asking it again
      would restart a conversation that is meant to continue. */
@@ -245,7 +245,18 @@ export default function Coach({ onBack, onDone, preGoal = null, resume = null,
             return (
               <Bubble key={n}>
                 <Typed
-                  paras={again ? [
+                  /* ── TWO KINDS OF RETURN ──
+                     A patient adding a second goal still has one running, so the
+                     reassurance is that nothing is disturbed. A patient who has
+                     just closed a loop has nothing running, and telling them
+                     their programme "keeps running exactly as it is" would be
+                     the app failing to notice the thing it just congratulated
+                     them for. */
+                  paras={looped ? [
+                    `That’s one loop closed, ${USER.first}. 👋`,
+                    'Your results are saved, and whatever comes next starts from those numbers rather than from scratch.',
+                    m.q,
+                  ] : again ? [
                     `Welcome back, ${USER.first}! 👋`,
                     'Good to see you again. Your programme keeps running exactly as it is.',
                     m.q,

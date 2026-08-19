@@ -6,6 +6,7 @@ import LockClockIcon from '@mui/icons-material/LockClock';
 import AddIcon from '@mui/icons-material/Add';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import FlagIcon from '@mui/icons-material/Flag';
+import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import Results from '../components/Results';
 import Recommendation from './Recommendation';
 import { PROTOCOLS, KINDS, KIND_ORDER, coachOf, CONSULT_FEE, RECOMMEND,
@@ -23,7 +24,7 @@ import { C } from '../theme';
  *    can't be productized. The diff is the artefact.
  */
 export default function ProtocolDetail({ st, pKey, onBack, onConsult, onBuy, onTrack,
-                                         view = 'plan', onView }) {
+                                         onLoop, view = 'plan', onView }) {
   const p = PROTOCOLS[pKey];
   /* The clinician who wrote this template. In V1 the doctor is what's being
      sold, so their name sits on the page before anything else does. */
@@ -314,9 +315,24 @@ export default function ProtocolDetail({ st, pKey, onBack, onConsult, onBuy, onT
         borderTop: `1px solid ${C.line}`, bgcolor: C.cream,
       }}>
         {showResults ? (
-          <Typography sx={{ fontSize: 11.5, color: C.ink2, textAlign: 'center', lineHeight: 1.55 }}>
-            This loop is closed. Any next protocol starts from these numbers.
-          </Typography>
+          /* ── THE END IS AN OFFER ──
+             The loop closing is the one moment the patient has evidence in hand
+             and nothing scheduled, and it is the only honest place to ask for
+             another twelve weeks. A closed report with no way forward makes the
+             product a one-off; a report that sells before the verdict is read
+             makes it a subscription. This is the line between them. */
+          <>
+            <Button fullWidth variant="contained" color="secondary" onClick={onLoop}
+              startIcon={<AutorenewRoundedIcon sx={{ fontSize: 19 }} />}
+              sx={{ borderRadius: '17px', '& .MuiButton-startIcon': { mr: 1.1 } }}>
+              Start another loop
+            </Button>
+            <Typography sx={{
+              fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1.2, lineHeight: 1.55,
+            }}>
+              This loop is closed. The next one starts from these numbers.
+            </Typography>
+          </>
         ) : live ? (
           <>
             {/* Already running. Offering to book it again was the bug: the page

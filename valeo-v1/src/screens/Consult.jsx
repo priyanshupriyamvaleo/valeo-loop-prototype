@@ -91,6 +91,20 @@ export default function Consult({ onBack, onBooked, mode = 'start', doc = null }
     review: { sub: 'Pick a time to go through your results together.',
               foot: '30-minute video consultation', price: 'Included',
               cta: 'Confirm', pays: false, list: CONSULT_SLOTS },
+    /* ── THE RETEST ──
+       The same screen as the baseline draw, because it is the same event: a
+       nurse, a morning, a fast. Only the sentence changes, and it changes to say
+       why this one matters more — it is the sample the verdict is read from. */
+    retest: { title: 'Book your retest',
+              sub: 'The same panel as your baseline, so the two can be read side '
+                 + 'by side. Mornings only — you’ll be fasting.',
+              badge: { t: 'Fasting required', s: 'Mornings only' },
+              hero: true, facts: BLOOD_FACTS, hideFoot: true,
+              trust: { t: 'This is the sample your verdict is read from.',
+                       s: 'Secure · Private · Confidential' },
+              note: 'Secure booking · No payment now',
+              cta: 'Confirm my retest', pays: false, list: BLOOD_SLOTS,
+              item: 'Retest', fee: BLOOD_FEE },
     /* The consultation itself: the next hour, nothing to pay, and no queue to
        wait in. The three times are 15 minutes apart because a real rota is
        what makes same-day care believable — "any second now" is not a time. */

@@ -22,6 +22,10 @@ import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
+import MonitorWeightOutlinedIcon from '@mui/icons-material/MonitorWeightOutlined';
+import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
 import { NurseMark, VialMark, BloodTubeArt, SparkMark } from '../components/Marks';
 import RunHero from '../components/RunHero';
 import Practice from '../components/Practice';
@@ -32,7 +36,7 @@ import { MealSheet, BodySheet, CheckinSheet } from '../components/CaptureSheets'
 import HeartScan from '../components/HeartScan';
 import { PROTOCOLS, KINDS, DOCTOR, coachOf, nextStep, behindScenes, practiceScript, logKindFor, LOG_KINDS, arcFor, nextMilestone,
          WHEN, WHEN_ORDER, DEVICES, DEVICE_ORDER, capturesFor, streakOf,
-         deviceSeries, subsystemMoves, heroStreams, focusRun, activeRuns, RX_LABEL,
+         deviceSeries, subsystemMoves, heroStreams, resultFor, focusRun, activeRuns, RX_LABEL,
 } from '../data';
 import MovedList from '../components/MovedList';
 import { C, meter } from '../theme';
@@ -47,6 +51,19 @@ const PREP_ICONS = {
   water: { Ic: LocalDrinkOutlinedIcon, bg: 'rgba(64,143,164,.14)', fg: C.teal },
   id: { Ic: BadgeOutlinedIcon, bg: 'rgba(224,164,0,.14)', fg: C.yellowDeep },
   home: { Ic: HomeOutlinedIcon, bg: 'rgba(224,164,0,.14)', fg: C.yellowDeep },
+};
+
+/* The same four marker families as the plan screen, so day one and day eighty-four
+   are the same colour for the same number. */
+const MARKER_ICONS = {
+  heart: FavoriteBorderIcon, drop: WaterDropOutlinedIcon,
+  scale: MonitorWeightOutlinedIcon, bolt: BoltOutlinedIcon,
+};
+const MARKER_TONES = {
+  heart: { bg: 'rgba(233,79,95,.11)', fg: '#D2404F' },
+  drop: { bg: 'rgba(64,143,164,.13)', fg: C.teal },
+  scale: { bg: C.greenSoft, fg: C.green },
+  bolt: { bg: 'rgba(224,164,0,.14)', fg: C.yellowDeep },
 };
 
 const BTS_ICONS = {
@@ -73,7 +90,7 @@ const HERO_TONES = {
  *   running  → log it, watch it move
  *   verdict  → retest day
  */
-export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults, onJoinConsult, onImmersive,
+export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults, onJoinConsult, onImmersive, onFinalCall,
   onMonthResults, onRenewSub,
   onBookBloods, onBookFollow, onBrief, onCheckpointCall,
                                 onFocus }) {
@@ -1006,15 +1023,45 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
             }}>◈ {rx.reviewSlot || 'Booked'}</Typography>
             <Typography sx={{
               fontFamily: '"Fraunces", serif', fontSize: 22, fontWeight: 600, mt: 0.75,
-            }}>Nothing to do until the call.</Typography>
+            }}>{rx.retestDone
+              ? 'Your sample is with the lab.'
+              : 'Nothing to do until the nurse comes.'}</Typography>
             <Typography sx={{
               fontSize: 12.5, lineHeight: 1.6, color: 'rgba(255,255,255,.78)', mt: 1.1,
             }}>
-              {p.blood !== 'no'
-                ? `A nurse draws ${p.mk} at home before it. Dr. Mahmoud reads the result against day one on the call.`
-                : `Dr. Mahmoud reads the run against day one on the call.`}
+              {rx.retestDone
+                ? `${(coachOf(pKey) || DOCTOR).short} reads it against day one on your call. `
+                  + 'Ten minutes, and the verdict comes out of it.'
+                : `A nurse draws ${p.mk} at home. `
+                  + `${(coachOf(pKey) || DOCTOR).short} reads the result against day one on the call after it.`}
             </Typography>
           </Box>
+
+          {/* ── THE LAST STEP IS A CONVERSATION ──
+              Once the sample is drawn the loop has one thing left, and it is not
+              a card to read — it is the call where somebody says what happened.
+              So the button appears here and nowhere else. */}
+          {rx.retestDone && (
+            <>
+              <Box onClick={() => onFinalCall && onFinalCall(pKey)} sx={{
+                mt: 2, py: 1.5, borderRadius: '15px', cursor: 'pointer',
+                bgcolor: C.deep, color: '#fff', fontSize: 15, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.1,
+                boxShadow: '0 12px 28px -16px rgba(27,57,91,.9)',
+              }}>
+                <VideocamOutlinedIcon sx={{ fontSize: 20 }} />
+                Join your results call
+              </Box>
+              <Stack direction="row" spacing={0.6} sx={{
+                alignItems: 'center', justifyContent: 'center', mt: 1.1,
+              }}>
+                <LockOutlinedIcon sx={{ fontSize: 13, color: C.ink2 }} />
+                <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>
+                  Secure video call · Your privacy is protected
+                </Typography>
+              </Stack>
+            </>
+          )}
 
           <Label sx={{ mt: 3 }}>What moved in your body</Label>
           <MovedList rows={subsystemMoves(st, pKey)} />
@@ -1076,6 +1123,8 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
     const adherence = Math.round((rx.logs.length / rx.day) * 100);
     const moves = subsystemMoves(st, pKey);
     const hero = heroStreams(st, pKey);
+    const result = resultFor(pKey);
+    const who = coachOf(pKey) || DOCTOR;
     const needsBlood = p.blood !== 'no';
 
     return (
@@ -1122,13 +1171,98 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
             </Typography>
           </Box>
 
-          {/* ── WHAT MOVED ──
-              Subsystems first, evidence underneath. Three raw streams in a flat
-              list implied they were the result; they are proxies, and each one
-              reports to exactly one subsystem. The streams this protocol is
-              judged closest to are promoted above the list, because burying
-              weight one tap down on a weight-loss run would be perverse. */}
-          {hero.length > 0 && (
+          {/* ── WHAT THE LOOP DID ──
+              The score the plan opened with, and where it landed. This screen
+              used to lead with weight, which is the wrong headline for a
+              longevity run: nobody buys twelve weeks of ApoB work to weigh less.
+              The score and the panel are what the plan promised, so they are
+              what the verdict reports. */}
+          {result && (
+            <>
+              <Label sx={{ mt: 3 }}>Your longevity score</Label>
+              <Box sx={{
+                px: 2, py: 2, borderRadius: '20px', bgcolor: '#fff',
+                boxShadow: '0 8px 24px -20px rgba(27,57,91,.55)',
+              }}>
+                <Stack direction="row" sx={{ alignItems: 'center' }}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: 11, color: C.ink2 }}>Day one</Typography>
+                    <Typography sx={{
+                      fontFamily: meter, fontSize: 27, fontWeight: 700, color: C.ink2, lineHeight: 1,
+                    }}>{result.score.from}</Typography>
+                  </Box>
+                  <Stack sx={{ alignItems: 'center', px: 1, flexShrink: 0 }}>
+                    <Box sx={{
+                      px: 1.1, py: 0.4, borderRadius: '999px', bgcolor: C.greenSoft,
+                      fontSize: 11.5, fontWeight: 700, color: C.green,
+                    }}>+{result.score.to - result.score.from}</Box>
+                    <ArrowForwardRoundedIcon sx={{ fontSize: 17, color: C.ink2, mt: 0.5 }} />
+                  </Stack>
+                  <Box sx={{
+                    flex: 1, minWidth: 0, textAlign: 'right',
+                    borderLeft: `1px solid ${C.line}`, pl: 1.5,
+                  }}>
+                    <Typography sx={{ fontSize: 11, color: C.ink2 }}>Today</Typography>
+                    <Stack direction="row" spacing={0.4} sx={{
+                      alignItems: 'baseline', justifyContent: 'flex-end',
+                    }}>
+                      <Typography sx={{
+                        fontFamily: meter, fontSize: 34, fontWeight: 700, color: C.deep, lineHeight: 1,
+                      }}>{result.score.to}</Typography>
+                      <Typography sx={{ fontSize: 12, color: C.ink2 }}>/ 100</Typography>
+                    </Stack>
+                    <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: C.green, mt: 0.4 }}>
+                      {result.score.label}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+
+              <Label sx={{ mt: 3 }}>Biomarkers</Label>
+              <Stack spacing={1}>
+                {result.markers.map((m) => {
+                  const tone = MARKER_TONES[m.ic] || MARKER_TONES.heart;
+                  const Ic = MARKER_ICONS[m.ic] || FavoriteBorderIcon;
+                  return (
+                    <Stack key={m.t} direction="row" spacing={1.3} sx={{
+                      alignItems: 'center', px: 1.5, py: 1.35, borderRadius: '16px',
+                      bgcolor: '#fff', border: `1px solid ${C.line}`,
+                    }}>
+                      <Box sx={{
+                        width: 34, height: 34, borderRadius: '50%', flexShrink: 0, bgcolor: tone.bg,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Ic sx={{ fontSize: 18, color: tone.fg }} />
+                      </Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ fontSize: 13, fontWeight: 700, color: C.deep }}>
+                          {m.t}
+                        </Typography>
+                        <Stack direction="row" spacing={0.6} sx={{ alignItems: 'center', mt: 0.2 }}>
+                          <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>{m.from}</Typography>
+                          <ArrowForwardRoundedIcon sx={{ fontSize: 13, color: C.ink2 }} />
+                          <Typography sx={{ fontSize: 12, fontWeight: 700, color: C.green }}>
+                            {m.to}
+                          </Typography>
+                        </Stack>
+                      </Box>
+                      {/* "At target" and "Improved" are different claims, and
+                          collapsing them into one green tick is how a report
+                          starts overstating itself. */}
+                      <Typography sx={{
+                        flexShrink: 0, px: 0.9, py: 0.35, borderRadius: '7px',
+                        fontSize: 10, fontWeight: 700,
+                        bgcolor: m.at ? C.greenSoft : 'rgba(255,185,0,.16)',
+                        color: m.at ? C.green : C.yellowDeep,
+                      }}>{m.at ? 'At target' : 'Improved'}</Typography>
+                    </Stack>
+                  );
+                })}
+              </Stack>
+            </>
+          )}
+
+          {!result && hero.length > 0 && (
             <>
               <Label sx={{ mt: 3 }}>Tracked through the run</Label>
               <Stack direction="row" spacing={1}>
@@ -1157,7 +1291,31 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
             </>
           )}
 
-          {moves.length > 0 && (
+          {result && (
+            <Stack direction="row" spacing={1.4} sx={{
+              alignItems: 'flex-start', mt: 2.25, px: 1.6, py: 1.6, borderRadius: '17px',
+              bgcolor: 'rgba(27,57,91,.045)',
+            }}>
+              <Box sx={{
+                width: 34, height: 34, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+                background: `linear-gradient(155deg,${who.tone} 0%,rgba(11,21,34,.7) 145%)`,
+              }}>
+                {who.img && <Box component="img" src={who.img} alt="" sx={{
+                  width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
+                }} />}
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: 12, fontWeight: 700, color: C.deep }}>
+                  {who.short}’s read
+                </Typography>
+                <Typography sx={{ fontSize: 12.5, lineHeight: 1.5, color: C.ink2, mt: 0.3 }}>
+                  {result.read}
+                </Typography>
+              </Box>
+            </Stack>
+          )}
+
+          {!result && moves.length > 0 && (
             <>
               <Label sx={{ mt: 3 }}>What moved in your body</Label>
               <MovedList rows={moves} />
