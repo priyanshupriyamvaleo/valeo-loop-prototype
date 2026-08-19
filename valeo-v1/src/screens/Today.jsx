@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Button, Stack, Typography, Divider, LinearProgress } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -6,18 +6,61 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import ScienceIcon from '@mui/icons-material/Science';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlineRounded';
+import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
+import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded';
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
+import LocalDrinkOutlinedIcon from '@mui/icons-material/LocalDrinkOutlined';
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import { NurseMark, VialMark, BloodTubeArt, SparkMark } from '../components/Marks';
 import RunHero from '../components/RunHero';
 import Practice from '../components/Practice';
 import Trend from '../components/Trend';
 import LogSheet from '../components/LogSheet';
 import CaptureGrid from '../components/CaptureGrid';
 import { MealSheet, BodySheet, CheckinSheet } from '../components/CaptureSheets';
-import { PROTOCOLS, KINDS, DOCTOR, coachOf, nextStep, behindScenes, logKindFor, LOG_KINDS, arcFor, nextMilestone,
+import HeartScan from '../components/HeartScan';
+import { PROTOCOLS, KINDS, DOCTOR, coachOf, nextStep, behindScenes, practiceScript, logKindFor, LOG_KINDS, arcFor, nextMilestone,
          WHEN, WHEN_ORDER, DEVICES, DEVICE_ORDER, capturesFor, streakOf,
          deviceSeries, subsystemMoves, heroStreams, focusRun, activeRuns, RX_LABEL,
 } from '../data';
 import MovedList from '../components/MovedList';
 import { C, meter } from '../theme';
+
+const ASSURE_ICONS = { nurse: NurseMark, vial: VialMark };
+
+/* Each preparation line and each progress row carries its own mark and tint.
+   Colour is per instruction rather than per screen: "fast for ten hours" is a
+   clock, and a clock is not gold just because the rest of the page is. */
+const PREP_ICONS = {
+  clock: { Ic: ScheduleOutlinedIcon, bg: 'rgba(217,114,47,.12)', fg: '#D9722F' },
+  water: { Ic: LocalDrinkOutlinedIcon, bg: 'rgba(64,143,164,.14)', fg: C.teal },
+  id: { Ic: BadgeOutlinedIcon, bg: 'rgba(224,164,0,.14)', fg: C.yellowDeep },
+  home: { Ic: HomeOutlinedIcon, bg: 'rgba(224,164,0,.14)', fg: C.yellowDeep },
+};
+
+const BTS_ICONS = {
+  check: CheckIcon, lab: ScienceOutlinedIcon, report: DescriptionOutlinedIcon,
+  clock: ScheduleOutlinedIcon,
+};
+
+/* The hero of a settled card: what is coming, drawn once. Green means done or
+   ready, amber means booked and waiting. */
+const HERO_ICONS = { nurse: NurseMark, calendar: CalendarMonthOutlinedIcon, plan: AssignmentOutlinedIcon };
+const HERO_TONES = {
+  green: { panel: 'rgba(39,153,91,.06)', disc: 'rgba(39,153,91,.13)', fg: C.green, label: C.green },
+  amber: { panel: 'rgba(255,185,0,.07)', disc: 'rgba(255,185,0,.16)', fg: C.yellowDeep, label: C.yellowDeep },
+};
 
 /**
  * Today is the loop, day by day. It has five faces because the person's
@@ -30,12 +73,18 @@ import { C, meter } from '../theme';
  *   running  → log it, watch it move
  *   verdict  → retest day
  */
-export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults, onJoinConsult,
+export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, onResults, onJoinConsult, onImmersive,
   onMonthResults, onRenewSub,
   onBookBloods, onBookFollow, onBrief, onCheckpointCall,
                                 onFocus }) {
   const [coach, setCoach] = useState(false);
-  const [sheet, setSheet] = useState(null);   /* doses | meals | body | checkin | devices */
+  const [sheet, setSheet] = useState(null);   /* doses | meals | body | scan | devices */
+  /* ── THE ONE SURFACE THAT TAKES THE WHOLE PHONE ──
+     Every other capture is a bottom sheet over a visible app. The heart scan
+     opens a camera, and a live camera with a tab bar under it reads as a
+     preview of a feature rather than the feature. So Today tells the shell to
+     stand down while it is open, and takes the frame. */
+  useEffect(() => { if (onImmersive) onImmersive(sheet === 'scan'); }, [sheet, onImmersive]);
   /* ── WHICH RUN IS TODAY ABOUT ──
      One protocol owns the day. Merging two protocols' checklists would lose which
      run a given dose belonged to, and adherence that cannot be attributed cannot
@@ -46,6 +95,10 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
   const pKey = f ? f.k : null;
   /* messages the practice sent that you haven't opened the thread on yet */
   const unread = !!rx && ((rx.thread || []).length > (rx.seen || 0));
+  /* Most stages are the clinic writing as "we", so the prompt is a plain "tap
+     to reply". One stage is the doctor writing as "I" about work that is his
+     own, and there the prompt names him. */
+  const replyAs = pKey ? (practiceScript(st, pKey).replyAs || null) : null;
   const runs = activeRuns(st);
   const switcher = runs.length > 1 ? (
     <Stack direction="row" spacing={0.75} sx={{
@@ -83,7 +136,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
     const who = coachOf(st.qa.consultPkey || pKey || st.qa.wantsPkey) || DOCTOR;
     return (
       <Shell coach={coach} setCoach={setCoach} st={st} pKey={pKey} dispatch={dispatch}>
-        <Head sub="Tuesday 28 July" title="Your next step"
+        <Head sub="Tuesday, 28 July" title="Your next step"
               onTwin={() => setCoach(true)} dot={unread} />
         <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
           <Box sx={{
@@ -120,7 +173,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
   if (!rx) {
     return (
       <Shell coach={coach} setCoach={setCoach} st={st} pKey={pKey} dispatch={dispatch}>
-        <Head sub="Tuesday 28 July" title="Nothing to run yet." onTwin={() => setCoach(true)} dot={unread} />
+        <Head sub="Tuesday, 28 July" title="Nothing to run yet." onTwin={() => setCoach(true)} dot={unread} />
         <Box sx={{ flex: '1 1 auto', px: 2.25, display: 'flex', flexDirection: 'column',
                    justifyContent: 'center' }}>
           <Stack spacing={1.25}>
@@ -159,10 +212,23 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
        with different rows, so they render through one path. */
     const bts = ns.ship
       ? { steps: ns.ship, ready: false, label: 'Your package' }
-      : behindScenes(ns.bts);
+      : behindScenes(ns.bts, { slot: ns.when, doc: who.short });
+    /* One settled-card shape, three occasions: the nurse is booked, the
+       consultation is booked, the plan is written. `nurse` is the legacy flag
+       for the first of them. */
+    const hero = ns.hero || (ns.nurse ? { ic: 'nurse', tone: 'green' } : null);
+    const heroTone = hero ? (HERO_TONES[hero.tone] || HERO_TONES.amber) : null;
+    const HeroIcon = hero ? (HERO_ICONS[hero.ic] || AssignmentOutlinedIcon) : null;
     return (
       <Shell coach={coach} setCoach={setCoach} st={st} pKey={pKey} dispatch={dispatch}>
-        <Head below={switcher} sub="Tuesday 28 July" title="Your next step"
+        {/* The moment after payment is the one place this header earns a
+            sentence rather than a label: the patient has just committed, and
+            "Your next step" answers a question they have not asked yet. */}
+        <Head below={switcher} sub="Tuesday, 28 July"
+              title={ns.kind === 'bookBloods'
+                ? 'You’re all set, here’s what’s next.'
+                : 'Your next step'}
+              rule={ns.kind === 'bookBloods'}
               onTwin={() => setCoach(true)} dot={unread} />
         <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
           <Box sx={{
@@ -170,15 +236,156 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
             border: '1px solid rgba(27,57,91,.07)',
             boxShadow: '0 4px 18px -12px rgba(27,57,91,.4)',
           }}>
-            <Box sx={{ px: 2.25, pt: 2.25, pb: 2 }}>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            {/* ── A BOOKED APPOINTMENT IS NOT A TASK ──
+                Everything else in this card family is something to do, so it
+                is gold and it has a button. This one is already settled: the
+                nurse is coming. Green, a face, a tick, and the time set larger
+                than anything else on the screen. */}
+            {hero ? (
+              <>
+              <Stack direction="row" sx={{ alignItems: 'stretch' }}>
                 <Box sx={{
-                  width: 9, height: 9, borderRadius: '50%', flexShrink: 0,
-                  bgcolor: ['plan', 'summary', 'start'].includes(ns.kind) ? C.green : C.yellow,
-                }} />
-                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep }}>
-                  {ns.tag}
-                </Typography>
+                  width: 92, flexShrink: 0, bgcolor: heroTone.panel,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Box sx={{
+                    width: 66, height: 66, borderRadius: '50%', position: 'relative',
+                    bgcolor: heroTone.disc,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {hero.ic === 'nurse'
+                      ? <NurseMark size={36} color={heroTone.fg} />
+                      : <HeroIcon sx={{ fontSize: 33, color: heroTone.fg }} />}
+                    <Box sx={{
+                      position: 'absolute', right: -3, bottom: -1,
+                      width: 25, height: 25, borderRadius: '50%', bgcolor: heroTone.fg,
+                      border: '2.5px solid #fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <CheckIcon sx={{ fontSize: 14, color: '#fff' }} />
+                    </Box>
+                  </Box>
+                </Box>
+
+                <Box sx={{ flex: 1, minWidth: 0, pl: 1.75, pr: 1.25, py: 2 }}>
+                  <Stack direction="row" spacing={0.8} sx={{ alignItems: 'center' }}>
+                    <Box sx={{
+                      width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                      bgcolor: heroTone.fg,
+                    }} />
+                    <Typography sx={{
+                      fontSize: 10, fontWeight: 800, letterSpacing: '.15em',
+                      textTransform: 'uppercase', color: heroTone.label,
+                    }}>{ns.tag}</Typography>
+                  </Stack>
+                  <Typography sx={{
+                    fontFamily: '"Fraunces", serif', fontSize: 18.5, fontWeight: 600,
+                    lineHeight: 1.18, letterSpacing: '-.01em', color: C.deep, mt: 0.75,
+                    whiteSpace: ns.when ? 'normal' : 'normal',
+                  }}>{ns.title}</Typography>
+
+                  {ns.when && (
+                    <>
+                      <Typography sx={{ fontSize: 12.5, color: C.ink2, mt: 1 }}>
+                        {ns.whenLead ? `${ns.whenLead} ${when1.toLowerCase()}` : when1}
+                      </Typography>
+                      <Typography sx={{
+                        fontFamily: '"Fraunces", serif', fontSize: 29, fontWeight: 600,
+                        lineHeight: 1.05, color: C.deep, mt: 0.1,
+                      }}>{when2.join(' ')}</Typography>
+                      <Typography sx={{ fontSize: 12.5, color: C.ink2, mt: 0.8 }}>
+                        {ns.whenSub || 'A nurse will come to you'}
+                      </Typography>
+                    </>
+                  )}
+
+                  {ns.body && (
+                    <Typography sx={{ fontSize: 12.5, lineHeight: 1.5, color: C.ink2, mt: 0.8 }}>
+                      {ns.body}
+                    </Typography>
+                  )}
+                </Box>
+
+                {!ns.cta && (
+                  <Stack sx={{ justifyContent: 'center', pr: 1.25, flexShrink: 0 }}>
+                    <ChevronRightRoundedIcon sx={{ fontSize: 24, color: 'rgba(27,57,91,.45)' }} />
+                  </Stack>
+                )}
+              </Stack>
+
+              {/* One blue strip, and the only blue in the flow: this is
+                  information the patient cannot act on and does not have to. */}
+              {ns.strip && (
+                <Stack direction="row" spacing={1.3} sx={{
+                  alignItems: 'center', mx: 1.5, mb: 0.5, px: 1.4, py: 1.3,
+                  borderRadius: '13px', bgcolor: 'rgba(64,143,164,.09)',
+                }}>
+                  <Box sx={{
+                    width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                    bgcolor: C.teal, display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <ScheduleOutlinedIcon sx={{ fontSize: 17, color: '#fff' }} />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: C.deep }}>
+                      {ns.strip.t}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.15 }}>
+                      {ns.strip.s}
+                    </Typography>
+                  </Box>
+                </Stack>
+              )}
+              </>
+            ) : (
+            <Box sx={{ px: 2.25, pt: 2.25, pb: 2 }}>
+              {/* A numbered step gets a number. The dot said "there is a state
+                  here"; the numeral says which step of how many, which is the
+                  question someone who has just paid is actually asking. */}
+              <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
+                {ns.chip ? (
+                  /* Two facts, stacked: what state this is in, and what the
+                     state is about. One line could carry both, and did, and
+                     read as neither. */
+                  <>
+                    <Box sx={{
+                      width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+                      bgcolor: 'rgba(224,164,0,.14)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <ScienceOutlinedIcon sx={{ fontSize: 20, color: C.yellowDeep }} />
+                    </Box>
+                    <Box>
+                      <Typography sx={{
+                        fontSize: 10, fontWeight: 800, letterSpacing: '.15em',
+                        textTransform: 'uppercase', color: C.yellowDeep,
+                      }}>{ns.chip}</Typography>
+                      <Typography sx={{
+                        fontSize: 13.5, fontWeight: 700, color: C.deep, mt: 0.2,
+                      }}>{ns.tag}</Typography>
+                    </Box>
+                  </>
+                ) : ns.step ? (
+                  <Box sx={{
+                    width: 26, height: 26, borderRadius: '50%', flexShrink: 0, bgcolor: C.yellow,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: meter, fontSize: 13, fontWeight: 700, color: C.deep,
+                  }}>{ns.step}</Box>
+                ) : (
+                  <Box sx={{
+                    width: 9, height: 9, borderRadius: '50%', flexShrink: 0,
+                    bgcolor: ['plan', 'summary', 'start'].includes(ns.kind) ? C.green : C.yellow,
+                  }} />
+                )}
+                {!ns.chip && (
+                  <Typography sx={ns.step ? {
+                    fontSize: 10.5, fontWeight: 800, letterSpacing: '.13em',
+                    textTransform: 'uppercase', color: C.yellowDeep,
+                  } : { fontSize: 13.5, fontWeight: 700, color: C.deep }}>
+                    {ns.tag}
+                  </Typography>
+                )}
               </Stack>
 
               {/* a time, when there is one — at the size of the only thing that matters */}
@@ -241,51 +448,157 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                 </>
               ) : (
                 <>
-                  <Typography sx={{
-                    fontFamily: '"Fraunces", serif', fontSize: 26, fontWeight: 600,
-                    lineHeight: 1.2, color: C.deep, mt: 1.4,
-                  }}>{ns.title}</Typography>
-                  {ns.body && (
-                    <Typography sx={{ fontSize: 13.5, color: C.ink2, mt: 1, lineHeight: 1.55 }}>
-                      {ns.body}
-                    </Typography>
+                  <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{
+                        fontFamily: '"Fraunces", serif', fontSize: ns.vial ? 24 : 26,
+                        fontWeight: 600, lineHeight: 1.2, color: C.deep, mt: 1.4,
+                      }}>{ns.title}</Typography>
+                      {ns.body && (
+                        <Typography sx={{ fontSize: 13.5, color: C.ink2, mt: 1, lineHeight: 1.55 }}>
+                          {ns.body}
+                        </Typography>
+                      )}
+                    </Box>
+                    {/* The sample itself, because it is the subject of the
+                        sentence beside it. */}
+                    {ns.vial && (
+                      <Box sx={{
+                        width: 84, height: 100, flexShrink: 0, mt: 1.4, position: 'relative',
+                        borderRadius: '50%', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center',
+                        background: 'radial-gradient(60% 46% at 50% 44%, rgba(255,185,0,.13) 0%, rgba(255,185,0,0) 72%)',
+                      }}>
+                        <BloodTubeArt size={88} />
+                        <Box sx={{ position: 'absolute', top: 26, right: 0 }}>
+                          <SparkMark size={15} />
+                        </Box>
+                      </Box>
+                    )}
+                  </Stack>
+
+                  {/* The three answers, columned. They sit above the button
+                      because they are the reasons someone presses it. */}
+                  {ns.assure && (
+                    <Stack direction="row" sx={{ mt: 2.25 }}>
+                      {ns.assure.map((a, i) => {
+                        const Ic = ASSURE_ICONS[a.ic] || AssignmentTurnedInOutlinedIcon;
+                        return (
+                          <Box key={a.t} sx={{
+                            flex: 1, minWidth: 0, px: 0.6, textAlign: 'center',
+                            borderLeft: i === 0 ? 'none' : `1px solid ${C.line}`,
+                          }}>
+                            <Box sx={{
+                              width: 46, height: 46, borderRadius: '50%', mx: 'auto',
+                              bgcolor: 'rgba(224,164,0,.12)', display: 'flex',
+                              alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              <Ic sx={{ fontSize: 23, color: C.yellowDeep }} />
+                            </Box>
+                            <Typography sx={{
+                              fontSize: 11, lineHeight: 1.4, color: C.deep, mt: 0.9,
+                            }}>{a.t}</Typography>
+                          </Box>
+                        );
+                      })}
+                    </Stack>
                   )}
                 </>
               )}
             </Box>
+            )}
 
             {ns.cta && (
-              <Box sx={{ px: 2.25, py: 1.75, borderTop: `1px solid ${C.line}` }}>
+              <Box sx={{
+                px: 2.25, py: 1.75,
+                /* A hero card already carries its own rule under the strip, so
+                   a second one would draw a line across nothing. */
+                borderTop: hero && ns.strip ? 'none' : `1px solid ${C.line}`,
+                pt: hero && ns.strip ? 0.5 : 1.75,
+              }}>
                 <Box onClick={() => {
                   const k = ns.ctaKind || ns.kind;
                   if (k === 'brief') onBrief(pKey);
                   else if (k === 'bookBloods') onBookBloods(pKey);
                   else if (k === 'bookFollow') onBookFollow(pKey);
+                  else if (k === 'joinConsult') onJoinConsult(pKey);
                   else if (k === 'checkpointCall') onCheckpointCall(pKey);
                   else if (k === 'plan') onDetail(pKey);
                   else if (k === 'startDay') dispatch({ type: 'deliver', protocol: pKey });
                 }} sx={{
-                  py: 1.35, borderRadius: '12px', textAlign: 'center',
-                  cursor: ns.locked ? 'default' : 'pointer',
-                  bgcolor: ns.locked ? 'rgba(27,57,91,.05)' : C.yellow,
-                  color: ns.locked ? C.ink2 : C.deep,
-                  fontSize: 14.5, fontWeight: 700,
-                }}>{ns.cta}</Box>
+                  py: 1.5, borderRadius: '15px', cursor: ns.locked ? 'default' : 'pointer',
+                  /* Navy for "enter the room", gold for "choose something".
+                     A video call is not a decision, so it does not get the
+                     colour the product uses for decisions. */
+                  bgcolor: ns.locked ? 'rgba(27,57,91,.05)'
+                    : ns.ctaTone === 'deep' ? C.deep : C.yellow,
+                  color: ns.locked ? C.ink2 : ns.ctaTone === 'deep' ? '#fff' : C.deep,
+                  fontSize: 15, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.1,
+                  boxShadow: ns.locked ? 'none'
+                    : ns.ctaTone === 'deep'
+                      ? '0 12px 28px -16px rgba(27,57,91,.9)'
+                      : '0 12px 28px -14px rgba(255,185,0,.75)',
+                }}>
+                  {!ns.locked && ns.ctaIcon === 'calendar' && (
+                    <CalendarMonthOutlinedIcon sx={{ fontSize: 19 }} />
+                  )}
+                  {!ns.locked && ns.ctaIcon === 'video' && (
+                    <VideocamOutlinedIcon sx={{ fontSize: 20 }} />
+                  )}
+                  {!ns.locked && ns.ctaIcon === 'doc' && (
+                    <DescriptionOutlinedIcon sx={{ fontSize: 19 }} />
+                  )}
+                  {ns.cta}
+                  {ns.ctaIcon === 'doc' && <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />}
+                </Box>
+                {ns.ctaSub && (
+                  <Typography sx={{
+                    fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1,
+                  }}>{ns.ctaSub}</Typography>
+                )}
+                {/* The lock line answers the objection a video call raises, and
+                    the shield answers the one a written plan raises. */}
+                {ns.note && (
+                  <Stack direction="row" spacing={0.6} sx={{
+                    alignItems: 'center', justifyContent: 'center', mt: 1.1,
+                  }}>
+                    <LockOutlinedIcon sx={{ fontSize: 13, color: C.ink2 }} />
+                    <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>{ns.note}</Typography>
+                  </Stack>
+                )}
+                {ns.trust && (
+                  <Stack direction="row" spacing={0.8} sx={{
+                    alignItems: 'center', justifyContent: 'center',
+                    mt: 1.6, pt: 1.5, borderTop: `1px solid ${C.line}`,
+                  }}>
+                    <ShieldOutlinedIcon sx={{ fontSize: 15, color: C.green }} />
+                    <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>{ns.trust}</Typography>
+                  </Stack>
+                )}
                 {ns.foot && (
                   <Typography sx={{
                     fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 0.9,
                   }}>{ns.foot}</Typography>
                 )}
+                {/* A green tick, because this line is answering "what does
+                    this cost me" and the answer is nothing. */}
                 {ns.free && (
-                  <Typography sx={{
-                    fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 0.9,
-                  }}>Included — no charge for this one</Typography>
+                  <Stack direction="row" spacing={0.7} sx={{
+                    alignItems: 'center', justifyContent: 'center', mt: 1.1,
+                  }}>
+                    <CheckCircleOutlineIcon sx={{ fontSize: 15, color: C.green }} />
+                    <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>
+                      Included — no charge for this step
+                    </Typography>
+                  </Stack>
                 )}
               </Box>
             )}
 
-            {/* buying happens here, not somewhere else */}
-            {ns.kind === 'plan' && (
+            {/* Buying happens here, not somewhere else — but NOT on the plan
+                the programme already paid for. */}
+            {ns.kind === 'plan' && !ns.hero && (
               <Box sx={{ px: 2.25, pb: 2.25 }}>
                 <Box onClick={() => onBuy(pKey)} sx={{
                   py: 1.3, borderRadius: '12px', textAlign: 'center', cursor: 'pointer',
@@ -298,21 +611,31 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
 
           {/* what to do before a blood draw — the point is to remove anxiety */}
           {ns.prepList && (
-            <Box sx={{ mt: 2.5 }}>
-              <Label>Before the nurse arrives</Label>
+            <Box sx={{ mt: 2.25 }}>
+              <Label>{ns.prepLabel || 'Before the nurse arrives'}</Label>
               <Stack spacing={1}>
-                {ns.prepList.map((t) => (
-                  <Stack key={t} direction="row" spacing={1.3} sx={{
-                    alignItems: 'flex-start', px: 1.9, py: 1.5, borderRadius: '16px',
-                    bgcolor: '#fff', border: '1px solid rgba(27,57,91,.06)',
-                  }}>
-                    <Box sx={{
-                      width: 5, height: 5, borderRadius: '50%', bgcolor: C.yellowDeep,
-                      mt: '7px', flexShrink: 0,
-                    }} />
-                    <Typography sx={{ fontSize: 13.5, lineHeight: 1.45, color: C.ink }}>{t}</Typography>
-                  </Stack>
-                ))}
+                {ns.prepList.map((p) => {
+                  const { Ic, bg, fg } = PREP_ICONS[p.ic] || PREP_ICONS.home;
+                  return (
+                    <Stack key={p.t} direction="row" spacing={1.4} sx={{
+                      alignItems: 'center', px: 1.5, py: 1.35, borderRadius: '16px',
+                      bgcolor: '#fff', border: '1px solid rgba(27,57,91,.06)',
+                    }}>
+                      <Box sx={{
+                        width: 36, height: 36, borderRadius: '50%', flexShrink: 0, bgcolor: bg,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Ic sx={{ fontSize: 19, color: fg }} />
+                      </Box>
+                      <Typography sx={{
+                        flex: 1, fontSize: 13.5, lineHeight: 1.4, color: C.ink,
+                      }}>{p.t}</Typography>
+                      {/* Outline, not filled: these are what WILL be true on the
+                          day, not things the patient has already ticked off. */}
+                      <CheckCircleOutlineIcon sx={{ fontSize: 20, color: C.green, flexShrink: 0 }} />
+                    </Stack>
+                  );
+                })}
               </Stack>
             </Box>
           )}
@@ -350,41 +673,52 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                 textTransform: 'uppercase', color: C.ink2, mb: 1.4,
               }}>{bts.label || 'Behind the scenes'}</Typography>
 
-              <Stack spacing={1.15}>
-                {bts.steps.map((sp) => (
-                  <Stack key={sp.t} direction="row" spacing={1.2} sx={{ alignItems: 'flex-start' }}>
-                    <Box sx={{
-                      width: 16, height: 16, borderRadius: '50%', flexShrink: 0, mt: '2px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      bgcolor: sp.s === 'done' ? 'rgba(39,153,91,.16)'
-                        : sp.s === 'now' ? 'rgba(255,185,0,.22)' : 'rgba(27,57,91,.07)',
-                    }}>
-                      {sp.s === 'done'
-                        ? <CheckIcon sx={{ fontSize: 10, color: C.green }} />
-                        : sp.s === 'now'
-                          ? <Box sx={{
-                              width: 6, height: 6, borderRadius: '50%', bgcolor: C.yellowDeep,
-                              animation: 'pulse 1.6s ease-in-out infinite',
-                              '@keyframes pulse': {
-                                '0%,100%': { opacity: 1 }, '50%': { opacity: 0.35 },
-                              },
-                            }} />
-                          : null}
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{
-                        fontSize: 13.5, lineHeight: 1.4,
-                        color: sp.s === 'wait' ? C.ink2 : C.deep,
-                        fontWeight: sp.s === 'now' ? 600 : 400,
-                      }}>{sp.t}</Typography>
-                      {sp.note && (
-                        <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.15 }}>
-                          {sp.note}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Stack>
-                ))}
+              {/* A rail, not a list. Three unconnected rows are three facts;
+                  joined by a line they are one thing moving, which is what the
+                  patient is waiting on. */}
+              <Stack>
+                {bts.steps.map((sp, i) => {
+                  const Ic = BTS_ICONS[sp.ic] || CheckIcon;
+                  const tone = sp.s === 'done'
+                    ? { bg: 'rgba(39,153,91,.14)', fg: C.green, ring: 'rgba(39,153,91,.35)' }
+                    : sp.s === 'now'
+                      ? { bg: 'rgba(255,185,0,.18)', fg: C.yellowDeep, ring: 'rgba(224,164,0,.45)' }
+                      : { bg: '#fff', fg: 'rgba(27,57,91,.4)', ring: 'rgba(27,57,91,.15)' };
+                  const last = i === bts.steps.length - 1;
+                  return (
+                    <Stack key={sp.t} direction="row" spacing={1.4}
+                      sx={{ alignItems: 'flex-start' }}>
+                      <Stack sx={{ alignItems: 'center', flexShrink: 0 }}>
+                        <Box sx={{
+                          width: 34, height: 34, borderRadius: '50%',
+                          bgcolor: tone.bg, border: `1.5px solid ${tone.ring}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          animation: sp.s === 'now' ? 'btsPulse 1.9s ease-in-out infinite' : 'none',
+                          '@keyframes btsPulse': {
+                            '0%,100%': { opacity: 1 }, '50%': { opacity: 0.62 },
+                          },
+                        }}>
+                          <Ic sx={{ fontSize: 17, color: tone.fg }} />
+                        </Box>
+                        {!last && (
+                          <Box sx={{ width: 1.5, flex: 1, minHeight: 22, bgcolor: 'rgba(27,57,91,.12)' }} />
+                        )}
+                      </Stack>
+                      <Box sx={{ flex: 1, minWidth: 0, pb: last ? 0 : 1.5 }}>
+                        <Typography sx={{
+                          fontSize: 13.5, lineHeight: 1.35, fontWeight: 700,
+                          color: sp.s === 'wait' ? C.ink2 : C.deep,
+                        }}>{sp.t}</Typography>
+                        {sp.note && (
+                          <Typography sx={{
+                            fontSize: 11.5, mt: 0.2,
+                            color: sp.s === 'done' ? C.green : C.ink2,
+                          }}>{sp.note}</Typography>
+                        )}
+                      </Box>
+                    </Stack>
+                  );
+                })}
               </Stack>
 
               {bts.ready && (
@@ -424,7 +758,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
             }}>
               <Stack direction="row" spacing={1.4} sx={{ alignItems: 'flex-start' }}>
                 <Box sx={{
-                  width: 40, height: 40, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+                  width: 46, height: 46, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
                   background: `linear-gradient(155deg,${who.tone} 0%,rgba(11,21,34,.7) 145%)`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
@@ -440,13 +774,13 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                 </Box>
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack direction="row" spacing={0.8} sx={{ alignItems: 'center' }}>
-                    <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: C.deep }}>
+                  <Stack direction="row" spacing={0.6} sx={{ alignItems: 'center' }}>
+                    <Typography sx={{ fontSize: 15, fontWeight: 700, color: C.deep }}>
                       {who.short}’s Practice
                     </Typography>
-                    {unread && <Box sx={{
-                      width: 7, height: 7, borderRadius: '50%', bgcolor: C.yellow, flexShrink: 0,
-                    }} />}
+                    {/* A licensed practice, marked once. This was an unread dot,
+                        which said the same thing as the "Just now" beside it. */}
+                    <VerifiedRoundedIcon sx={{ fontSize: 16, color: C.yellow, flexShrink: 0 }} />
                     <Box sx={{ flex: 1 }} />
                     <Typography sx={{ fontSize: 11, color: C.ink2, flexShrink: 0 }}>
                       {unread ? 'Just now' : 'Earlier'}
@@ -471,7 +805,11 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                       this reads as a notice rather than something to open */}
                   <Typography sx={{
                     fontSize: 13.5, fontWeight: 700, color: C.yellowDeep, mt: 1.1,
-                  }}>{unread ? 'Tap to reply →' : 'Open conversation →'}</Typography>
+                  }}>
+                    {unread
+                      ? (replyAs ? `Reply to ${replyAs} →` : 'Tap to reply →')
+                      : 'Open conversation →'}
+                  </Typography>
                 </Box>
               </Stack>
             </Box>
@@ -490,7 +828,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
   if (rx.status === 'ready') {
     return (
       <Shell coach={coach} setCoach={setCoach} st={st} pKey={pKey} dispatch={dispatch}>
-        <Head sub="Tuesday 28 July" title="Your protocol is ready." onTwin={() => setCoach(true)} dot={unread}
+        <Head sub="Tuesday, 28 July" title="Your protocol is ready." onTwin={() => setCoach(true)} dot={unread}
               below={switcher} />
         <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
           <Box onClick={() => onDetail(pKey)} sx={{
@@ -538,7 +876,7 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
   if (rx.status === 'shipping') {
     return (
       <Shell coach={coach} setCoach={setCoach} st={st} pKey={pKey} dispatch={dispatch}>
-        <Head sub="Tuesday 28 July"
+        <Head sub="Tuesday, 28 July"
               title={p.blood !== 'no' ? 'Blood test on Thursday.' : 'Arriving tomorrow, 9–11am.'}
               onTwin={() => setCoach(true)} dot={unread} />
         <Box sx={{ flex: '1 1 auto', overflowY: 'auto', px: 2.25, pb: 2 }}>
@@ -627,9 +965,12 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
         : rx.meals.some((m) => m.day === rx.day) ? 'Logged' : '3 slots' };
     if (c.k === 'body') return { ...c, done: loggedBody,
       note: !c.due ? `Day ${Math.ceil(rx.day / 7) * 7 + 1}` : loggedBody ? 'Logged' : 'Weight, waist, photo' };
-    return { ...c, done: rx.checkin.some((x) => x.day === rx.day),
-      note: !c.due ? `Day ${Math.ceil(rx.day / 7) * 7 + 1}`
-        : rx.checkin.some((x) => x.day === rx.day) ? 'Logged' : '4 questions' };
+    /* The scan tile counts readings, not days: two in one day is the good
+       outcome here, so "Logged" would be the wrong word after the first. */
+    const taken = (rx.scans || []).filter((x) => x.day === rx.day).length;
+    return { ...c, done: taken > 0,
+      note: taken === 0 ? '15 seconds'
+        : taken === 1 ? '1 reading · take another' : `${taken} readings` };
   });
   const allDone = captures.filter((c) => c.due).every((c) => c.done);
   const bodyPts = rx.body.map((b) => ({ d: b.day, v: b.kg }));
@@ -1047,6 +1388,12 @@ export default function Today({ st, dispatch, onGo, onBuy, onDetail, onReview, o
                  onSave={(v) => { dispatch({ type: 'body', protocol: pKey, v }); setSheet(null); }} />
       <CheckinSheet open={sheet === 'checkin'} onClose={() => setSheet(null)} day={rx.day}
                     onSave={(v) => { dispatch({ type: 'checkin', protocol: pKey, v }); setSheet(null); }} />
+
+      {/* Not a bottom sheet. The camera needs the whole frame, and a sheet with
+          a live camera in it reads as a preview of something rather than the
+          thing itself. */}
+      <HeartScan open={sheet === 'scan'} onClose={() => setSheet(null)} day={rx.day}
+                 onSave={(v) => { dispatch({ type: 'scan', protocol: pKey, v }); setSheet(null); }} />
     </Shell>
   );
 }
@@ -1064,16 +1411,21 @@ function Shell({ children, coach, setCoach, st, pKey, dispatch }) {
 
 /* The twin lives top-right. At the bottom it sat over the content and ate a
    row of the screen on every state. */
-function Head({ sub, title, onTwin, below, dot }) {
+function Head({ sub, title, onTwin, below, dot, rule }) {
   return (
     <Box sx={{ px: 2.25, pt: 2.5, pb: below ? 0.5 : 2, flexShrink: 0 }}>
       <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography sx={{
             fontSize: 10, fontWeight: 800, letterSpacing: '.16em',
-            textTransform: 'uppercase', color: C.ink2,
+            textTransform: 'uppercase', color: rule ? C.yellowDeep : C.ink2,
           }}>{sub}</Typography>
           <Typography variant="h2" sx={{ color: C.deep, mt: 0.75 }}>{title}</Typography>
+          {/* Only where the title is a sentence. A rule under a two-word label
+              is a flourish; under a sentence it is a floor. */}
+          {rule && (
+            <Box sx={{ width: 44, height: 3, borderRadius: 2, bgcolor: C.yellow, mt: 1.1 }} />
+          )}
         </Box>
         {onTwin && (
           <Box onClick={onTwin} sx={{

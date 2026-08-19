@@ -9,10 +9,11 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import MonitorWeightOutlinedIcon from '@mui/icons-material/MonitorWeightOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
-import StarBorderRoundedIcon from '@mui/icons-material/StarBorderRounded';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { RECOMMEND, coachOf } from '../data';
-import { C } from '../theme';
+import { C, meter } from '../theme';
 
 /* Data names a concept, this maps it to a glyph — so data.js never imports
    a component library. */
@@ -21,32 +22,14 @@ const ICONS = {
   scale: MonitorWeightOutlinedIcon, muscle: FitnessCenterIcon, chart: ShowChartIcon,
 };
 
-/* ── THE HAND-DRAWN UNDERLINE ──
-   One gold stroke that dips and recovers like a pen pulled quickly along the
-   page: down-up-down, uneven on purpose. It is an SVG background rather than
-   text-decoration because no browser lets a text-decoration wobble.
-
-   `preserveAspectRatio="none"` stretches the same gesture under a short word
-   or a five-word phrase, and `box-decoration-break: clone` redraws it on each
-   line fragment when a phrase wraps — without it, the middle line of a
-   wrapped phrase would go bare. */
-const STROKE = encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 9" preserveAspectRatio="none">'
-  + '<path d="M3 5.2 C 22 2.4, 43 7.4, 62 4.6 S 99 6.6, 117 3.4"'
-  + ' fill="none" stroke="#E8A93C" stroke-width="2.6" stroke-linecap="round" opacity=".9"/></svg>',
-);
-
+/* ── THE MARKED PHRASE ──
+   Weight, not decoration. A hand-drawn gold stroke used to run under these
+   phrases, and inside a quotation it read as annotation: someone had gone
+   over the doctor's words with a highlighter afterwards. Bold is the doctor
+   leaning on the phrase as he says it, which is what the copy means. */
 function Mark({ children }) {
   return (
-    <Box component="span" sx={{
-      backgroundImage: `url("data:image/svg+xml,${STROKE}")`,
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: '0 100%',
-      backgroundSize: '100% 0.32em',
-      pb: '0.18em',
-      boxDecorationBreak: 'clone',
-      WebkitBoxDecorationBreak: 'clone',
-    }}>{children}</Box>
+    <Box component="span" sx={{ fontWeight: 700, color: C.deep }}>{children}</Box>
   );
 }
 
@@ -103,7 +86,7 @@ export default function Brief({ pKey, onBack, onStart }) {
   return (
     <Box sx={{ height: '100%', overflowY: 'auto', bgcolor: '#FAF6ED' }}>
       <Box sx={{
-        px: 2.75, pt: 1.75, pb: 2.25,
+        px: 2.75, pt: 1.5, pb: 2,
         opacity: inn ? 1 : 0,
         transform: inn ? 'none' : 'translateY(12px)',
         transition: 'opacity .5s cubic-bezier(.2,.9,.25,1), transform .55s cubic-bezier(.2,.9,.25,1)',
@@ -143,25 +126,43 @@ export default function Brief({ pKey, onBack, onStart }) {
               color: C.deep, lineHeight: 1.15,
             }}>{c.name}</Typography>
             <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.3 }}>{c.role}</Typography>
+            {/* Experience earns a pill of its own. On a line with the specialty
+                it was one more grey fragment; set apart it reads as the single
+                credential worth carrying into the recommendation below. */}
+            <Typography sx={{
+              display: 'inline-block', mt: 0.6, px: 1, py: 0.3, borderRadius: '999px',
+              fontSize: 10.5, fontWeight: 600, color: C.deep,
+              bgcolor: 'rgba(27,57,91,.07)',
+            }}>{c.years}+ years experience</Typography>
           </Box>
         </Stack>
 
         {/* The heading, with the mock's gold full stop. */}
         <Typography sx={{
           fontFamily: '"Fraunces", serif', fontSize: 25, fontWeight: 600,
-          lineHeight: 1.14, color: C.deep, mt: 2.25,
+          lineHeight: 1.14, color: C.deep, mt: 1.75,
         }}>
           Here’s my assessment<Box component="span" sx={{ color: C.yellow }}>.</Box>
         </Typography>
 
-        {/* The assessment, spoken against a gold bar. */}
-        <Typography sx={{
-          fontSize: 13.5, lineHeight: 1.55, color: C.ink, mt: 1.75,
-          pl: 1.75, borderLeft: '3px solid #F5C64F',
-        }}>{markUp(s.think, s.marks)}</Typography>
+        {/* The assessment, spoken against a gold bar. The quotation mark is
+            what turns the paragraph from a summary the app wrote into words
+            the doctor said — the bar alone was doing that job on its own and
+            reading as a callout box. */}
+        <Stack direction="row" spacing={1.25} sx={{
+          alignItems: 'flex-start', mt: 1.5, pl: 1.5, borderLeft: '3px solid #F5C64F',
+        }}>
+          <Typography aria-hidden sx={{
+            fontFamily: '"Fraunces", serif', fontSize: 34, fontWeight: 700,
+            lineHeight: 0.85, color: C.yellow, flexShrink: 0, mt: '2px',
+          }}>“</Typography>
+          <Typography sx={{ fontSize: 13.5, lineHeight: 1.55, color: C.ink }}>
+            {markUp(s.think, s.marks)}
+          </Typography>
+        </Stack>
 
         {/* The bridge between what was said and what is recommended. */}
-        <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', mt: 2.25 }}>
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', mt: 1.75 }}>
           <Box sx={{
             width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
             bgcolor: 'rgba(27,57,91,.06)',
@@ -177,7 +178,7 @@ export default function Brief({ pKey, onBack, onStart }) {
 
         {/* ── the recommendation — the one dark object on the page ── */}
         <Box sx={{
-          mt: 1.75, p: 2, borderRadius: '22px', position: 'relative', overflow: 'hidden',
+          mt: 1.5, p: 1.85, borderRadius: '22px', position: 'relative', overflow: 'hidden',
           background: 'linear-gradient(160deg,#1E3E63 0%,#132C4A 100%)',
           boxShadow: '0 20px 44px -26px rgba(14,27,44,.75)',
         }}>
@@ -217,7 +218,7 @@ export default function Brief({ pKey, onBack, onStart }) {
 
           {/* Three outcomes, columned like the mock. */}
           <Stack direction="row" sx={{
-            mt: 2, pt: 1.75, borderTop: '1px solid rgba(255,255,255,.12)',
+            mt: 1.75, pt: 1.5, borderTop: '1px solid rgba(255,255,255,.12)',
           }}>
             {s.points.map((p, i) => {
               const Ic = ICONS[p.ic] || BoltIcon;
@@ -244,22 +245,54 @@ export default function Brief({ pKey, onBack, onStart }) {
           </Stack>
         </Box>
 
-        {/* The close — still the clinician talking. */}
+        {/* The close — still the clinician talking, with the one number that
+            answers "am I the only one?". A shield rather than a star: this is
+            a clinical assurance, and a star is a rating. */}
         <Stack direction="row" spacing={1.25} sx={{
-          alignItems: 'center', mt: 1.5, px: 1.75, py: 1.25,
+          alignItems: 'center', mt: 1.5, px: 1.5, py: 1.4,
           borderRadius: '14px', bgcolor: 'rgba(27,57,91,.05)',
         }}>
-          <StarBorderRoundedIcon sx={{ fontSize: 20, color: C.yellowDeep, flexShrink: 0 }} />
-          <Typography sx={{ fontSize: 12.5, lineHeight: 1.45, color: C.deep }}>
+          <Box sx={{
+            width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+            bgcolor: 'rgba(224,164,0,.15)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <VerifiedUserOutlinedIcon sx={{ fontSize: 18, color: C.yellowDeep }} />
+          </Box>
+          <Typography sx={{ flex: 1, fontSize: 12.5, lineHeight: 1.4, color: C.deep, fontWeight: 600 }}>
             {s.why}
           </Typography>
+
+          {s.onPlan && (
+            <Box sx={{ flexShrink: 0, textAlign: 'center' }}>
+              <Typography sx={{
+                px: 1.1, py: 0.4, borderRadius: '999px', bgcolor: '#fff',
+                fontFamily: meter, fontSize: 13, fontWeight: 700, color: C.deep,
+                boxShadow: '0 6px 16px -12px rgba(27,57,91,.6)',
+              }}>{s.onPlan}</Typography>
+              <Typography sx={{ fontSize: 9, color: C.ink2, mt: 0.4, lineHeight: 1.2 }}>
+                on this plan
+              </Typography>
+            </Box>
+          )}
         </Stack>
 
         <Button fullWidth variant="contained" color="secondary" onClick={onStart}
           endIcon={<ArrowForwardIcon sx={{ fontSize: 17 }} />}
-          sx={{ mt: 1.5, py: 1.35, fontSize: 15 }}>
+          sx={{ mt: 1.5, py: 1.4, fontSize: 15, borderRadius: '17px' }}>
           View recommended care
         </Button>
+
+        {/* The three words that answer the objection the price will raise on
+            the next screen. Quiet, and never larger than the button. */}
+        <Stack direction="row" spacing={0.6} sx={{
+          alignItems: 'center', justifyContent: 'center', mt: 1.3,
+        }}>
+          <LockOutlinedIcon sx={{ fontSize: 13, color: C.ink2 }} />
+          <Typography sx={{ fontSize: 11.5, color: C.ink2 }}>
+            Evidence-based · Personalised · Ongoing
+          </Typography>
+        </Stack>
       </Box>
     </Box>
   );

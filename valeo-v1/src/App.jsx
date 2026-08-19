@@ -214,7 +214,7 @@ function reducer(s, a) {
             (_, i) => ({ day: i + 1, kind: 'taken', v: true })),
           body: Array.from({ length: Math.ceil(day / 7) },
             (_, i) => ({ day: i * 7 + 1, kg: 96 - i * 0.323, waist: 96 - i * 0.185 })),
-          meals: [], checkin: [], doneItems: [],
+          meals: [], checkin: [], scans: [], doneItems: [],
         };
       };
       return {
@@ -337,7 +337,7 @@ function reducer(s, a) {
       const monthly = s.runs[k] && s.runs[k].term === 'monthly';
       return patchRun(s, k, {
         status: 'running', day: 1, total: monthly ? 28 : PROTOCOLS[k].wk * 7,
-        logs: [], doneItems: [], meals: [], body: [], checkin: [],
+        logs: [], doneItems: [], meals: [], body: [], checkin: [], scans: [],
       });
     }
     case 'toggleItem': {
@@ -366,6 +366,14 @@ function reducer(s, a) {
       const k = target(s, a); const r = s.runs[k]; if (!r) return s;
       return patchRun(s, k, {
         checkin: [...r.checkin.filter((c) => c.day !== r.day), { day: r.day, v: a.v }] });
+    }
+    /* A camera reading. Kept as a list rather than one value per day, because
+       the point of the scan is the pair either side of a sitting — overwriting
+       the morning's reading with the evening's would delete the comparison the
+       feature exists to make. */
+    case 'scan': {
+      const k = target(s, a); const r = s.runs[k]; if (!r) return s;
+      return patchRun(s, k, { scans: [...(r.scans || []), a.v] });
     }
     /* Demo affordance — jump a week so the loop can be walked in a sitting. */
     case 'advance': {
@@ -544,6 +552,9 @@ export default function App() {
   /* 'plan' | 'results' — which face of a finished protocol to open on */
   const [detailView, setDetailView] = useState('plan');
   const [push, setPush] = useState(null);
+  /* A tab that has asked for the whole frame. Only the heart scan does this,
+     and only while its camera is open. */
+  const [immersive, setImmersive] = useState(false);
 
   const openDetail = (pk) => { setDetail(pk); setDetailView('plan'); setFlow('detail'); };
   /* The slot chosen in Consult, held until intake actually confirms it — the
@@ -610,15 +621,25 @@ export default function App() {
     }
   };
 
-  /* Picking a time, from the AI summary or from Meet. There is no live room
-     to join any more: every consultation is booked into the next hour and
-     held until it comes round. */
+  /* ── STRAIGHT INTO THE ROOM ──
+     The first consultation used to go through a slot picker: three times in
+     the next hour, pick one, wait for it. That is one screen and one wait
+     standing between a patient who has just agreed to speak to a doctor and
+     the doctor. The introduction is warm and the momentum is real at exactly
+     that moment, and a calendar spends both.
+
+     So this hands over directly. The other bookings — bloods, the follow-up,
+     the safety review — still use the picker, because those genuinely happen
+     later and a time is the whole point of them. */
   const joinConsult = () => {
     const pk = meetKey || leadFor(st.qa.goal);
     setDetail(pk); setMeetKey(pk);
-    setReview(false); setBooking('consult');
+    /* A first consultation is never a checkpoint call, a renewal review or a
+       safety review, so none of those endings can be left over from before. */
+    setReview(false); setCkCall(false); setRenewCall(false); setBooking('consult');
+    dispatch({ type: 'answers', qa: { consultSlot: null } });
     dispatch({ type: 'log', event: 'CONSULT_JOINED', actor: 'patient', protocol: pk });
-    setFlow('consult');
+    setFlow('consultation');
   };
 
   /* The consultation ends: door B writes the brief; a checkpoint call ends
@@ -1018,12 +1039,48 @@ export default function App() {
 
   const chrome = flow === 'app';
 
+  /* ── THE ADVANCE LEVERS ──
+     The only way past a state the world owns: a doctor signing, a lab
+     uploading, a nurse arriving. Built once here because a demo link puts them
+     at the TOP of the rail, where they cannot be missed, and a working session
+     keeps them at the bottom, where they do not shout over the navigation.
+     Same buttons either way — two copies would drift. */
+  const levers = (
+    <>
+      <Stack spacing={0.6} sx={{ mt: 2.5 }}>
+        {steps.length ? steps.map((sp) => (
+          <Box key={sp.t} onClick={() => sp.run(f && f.k)} sx={{
+            px: 1.5, py: 1.1, borderRadius: '10px', cursor: 'pointer',
+            fontSize: 12.5, fontWeight: 700, textAlign: 'center',
+            bgcolor: C.yellow, color: C.deep,
+          }}>▶ {sp.t}</Box>
+        )) : (
+          <Box sx={{
+            px: 1.5, py: 1.1, borderRadius: '10px',
+            fontSize: 12.5, fontWeight: 700, textAlign: 'center',
+            bgcolor: 'rgba(255,255,255,.07)', color: '#5D7793',
+          }}>Nothing to advance</Box>
+        )}
+      </Stack>
+      <Typography sx={{ fontSize: 11, color: '#5D7793', mt: 1, lineHeight: 1.5 }}>
+        Fires the next thing the system does, not the user.
+      </Typography>
+    </>
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      {/* On a demo link the row is allowed to WRAP. The dock used to vanish
+          below 900px, and the levers in it are the only way past any state the
+          world would have advanced — a booked nurse visit, a lab result, a
+          parcel. A narrow window therefore dead-ended the demo with no way
+          forward and nothing on screen to say why. Wrapping puts the dock
+          under the phone instead of deleting it. */}
       <Box sx={{
         minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
         gap: 5, p: 4, bgcolor: '#0E1D2E',
+        ...(DEMO ? { flexWrap: 'wrap', alignContent: 'center' } : null),
       }}>
         {/* Reviewers on the left, demo controls on the right, the product in
             the middle. The panel reads the same state the app renders from, so
@@ -1048,7 +1105,7 @@ export default function App() {
                             onBlood={bookBlood} />
                 )}
                 {tab === 'today' && (
-                  <Today st={st} dispatch={dispatch} onGo={setTab}
+                  <Today st={st} dispatch={dispatch} onGo={setTab} onImmersive={setImmersive}
                          onMonthResults={(pk) => { setDetail(pk); setFlow('monthResults'); }}
                          onRenewSub={renewProgramme}
                          onJoinConsult={() => {
@@ -1087,16 +1144,18 @@ export default function App() {
                         onBuySupp={() => {}} />
                 )}
               </Box>
-              <BottomNav active={tab} onGo={setTab} dark={dark} tabs={tabs}
+              {!immersive && <BottomNav active={tab} onGo={setTab} dark={dark} tabs={tabs}
                          onHome={() => setFlow('home')}
-                         badge={{ protocols: st.saved.length }} />
+                         badge={{ protocols: st.saved.length }} />}
             </Box>
           ) : view}
         </Phone>
 
         <Box sx={{
           width: dock === 'controls' ? 230 : 430, maxWidth: 430, flexShrink: 0,
-          display: HIDE_DOCK ? 'none' : { xs: 'none', md: 'block' },
+          /* A demo link shows the dock at every width; only ?bare=1 removes it,
+             and that is for screenshots, where there is nothing to advance. */
+          display: HIDE_DOCK ? 'none' : (DEMO ? 'block' : { xs: 'none', md: 'block' }),
           maxHeight: 844, overflowY: 'auto', pr: 0.5,
           transition: 'width .25s ease',
         }}>
@@ -1121,6 +1180,15 @@ export default function App() {
           {dock === 'machine' && <MachinePanel st={st} ui={ui} fireEvent={fireEvent} />}
 
           <Box sx={{ display: dock === 'controls' ? 'block' : 'none' }}>
+          {DEMO && (
+            <Box sx={{ mb: 2.5, pb: 2.5, borderBottom: '1px solid rgba(255,255,255,.12)' }}>
+              <Typography sx={{
+                fontSize: 11, fontWeight: 800, letterSpacing: '.18em',
+                textTransform: 'uppercase', color: C.yellow,
+              }}>Advance the journey</Typography>
+              {levers}
+            </Box>
+          )}
           <Typography sx={{
             fontSize: 11, fontWeight: 800, letterSpacing: '.18em',
             textTransform: 'uppercase', color: C.yellow,
@@ -1168,24 +1236,9 @@ export default function App() {
             active={chrome ? tab : null}
             onGo={(k) => { setFlow('app'); setTab(k); }} />
 
-          <Stack spacing={0.6} sx={{ mt: 2.5 }}>
-            {steps.length ? steps.map((sp) => (
-              <Box key={sp.t} onClick={() => sp.run(f && f.k)} sx={{
-                px: 1.5, py: 1.1, borderRadius: '10px', cursor: 'pointer',
-                fontSize: 12.5, fontWeight: 700, textAlign: 'center',
-                bgcolor: C.yellow, color: C.deep,
-              }}>▶ {sp.t}</Box>
-            )) : (
-              <Box sx={{
-                px: 1.5, py: 1.1, borderRadius: '10px',
-                fontSize: 12.5, fontWeight: 700, textAlign: 'center',
-                bgcolor: 'rgba(255,255,255,.07)', color: '#5D7793',
-              }}>Nothing to advance</Box>
-            )}
-          </Stack>
-          <Typography sx={{ fontSize: 11, color: '#5D7793', mt: 1, lineHeight: 1.5 }}>
-            Fires the next thing the system does, not the user.
-          </Typography>
+          {/* On a demo link the levers are already at the top; here they sit
+              in their usual place at the bottom of the rail. */}
+          {!DEMO && levers}
 
           <Box onClick={() => {
                  dispatch({ type: 'demoFull' }); setFlow('home');

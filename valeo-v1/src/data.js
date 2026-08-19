@@ -885,12 +885,16 @@ export const CONSULT_SLOTS = [
 /* A fasting draw is a morning appointment. Offering 6:30 pm next to "fast for
    10 hours" is the kind of small incoherence that tells a patient nobody joined
    these two screens up. */
+/* `on` is the calendar date behind the friendly day name. "Tomorrow" is warm
+   and tells you nothing you could write down; the date is cold and tells you
+   exactly what to write down. Both, in that order, and the app's today is
+   Tuesday 28 July throughout. */
 export const BLOOD_SLOTS = [
-  { d: 'Tomorrow', t: '7:00 am', note: 'Earliest' },
-  { d: 'Tomorrow', t: '8:30 am' },
-  { d: 'Thursday', t: '7:00 am' },
-  { d: 'Thursday', t: '9:00 am' },
-  { d: 'Friday',   t: '7:30 am' },
+  { d: 'Tomorrow', on: 'Wed, 29 July', t: '7:00 am', note: 'Earliest' },
+  { d: 'Tomorrow', on: 'Wed, 29 July', t: '8:30 am' },
+  { d: 'Thursday', on: 'Thu, 30 July', t: '7:00 am' },
+  { d: 'Thursday', on: 'Thu, 30 July', t: '9:00 am' },
+  { d: 'Friday',   on: 'Fri, 31 July', t: '7:30 am' },
 ];
 
 /* Grouped the way a calendar is read: by day, then by time. */
@@ -991,9 +995,68 @@ export function capturesFor(rx, day, devices = []) {
     { k: 'meals', t: 'Meals',    ic: '🍽', due: !dropped.includes('meals'),
       auto: dropped.includes('meals') },
     { k: 'body',  t: 'Body',     ic: '⚖️', due: weekly },
-    { k: 'checkin', t: 'Check-in', ic: '◈', due: weekly },
+    /* The heart scan replaced the four-question check-in. A check-in asked the
+       patient how they felt and wrote down their answer; the scan measures
+       something. Daily rather than weekly, because the reading it exists to
+       produce is a before-and-after pair around one sitting. */
+    { k: 'scan', t: 'Heart scan', ic: '❤️', due: true },
   ];
 }
+/* ══════════════════════════════════════════════════════════════════════════
+   THE HEART SCAN
+
+   A camera-based reading: the patient looks at the front camera for fifteen
+   seconds and the app reports heart rate, blood pressure and HRV.
+
+   ── WHAT THIS PROTOTYPE ACTUALLY DOES ──
+   NOTHING is measured. The camera is real and the frame brightness is really
+   sampled, because the lighting warning has to be true or it is theatre. The
+   three numbers are simulated: they start wide and converge on the values
+   below, which is what a real photoplethysmography readout looks like as its
+   confidence interval narrows. No signal is extracted from the video, no frame
+   leaves the device, and nothing is stored beyond this session.
+
+   Any external audience must be told that before they see it. A screen that
+   reports a blood pressure it did not measure is a medical claim, and the
+   honesty of the whole product rests on nobody mistaking this for one.
+   ══════════════════════════════════════════════════════════════════════════ */
+export const SCAN_SECONDS = 15;
+
+/* Where the simulated readout settles. Unremarkable adult values on purpose:
+   a demo that returns a dramatic number invites a clinical conversation the
+   prototype cannot have. */
+export const SCAN_TARGET = { hr: 68, sys: 118, dia: 76, hrv: 54 };
+
+export const SCAN_MEASURES = [
+  { k: 'hr', ic: 'heart', t: 'Heart Rate' },
+  { k: 'bp', ic: 'drop', t: 'Blood Pressure' },
+  { k: 'hrv', ic: 'wave', t: 'HRV' },
+];
+
+export const SCAN_STEPS = [
+  { ic: 'sun', t: 'Find good light',
+    s: 'Natural light works best. Avoid strong backlighting or dark rooms.' },
+  { ic: 'phone', t: 'Hold your phone steady',
+    s: 'Look directly at the camera and keep your head still for about 15 seconds.' },
+  { ic: 'lotus', t: 'Before & after meditation',
+    s: 'For the most useful trends, record once before meditation and once after. '
+     + 'We’ll compare the change over time.' },
+];
+
+/* The readout, with the band each number falls in. The band is the whole point
+   of showing a number to a patient: 118 over 76 means nothing on its own. */
+export function scanBands(v) {
+  return [
+    { k: 'hr', t: 'Heart rate', v: `${v.hr}`, unit: 'bpm',
+      band: v.hr < 60 ? 'Low' : v.hr <= 80 ? 'Normal' : 'Elevated' },
+    { k: 'bp', t: 'Blood pressure', v: `${v.sys}/${v.dia}`, unit: 'mmHg',
+      band: v.sys < 120 && v.dia < 80 ? 'Normal'
+        : v.sys < 130 ? 'Elevated' : 'High' },
+    { k: 'hrv', t: 'HRV', v: `${v.hrv}`, unit: 'ms',
+      band: v.hrv >= 50 ? 'Good' : v.hrv >= 30 ? 'Fair' : 'Low' },
+  ];
+}
+
 /* Count back from today if today is already logged, otherwise from yesterday —
    an unlogged morning shouldn't read as a broken streak before the day is out. */
 export function streakOf(rx) {
@@ -2110,50 +2173,81 @@ export function nextStep(st, pKey) {
         };
       }
       return {
-        kind: 'bookBloods', tag: 'Step 1 of your programme',
-        title: 'Your blood test comes first.',
-        body: `${who} needs these results before writing your plan. A nurse `
-            + 'comes to you.',
-        cta: 'Choose a time', free: true,
+        kind: 'bookBloods', tag: 'Step 1 of your programme', step: 1,
+        title: 'We’ll start with your blood test.',
+        body: `${who} needs these results to design a plan that’s right for you.`,
+        cta: 'Choose a time', ctaIcon: 'calendar', free: true,
+        /* The three objections a home blood draw actually raises, answered
+           before the button rather than after it: who turns up, what it is
+           like, and whether anyone reads the result. Held here with the rest
+           of the step so the screen stays a renderer. */
+        assure: [
+          { ic: 'nurse', t: 'A qualified nurse comes to you' },
+          { ic: 'vial', t: 'Quick, safe and convenient' },
+          { ic: 'report', t: `Results reviewed by ${who}` },
+        ],
       };
     }
+    /* Booked. The card stops being a task and becomes an appointment, so the
+       time is the largest thing on it and the nurse is the picture. */
     case 'bloodsBooked': return {
-      kind: 'bloods', tag: 'Blood draw scheduled',
-      when: r && r.bloodSlot, cta: null,
+      kind: 'bloods', tag: 'First step', title: 'At-home health test',
+      when: r && r.bloodSlot, cta: null, nurse: true,
+      whenLead: 'Scheduled for',
+      /* Each line gets a mark of its own. Four identical bulleted rows read as
+         terms and conditions; four marked rows read as four things to do. */
+      prepLabel: 'Before your appointment',
       prepList: [
-        'Fast for 10 hours — water is fine',
-        'Drink water before the nurse arrives',
-        'Have your ID ready',
-        'The nurse comes to you',
+        { ic: 'clock', t: 'Fast for 10 hours — water is fine' },
+        { ic: 'water', t: 'Drink water before the nurse arrives' },
+        { ic: 'id', t: 'Have your ID ready' },
+        { ic: 'home', t: 'The nurse comes to you' },
       ],
     };
     case 'bloodsDone': return {
-      kind: 'bookFollow', tag: 'Blood sample received',
+      kind: 'bookFollow', tag: 'Lab sample received', chip: 'In progress',
       /* This said "Jamie is reviewing your results" the moment the nurse left,
          which is chronologically impossible — the lab has not run them yet.
          Claiming work nobody has started is a small lie that costs trust the
          first time a patient notices it. */
-      title: 'We’re waiting on your lab results.',
-      body: `This usually takes 24–48 hours. In the meantime, pick a time with `
-        + `${who} to go through them.`,
-      cta: 'Choose a time', free: true, bts: 'processing',
+      title: 'We’re analysing your sample.',
+      body: 'This usually takes 24–48 hours. In the meantime, you can book a '
+        + `time with ${who} to go through your results.`,
+      cta: 'Choose a time', ctaIcon: 'calendar', free: true,
+      bts: 'processing', vial: true,
     };
     case 'followup': return {
-      kind: 'consult', tag: 'Follow-up consultation',
-      when: r && r.followSlot, cta: 'Join consultation',
-      foot: 'Link opens 10 minutes before', locked: true,
+      kind: 'consult', tag: 'Consultation booked',
+      title: `Consultation with ${who}`,
+      when: r && r.followSlot, whenSub: '30-minute video call',
+      hero: { ic: 'calendar', tone: 'amber' },
+      /* The reminder is the answer to "do I have to sit and watch the clock",
+         so it sits inside the appointment card rather than under it. Blue, and
+         the only blue in the flow: it is information, not a state and not an
+         action. */
+      strip: { ic: 'clock', t: 'We’ll remind you before your call.',
+               s: `The link opens ${LINK_OPENS_MINUTES} minutes before.` },
+      cta: 'Join consultation', ctaKind: 'joinConsult', ctaIcon: 'video',
+      ctaTone: 'deep',
+      note: 'Secure video call · Your privacy is protected',
       /* the second, quieter question a patient has: what is happening while I
          wait? Answered alongside the appointment, not instead of it. */
-      bts: (r && r.labs) === 'ready' ? 'ready' : 'processing',
-
+      bts: 'consult',
     };
     /* No price. The patient bought the programme at the Care Brief, and this
        plan is what the programme produced. Asking for money twice for one
        course of care is the thing the new flow exists to remove. */
     case 'ready': return {
-      kind: 'plan', tag: 'Your plan is ready',
-      title: `${who} built your plan.`,
-      cta: 'View your plan', price: 0,
+      kind: 'plan', tag: 'Plan ready',
+      title: 'Your personalised care plan is ready',
+      body: `${who} has reviewed your results and created a plan tailored to you.`,
+      hero: { ic: 'plan', tone: 'green' },
+      cta: 'Review my plan', ctaIcon: 'doc', ctaSub: 'See your recommendations and next steps',
+      /* No "activate" button here. The programme was paid for at the care
+         brief; this plan is what the money bought. A second purchase control
+         on the screen that delivers it is the thing the new flow removed. */
+      trust: 'Your health data is private and secure',
+      bts: 'plan',
     };
 
     /* ── PAYING IS NOT STARTING ──
@@ -2459,7 +2553,10 @@ export const COACHES = {
   C_MAHMOUD: {
     name: 'Dr. Mahmoud Hassan', short: 'Dr. Mahmoud', mono: 'MH',
     img: asset('team/mahmoud.jpg'),
-    kind: 'doctor', role: 'Internal Medicine', reg: 'SCFHS 24-118940',
+    /* "Longevity Expert", not "Internal Medicine". The specialty is what his
+       licence says; the role is what this patient came for, and Mahmoud now
+       leads exactly one protocol. */
+    kind: 'doctor', role: 'Longevity Expert', reg: 'SCFHS 24-118940',
     years: 11, langs: 'Arabic · English',
     focus: 'Metabolic health & preventive medicine',
     cats: ['long', 'energy'],
@@ -3179,15 +3276,61 @@ export function fulfilment(st, pKey) {
   ].map((x, i) => ({ ...x, s: i < at ? 'done' : i === at ? 'now' : 'wait', note: x.s }));
 }
 
-export function behindScenes(stage) {
+/* Called "Your progress" rather than "Behind the scenes": the patient is not
+   watching our operations, they are watching their own sample move. Every row
+   carries a state word underneath it, because a row with no status is a row
+   the patient has to guess about — which is the exact anxiety this card was
+   added to remove. */
+export function behindScenes(stage, opts = {}) {
   if (!stage) return null;
+  const { slot, doc } = opts;
+  /* The first two rows never change once the nurse has been, so they are
+     written once and the later stages only append to them. */
+  const drawn = [
+    { ic: 'check', t: 'Sample collected', s: 'done', note: 'Completed' },
+    { ic: 'check', t: 'Sample received & in analysis', s: 'done',
+      note: 'Usually 24–48 hours' },
+  ];
+
+  /* A consultation is booked: the rail grows a row for it, because the patient
+     is now waiting on a conversation rather than on a laboratory. */
+  if (stage === 'consult') {
+    return {
+      label: 'Your progress',
+      steps: [
+        ...drawn,
+        /* "Today 6:30 pm" is a slot key; "Today at 6:30 pm" is a sentence. */
+        { ic: 'clock', t: 'Preparing for your consultation', s: 'now',
+          note: slot ? slot.replace(/^(\S+)\s/, '$1 at ') : 'Soon' },
+        { ic: 'report', t: 'Plan ready', s: 'wait',
+          note: 'We’ll build your plan after your consultation' },
+      ],
+    };
+  }
+
+  /* The plan exists. Everything behind it is closed. */
+  if (stage === 'plan') {
+    return {
+      label: 'Your progress',
+      steps: [
+        ...drawn,
+        { ic: 'check', t: 'Results ready', s: 'done', note: 'Completed' },
+        { ic: 'report', t: 'Plan ready', s: 'now',
+          note: `${doc || 'Your doctor'} has built your plan` },
+      ],
+    };
+  }
+
   const ready = stage === 'ready';
   return {
+    label: 'Your progress',
     steps: [
-      { t: 'Blood sample received', s: 'done' },
-      { t: ready ? 'Lab analysis complete' : 'Lab analysing your sample',
-        s: ready ? 'done' : 'now', note: ready ? null : 'Usually 24–48 hours' },
-      { t: 'Report ready', s: ready ? 'done' : 'wait' },
+      { ic: 'check', t: 'Sample collected', s: 'done', note: 'Completed' },
+      { ic: 'lab', t: ready ? 'Analysis complete' : 'Sample received & in analysis',
+        s: ready ? 'done' : 'now',
+        note: ready ? 'Completed' : 'Usually 24–48 hours' },
+      { ic: 'report', t: 'Results ready', s: ready ? 'done' : 'wait',
+        note: ready ? 'Ready to view' : 'We’ll notify you' },
     ],
     ready,
   };
@@ -3273,9 +3416,9 @@ export function practiceScript(st, pKey) {
     /* Paid. The next thing the patient does is pick a time. */
     programme: {
       key: 'programme',
-      lines: ['You are on the programme. Thank you.',
-              'Step one is your blood test. Pick a time that suits you and a '
-                + 'nurse comes to you.'],
+      lines: ['Welcome to the programme — I’m glad to have you on board.',
+              'The first step is your blood test. Pick a time that works for '
+                + 'you and our nurse will take care of the rest.'],
       chips: [
         { ic: '🩸', q: 'What happens at the blood test?',
           a: ['A nurse comes to your home, takes one sample, and leaves. About '
@@ -3292,7 +3435,9 @@ export function practiceScript(st, pKey) {
 
     bloodsBooked: {
       key: 'bloodsBooked',
-      lines: [`Your nurse is booked for ${(r && r.bloodSlot) ? r.bloodSlot.toLowerCase() : 'soon'}.`,
+      lines: ['You are on the programme. Thank you.',
+              `Your at-home health test is booked for ${(r && r.bloodSlot) ? r.bloodSlot.toLowerCase() : 'soon'}.`,
+              'We’ll review your results and build your personal plan.',
               'Anything you’re unsure about beforehand, just ask.'],
       chips: [
         { ic: '⏰', q: 'When is my nurse arriving?',
@@ -3312,8 +3457,9 @@ export function practiceScript(st, pKey) {
 
     bloodsDone: {
       key: 'bloodsDone',
-      lines: ['We’ve received your blood sample.',
-              'We’ll let you know as soon as the laboratory sends the results.'],
+      lines: [`Your nurse is booked for ${(r && r.bloodSlot) ? r.bloodSlot.toLowerCase() : 'soon'}.`,
+              'We’ve received your blood sample and our lab team is on it.',
+              'We’ll let you know as soon as your results are ready.'],
       chips: [
         { ic: '📦', q: 'Have my results arrived?',
           a: ['Not yet — the sample reached the lab and is being analysed now.',
@@ -3329,8 +3475,9 @@ export function practiceScript(st, pKey) {
 
     followup: {
       key: 'followup',
-      lines: [`You’re seeing ${first} ${(r && r.followSlot) ? r.followSlot.toLowerCase() : 'soon'} to go through your results.`,
-              'Ask us anything before then.'],
+      lines: ['We’ve received your blood sample and our lab team is on it.',
+              'We’ll let you know as soon as your results are ready.',
+              `See you ${(r && r.followSlot) ? r.followSlot.toLowerCase() : 'soon'}.`],
       chips: [
         { ic: '📊', q: 'Can you explain my report?',
           a: ['We can walk you through any marker in plain English.',
@@ -3381,8 +3528,15 @@ export function practiceScript(st, pKey) {
     })(),
     ready: {
       key: 'ready',
-      lines: ['Your plan is ready.',
-              `${first} has finished reviewing everything.`],
+      lines: ['I’ve reviewed your results carefully and created a plan that’s '
+                + 'tailored to your health.',
+              'Take a look and let me know if you have any questions before we '
+                + 'discuss it.'],
+      /* The practice speaks as "we" everywhere else. Here the doctor speaks as
+         "I", because he is the one who wrote the plan and this is the only
+         message in the journey that is his own work rather than the clinic's
+         operations. The reply prompt names him for the same reason. */
+      replyAs: c.short,
       chips: [
         { ic: '📄', q: 'Explain what’s in my plan.',
           a: [`${first} built it around ${goal}.`,
@@ -3516,6 +3670,64 @@ export function prepClosing(first) {
    after the consultation. Here they are authored per protocol, in that
    clinician's voice, and never assembled from fragments.
    ══════════════════════════════════════════════════════════════════════════ */
+/* ── THE OUTLOOK AND THE MARKERS ──
+   Two authored fixtures per programme, attached below rather than inside the
+   RECOMMEND literal so that literal stays the clinician's words only.
+
+   `outlook` is where the patient is and where this plan expects to take them.
+   Two numbers and a label each: a score with no verdict beside it is a number
+   the patient has to interpret, and interpreting their own health score is the
+   job we are being paid to do for them.
+
+   `markers` is the same promise expressed in units a laboratory can settle.
+   Four, never more: a screen of twelve markers is a report, and this is a plan.
+   Baseline values are PLACEHOLDERS pending sign-off, like every clinical number
+   in this prototype. */
+const OUTLOOK = {
+  P_LONG: { now: 58, expected: 82, nowLabel: 'Needs attention', expLabel: 'On track',
+            title: 'Your longevity outlook',
+            note: 'With this plan, your biological age can improve.' },
+  P_WEIGHT: { now: 54, expected: 79, nowLabel: 'Needs attention', expLabel: 'On track',
+              title: 'Your metabolic outlook',
+              note: 'With this plan, your metabolic health can improve.' },
+  P_TEST: { now: 61, expected: 84, nowLabel: 'Below range', expLabel: 'On track',
+            title: 'Your performance outlook',
+            note: 'With this plan, your energy and drive can improve.' },
+  P_POST: { now: 56, expected: 81, nowLabel: 'Needs attention', expLabel: 'On track',
+            title: 'Your recovery outlook',
+            note: 'With this plan, your energy and strength can return.' },
+};
+
+const MARKERS = {
+  P_LONG: [
+    { ic: 'heart', t: 'ApoB', base: '128 mg/dL', target: '< 70 mg/dL' },
+    { ic: 'drop', t: 'hs-CRP', base: '2.4 mg/L', target: '< 1.0 mg/L' },
+    { ic: 'scale', t: 'Body Fat', base: '24 %', target: '15–18 %' },
+    { ic: 'bolt', t: 'VO\u2082 Max', base: '32 mL/kg/min', target: '40+' },
+  ],
+  P_WEIGHT: [
+    { ic: 'scale', t: 'Body Weight', base: '96 kg', target: '78–82 kg' },
+    { ic: 'drop', t: 'HbA1c', base: '6.1 %', target: '< 5.6 %' },
+    { ic: 'heart', t: 'Waist', base: '108 cm', target: '< 94 cm' },
+    { ic: 'bolt', t: 'Fasting insulin', base: '18 mIU/L', target: '< 8 mIU/L' },
+  ],
+  P_TEST: [
+    { ic: 'bolt', t: 'Total T', base: '11 nmol/L', target: '18–25 nmol/L' },
+    { ic: 'drop', t: 'Free T', base: '210 pmol/L', target: '350+ pmol/L' },
+    { ic: 'scale', t: 'Body Fat', base: '26 %', target: '15–18 %' },
+    { ic: 'heart', t: 'SHBG', base: '52 nmol/L', target: '25–40 nmol/L' },
+  ],
+  P_POST: [
+    { ic: 'drop', t: 'Ferritin', base: '14 ng/mL', target: '50+ ng/mL' },
+    { ic: 'bolt', t: 'TSH', base: '4.8 mIU/L', target: '0.5–2.5 mIU/L' },
+    { ic: 'heart', t: 'Haemoglobin', base: '10.6 g/dL', target: '12+ g/dL' },
+    { ic: 'scale', t: 'Pelvic strength', base: 'Grade 2', target: 'Grade 4+' },
+  ],
+};
+
+export const outlookFor = (pKey) => OUTLOOK[pKey] || null;
+export const markersFor = (pKey) => MARKERS[pKey] || null;
+
 export const RECOMMEND = {
   P_TEST: {
     goals: ['Improve your energy',
@@ -3606,7 +3818,6 @@ export const RECOMMEND = {
 export function includedIn(st, pKey) {
   const p = PROTOCOLS[pKey];
   const c = coachOf(pKey) || DOCTOR;
-  const first = givenNameOf(c);
   /* `blood: 'maybe'` means the clinician decides on the call, and they have now
      decided — so this has to ask the run, not the template. Promising "home
      blood draw included" to someone the doctor sent straight to a plan puts a
@@ -3619,7 +3830,9 @@ export function includedIn(st, pKey) {
     ...(upfront ? ['Home blood draw'] : []),
     'Medication',
     'Delivery to your door',
-    `Consultations with ${first}`,
+    /* His title. This is a list of what the money buys, and a credential
+       is part of what is being bought. */
+    `Consultations with ${c.short}`,
     'Blood tests',
     'Unlimited support',
     'Progress reviews',
@@ -3648,8 +3861,10 @@ export function careJourney(st, pKey) {
       state: past('bloodsDone') ? 'done' : at('bloodsBooked') },
     { t: 'Results reviewed', s: `You and ${givenNameOf(coachOf(pKey) || DOCTOR)} go through them`,
       when: r.followSlot, state: past('followup') ? 'done' : at('followup') },
+    /* `ship` is the courier's estimate, shown only where this step is the one
+       the patient is waiting on. Hedged, because we do not drive the van. */
     { t: 'Medication delivered', s: 'To your door, first month included',
-      state: at('shipping') },
+      ship: 'within 2\u20133 days', state: at('shipping') },
     { t: `Week ${half} review`, s: 'We check what’s moving and adjust', state: at('running') },
     { t: 'Final blood test', s: `${p.mk}, retested`, state: at('verdict') },
     { t: 'Progress review', s: 'What worked, what didn’t, what comes next', state: at('reviewing') },
@@ -4009,6 +4224,12 @@ Object.assign(RECOMMEND.P_TEST, {
          + 'addressed together.',
     marks: ['energy and sexual health', 'fertility'],
     why: 'This is the care plan I recommend for you.',
+    /* How many people are on this plan today. Authored per programme like
+       every other number in this prototype, and shown as a count rather
+       than as faces: we have no patient photographs, and borrowing a
+       stranger's face to stand in for one is the kind of small lie this
+       product cannot afford. */
+    onPlan: 186,
     points: [
       { ic: 'energy', t: 'Boost energy', s: 'Feel like yourself again' },
       { ic: 'heart', t: 'Enhance sexual health', s: 'Improve performance and confidence' },
@@ -4028,6 +4249,12 @@ Object.assign(RECOMMEND.P_WEIGHT, {
          + 'markers before deciding exactly how we treat this.',
     marks: ['the weight has come back', 'lose muscle'],
     why: 'This is the care plan I recommend for you.',
+    /* How many people are on this plan today. Authored per programme like
+       every other number in this prototype, and shown as a count rather
+       than as faces: we have no patient photographs, and borrowing a
+       stranger's face to stand in for one is the kind of small lie this
+       product cannot afford. */
+    onPlan: 412,
     /* The weight programme's real staffing: a doctor plus nutritionist and
        performance coach, with continuous glucose monitoring. Stated here
        because it is what this plan contains, not a generic outcome. */
@@ -4048,6 +4275,12 @@ Object.assign(RECOMMEND.P_LONG, {
          + 'cardiovascular risk — ApoB above all — before we assume anything.',
     marks: ['family history', 'cardiovascular risk'],
     why: 'This is the care plan I recommend for you.',
+    /* How many people are on this plan today. Authored per programme like
+       every other number in this prototype, and shown as a count rather
+       than as faces: we have no patient photographs, and borrowing a
+       stranger's face to stand in for one is the kind of small lie this
+       product cannot afford. */
+    onPlan: 247,
     points: [
       { ic: 'heart', t: 'Lower your risk', s: 'ApoB down, and kept down' },
       { ic: 'muscle', t: 'Stay strong', s: 'Strength and capacity preserved' },
@@ -4065,6 +4298,12 @@ Object.assign(RECOMMEND.P_POST, {
          + 'want to see your iron and thyroid.',
     marks: ['a deficiency', 'iron and thyroid'],
     why: 'This is the care plan I recommend for you.',
+    /* How many people are on this plan today. Authored per programme like
+       every other number in this prototype, and shown as a count rather
+       than as faces: we have no patient photographs, and borrowing a
+       stranger's face to stand in for one is the kind of small lie this
+       product cannot afford. */
+    onPlan: 93,
     points: [
       { ic: 'energy', t: 'Restore energy', s: 'Iron and thyroid repleted' },
       { ic: 'muscle', t: 'Rebuild strength', s: 'In the right order' },
