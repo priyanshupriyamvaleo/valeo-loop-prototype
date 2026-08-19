@@ -1,5 +1,6 @@
 import { useMemo, useReducer, useState } from 'react';
 import { Box, CssBaseline, ThemeProvider, Stack, Typography } from '@mui/material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import theme, { C } from './theme';
 import Intro from './screens/Intro';
 import Questions from './screens/Questions';
@@ -69,17 +70,14 @@ const INIT = {
    ?demo=short  weight loss, known door, clean  → the monthly plan
    ?demo=long   longevity, clinician-led door   → the assessment, then the doctor
    ?name=       the patient this link is addressed to (resolved in data.js)
-   ?bare=1      hides the dock too, for a screenshot with nothing else in it
+   ?dock=1      brings our own rail back on a demo link, for design work
    ══════════════════════════════════════════════════════════════════════════ */
 const QS = new URLSearchParams(window.location.search);
 const DEMO = ['short', 'long'].includes(QS.get('demo')) ? QS.get('demo') : null;
-/* The reviewers' rail is for reviewers, so a demo link never carries it.
-   The dock STAYS: its levers are how the person driving the demo advances the
-   journey past the steps the world would have taken care of — a doctor
-   signing, a lab uploading, a parcel arriving. Without them the demo stops at
-   the first thing that is not a tap. ?bare=1 drops it as well. */
+/* The reviewers' rail is for reviewers, so a demo link never carries it. The
+   dock does not either: a demo gets one Next button under the phone instead,
+   built further down. */
 const HIDE_FEEDBACK = Boolean(DEMO);
-const HIDE_DOCK = Boolean(DEMO) && QS.get('bare') === '1';
 
 /* The store as the call left it. Named for the call, not for the demo: the
    file already imports a DEMO_QA, which is the twin-era fixture. */
@@ -825,17 +823,25 @@ export default function App() {
        clinician cannot write a plan without it, so there is nothing to branch
        on after the consultation. What the patient does next is pay and pick a
        time, and both of those are the patient's move, not the system's. */
-    bloodsBooked: [{ t: 'Nurse visit complete', run: (k) => {
+    bloodsBooked: [{ t: 'Nurse visit complete', main: true, run: (k) => {
       dispatch({ type: 'bloodsDone', protocol: k });
     } }],
-    followup: [{ t: 'Follow-up happens, plan ready', run: (k) => {
+    /* `main` marks the happy path. A demo link shows ONE button, and it has to
+       fire the step that carries the journey forward rather than whichever
+       control happens to sit first in the list — the lab arriving and the
+       doctor declining are both real events, and neither is the way through. */
+    followup: [{ t: 'Follow-up happens, plan ready', main: true, run: (k) => {
+      /* The results have to exist before they can be reviewed. On the rail the
+         presenter can fire them separately; on one button they come together,
+         because "next" cannot mean half a step. */
+      dispatch({ type: 'labsReady', protocol: k });
       dispatch({ type: 'reviewed', protocol: k });
     } }],
     /* One control per real event, so the demo can show the thread and the
        fulfilment strip changing rather than jumping straight to day 1. */
     shipping:  [],
-    running:   [{ t: 'Jump one week', run: (k) => dispatch({ type: 'advance', protocol: k }) }],
-    reviewing: [{ t: 'Results are read', run: (k) => {
+    running:   [{ t: 'Jump one week', main: true, run: (k) => dispatch({ type: 'advance', protocol: k }) }],
+    reviewing: [{ t: 'Results are read', main: true, run: (k) => {
       dispatch({ type: 'results', protocol: k });
     } }],
   };
@@ -845,7 +851,7 @@ export default function App() {
                  out:       ['delivered', 'Package delivered'] }[(f.run && f.run.ship) || 'confirmed'];
     /* nothing once it is delivered — starting day 1 is the patient's move */
     NEXT.shipping = nx
-      ? [{ t: nx[1], run: (k) => dispatch({ type: 'ship', protocol: k, stage: nx[0] }) }]
+      ? [{ t: nx[1], main: true, run: (k) => dispatch({ type: 'ship', protocol: k, stage: nx[0] }) }]
       : [];
   }
   /* the lab finishing is a background event, so it gets its own control rather
@@ -863,7 +869,7 @@ export default function App() {
     NEXT.programme = [
       /* Approval starts fulfilment directly. No blood test on this door;
          the next event in the patient's life is the medication arriving. */
-      { t: 'Doctor approves the order',
+      { t: 'Doctor approves the order', main: true,
         run: (k) => {
           dispatch({ type: 'checkpoint', protocol: k, v: 'approved' });
           dispatch({ type: 'activate', protocol: k });
@@ -976,8 +982,21 @@ export default function App() {
       onConsult={() => setFlow('consult')}
       onTrack={() => trackOn(detail)}
       onBuy={() => {
-        /* "Activate my plan". The programme was paid for at the Care Brief. */
+        /* ── "ACTIVATE MY PLAN" STARTS THE PLAN ──
+           The programme was paid for at the Care Brief, so this button is not a
+           purchase. It used to leave the patient in fulfilment — three parcel
+           states and a "Start Day 1" — which is honest about logistics and
+           wrong about intent: somebody who has just read their plan and pressed
+           activate expects to be running it, not watching a courier.
+
+           The parcel states are still dispatched, in order, so the event log
+           and the practice thread carry what actually happened. Only the
+           waiting is removed. */
         dispatch({ type: 'activate', protocol: detail });
+        ['preparing', 'out', 'delivered'].forEach((stage) => {
+          dispatch({ type: 'ship', protocol: detail, stage });
+        });
+        dispatch({ type: 'deliver', protocol: detail });
         setFlow('app'); setTab('today');
       }} />
   );
@@ -1039,6 +1058,31 @@ export default function App() {
 
   const chrome = flow === 'app';
 
+  /* ── ONE BUTTON ON A DEMO LINK ──
+     The rail is a workbench: every real-world event gets its own control, so a
+     designer can fire the lab arriving without also finishing the follow-up.
+     That is the wrong instrument for a demo. Somebody presenting has one hand
+     free and a room watching, and a panel of six labelled clinical events
+     beside the phone invites questions about the panel instead of the product.
+
+     So a demo link gets a single "Next", under the phone, that fires the step
+     marked `main` — the happy path. When nothing is marked, the journey is
+     waiting on the patient and the button is not there at all, which is itself
+     the right signal: whatever comes next is on the screen. */
+  const mainStep = steps.find((sp) => sp.main) || null;
+  const nextButton = DEMO && mainStep ? (
+    <Box onClick={() => mainStep.run(f && f.k)} sx={{
+      mt: 2.5, px: 3.5, py: 1.4, borderRadius: '999px', cursor: 'pointer',
+      bgcolor: C.yellow, color: C.deep, fontSize: 15, fontWeight: 700,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1,
+      boxShadow: '0 14px 30px -14px rgba(255,185,0,.7)',
+      '&:active': { transform: 'translateY(1px)' },
+    }}>
+      Next
+      <ArrowForwardIcon sx={{ fontSize: 18 }} />
+    </Box>
+  ) : null;
+
   /* ── THE ADVANCE LEVERS ──
      The only way past a state the world owns: a doctor signing, a lab
      uploading, a nurse arriving. Built once here because a demo link puts them
@@ -1087,6 +1131,11 @@ export default function App() {
             a comment always lands on the screen the reviewer was looking at. */}
         {!HIDE_FEEDBACK && <Feedback screen={screenOf({ flow, tab, st, booking, detail })} />}
 
+        {/* The phone, and directly under it the one control a demo needs. Under
+            rather than beside: a button to the right of the phone competes with
+            the screen for the room's attention, and a button under it reads as
+            a footer to the thing being shown. */}
+        <Stack sx={{ alignItems: 'center', flexShrink: 0 }}>
         <Phone>
           <PushToast push={push} onOpen={() => {
             const go = push && push.go;
@@ -1150,12 +1199,15 @@ export default function App() {
             </Box>
           ) : view}
         </Phone>
+        {nextButton}
+        </Stack>
 
         <Box sx={{
           width: dock === 'controls' ? 230 : 430, maxWidth: 430, flexShrink: 0,
-          /* A demo link shows the dock at every width; only ?bare=1 removes it,
-             and that is for screenshots, where there is nothing to advance. */
-          display: HIDE_DOCK ? 'none' : (DEMO ? 'block' : { xs: 'none', md: 'block' }),
+          /* A demo link has no dock at all now — it has one Next button under
+             the phone instead. ?dock=1 brings the rail back for our own work on
+             a demo link, which is the only time anybody wants both. */
+          display: DEMO && QS.get('dock') !== '1' ? 'none' : { xs: 'none', md: 'block' },
           maxHeight: 844, overflowY: 'auto', pr: 0.5,
           transition: 'width .25s ease',
         }}>
