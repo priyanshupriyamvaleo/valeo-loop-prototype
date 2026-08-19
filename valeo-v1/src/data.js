@@ -2986,28 +2986,45 @@ export const DECLINE_ASK = {
    Three areas worth investigating per goal, shown on the Assess screen
    between the intake and the consultation. AI investigates and reasons; the
    clinician decides — each row maps to the markers the panel measures, so
-   the claim stays concrete. Authored, like every clinical judgement here. */
+   the claim stays concrete. Authored, like every clinical judgement here.
+
+   `ic` and `tone` are the row's face on the Assess screen. Each area gets a
+   colour of its own rather than one house yellow repeated three times: three
+   identical rows read as a list, and three distinct ones read as three
+   findings. The tone names resolve to a palette in Assess.jsx, so a colour is
+   decided once per area and never typed into a screen. */
 export const INVESTIGATE = {
   test: [
-    { t: 'Hormone levels', s: 'Energy and drive dropping together usually starts here.', m: 'Total + free T' },
-    { t: 'Thyroid & iron', s: 'The two most common mimics of low testosterone.', m: 'TSH · ferritin' },
-    { t: 'Sleep & recovery', s: 'Poor sleep suppresses everything above.', m: 'discussed live' },
+    { t: 'Hormone levels', s: 'Energy and drive dropping together usually starts here.', m: 'Total + free T', ic: 'bolt', tone: 'amber' },
+    { t: 'Thyroid & iron', s: 'The two most common mimics of low testosterone.', m: 'TSH · ferritin', ic: 'lab', tone: 'teal' },
+    { t: 'Sleep & recovery', s: 'Poor sleep suppresses everything above.', m: 'discussed live', ic: 'sleep', tone: 'violet' },
   ],
   fat: [
-    { t: 'Metabolic markers', s: 'Weight that returns is usually signalling, not discipline.', m: 'HbA1c · insulin' },
-    { t: 'Thyroid', s: 'A slow thyroid quietly fights every diet.', m: 'TSH · free T4' },
-    { t: 'What you’ve tried', s: 'The pattern of what failed tells us what to change.', m: 'discussed live' },
+    { t: 'Metabolic markers', s: 'Weight that returns is usually signalling, not discipline.', m: 'HbA1c · insulin', ic: 'flame', tone: 'green' },
+    { t: 'Thyroid', s: 'A slow thyroid quietly fights every diet.', m: 'TSH · free T4', ic: 'lab', tone: 'teal' },
+    { t: 'What you’ve tried', s: 'The pattern of what failed tells us what to change.', m: 'discussed live', ic: 'history', tone: 'violet' },
   ],
   long: [
-    { t: 'Cardiovascular risk', s: 'The marker with thirty years of evidence behind it.', m: 'ApoB · hsCRP' },
-    { t: 'Metabolic health', s: 'Where decline starts a decade before symptoms.', m: 'HbA1c · lipids' },
-    { t: 'Family history', s: 'What runs in your family sets what we test first.', m: 'discussed live' },
+    { t: 'Cardiovascular risk', s: 'The marker with thirty years of evidence behind it.', m: 'ApoB · hsCRP', ic: 'heart', tone: 'rose' },
+    { t: 'Metabolic health', s: 'Where decline starts a decade before symptoms.', m: 'HbA1c · lipids', ic: 'flame', tone: 'green' },
+    { t: 'Family history', s: 'What runs in your family sets what we test first.', m: 'discussed live', ic: 'people', tone: 'violet' },
   ],
   post: [
-    { t: 'Iron status', s: 'The most common cause of fatigue after birth.', m: 'ferritin · CBC' },
-    { t: 'Thyroid', s: 'Postpartum thyroid shifts are common and missable.', m: 'TSH · free T4' },
-    { t: 'Recovery load', s: 'Sleep, feeding and support shape what your body can do.', m: 'discussed live' },
+    { t: 'Iron status', s: 'The most common cause of fatigue after birth.', m: 'ferritin · CBC', ic: 'drop', tone: 'rose' },
+    { t: 'Thyroid', s: 'Postpartum thyroid shifts are common and missable.', m: 'TSH · free T4', ic: 'lab', tone: 'teal' },
+    { t: 'Recovery load', s: 'Sleep, feeding and support shape what your body can do.', m: 'discussed live', ic: 'recovery', tone: 'violet' },
   ],
+};
+
+/* The line under the headline. It says what the three areas have in common,
+   in the patient's own terms, so the list arrives with a reason attached. One
+   per goal: "long-term health" is the right promise for longevity and the
+   wrong one for a person who came to lose weight. */
+export const INVESTIGATE_SUB = {
+  test: 'Based on your responses, these areas have the strongest impact on your energy and drive.',
+  fat: 'Based on your responses, these areas have the strongest impact on your weight.',
+  long: 'Based on your responses, these areas have the strongest impact on your long-term health.',
+  post: 'Based on your responses, these areas have the strongest impact on your recovery.',
 };
 
 /* Asked only AFTER the consult is paid for, and never as a gate — it sits on
