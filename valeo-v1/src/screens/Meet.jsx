@@ -3,17 +3,20 @@ import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
-import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
-import TrackChangesOutlinedIcon from '@mui/icons-material/TrackChangesOutlined';
+import PhoneInTalkOutlinedIcon from '@mui/icons-material/PhoneInTalkOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import Groups2OutlinedIcon from '@mui/icons-material/Groups2Outlined';
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
-import { HouseHeartMark, StethoscopeMark } from '../components/Marks';
-import { coachOf } from '../data';
+import { StethoscopeMark } from '../components/Marks';
+import { CALL_EXPECT, coachOf } from '../data';
 import { C } from '../theme';
 
 /**
- * MEET — the camera follows you deeper into the clinic.
+ * MEET — your expert, your partner.
  *
  * This screen used to be a product card: protocol name, duration, plan count,
  * price, chevron. Individually defensible, collectively fatal — the moment it
@@ -21,37 +24,41 @@ import { C } from '../theme';
  * after we had carefully made them feel welcomed.
  *
  * It was also backwards on its own terms. We are not selling a protocol; we are
- * selling an ongoing relationship with a clinician who writes one FOR you. The
- * plan does not exist yet. Showing it before the consultation says "here is the
- * package you're buying" when the thing we mean is "here is who you'll be
- * working with".
+ * selling an ongoing relationship with a clinician who writes one FOR you.
  *
- * ── THE VOICE IS "WE", NOT "I" ──
- * You are arriving at a practice, not at one person's inbox. "We're looking
- * forward to helping you achieve your goals" promises a team standing behind
- * the name on the door — which is both warmer and truer, since a nurse draws
- * the bloods and a coach carries the weeks between appointments.
+ * ── WHY IT BECAME A PROFILE ──
+ * The version before this one was warm and thin: a portrait, "Nice to meet
+ * you", and three promises about the conversation. Warmth is the right register
+ * for a threshold, but this is the screen where somebody decides whether to
+ * hand their metabolic health to a stranger, and warmth alone does not answer
+ * "who is this person". So the credentials arrive at the top now, where a
+ * patient looks first, and the promises stay underneath where they belong.
  *
- * ── THE BUTTON OPENS THE ROOM ──
- * It used to open a slot picker. A calendar between "nice to meet you" and the
- * doctor spends the one moment in this journey where the patient has just
- * agreed to speak to someone. The call starts here now, and the line under the
- * button says the doctor is free rather than when he next will be.
+ * ── THE NAME IS THE HEADLINE ──
+ * Not "Welcome to Dr. Mahmoud's Practice" in eyebrow caps above a photograph.
+ * The name, at headline size, with the qualification under it: the two facts
+ * that decide this screen, in the order a patient reads them. The portrait sits
+ * beside it rather than above, so the fold carries name, licence and face
+ * together instead of spending its whole height on a picture.
  *
- * ── WHY THE THREE PROMISES ARE A LIST AND NOT A PARAGRAPH ──
- * They are what the patient is buying with the next ten minutes, so each one
- * gets a mark of its own and the first phrase of each carries the weight. Read
- * only the bold words and the screen still answers "what do I get".
+ * ── THE THREE STATS EARN THEIR ROW ──
+ * Years, consultations, specialty. All three come off the roster in data.js so
+ * they cannot drift from the rest of the app, and none of them is a rating: a
+ * five-star average on a doctor is a restaurant pattern, and it cheapens
+ * exactly the thing this screen is trying to establish.
  *
- * NOTE: two of the four portraits are still monograms, and it costs more here
- * than anywhere else — this screen's whole job is "trust this person".
+ * ── THE CALL IS A LIST, NOT A PARAGRAPH ──
+ * Four beats in the order a good consultation runs them, from CALL_EXPECT so
+ * every clinician's page says the same true thing. Read only the bold lines and
+ * the screen still answers "what happens in the ten minutes".
  */
 
-const PROMISES = [
-  { ic: TrackChangesOutlinedIcon, b: 'Clarity', t: ' on what’s standing between you and your goals.' },
-  { ic: AssignmentOutlinedIcon, b: 'A personalised plan', t: ' built around your goals.' },
-  { ic: Groups2OutlinedIcon, b: 'A clear path forward', t: ' — and a team to guide you along the way.' },
-];
+const EXPECT_ICONS = {
+  concerns: PersonOutlineOutlinedIcon,
+  matters: SearchOutlinedIcon,
+  plan: AssignmentOutlinedIcon,
+  next: Groups2OutlinedIcon,
+};
 
 export default function Meet({ pKey, onBook, onBack }) {
   /* A rail jump can arrive here with no episode at all. The demo must show a
@@ -62,14 +69,25 @@ export default function Meet({ pKey, onBook, onBack }) {
 
   if (!c) return null;
 
+  /* Every one of these has a fallback: a coach added later without the new
+     fields renders a thinner page, never a broken one. */
+  const qual = c.qual || c.role;
+  const bio = c.bio
+    || `${c.short} has ${c.years} years behind them and works on ${(c.focus || '').toLowerCase()}.`;
+  const stats = [
+    { ic: StethoscopeMark, v: `${c.years}+`, l: 'Years experience', mark: true },
+    ...(c.consults ? [{ ic: SchoolOutlinedIcon, v: c.consults, l: 'Consultations' }] : []),
+    { ic: VerifiedUserOutlinedIcon, v: c.role, l: 'Verified specialty', wide: true },
+  ];
+
   return (
     <Box sx={{
       height: '100%', display: 'flex', flexDirection: 'column',
       background: `
-        radial-gradient(70% 34% at 106% -2%, rgba(255,185,0,.16) 0%, rgba(255,185,0,0) 64%),
-        linear-gradient(180deg,#FFF9EC 0%,${C.cream} 30%)`,
+        radial-gradient(74% 32% at 104% -4%, rgba(255,185,0,.18) 0%, rgba(255,185,0,0) 62%),
+        linear-gradient(180deg,#FFF9EC 0%,${C.cream} 26%)`,
     }}>
-      <Box sx={{ px: 2.25, pt: 1.75, flexShrink: 0, position: 'absolute', zIndex: 2 }}>
+      <Box sx={{ px: 2.25, pt: 1.75, flexShrink: 0, position: 'absolute', zIndex: 3 }}>
         <IconButton onClick={onBack} size="small" sx={{
           width: 36, height: 36, bgcolor: '#fff', color: C.deep,
           boxShadow: '0 6px 18px -10px rgba(27,57,91,.45)',
@@ -80,143 +98,148 @@ export default function Meet({ pKey, onBook, onBack }) {
       </Box>
 
       <Box sx={{
-        flex: '1 1 auto', overflowY: 'auto', pb: 2, pt: 2,
+        flex: '1 1 auto', overflowY: 'auto', pb: 2, pt: 2.25,
         opacity: inn ? 1 : 0,
         transform: inn ? 'none' : 'translateY(14px)',
         transition: 'opacity .5s cubic-bezier(.2,.9,.25,1), transform .55s cubic-bezier(.2,.9,.25,1)',
       }}>
-        <Box sx={{ px: 2.75 }}>
-          {/* ── the practice door ──
-              A house with a heart in it, above the name. The line alone read as
-              a page title; with the mark above it, it reads as a threshold you
-              are being welcomed across, which is the only job this beat has. */}
-          <Stack sx={{ alignItems: 'center' }}>
-            <HouseHeartMark />
-            <Typography sx={{
-              textAlign: 'center', fontSize: 11, fontWeight: 800, letterSpacing: '.13em',
-              textTransform: 'uppercase', color: C.yellowDeep, mt: 0.75,
-            }}>
-              Welcome to {c.short}’s Practice
-            </Typography>
-          </Stack>
+        <Typography sx={{
+          textAlign: 'center', fontSize: 10.5, fontWeight: 800, letterSpacing: '.15em',
+          textTransform: 'uppercase', color: C.yellowDeep,
+        }}>
+          Your expert, your partner
+        </Typography>
 
+        {/* ── the fold: name, licence, face ── */}
+        <Stack direction="row" spacing={1.25} sx={{ px: 2.5, mt: 2, alignItems: 'flex-start' }}>
+          <Box sx={{ flex: 1, minWidth: 0, pt: 0.5 }}>
+            <Typography sx={{
+              fontFamily: '"Fraunces", serif', fontSize: 27, fontWeight: 600,
+              lineHeight: 1.08, letterSpacing: '-.02em', color: C.deep,
+            }}>{c.short}</Typography>
+            <Box sx={{ width: 42, height: 3, borderRadius: 2, bgcolor: C.yellow, mt: 1 }} />
+            <Typography sx={{
+              fontSize: 12, fontWeight: 600, lineHeight: 1.4, color: C.ink2, mt: 1.1,
+            }}>{qual}</Typography>
+          </Box>
+
+          {/* The blob behind the portrait is what stops a rectangular photo
+              reading as a database record. */}
           <Box sx={{
-            width: '38%', maxWidth: 138, mx: 'auto', mt: 1.75, borderRadius: '20px',
-            overflow: 'hidden', border: '4px solid #fff',
-            boxShadow: '0 16px 34px -18px rgba(27,57,91,.45)',
-            background: `linear-gradient(155deg,${c.tone} 0%,rgba(11,21,34,.7) 145%)`,
-            transform: inn ? 'scale(1)' : 'scale(.96)',
+            position: 'relative', width: 124, flexShrink: 0,
+            transform: inn ? 'scale(1)' : 'scale(.95)',
             transition: 'transform .6s cubic-bezier(.2,.9,.25,1)',
           }}>
-            <Box sx={{ position: 'relative', width: '100%', pt: '116%' }}>
+            <Box sx={{
+              position: 'absolute', inset: '-8% -6% -2% -6%', borderRadius: '46% 54% 50% 50%',
+              bgcolor: 'rgba(255,185,0,.16)',
+            }} />
+            <Box sx={{
+              position: 'relative', width: '100%', pt: '118%', borderRadius: '18px',
+              overflow: 'hidden', border: '4px solid #fff',
+              boxShadow: '0 16px 32px -18px rgba(27,57,91,.5)',
+              background: `linear-gradient(155deg,${c.tone} 0%,rgba(11,21,34,.7) 145%)`,
+            }}>
               {c.img ? (
                 <Box component="img" src={c.img} alt="" sx={{
                   position: 'absolute', inset: 0, width: '100%', height: '100%',
-                  objectFit: 'cover', objectPosition: 'center 18%',
+                  objectFit: 'cover', objectPosition: 'center 16%',
                 }} />
               ) : (
                 <Typography sx={{
                   position: 'absolute', inset: 0, display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
-                  fontFamily: '"Fraunces", serif', fontSize: 34, fontWeight: 600,
+                  fontFamily: '"Fraunces", serif', fontSize: 30, fontWeight: 600,
                   color: 'rgba(255,255,255,.9)',
                 }}>{c.mono}</Typography>
               )}
             </Box>
           </Box>
+        </Stack>
 
-          {/* What they do and how long they have done it, on one card that
-              overlaps nothing and claims nothing else. The registration number
-              stays off: nobody chooses a clinician on "SCFHS 24-118940", and
-              four credential fragments on one line read as a barcode. */}
-          <Stack direction="row" spacing={1.2} sx={{
-            alignItems: 'center', width: 'fit-content', mx: 'auto', mt: -1.75,
-            position: 'relative', zIndex: 1,
-            pl: 1.1, pr: 2, py: 1, borderRadius: '999px', bgcolor: '#fff',
-            boxShadow: '0 10px 26px -16px rgba(27,57,91,.45)',
-          }}>
-            <Box sx={{
-              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-              bgcolor: 'rgba(224,164,0,.13)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
+        <Typography sx={{
+          px: 2.5, mt: 1.75, fontSize: 13.5, lineHeight: 1.55, color: C.deep,
+        }}>{bio}</Typography>
+
+        {/* ── the three facts, none of them a rating ── */}
+        <Box sx={{
+          px: 2.5, mt: 2.25, display: 'grid',
+          gridTemplateColumns: `repeat(${stats.length}, 1fr)`, gap: 0.9,
+        }}>
+          {stats.map(({ ic: Icon, v, l, mark, wide }) => (
+            <Stack key={l} sx={{
+              alignItems: 'flex-start', px: 1.15, py: 1.15, borderRadius: '14px',
+              bgcolor: '#fff', border: '1px solid rgba(224,164,0,.24)',
+              boxShadow: '0 8px 20px -16px rgba(27,57,91,.5)',
             }}>
-              <StethoscopeMark size={19} />
-            </Box>
-            <Box>
-              <Typography sx={{ fontSize: 14, fontWeight: 700, color: C.deep, lineHeight: 1.2 }}>
-                {c.role}
-              </Typography>
-              <Typography sx={{ fontSize: 11.5, color: C.ink2, mt: 0.15 }}>
-                {c.years}+ years experience
-              </Typography>
-            </Box>
-          </Stack>
-
-          {/* Beat 2 · the doctor walks in.
-              "Hi Faisal 👋" is gone. It was the THIRD greeting in the journey —
-              the host home says it, the chat says it, and by the time the
-              clinician says it the relationship has already started, so a
-              fourth hello reads as a template rather than as warmth. */}
-          <Typography sx={{
-            fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 600,
-            lineHeight: 1.12, letterSpacing: '-.015em', color: C.deep, mt: 2.5,
-          }}>
-            Nice to meet you.
-          </Typography>
-          {/* One short rule. It gives the sentence a floor to sit on, which is
-              what stops the two paragraphs under it reading as one block. */}
-          <Box sx={{ width: 46, height: 3, borderRadius: 2, bgcolor: C.yellow, mt: 1 }} />
-
-          <Typography sx={{
-            fontSize: 15, fontWeight: 500, lineHeight: 1.45, color: C.deep,
-            mt: 1.2, maxWidth: 300,
-          }}>
-            We’re looking forward to helping you achieve your goals.
-          </Typography>
-
-          {/* Beat 3 · why this conversation matters.
-              Was serif, italic, and fenced between two rules — which read as a
-              literary pull quote. This is healthcare, not a novel. It is a card
-              now: same words, but held rather than performed. */}
-          <Stack direction="row" spacing={1.4} sx={{
-            alignItems: 'flex-start', mt: 2.25, px: 1.5, py: 1.5,
-            borderRadius: '16px', bgcolor: 'rgba(255,185,0,.07)',
-            borderLeft: `3px solid ${C.yellow}`,
-          }}>
-            <ForumOutlinedIcon sx={{ fontSize: 22, color: C.yellowDeep, flexShrink: 0, mt: 0.1 }} />
-            <Typography sx={{
-              fontSize: 14.5, fontWeight: 600, lineHeight: 1.4, color: C.deep,
-            }}>
-              Our first conversation sets the foundation for everything that follows.
-            </Typography>
-          </Stack>
-
-          {/* Beat 4 · what you walk away with */}
-          <Typography sx={{
-            fontSize: 13.5, lineHeight: 1.5, color: C.ink2, mt: 2,
-          }}>
-            By the end of our conversation, you’ll leave with:
-          </Typography>
-
-          <Stack sx={{ mt: 0.75 }}>
-            {PROMISES.map(({ ic: Icon, b, t }, idx) => (
-              <Stack key={b} direction="row" spacing={1.4} sx={{
-                alignItems: 'center', py: 1.25,
-                borderTop: idx === 0 ? 'none' : `1px solid ${C.line}`,
+              <Box sx={{
+                width: 26, height: 26, borderRadius: '9px', mb: 0.7,
+                bgcolor: 'rgba(224,164,0,.13)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
               }}>
-                <Box sx={{
-                  width: 38, height: 38, borderRadius: '50%', flexShrink: 0, bgcolor: '#fff',
-                  border: '1px solid rgba(224,164,0,.30)',
-                  boxShadow: '0 6px 16px -12px rgba(27,57,91,.5)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                {mark ? <StethoscopeMark size={15} />
+                      : <Icon sx={{ fontSize: 15, color: C.yellowDeep }} />}
+              </Box>
+              <Typography sx={{
+                fontSize: wide ? 11.5 : 15, fontWeight: 700, color: C.deep, lineHeight: 1.2,
+              }}>{v}</Typography>
+              <Typography sx={{ fontSize: 9.5, color: C.ink2, mt: 0.2, lineHeight: 1.3 }}>
+                {l}
+              </Typography>
+            </Stack>
+          ))}
+        </Box>
+
+        {/* ── what the ten minutes actually is ── */}
+        <Box sx={{
+          mx: 2.5, mt: 2.5, borderRadius: '18px', bgcolor: 'rgba(255,185,0,.06)',
+          border: '1px solid rgba(224,164,0,.28)', px: 1.75, py: 1.75,
+        }}>
+          <Stack direction="row" spacing={1.3} sx={{ alignItems: 'flex-start' }}>
+            <Box sx={{
+              width: 34, height: 34, borderRadius: '50%', flexShrink: 0, bgcolor: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 6px 16px -12px rgba(27,57,91,.5)',
+            }}>
+              <PhoneInTalkOutlinedIcon sx={{ fontSize: 18, color: C.yellowDeep }} />
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: C.deep }}>
+                In your call, you can expect
+              </Typography>
+              <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.25, lineHeight: 1.45 }}>
+                A focused conversation, one to one, to understand you better
+              </Typography>
+            </Box>
+          </Stack>
+
+          <Stack sx={{ mt: 0.5 }}>
+            {CALL_EXPECT.map(({ k, t, s }, idx) => {
+              const Icon = EXPECT_ICONS[k] || PersonOutlineOutlinedIcon;
+              return (
+                <Stack key={k} direction="row" spacing={1.3} sx={{
+                  alignItems: 'flex-start', py: 1.15,
+                  borderTop: idx === 0 ? `1px solid rgba(224,164,0,.22)` : `1px solid ${C.line}`,
+                  mt: idx === 0 ? 1.25 : 0,
                 }}>
-                  <Icon sx={{ fontSize: 19, color: C.yellowDeep }} />
-                </Box>
-                <Typography sx={{ flex: 1, fontSize: 13.5, lineHeight: 1.45, color: C.deep }}>
-                  <Box component="span" sx={{ fontWeight: 700 }}>{b}</Box>{t}
-                </Typography>
-              </Stack>
-            ))}
+                  <Box sx={{
+                    width: 30, height: 30, borderRadius: '50%', flexShrink: 0, bgcolor: '#fff',
+                    border: '1px solid rgba(224,164,0,.3)', mt: 0.2,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Icon sx={{ fontSize: 16, color: C.yellowDeep }} />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: C.deep, lineHeight: 1.3 }}>
+                      {t}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.25, lineHeight: 1.45 }}>
+                      {s}
+                    </Typography>
+                  </Box>
+                </Stack>
+              );
+            })}
           </Stack>
         </Box>
       </Box>

@@ -7,10 +7,11 @@ import AddIcon from '@mui/icons-material/Add';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import FlagIcon from '@mui/icons-material/Flag';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Results from '../components/Results';
 import Recommendation from './Recommendation';
 import { PROTOCOLS, KINDS, KIND_ORDER, coachOf, CONSULT_FEE, RECOMMEND,
-         statusOf, runOf, runStages, RX_ACTIVE } from '../data';
+         statusOf, runOf, runStages, RX_ACTIVE, nextGoalAfter } from '../data';
 import { C } from '../theme';
 
 /**
@@ -24,7 +25,7 @@ import { C } from '../theme';
  *    can't be productized. The diff is the artefact.
  */
 export default function ProtocolDetail({ st, pKey, onBack, onConsult, onBuy, onTrack,
-                                         onLoop, view = 'plan', onView }) {
+                                         onLoop, onNextGoal, view = 'plan', onView }) {
   const p = PROTOCOLS[pKey];
   /* The clinician who wrote this template. In V1 the doctor is what's being
      sold, so their name sits on the page before anything else does. */
@@ -49,6 +50,10 @@ export default function ProtocolDetail({ st, pKey, onBack, onConsult, onBuy, onT
      protocol shows who wrote it, in full — "Dr. Layla" is the reason to open
      this page over an identical-looking one from someone else. */
   const byline = p.own ? null : (coach ? coach.short : null);
+
+  /* What the doctor would work on now. Null when the patient is already
+     running it, and the footer then offers only the free choice. */
+  const advised = showResults ? nextGoalAfter(pKey, st) : null;
 
   /* Some protocols never need bloods — a consult is enough — so that step is
      absent rather than crossed out. Where the doctor has to decide, the step
@@ -315,20 +320,82 @@ export default function ProtocolDetail({ st, pKey, onBack, onConsult, onBuy, onT
         borderTop: `1px solid ${C.line}`, bgcolor: C.cream,
       }}>
         {showResults ? (
-          /* ── THE END IS AN OFFER ──
+          /* ── THE END IS A RECOMMENDATION, THEN TWO DOORS ──
              The loop closing is the one moment the patient has evidence in hand
-             and nothing scheduled, and it is the only honest place to ask for
-             another twelve weeks. A closed report with no way forward makes the
-             product a one-off; a report that sells before the verdict is read
-             makes it a subscription. This is the line between them. */
+             and nothing scheduled. A single "start another loop" button spends
+             that moment asking for twelve more weeks of the same thing, which is
+             a subscription wearing a report's clothes.
+
+             What the moment is actually FOR is the doctor's judgement: this
+             worked, here is what I would do now, and here is why in the numbers
+             you have just read. So the advice comes first and the CTA follows
+             from it.
+
+             Two doors, because they are different things. Following the doctor
+             is one. Choosing for yourself is the other, and it stays available
+             at the same size as a text link rather than hidden, because a
+             patient who wants something else should not have to hunt. */
           <>
-            <Button fullWidth variant="contained" color="secondary" onClick={onLoop}
-              startIcon={<AutorenewRoundedIcon sx={{ fontSize: 19 }} />}
-              sx={{ borderRadius: '17px', '& .MuiButton-startIcon': { mr: 1.1 } }}>
-              Start another loop
+            {advised && (
+              <Stack direction="row" spacing={1.3} sx={{
+                alignItems: 'flex-start', mb: 1.6, px: 1.5, py: 1.4,
+                borderRadius: '15px', bgcolor: 'rgba(255,185,0,.09)',
+                border: '1px solid rgba(224,164,0,.32)',
+              }}>
+                <Box sx={{
+                  width: 34, height: 34, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+                  background: coach
+                    ? `linear-gradient(155deg,${coach.tone} 0%,rgba(11,21,34,.7) 145%)`
+                    : C.deep,
+                }}>
+                  {coach && coach.img && (
+                    <Box component="img" src={coach.img} alt="" sx={{
+                      width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 18%',
+                    }} />
+                  )}
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{
+                    fontSize: 9.5, fontWeight: 800, letterSpacing: '.13em',
+                    textTransform: 'uppercase', color: C.yellowDeep,
+                  }}>
+                    {coach ? `${coach.short} advises` : 'Your doctor advises'}
+                  </Typography>
+                  <Typography sx={{
+                    fontSize: 14, fontWeight: 700, color: C.deep, mt: 0.35, lineHeight: 1.3,
+                  }}>
+                    Work on {advised.goalLabel} next
+                  </Typography>
+                  <Typography sx={{ fontSize: 12, color: C.ink2, mt: 0.4, lineHeight: 1.5 }}>
+                    {advised.why}
+                  </Typography>
+                </Box>
+              </Stack>
+            )}
+
+            {advised && (
+              <Button fullWidth variant="contained" color="secondary"
+                onClick={() => onNextGoal && onNextGoal(advised.pKey)}
+                endIcon={<ArrowForwardIcon sx={{ fontSize: 17 }} />}
+                sx={{ borderRadius: '17px', '& .MuiButton-endIcon': { ml: 1 } }}>
+                View next goal
+              </Button>
+            )}
+
+            <Button fullWidth variant={advised ? 'text' : 'contained'}
+              color="secondary" onClick={onLoop}
+              startIcon={<AutorenewRoundedIcon sx={{ fontSize: 18 }} />}
+              sx={{
+                mt: advised ? 0.6 : 0, borderRadius: '17px',
+                fontSize: advised ? 13.5 : undefined,
+                color: advised ? C.ink2 : undefined,
+                '& .MuiButton-startIcon': { mr: 1 },
+              }}>
+              Start another goal
             </Button>
+
             <Typography sx={{
-              fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1.2, lineHeight: 1.55,
+              fontSize: 11.5, color: C.ink2, textAlign: 'center', mt: 1, lineHeight: 1.55,
             }}>
               This loop is closed. The next one starts from these numbers.
             </Typography>

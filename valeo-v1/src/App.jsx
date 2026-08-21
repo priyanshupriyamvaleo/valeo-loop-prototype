@@ -604,6 +604,24 @@ export default function App() {
     setFlow('app'); setTab('today');
   };
 
+  /* ── THE RETEST, ON A DEMO LINK ──
+     In the product this is four moves: book a slot, the nurse comes, the call
+     happens, the verdict lands. Every one of them is a real screen and they all
+     stay exactly where they are for anyone walking the flow properly.
+
+     A demo is a different instrument. Somebody presenting has a room watching
+     and the point they are making is "the loop closes with a verdict", not
+     "here is a slot picker". So on a demo link the button fires the whole
+     sequence at once and lands on the report: same events, same order, same
+     store, one tap. Nothing is skipped in the record, only in the waiting. */
+  const closeTheLoop = (pk) => {
+    dispatch({ type: 'bookReview', protocol: pk, slot: 'Tomorrow 8:00 am' });
+    dispatch({ type: 'retestDone', protocol: pk });
+    dispatch({ type: 'consulted', protocol: pk });
+    dispatch({ type: 'results', protocol: pk });
+    setDetail(pk); setDetailView('results'); setFlow('detail');
+  };
+
   /* ══════════════════════════════════════════════════════════════════════
      ONE STORE, ONE PROJECTION, ONE GATE.
 
@@ -1052,6 +1070,13 @@ export default function App() {
         dispatch({ type: 'loopOpened', protocol: detail });
         startNewGoal(true);
       }}
+      /* Following the doctor's advice: his recommended protocol, opened on its
+         own page, where the existing CTA carries it forward. The loop is marked
+         closed either way, because the patient has read the verdict. */
+      onNextGoal={(pk) => {
+        dispatch({ type: 'loopOpened', protocol: detail });
+        setDetail(pk); setDetailView('plan'); setFlow('detail');
+      }}
       onBuy={() => {
         /* ── "ACTIVATE MY PLAN" STARTS THE PLAN ──
            The programme was paid for at the Care Brief, so this button is not a
@@ -1250,7 +1275,9 @@ export default function App() {
                            dispatch({ type: 'activate', protocol: pk });
                          }}
                          onDetail={(pk) => openDetail(pk)}
-                         onReview={(pk) => { setReviewKey(pk); setFlow('review'); }}
+                         onReview={(pk) => (DEMO
+                           ? closeTheLoop(pk)
+                           : (setReviewKey(pk), setFlow('review')))}
                          onResults={(pk) => openResults(pk)}
                          onFocus={(pk) => dispatch({ type: 'focus', protocol: pk })} />
                 )}

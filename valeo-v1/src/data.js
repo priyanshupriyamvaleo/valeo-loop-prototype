@@ -2551,6 +2551,9 @@ export const PEAK_TO   = '#1C7245';
    about. */
 export const COACHES = {
   C_MAHMOUD: {
+    qual: 'MBBS, MD (Internal Medicine), Longevity Medicine Expert',
+    bio: 'With over 11 years in internal medicine and longevity wellness, Dr. Mahmoud helps people live healthier, longer lives through evidence-based care and personalised guidance.',
+    consults: '5000+',
     name: 'Dr. Mahmoud Hassan', short: 'Dr. Mahmoud', mono: 'MH',
     img: asset('team/mahmoud.jpg'),
     /* "Longevity Expert", not "Internal Medicine". The specialty is what his
@@ -2564,6 +2567,9 @@ export const COACHES = {
     reply: 'Usually replies within 4h', patients: 34, tone: '#1B395B',
   },
   C_LAYLA: {
+    qual: 'MBBS, MD (Endocrinology), Obesity Medicine',
+    bio: 'Dr. Layla has spent 14 years on weight, insulin resistance and thyroid. She starts everything at half dose and steps up, because far fewer of her patients quit that way.',
+    consults: '4000+',
     name: 'Dr. Layla Al-Rashid', short: 'Dr. Layla', mono: 'LR',
     kind: 'doctor', role: 'Endocrinology', reg: 'SCFHS 22-094117',
     years: 14, langs: 'Arabic · English · French',
@@ -2832,6 +2838,9 @@ Object.assign(COACHES, {
      protocol page already states it. A coach owns the programme; only a
      prescriber signs the medicine. */
   C_JAMIE: {
+    qual: 'CSCS, Precision Nutrition L2',
+    bio: 'Men’s health and performance is the whole of Jamie’s practice. He fixes sleep and blood pressure before anything else, and most men feel it inside a month.',
+    consults: '2500+',
     name: 'Jamie Richards', short: 'Jamie', mono: 'JR',
     kind: 'coach', role: 'Men’s Health & Performance', reg: 'CSCS · Precision Nutrition L2',
     years: 12, langs: 'English',
@@ -2842,6 +2851,9 @@ Object.assign(COACHES, {
     img: asset('team/jamie.jpg'),
   },
   C_HUDA: {
+    qual: 'MBBS, MD (Obstetrics & Gynaecology)',
+    bio: 'Dr. Huda works with women through pregnancy and the year after it, and treats recovery as a clinical problem rather than something to wait out.',
+    consults: '3000+',
     name: 'Dr. Huda Al-Amoudi', short: 'Dr. Huda', mono: 'HA',
     kind: 'doctor', role: 'OB-GYN', reg: 'SCFHS 20-071344',
     years: 15, langs: 'Arabic · English',
@@ -3150,6 +3162,71 @@ export function leadFor(goalKey) {
   if (!goalKey) return null;
   return coachesFor(goalKey).flatMap((ck) => protosFor(ck, goalKey))[0] || null;
 }
+
+/* ── WHAT THE DOCTOR ADVISES NEXT ──
+   A closed loop is the one moment the patient has evidence in hand and nothing
+   booked, and the honest thing to put there is not "buy another twelve weeks".
+   It is the doctor saying what he would work on now, and why, in terms of the
+   numbers they have both just read.
+
+   So the recommendation is authored per protocol rather than derived: the
+   reason a longevity patient should work on weight next is a clinical judgement
+   about what is holding the remaining points, and no rule engine writes that
+   sentence. `why` is Mahmoud speaking, first person, about this run.
+
+   Two doors out of here, and they are different things. Viewing the advised
+   goal is following the doctor. Starting another goal is the patient choosing
+   for themselves, which they are always allowed to do. */
+export const NEXT_GOAL = {
+  P_LONG: { pKey: 'P_WEIGHT', goal: 'fat', label: 'your weight',
+    why: 'Your markers moved, and the points we fell short on are the ones weight '
+       + 'is holding. Bring the weight down and the rest follows more easily than '
+       + 'it did this loop.' },
+  P_WEIGHT: { pKey: 'P_LONG', goal: 'long', label: 'your long-term health',
+    why: 'The weight came off. Now I want the full panel, so we know what that '
+       + 'change actually bought you and where you stand on the markers that '
+       + 'predict the next twenty years.' },
+  P_TEST: { pKey: 'P_LONG', goal: 'long', label: 'your long-term health',
+    why: 'Energy and drive are back. The next question is what the rest of the '
+       + 'panel looks like, because hormones rarely sit apart from metabolic health.' },
+  P_POST: { pKey: 'P_LONG', goal: 'long', label: 'your long-term health',
+    why: 'Recovery is done. A full panel now gives us a baseline for the years '
+       + 'after it rather than a snapshot of the year you have just had.' },
+};
+
+/* The advised next protocol, skipped if the patient is already running it: an
+   app that recommends what somebody is mid-way through is not reading its own
+   record. Returns null rather than a fallback, and the screen then shows only
+   the free choice. */
+export function nextGoalAfter(pKey, st = null) {
+  const rec = NEXT_GOAL[pKey];
+  if (!rec) return null;
+  if (st && st.runs && st.runs[rec.pKey]) return null;
+  const p = PROTOCOLS[rec.pKey];
+  if (!p) return null;
+  const g = GOALS.find((x) => x.k === rec.goal) || null;
+  /* `label` is written to sit inside "work on ___ next", which a menu title
+     like "Lose weight" does not. */
+  return { ...rec, protocol: p, title: p.t,
+           goalLabel: rec.label || (g ? g.t.toLowerCase() : p.t) };
+}
+
+/* ── WHAT THE FIRST CALL ACTUALLY COVERS ──
+   Four beats, in the order a good consultation runs them: hear the person,
+   work out what matters, write the plan, agree the next step. Generic across
+   clinicians on purpose — this is what a Valeo consultation IS, and a doctor
+   who ran it differently would be the exception worth naming, not the rule
+   worth duplicating four times. */
+export const CALL_EXPECT = [
+  { k: 'concerns', t: 'Understand your concerns',
+    s: 'We go deep into what has been bothering you and your health goals.' },
+  { k: 'matters', t: 'Identify what matters most',
+    s: 'We look at your history, symptoms, lifestyle and any current reports.' },
+  { k: 'plan', t: 'Create your personalised plan',
+    s: 'You get recommendations built around your body and your goals.' },
+  { k: 'next', t: 'Know your next steps',
+    s: 'We agree on tests if you need them, timelines, and how we support you.' },
+];
 
 /* ── MEETING THEM ──
    First person, because this is the clinician speaking, not a profile being
