@@ -106,7 +106,7 @@ export default function App() {
           const mode = e.target.value;
           set({ ...INIT, mode, wlEntry: pt.wlEntry });
         }}>
-          <option value="none">Nothing active — Discover</option>
+          <option value="none">Nothing active · Discover</option>
           <option value="wl">Weight loss active</option>
           <option value="protocol">Protocol active</option>
         </select>

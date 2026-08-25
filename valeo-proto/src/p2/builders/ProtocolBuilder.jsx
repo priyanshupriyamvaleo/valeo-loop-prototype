@@ -111,7 +111,7 @@ export default function ProtocolBuilder({ goalId }) {
                 <IconBtn name="up" title="Move up" onClick={() => move(i, -1)} disabled={i === 0} />
                 <IconBtn name="down" title="Move down" onClick={() => move(i, 1)} disabled={i === plan.length - 1} />
                 <IconBtn name="trash" danger onClick={() => remove(it, i)}
-                  title={it.locked ? 'Locked — cannot be removed' : 'Remove item'} />
+                  title={it.locked ? 'Locked. Cannot be removed' : 'Remove item'} />
               </div>
               {editing === it.id && (
                 <div className="item-edit">

@@ -59,7 +59,7 @@ export default function PrePurchase({ goalId }) {
               onChange={(v) => patch((p) => { p.pdp.hero = v; })} />
             <Field label="The 12-week statement" type="textarea" rows={2} value={pp.pdp.twelveWeek}
               onChange={(v) => patch((p) => { p.pdp.twelveWeek = v; })}
-              hint="Required. Publishing is refused without it — it is the fix for one-month churn." />
+              hint="Required. Publishing is refused without it. It is the fix for one-month churn." />
           </div>
 
           <div className="card card-pad">

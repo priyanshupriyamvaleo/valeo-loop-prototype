@@ -100,13 +100,13 @@ export const RR_PREPURCHASE = {
     twelveWeek: 'Recovery is measured over twelve weeks, not one. Your panel is repeated '
               + 'at Week 12 and read against your baseline.',
     timeline: [
-      { t: 'Week 1 — Testing and first steps',
+      { t: 'Week 1 · Testing and first steps',
         s: 'At-home blood sample collection with a nurse. Doctor consultation and results review. Supplement voucher issued (AED 150). Your first month of therapy is dispatched.' },
-      { t: 'Weeks 2 to 5 — Building the base',
+      { t: 'Weeks 2 to 5 · Building the base',
         s: 'Daily injectable therapy. Concierge check-in calls at Day 10 and Day 25. It is normal to notice little change in this period.' },
-      { t: 'Week 6 — First review',
+      { t: 'Week 6 · First review',
         s: 'Mid-point review with your doctor. Response reviewed, dosing adjusted. Month 2 dispatched.' },
-      { t: 'Weeks 7 to 12 — Full protocol',
+      { t: 'Weeks 7 to 12 · Full protocol',
         s: 'Month 3 dispatched. Repeat blood panel at Week 12 with your nurse, and a physician reassessment with your next-step plan.' },
     ],
     symptoms: ['Joint or tendon pain', 'Slow recovery', 'An unresolved old injury',
@@ -129,7 +129,7 @@ export const RR_PREPURCHASE = {
     instalmentAmount: 1349,
     widgets: ['Tamara: split in 4 payments', 'Tabby: 4 interest-free payments'],
     promoAllowed: false,
-    cta: 'Add to cart — AED 3,799',
+    cta: 'Add to cart · AED 3,799',
   },
   confirmation: {
     title: 'Your protocol starts with testing.',
@@ -148,7 +148,7 @@ export const RR_META = {
     symptomNote: 'The symptom list is what the goal-picker triage matches against.',
   },
   clinical: {
-    panel: 'Recovery & Inflammation — CBC · hs-CRP · ESR · Vitamin D · Magnesium · CK · Liver · Kidney · HbA1c · Ferritin',
+    panel: 'Recovery & Inflammation: CBC · hs-CRP · ESR · Vitamin D · Magnesium · CK · Liver · Kidney · HbA1c · Ferritin',
     gateClass: 'Class 1 to 2',
     screening: [
       { id: 's1', q: 'Do you compete in tested sport?', mandatory: true,
