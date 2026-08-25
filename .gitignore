@@ -6,3 +6,5 @@ valeo-v1/public/valeo-architecture.html
 v1/valeo-architecture.html
 valeo-v1/public/valeo-state-funnel.html
 v1/valeo-state-funnel.html
+.proto-build/
+valeo-proto/node_modules
