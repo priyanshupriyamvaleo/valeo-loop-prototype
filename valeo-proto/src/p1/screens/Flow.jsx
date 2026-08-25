@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
+import { suggestGoal } from '../../p2/lib/seed';
 
 /* ── THE WAITING SCREEN ──
    The demo's hinge. When the app reaches something the Studio has not authored
    yet, it says exactly what is missing and where it is authored, rather than
    dead-ending or faking content. The moment that thing is published in the
    other tab, Continue appears here without a refresh. */
-export function Gate({ gate, open, onContinue, onBack }) {
+export function Gate({ gate, title, open, onContinue, onBack }) {
   return (
     <div className="screen">
       <div className="shead">
         <button className="iconbtn" onClick={onBack}><Icon name="back" size={14} /></button>
-        <div className="stitle">Recover and Rebuild</div>
+        <div className="stitle">{title || 'Valeo Protocols'}</div>
       </div>
       <div className="scroll">
         <div className="gatebox">
@@ -43,7 +44,7 @@ export function Gate({ gate, open, onContinue, onBack }) {
    Renders whatever the Chat Builder published. No gating on this goal: every
    answer leads to the same next step, so the questions buy the doctor context
    rather than a routing decision. */
-export function Triage({ config, onDone, onBack }) {
+export function Triage({ title, config, onDone, onBack }) {
   const qs = config.questions || [];
   const [i, setI] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -74,7 +75,7 @@ export function Triage({ config, onDone, onBack }) {
       <div className="shead">
         <button className="iconbtn" onClick={onBack}><Icon name="back" size={14} /></button>
         <div style={{ flex: 1 }}>
-          <div className="stitle">Recover and Rebuild</div>
+          <div className="stitle">{title}</div>
           <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>Question {i + 1} of {qs.length}</div>
         </div>
       </div>
@@ -106,6 +107,143 @@ export function Triage({ config, onDone, onBack }) {
         ) : (
           <div className="chips">
             {(q.options || ['Continue']).map((o) => (
+              <button key={o} className="chip-a" onClick={() => commit(o)}>{o}</button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── THE ONBOARDING CHAT ──
+   Runs before a goal exists, which is what makes it different from triage: its
+   whole job is to end with a goal. Three parts in one thread, because to the
+   patient it is one conversation — questions, then the details a doctor needs,
+   then the goal itself with a suggestion attached.
+
+   The suggestion never removes a choice. All three goals are always on screen;
+   one of them is marked. */
+export function Onboarding({ config, goals, onDone, onBack }) {
+  const qs = config.questions || [];
+  const fields = config.profile?.fields || [];
+  const [i, setI] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [multi, setMulti] = useState([]);
+  const [profile, setProfile] = useState({});
+
+  /* One flat sequence: every question, then the details step, then the goal. */
+  const stepCount = qs.length + 2;
+  const onProfile = i === qs.length;
+  const onGoal = i === qs.length + 1;
+  const q = qs[i];
+
+  const commit = (val) => {
+    setAnswers((a) => ({ ...a, [q.id]: val }));
+    setMulti([]);
+    setI(i + 1);
+  };
+
+  const suggested = onGoal ? suggestGoal(config, answers) : null;
+  const profileDone = fields.every((f) => String(profile[f.id] ?? '').trim() !== '');
+
+  return (
+    <div className="screen">
+      <div className="shead">
+        <button className="iconbtn" onClick={onBack}><Icon name="back" size={14} /></button>
+        <div style={{ flex: 1 }}>
+          <div className="stitle">Valeo Protocols</div>
+          <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>Step {i + 1} of {stepCount}</div>
+        </div>
+      </div>
+
+      <div className="scroll pad">
+        <div className="bub">{config.intro}</div>
+        {qs.slice(0, i).map((prev) => (
+          <div key={prev.id}>
+            <div className="bub">{prev.q}</div>
+            <div className="bub me">{[].concat(answers[prev.id] || []).join(', ')}</div>
+          </div>
+        ))}
+        {q && <div className="bub">{q.q}</div>}
+
+        {onProfile && (
+          <>
+            <div className="bub">{config.profile.t}. {config.profile.sub}</div>
+            <div className="profile">
+              {fields.map((f) => (
+                <label className="pf" key={f.id}>
+                  <span>{f.t}</span>
+                  {f.kind === 'choice' ? (
+                    <div className="chips">
+                      {(f.options || []).map((o) => (
+                        <button key={o} className={`chip-a ${profile[f.id] === o ? 'on' : ''}`}
+                          onClick={() => setProfile((p) => ({ ...p, [f.id]: o }))}>{o}</button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="pf-in">
+                      <input inputMode={f.kind === 'number' ? 'numeric' : 'text'}
+                        value={profile[f.id] || ''}
+                        onChange={(e) => setProfile((p) => ({ ...p, [f.id]: e.target.value }))} />
+                      {f.suffix && <i>{f.suffix}</i>}
+                    </div>
+                  )}
+                </label>
+              ))}
+            </div>
+          </>
+        )}
+
+        {onGoal && (
+          <>
+            <div className="bub">{config.goalStep.t}. {config.goalStep.sub}</div>
+            <div style={{ marginTop: 10 }}>
+              {goals.map((g) => (
+                <button className="goalrow" key={g.id} style={{ width: '100%' }}
+                  onClick={() => onDone({ answers, profile, goal: g.id })}>
+                  <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,201,60,.18)',
+                                display: 'grid', placeItems: 'center', color: 'var(--gold)', flex: 'none' }}>
+                    <Icon name={g.ic} size={16} />
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'left' }}>
+                    <b>{g.t}</b><span>{g.sub}</span>
+                  </div>
+                  {g.id === suggested && <span className="sugg">Suggested</span>}
+                  <Icon name="chev" size={15} />
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="foot">
+        {onProfile ? (
+          <button className="cta" disabled={!profileDone} onClick={() => setI(i + 1)}>
+            Continue <Icon name="chev" size={16} />
+          </button>
+        ) : onGoal ? (
+          <div style={{ fontSize: 11, color: 'var(--ink-3)', textAlign: 'center' }}>
+            Pick one to carry on.
+          </div>
+        ) : q && q.kind === 'multi' ? (
+          <>
+            <div className="chips" style={{ marginBottom: 10 }}>
+              {(q.options || []).map((o) => (
+                <button key={o} className={`chip-a ${multi.includes(o) ? 'on' : ''}`}
+                  onClick={() => setMulti((m) => (m.includes(o) ? m.filter((x) => x !== o) : [...m, o]))}>
+                  {o}
+                </button>
+              ))}
+            </div>
+            <button className="cta" disabled={!multi.length} onClick={() => commit(multi)}>
+              Next <Icon name="chev" size={16} />
+            </button>
+          </>
+        ) : (
+          <div className="chips">
+            {(q?.options || ['Continue']).map((o) => (
               <button key={o} className="chip-a" onClick={() => commit(o)}>{o}</button>
             ))}
           </div>

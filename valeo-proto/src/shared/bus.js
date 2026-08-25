@@ -17,8 +17,17 @@
  * also notifies itself locally. Same subscribe call either way.
  */
 
-export const STUDIO_KEY = 'valeo.studio.v1';   /* the Studio writes, the app reads */
-export const PATIENT_KEY = 'valeo.patient.v1'; /* the app writes, the Studio ignores */
+/* Bump these whenever the stored shape changes. Data in an older shape is worse
+   than no data at all: it looks fine until something reads a field that was
+   never written, and then a screen dies on a returning visitor who has no idea
+   why. v2 = the onboarding chat, which added a goal-less `shared` bucket to the
+   Studio and a chosen goal to the patient. */
+export const STUDIO_KEY = 'valeo.studio.v2';   /* the Studio writes, the app reads */
+export const PATIENT_KEY = 'valeo.patient.v2'; /* the app writes, the Studio ignores */
+
+/* Superseded keys, swept on load so a stale shape cannot come back later. */
+const OLD_KEYS = ['valeo.studio.v1', 'valeo.patient.v1'];
+try { OLD_KEYS.forEach((k) => localStorage.removeItem(k)); } catch { /* private mode */ }
 
 const listeners = new Set();
 
@@ -76,11 +85,17 @@ export const goalOf = (id) => GOALS.find((g) => g.id === id) || null;
    Each gate names the Studio surface that unblocks it. The waiting screen
    prints this, so a demo never has to explain what it is stuck on. */
 export const GATES = {
+  onboarding:  { t: 'Onboarding chat',    studio: 'Onboarding Chat Builder' },
   triage:      { t: 'Triage chat',        studio: 'Onboarding Chat Builder' },
   prepurchase: { t: 'Pre-purchase flow',  studio: 'Pre-purchase Builder' },
   plan:        { t: 'Protocol plan',      studio: 'Protocol Builder' },
   consult:     { t: 'Consult outcome',    studio: 'Clinician Console' },
 };
+
+/* The onboarding chat belongs to no goal: it is the conversation that decides
+   which goal you are in. It is stored under a pseudo-goal so that publishing,
+   version stamping and the waiting gates all work on it unchanged. */
+export const SHARED = 'shared';
 
 export const publishedFor = (studio, goalId, part) =>
   (studio && studio.published && studio.published[goalId] && studio.published[goalId][part]) || null;

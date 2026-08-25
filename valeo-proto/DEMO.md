@@ -19,7 +19,7 @@ that has not been configured yet, it stops on a waiting screen and names the
 Studio surface that owns it. Publish that surface next door and the waiting
 screen turns into a **Continue** button, live, with no refresh.
 
-So the demo is a loop, run four times: **stop, configure, publish, continue.**
+So the demo is a loop, run five times: **stop, configure, publish, continue.**
 
 ## The run
 
@@ -27,7 +27,7 @@ So the demo is a loop, run four times: **stop, configure, publish, continue.**
 
 In the patient app, use **The demo · Home screen state** on the right.
 
-- *Nothing active* is Discover: the goal picker.
+- *Nothing active* is Discover: one offer, "Introducing Valeo Protocols".
 - *Weight loss active* is the existing GLP-1 journey. The second dropdown
   switches between the four ways a patient enters it (prescription led,
   medicine purchased, blood test booked, tagged by ops). All four are one card.
@@ -35,27 +35,62 @@ In the patient app, use **The demo · Home screen state** on the right.
 
 Set it back to *Nothing active*.
 
-### 2. Pick Recover and Rebuild
+Note what home does NOT do: it does not ask you to pick a goal. The goal picker
+used to sit here and it demanded a decision from somebody who had not been asked
+a single question. It now comes at the end of the onboarding chat, once there
+are answers to suggest one from.
 
-The app stops: *"Triage chat has not been published yet."* Continue is dead.
+### 2. Tap "Choose a goal"
 
-### 3. Studio: Onboarding Chat Builder
+The app stops: *"Onboarding chat has not been published yet."*
 
-Goal **Recover and Rebuild**, surface **Onboarding Chat Builder**. Two questions
-are seeded. Add a third, edit the wording, reorder them. Press **Publish triage
-chat**.
+### 3. Studio: Onboarding Chat Builder, "Onboarding chat"
 
-Watch the patient tab as you publish. The waiting screen becomes
-*"Triage chat is published"* and Continue lights up. Nothing was refreshed.
+The chat builder now holds two chats, and the sidebar shows both under it.
 
-### 4. Patient app: answer the triage
+**Onboarding chat** is the first one. It belongs to no goal, because it is the
+conversation that decides which goal you are in, so it is edited once for the
+whole product. Three parts:
 
-Continue, then answer. The third question is the one you just wrote.
+- The questions that work out what somebody is here for.
+- **Details collected** is age, sex at birth, height and weight. These are what a
+  doctor needs on file before anything can be prescribed.
+- **Which goal each answer suggests.** Change one and watch the suggestion move.
+
+Publish it, and watch the patient tab unlock as you do.
+
+### 4. Patient app: the onboarding chat
+
+Continue, then answer. Five steps: three questions, the details, then the goal.
+
+The goal step always shows all three goals. One of them is marked **Suggested**,
+from the rules you just looked at. It is a suggestion and nothing else, because
+a chat that quietly forces a route is a router wearing a conversation as a
+costume.
+
+Two of the three are worth showing:
+
+- Pick **Weight loss** and you land on the GLP-1 journey Valeo already ships.
+- Pick **Skin and hair** and it stops honestly, on that goal's own unpublished
+  triage gate.
+
+Reset the patient and pick **Recover and Rebuild** to carry on.
+
+The app stops: *"Triage chat has not been published yet."*
+
+### 4b. Studio: the same builder, "Goal triage chat"
+
+The second chat, and this one is per goal. Two questions are seeded. Add a
+third, edit the wording, reorder them. Publish.
 
 There is no gating here. Every Recover and Rebuild patient reaches the same next
 step, so these answers buy the doctor context rather than route anybody.
 
-The app stops again: *"Pre-purchase flow has not been published yet."*
+### 4c. Patient app: answer the triage
+
+Continue and answer. The third question is the one you just wrote.
+
+The app stops: *"Pre-purchase flow has not been published yet."*
 
 ### 5. Studio: Pre-purchase Builder
 
@@ -106,7 +141,22 @@ Work through to the doctor consultation. The app stops:
 
 ### 9. Studio: Clinician Console
 
-A checklist, not a free editor. A doctor leaving a call has two minutes.
+It opens on a **queue**, because a doctor does not arrive at one patient, she
+arrives at a list: who is waiting, how long, and for what. Ahmad is the patient
+sitting in the other tab and is marked **live**; the other three are marked
+**fixture** and exist to show what a queue looks like.
+
+Open Ahmad and read **Before this call**. His whole history is folded shut, one
+section at a time: onboarding, triage, purchase, progress, previous consults.
+None of it is authored anywhere. It is read out of the patient app, so the
+answers on this screen are the answers that were really given next door. Open
+the onboarding fold and you will see the height and weight you typed in step 4.
+
+Switch to Leila and back to see the folds and the form reset. A doctor who
+switches patients gets a clean screen, never the last person's half-typed note.
+
+Then the outcome itself: a checklist, not a free editor, because a doctor
+leaving a call has two minutes.
 
 Record an outcome and a dose note. Then look at **TB-500 (Wolverine upgrade)**:
 it cannot be offered while the competition question is unanswered, and it cannot

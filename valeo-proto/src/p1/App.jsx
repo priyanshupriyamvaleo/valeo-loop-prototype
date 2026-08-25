@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import './theme.css';
 import Icon from './ui/Icon';
 import Home from './screens/Home';
-import { Gate, Triage, PDP, Cart, Confirm } from './screens/Flow';
+import { Gate, Onboarding, Triage, PDP, Cart, Confirm } from './screens/Flow';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
-import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor, GATES } from '../shared/bus';
+import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor, GATES, SHARED } from '../shared/bus';
 import { planFor, nextItem, gateOpen } from './lib/journey';
 
 /*
@@ -25,7 +25,9 @@ const INIT = {
   mode: 'none',        /* none | wl | protocol */
   wlEntry: 'rx',
   stage: 'home',
-  answers: null,
+  goal: null,          /* chosen at the end of the onboarding chat, not before it */
+  intake: null,        /* the onboarding answers and the details the doctor needs */
+  answers: null,       /* the goal's own triage answers */
   done: [],
   consultSeen: 0,      /* the consult version this patient has already absorbed */
 };
@@ -66,10 +68,15 @@ export default function App() {
     setPt(next);
   };
 
-  const goal = goalOf(RR);
-  const triageCfg = publishedFor(studio, RR, 'triage');
-  const ppCfg = publishedFor(studio, RR, 'prepurchase');
-  const plan = planFor(studio, RR, pt);
+  /* The goal is now something the patient chose, not a constant. It falls back
+     to Recover and Rebuild only so the protocol home state in the demo rail has
+     something to render before anybody has been through onboarding. */
+  const goalId = pt.goal || RR;
+  const goal = goalOf(goalId);
+  const onbCfg = publishedFor(studio, SHARED, 'onboarding');
+  const triageCfg = publishedFor(studio, goalId, 'triage');
+  const ppCfg = publishedFor(studio, goalId, 'prepurchase');
+  const plan = planFor(studio, goalId, pt);
   const item = nextItem(plan, pt.done);
 
   /* ── the consult gate ──
@@ -91,7 +98,8 @@ export default function App() {
 
   /* ── the demo rail ── */
   const gateRows = [
-    ['triage', 'Triage chat', !!triageCfg],
+    ['onboarding', 'Onboarding chat', !!onbCfg],
+    ['triage', `Triage · ${goal.t}`, !!triageCfg],
     ['prepurchase', 'Pre-purchase flow', !!ppCfg],
     ['plan', 'Protocol plan', !!publishedFor(studio, RR, 'plan')],
     ['consult', 'Consult outcome', !!studio?.consult],
@@ -151,26 +159,40 @@ export default function App() {
   if (screen === 'home') {
     view = (
       <Home
-        mode={pt.mode} wlEntry={pt.wlEntry} goals={GOALS}
+        mode={pt.mode} wlEntry={pt.wlEntry}
         onChat={() => {}}
-        onPick={(id) => {
-          if (id !== RR) { window.alert('Only Recover and Rebuild is built out in this prototype.'); return; }
-          set({ mode: 'none', stage: 'gate:triage' });
-        }}
+        onStart={() => set({ mode: 'none', stage: 'gate:onboarding' })}
         protocolCard={
           <ProtocolCard title={goal.t} plan={plan} done={pt.done}
             onChat={() => {}} onOpen={() => setScreen('detail')} />
         }
       />
     );
+  } else if (screen === 'gate:onboarding') {
+    view = <Gate gate={GATES.onboarding} open={!!onbCfg} onBack={() => setScreen('home')}
+      onContinue={() => setScreen('onboarding')} />;
+  } else if (screen === 'onboarding') {
+    view = (
+      <Onboarding config={onbCfg.data} goals={GOALS}
+        onBack={() => setScreen('gate:onboarding')}
+        onDone={({ answers, profile, goal: picked }) => {
+          /* Weight loss is the journey Valeo already ships, so choosing it hands
+             the patient to that home state rather than into this flow. */
+          if (picked === 'weight-loss') {
+            set({ intake: { answers, profile }, goal: picked, mode: 'wl', stage: 'home' });
+            return;
+          }
+          set({ intake: { answers, profile }, goal: picked, mode: 'none', stage: 'gate:triage' });
+        }} />
+    );
   } else if (screen === 'gate:triage') {
-    view = <Gate gate={GATES.triage} open={!!triageCfg} onBack={() => setScreen('home')}
+    view = <Gate gate={GATES.triage} title={goal.t} open={!!triageCfg} onBack={() => setScreen('home')}
       onContinue={() => setScreen('triage')} />;
   } else if (screen === 'triage') {
-    view = <Triage config={triageCfg.data} onBack={() => setScreen('gate:triage')}
+    view = <Triage title={goal.t} config={triageCfg.data} onBack={() => setScreen('gate:triage')}
       onDone={(a) => set({ answers: a, stage: 'gate:prepurchase' })} />;
   } else if (screen === 'gate:prepurchase') {
-    view = <Gate gate={GATES.prepurchase} open={!!ppCfg} onBack={() => setScreen('home')}
+    view = <Gate gate={GATES.prepurchase} title={goal.t} open={!!ppCfg} onBack={() => setScreen('home')}
       onContinue={() => setScreen('pdp')} />;
   } else if (screen === 'pdp') {
     view = <PDP cfg={ppCfg.data} onBack={() => setScreen('gate:prepurchase')} onBuy={() => setScreen('cart')} />;
@@ -179,10 +201,10 @@ export default function App() {
   } else if (screen === 'confirm') {
     view = <Confirm cfg={ppCfg.data} onDone={() => setScreen('gate:plan')} />;
   } else if (screen === 'gate:plan') {
-    view = <Gate gate={GATES.plan} open={plan.length > 0} onBack={() => setScreen('home')}
+    view = <Gate gate={GATES.plan} title={goal.t} open={plan.length > 0} onBack={() => setScreen('home')}
       onContinue={() => set({ mode: 'protocol', stage: 'home' })} />;
   } else if (screen === 'gate:consult') {
-    view = <Gate gate={GATES.consult} open={!consultPending} onBack={() => setScreen('home')}
+    view = <Gate gate={GATES.consult} title={goal.t} open={!consultPending} onBack={() => setScreen('home')}
       onContinue={() => set({ consultSeen: consultVersion, stage: 'home' })} />;
   } else if (screen === 'detail') {
     view = (

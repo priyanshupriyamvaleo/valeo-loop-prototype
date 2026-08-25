@@ -114,27 +114,24 @@ function WeightLoss({ entry, onChat }) {
   );
 }
 
-/* ── discover: the only state in which a journey can be started ── */
-function Discover({ goals, onPick }) {
+/* ── discover: the only state in which a journey can be started ──
+   The goal picker used to live here, and it asked for a decision from somebody
+   who had not been asked a single question yet. So home now makes the offer and
+   nothing else; the goal is chosen at the end of the onboarding chat, once the
+   answers exist to suggest one. */
+function Discover({ onStart }) {
   return (
     <>
-      <div className="hero">
-        <div className="k">Start here</div>
-        <h2>What are you here for?</h2>
-        <p>One question. Your answer decides everything that follows, and nothing else on
-          this screen changes until you pick.</p>
-        {goals.map((g) => (
-          <button className="goalrow" key={g.id} onClick={() => onPick(g.id)} style={{ width: '100%' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,201,60,.18)',
-                          display: 'grid', placeItems: 'center', color: 'var(--gold)', flex: 'none' }}>
-              <Icon name={g.ic} size={16} />
-            </div>
-            <div style={{ flex: 1, textAlign: 'left' }}>
-              <b>{g.t}</b><span>{g.sub}</span>
-            </div>
-            <Icon name="chev" size={15} />
-          </button>
-        ))}
+      <div className="intro" onClick={onStart} role="button" tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onStart(); }}>
+        <div className="k">Introducing</div>
+        <h2>Valeo Protocols</h2>
+        <p>Doctor-led programmes that run for twelve weeks, start with testing, and
+          adjust as your results come back.</p>
+        <div className="intro-cta">
+          Choose a goal <Icon name="chev" size={15} />
+        </div>
+        <div className="intro-note">A few questions first, so the right one is suggested.</div>
       </div>
 
       <div className="banner">
@@ -156,13 +153,13 @@ function Discover({ goals, onPick }) {
   );
 }
 
-export default function Home({ mode, wlEntry, goals, onPick, onChat, protocolCard }) {
+export default function Home({ mode, wlEntry, onStart, onChat, protocolCard }) {
   return (
     <div className="scroll">
       <Chrome>
         {mode === 'wl' && <WeightLoss entry={wlEntry} onChat={onChat} />}
         {mode === 'protocol' && protocolCard}
-        {mode === 'none' && <Discover goals={goals} onPick={onPick} />}
+        {mode === 'none' && <Discover onStart={onStart} />}
       </Chrome>
     </div>
   );

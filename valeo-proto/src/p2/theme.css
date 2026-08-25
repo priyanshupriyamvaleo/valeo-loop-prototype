@@ -174,3 +174,51 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
   cursor: pointer;
 }
 .tick input { accent-color: var(--gold); width: 14px; height: 14px; }
+
+/* One level below a surface. Only the chat builder has one, because only it
+   holds two separately publishable things. */
+.nav-grand { display:block; width:100%; text-align:left; padding:5px 9px 5px 42px;
+             border-radius:6px; border:none; background:none; cursor:pointer;
+             font-size:12px; color:var(--ink-3); font-family:inherit; }
+.nav-grand:hover { background:var(--surface-2); }
+.nav-grand.on { color:var(--amber); font-weight:700; }
+.nav-grand::before { content:'· '; opacity:.6; }
+
+/* ── the consult queue ── */
+.queue { display:grid; gap:6px; }
+.qrow { display:flex; align-items:center; gap:11px; width:100%; text-align:left;
+        padding:10px 12px; border:1px solid var(--line); border-radius:10px;
+        background:var(--surface); cursor:pointer; font-family:inherit; }
+.qrow:hover { border-color:var(--line-2); }
+.qrow.on { border-color:var(--gold); background:var(--gold-soft); }
+.qrow .av { flex:none; width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
+            background:var(--surface-2); color:var(--ink-2); font-size:11px; font-weight:800;
+            letter-spacing:.02em; }
+.qrow.on .av { background:#fff; color:var(--amber); }
+.qrow .who { flex:1; min-width:0; }
+.qrow .who b { display:block; font-size:13px; font-weight:600; font-family:var(--f-head); }
+.qrow .who i { display:block; font-style:normal; font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+.qrow .since { flex:none; font-family:var(--f-mono); font-size:10.5px; color:var(--ink-3); }
+
+/* ── the collapsed record ── */
+.fold { border-top:1px solid var(--line); }
+.fold-h { display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+          padding:10px 16px; background:none; border:none; cursor:pointer; font-family:inherit; }
+.fold-h:hover { background:var(--surface-2); }
+.fold-h b { font-size:12.5px; font-weight:700; color:var(--ink); flex:none; }
+.fold-h span { flex:1; min-width:0; font-size:12px; color:var(--ink-3); text-align:right;
+               overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fold-i { color:var(--ink-3); transition:transform .15s; flex:none; }
+.fold.on .fold-i { transform:rotate(90deg); }
+.fold-b { padding:2px 16px 14px 38px; }
+.pairs { margin:0; display:grid; gap:8px; }
+.pairs div { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:12px; }
+.pairs dt { margin:0; font-size:12px; color:var(--ink-3); }
+.pairs dd { margin:0; font-size:12.5px; color:var(--ink); }
+.empty-line { margin:0; font-size:12.5px; color:var(--ink-3); }
+.bar { height:6px; border-radius:4px; background:var(--surface-2); overflow:hidden; margin-bottom:10px; }
+.bar i { display:block; height:100%; background:var(--gold); border-radius:4px; }
+.prev { display:flex; gap:12px; padding:7px 0; }
+.prev .when { flex:0 0 76px; font-family:var(--f-mono); font-size:10.5px; color:var(--amber); padding-top:2px; }
+.prev b { font-size:12.5px; font-weight:700; display:block; }
+.prev p { margin:2px 0 0; font-size:12px; color:var(--ink-2); line-height:1.5; }

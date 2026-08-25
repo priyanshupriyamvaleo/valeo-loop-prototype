@@ -3,7 +3,7 @@ import './theme.css';
 import Icon from './ui/Icon';
 import { Chip, Note } from './ui/kit';
 import { StudioProvider, useStudio, pubState, publishBlockers } from './lib/store';
-import { GOALS, goalOf } from '../shared/bus';
+import { GOALS, goalOf, SHARED } from '../shared/bus';
 import { useRoute, go } from './lib/router';
 import ChatBuilder from './builders/ChatBuilder';
 import PrePurchase from './builders/PrePurchase';
@@ -45,6 +45,9 @@ const ADMIN = [
 /* The four authoring surfaces, in the order the patient meets them. */
 export const SURFACES = [
   { k: 'chat', t: 'Onboarding Chat Builder', part: 'triage', short: 'Triage chat' },
+  /* The chat surface holds two publishable chats. Which one is open is the
+     third segment of the route, so the publish bar below can target the right
+     one and a reload lands back on the same tab. */
   { k: 'prepurchase', t: 'Pre-purchase Builder', part: 'prepurchase', short: 'PDP, cart, confirmation' },
   { k: 'protocol', t: 'Protocol Builder', part: 'plan', short: 'The after-purchase plan' },
   { k: 'clinician', t: 'Clinician Console', part: 'consult', short: 'Consult outcome' },
@@ -73,14 +76,21 @@ function Shell() {
   const surfaceKey = SURFACES.some((s) => s.k === parts[1]) ? parts[1] : 'chat';
   const goal = goalOf(goalId);
   const surface = SURFACES.find((s) => s.k === surfaceKey);
+  const chatTab = parts[2] === 'triage' ? 'triage' : 'onboarding';
+  /* The onboarding chat belongs to no goal, so publishing it targets SHARED
+     rather than whichever goal happens to be selected in the dropdown. */
+  const sharedChat = surfaceKey === 'chat' && chatTab === 'onboarding';
+  const pubScope = sharedChat ? SHARED : goalId;
+  const pubPart = sharedChat ? 'onboarding' : surface.part;
+  const pubShort = sharedChat ? 'onboarding chat' : surface.short.toLowerCase();
 
   const isConsult = surfaceKey === 'clinician';
   const ps = isConsult
     ? { live: !!state.consult, dirty: false, version: state.consult?.version || 0 }
-    : pubState(state, goalId, surface.part);
+    : pubState(state, pubScope, pubPart);
   /* The refusals, computed every render so the button turns on the moment the
      missing thing is typed in. */
-  const blockers = goal.built && !isConsult ? publishBlockers(state, goalId, surface.part) : [];
+  const blockers = (sharedChat || goal.built) && !isConsult ? publishBlockers(state, pubScope, pubPart) : [];
 
   const Body = { chat: ChatBuilder, prepurchase: PrePurchase,
                  protocol: ProtocolBuilder, clinician: Clinician }[surfaceKey];
@@ -112,8 +122,20 @@ function Shell() {
               {m.open && (
                 <div style={{ margin: '4px 0 8px' }}>
                   {SURFACES.map((s) => (
-                    <button key={s.k} className={`nav-child ${surfaceKey === s.k ? 'on' : ''}`}
-                      onClick={() => go(`/${goalId}/${s.k}`)}>{s.t}</button>
+                    <div key={s.k}>
+                      <button className={`nav-child ${surfaceKey === s.k ? 'on' : ''}`}
+                        onClick={() => go(`/${goalId}/${s.k}`)}>{s.t}</button>
+                      {/* The chat builder holds two chats, so it is the one
+                          surface with a level below it in the sidebar. */}
+                      {s.k === 'chat' && surfaceKey === 'chat' && (
+                        <div style={{ margin: '2px 0 6px' }}>
+                          {[['onboarding', 'Onboarding chat'], ['triage', 'Goal triage chat']].map(([k, t]) => (
+                            <button key={k} className={`nav-grand ${chatTab === k ? 'on' : ''}`}
+                              onClick={() => go(`/${goalId}/chat/${k}`)}>{t}</button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}
@@ -152,7 +174,7 @@ function Shell() {
         <div className="page-in">
           <div style={{ marginBottom: 18 }}>
             <h1>{goal.t}</h1>
-            <p className="sub">{goal.protocol} · {surface.short}</p>
+            <p className="sub">{sharedChat ? 'Shared by every goal · Onboarding chat' : `${goal.protocol} · ${surface.short}`}</p>
           </div>
 
           {!goal.built ? (
@@ -165,11 +187,11 @@ function Shell() {
               </p>
             </Note>
           ) : (
-            <Boundary key={goalId + surfaceKey}><Body goalId={goalId} /></Boundary>
+            <Boundary key={goalId + surfaceKey + chatTab}><Body goalId={goalId} tab={chatTab} /></Boundary>
           )}
         </div>
 
-        {goal.built && (
+        {(sharedChat || goal.built) && (
           <div className="pubbar">
             <div className="grow">
               <div className="pub-state">
@@ -195,8 +217,8 @@ function Shell() {
             </div>
             {!isConsult && (
               <button className="btn btn-gold" disabled={blockers.length > 0}
-                onClick={() => publish(goalId, surface.part)}>
-                <Icon name="send" size={14} /> Publish {surface.short.toLowerCase()}
+                onClick={() => publish(pubScope, pubPart)}>
+                <Icon name="send" size={14} /> Publish {pubShort}
               </button>
             )}
           </div>

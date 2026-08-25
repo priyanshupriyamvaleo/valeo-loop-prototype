@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { readStudio, writeStudio, subscribe, resetAll, GOALS } from '../../shared/bus';
+import { readStudio, writeStudio, subscribe, resetAll, GOALS, SHARED } from '../../shared/bus';
 import { emptyDraft } from './seed';
 
 /*
@@ -17,7 +17,8 @@ const Ctx = createContext(null);
 
 const blank = () => ({
   drafts: emptyDraft(),
-  published: Object.fromEntries(GOALS.map((g) => [g.id, {}])),
+  /* SHARED holds the onboarding chat, which belongs to no goal. */
+  published: Object.fromEntries([...GOALS.map((g) => g.id), SHARED].map((id) => [id, {}])),
   consult: null,
 });
 
@@ -111,6 +112,28 @@ export function publishBlockers(state, goalId, part) {
   const out = [];
   const empty = (v) => !v || !String(v).trim();
 
+  if (part === 'onboarding') {
+    if (empty(d.intro)) out.push({
+      what: 'The opening line is empty',
+      why: 'It is the first thing anybody reads in the product. Without it the chat opens on a question with no framing.',
+    });
+    if (!(d.questions || []).length) out.push({
+      what: 'There are no questions',
+      why: 'With none, the chat cannot suggest a goal and the patient lands on a bare picker.',
+    });
+    if (!(d.profile?.fields || []).length) out.push({
+      what: 'No details are collected',
+      why: 'Age, sex, height and weight are what the doctor needs on file before anything can be prescribed.',
+    });
+    (d.questions || []).forEach((q, i) => {
+      if (empty(q.q)) out.push({ what: `Question ${i + 1} has no text`, why: 'The patient would see a blank bubble.' });
+      else if (q.kind !== 'text' && !(q.options || []).length) out.push({
+        what: `Question ${i + 1} has no answers`,
+        why: 'A choice question with no options cannot be answered, so the thread would dead-end.',
+      });
+    });
+  }
+
   if (part === 'triage') {
     if (empty(d.intro)) out.push({
       what: 'The opening line is empty',
@@ -122,7 +145,7 @@ export function publishBlockers(state, goalId, part) {
     });
     (d.questions || []).forEach((q, i) => {
       if (empty(q.q)) out.push({ what: `Question ${i + 1} has no text`, why: 'The patient would see a blank bubble.' });
-      else if (q.type !== 'text' && empty(q.options)) out.push({
+      else if (q.kind !== 'text' && !(q.options || []).length) out.push({
         what: `Question ${i + 1} has no answers`,
         why: 'A choice question with no options cannot be answered, so the thread would dead-end.',
       });
