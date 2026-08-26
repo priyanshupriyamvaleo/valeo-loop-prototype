@@ -164,3 +164,39 @@ export function captures(done, logs = {}) {
       note: 'Needs the camera build' },
   ].map((c) => ({ ...c, count: logs[c.k] || 0 }));
 }
+
+/* ── WHICH STATE A STEP IS IN ──
+   A step is not done or not-done. It is asked, booked, waited on, then done,
+   and it says something different in each. Booking the nurse should turn "Book
+   your nurse visit" into "Arriving Wednesday, 08:30" rather than leaving the
+   same task on screen with a tick beside it.
+
+   ASK       the patient's move, not yet made
+   SCHEDULED booked, not yet attended. The appointment replaces the task.
+   WAITING   somebody else's move, in progress
+   PLAIN     none of the above, so the step's own words
+
+   `booked` carries the slots, keyed by the step that chose them. A step can
+   show a slot another step booked, which is how the nurse appointment knows
+   when the nurse is coming. */
+export function stateOf(item, booked = {}) {
+  if (!item) return null;
+  const slot = (k) => booked[k] || null;
+
+  if (item.scheduled && slot(item.id)) {
+    return { k: 'scheduled', ...item.scheduled, when: slot(item.id) };
+  }
+  if (isPatientMove(item) && item.ask) {
+    return { k: 'ask', ...item.ask };
+  }
+  if (!isPatientMove(item) && item.waiting) {
+    const w = item.waiting;
+    return { k: 'waiting', ...w, when: w.slotFrom ? slot(w.slotFrom) : null };
+  }
+  return { k: 'plain', title: item.t, body: item.sub };
+}
+
+/* Booking completes a step outright unless the step has somewhere to be after
+   it is booked. A consultation you have not attended is not a consultation you
+   have had. */
+export const bookingCompletes = (item) => !item || !item.scheduled;

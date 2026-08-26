@@ -130,9 +130,98 @@ export function Status({ item, onBack, onDone }) {
           the screen, not a real consignment.
         </p>
       </div>
+      {/* No button. This step is not the patient's to advance, and a control
+          that pretends otherwise is the thing that made the old screen feel
+          like a prototype. Time moves from the demo rail instead. */}
       <div className="foot">
-        <button className="cta ghosted" onClick={onDone}>
-          Demo: mark this as happened <Icon name="chev" size={16} />
+        <div className="tiny">Nothing to do here. We will tell you when it moves.</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── 4. THE REPORT ──
+   What "your results are ready" actually opens. Markers are placeholders
+   pending clinical sign-off, and the screen says so rather than presenting
+   invented numbers as findings. */
+const PANEL = [
+  { t: 'hs-CRP', v: '4.1', u: 'mg/L', ref: 'under 3.0', flag: 'high' },
+  { t: 'ESR', v: '18', u: 'mm/hr', ref: 'under 15', flag: 'high' },
+  { t: 'Vitamin D', v: '41', u: 'nmol/L', ref: '75 to 125', flag: 'low' },
+  { t: 'Ferritin', v: '96', u: 'ug/L', ref: '30 to 400', flag: 'ok' },
+  { t: 'Creatine kinase', v: '210', u: 'U/L', ref: 'under 200', flag: 'high' },
+  { t: 'Magnesium', v: '0.85', u: 'mmol/L', ref: '0.7 to 1.0', flag: 'ok' },
+];
+
+export function Report({ item, onBack, onBook }) {
+  const off = PANEL.filter((m) => m.flag !== 'ok').length;
+  return (
+    <div className="screen">
+      <Head title="Your baseline panel" sub="Recovery and Inflammation" onBack={onBack} />
+      <div className="scroll pad">
+        <div className="rpt-sum">
+          <b>{off} of {PANEL.length} outside range</b>
+          <span>Your doctor has already seen this. You will go through it together.</span>
+        </div>
+
+        <div className="lbl-sm">Markers</div>
+        {PANEL.map((m) => (
+          <div className={`marker ${m.flag}`} key={m.t}>
+            <div className="mk-l">
+              <b>{m.t}</b>
+              <span>Reference {m.ref}</span>
+            </div>
+            <div className="mk-r">
+              <b>{m.v}</b><i>{m.u}</i>
+            </div>
+            <span className={`mk-f ${m.flag}`}>
+              {m.flag === 'ok' ? 'In range' : m.flag === 'high' ? 'High' : 'Low'}
+            </span>
+          </div>
+        ))}
+
+        <p className="fineprint">
+          Marker values and reference ranges are placeholders pending clinical
+          sign-off. The panel repeats at Week 12 and is read against this one.
+        </p>
+      </div>
+      <div className="foot">
+        <button className="cta" onClick={onBook}>
+          {item.action ? item.action.label : 'Book your consultation'} <Icon name="chev" size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 5. THE CALL ──
+   Joining is its own screen because "join" is the only thing on it. */
+export function Join({ item, when, onBack, onDone }) {
+  return (
+    <div className="screen">
+      <Head title="Consultation" sub={when} onBack={onBack} />
+      <div className="scroll pad">
+        <div className="join-hero">
+          <span className="who-av lg">V</span>
+          <b>Your peptide doctor</b>
+          <span>30-minute video call</span>
+        </div>
+        <div className="act-who" style={{ marginTop: 14 }}>
+          <Icon name="check" size={15} />
+          <div>
+            <b>They have read your panel</b>
+            <span>Your results, your triage answers and your starting numbers are
+              already on their screen.</span>
+          </div>
+        </div>
+        <p className="fineprint">
+          Secure video call. There is no real call in this prototype, so joining
+          takes you to the outcome.
+        </p>
+      </div>
+      <div className="foot">
+        <button className="cta" onClick={onDone}>
+          Join consultation <Icon name="chev" size={16} />
         </button>
       </div>
     </div>

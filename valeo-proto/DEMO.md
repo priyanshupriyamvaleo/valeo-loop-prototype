@@ -137,33 +137,41 @@ item you added in step 7 is already in the patient's journey without anybody
 writing a screen for it.
 
 Open it. One fixed structure, top to bottom, and it does not rearrange itself:
+what is next, the logbook, what follows, help. The coach sits top right, where
+it sits on the home card.
 
-- **Your next step**, always at the top, whether it is the patient's move or
-  somebody else's. A screen that reorders itself is one you have to read again
-  on every visit.
-- **Your logbook**: the week they are in, the recovery score, and four tiles.
-- **What follows**, so nothing arrives as a surprise.
-- **Help**: the AI coach and the care team, always in the same place. The coach
-  is also in the top right of the header, where it sits on the home card.
+**A step is not done or not-done.** It is asked, booked, waited on, then done,
+and it says something different in each. That is the part worth walking slowly:
 
-The score is worth pausing on. Between paying and the first result there are
-about nine days with nothing true to say about the patient's body, and that is
-exactly when a twelve-week commitment is most fragile. But recovery is measured
-in pain and in what the body will do, and the patient can report both the minute
-they have paid. So the logbook is full on day zero, and the patient sets their
-own Week 12 target rather than being handed one.
+- **Book nurse visit** opens as *"We start with your blood test"*, with the
+  three objections a home blood draw actually raises answered above the button.
+- Choose a time and the card stops being a task and becomes an appointment:
+  *"At-home blood test, arriving Wed 3 Sep 08:30"*, with what to do beforehand.
+  The slot carries from the step that booked it to the step it belongs to.
+- Move time on and the lab has it: *"We are analysing your sample. This usually
+  takes 24 to 48 hours."* Not "your doctor is reviewing your results", which
+  would be chronologically impossible and is the kind of small lie that costs
+  trust the first time somebody notices it.
+- Then *"Your baseline panel is ready"*, with two things to do and the report
+  first, because reading it is what makes the consultation worth booking.
+- **View your report** opens the panel. Book from there, and the card becomes
+  *"Consultation booked, scheduled for Thu 4 Sep 11:00"* with **Join
+  consultation**. Booking a consultation is not attending one, so the step stays
+  open and changes what it says.
 
-The tiles unlock as the protocol reaches them: doses only once the medicine has
-shipped, meals after the first visit. Heart scan stays off and says why, because
-a tile that invented a reading would be worse than one that admits it cannot
-take it yet.
+**Time moves from the rail, not from the phone.** Nine of the fourteen steps
+belong to a nurse, a lab or the pharmacy, and a patient cannot make those
+happen. A "mark this as done" button on the patient screen to advance them is
+the thing that makes a prototype read as a prototype. Use **Move time on** in
+the demo panel instead.
 
-With nothing left to do, the logbook rises to the top and the screen says the
-twelve weeks are complete. That is the one time the order changes.
+The logbook underneath carries the week, a recovery score folded out of the two
+numbers the patient reports, and four capture tiles that unlock where the
+protocol reaches them. The score works on day zero, before any blood is drawn,
+which is what stops the first nine days being an empty chart.
 
-Pressing anything opens one of **three screens, not fourteen**: a scheduler, a
-status view, or the check-in. A fifteenth step published in the Studio adds a
-state, not a screen. Same argument as the home card, one level down.
+Pressing anything opens one of **five screens, not fourteen**: a scheduler, a
+status view, the report, the call, or the check-in.
 
 Work through to the doctor consultation. The app stops:
 *"Consult outcome has not been published yet."*

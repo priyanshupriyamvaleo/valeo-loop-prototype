@@ -3,10 +3,10 @@ import './theme.css';
 import Icon from './ui/Icon';
 import Home from './screens/Home';
 import { Gate, Onboarding, Triage, PDP, Cart, Confirm } from './screens/Flow';
-import { Schedule, Status, CheckIn } from './screens/Actions';
+import { Schedule, Status, CheckIn, Report, Join } from './screens/Actions';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor, GATES, SHARED } from '../shared/bus';
-import { planFor, nextItem, gateOpen, archetypeOf } from './lib/journey';
+import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes } from './lib/journey';
 
 /*
  * VALEO — the patient app.
@@ -35,6 +35,7 @@ const INIT = {
   logs: {},            /* how many times each tile has been logged */
   booked: {},          /* itemId -> the slot the patient chose */
   acting: null,        /* the plan item whose action screen is open */
+  actMode: null,       /* which face of it: report, join, or the default */
   consultSeen: 0,      /* the consult version this patient has already absorbed */
 };
 
@@ -154,6 +155,23 @@ export default function App() {
       </div>
 
       <div className="box">
+        {/* TIME LIVES HERE, NOT ON THE PHONE.
+            Nine of the fourteen steps belong to a nurse, a lab or the pharmacy,
+            and the patient cannot make those happen. Putting a "mark this as
+            done" button on the patient screen to advance them was the thing
+            that made it read as a prototype rather than a product. So the
+            phone shows the true waiting state and the presenter moves time
+            from out here. */}
+        {pt.mode === 'protocol' && item && (
+          <button className="ghost" style={{ marginBottom: 8 }}
+            onClick={() => set((prev) => ({
+              ...prev,
+              done: [...prev.done, item.id],
+              stage: item.id === 'p4' ? 'gate:consult' : prev.stage,
+            }))}>
+            Move time on · {item.t}
+          </button>
+        )}
         <button className="ghost" onClick={reset}>Reset the patient</button>
       </div>
     </div>
@@ -214,32 +232,41 @@ export default function App() {
       onContinue={() => set({ consultSeen: consultVersion, stage: 'home' })} />;
   } else if (screen === 'act') {
     const it = plan.find((x) => x.id === pt.acting);
-    /* An item published after the action screen was opened, or a stale id from
-       an older session, must not take the screen down. */
+    /* A step published after this screen was opened, or a stale id from an
+       older session, must not take the screen down. */
     if (!it) {
       view = <Gate gate={GATES.plan} title={goal.t} open onBack={() => setScreen('detail')}
         onContinue={() => setScreen('detail')} />;
+    } else if (pt.actMode === 'report') {
+      view = <Report item={it} onBack={() => setScreen('detail')}
+        onBook={() => set({ actMode: null })} />;
+    } else if (pt.actMode === 'join') {
+      view = (
+        <Join item={it} when={pt.booked[it.id]} onBack={() => setScreen('detail')}
+          onDone={() => set((prev) => ({
+            ...prev, done: [...prev.done, it.id], acting: null, actMode: null,
+            stage: it.id === 'p4' ? 'gate:consult' : 'detail',
+          }))} />
+      );
     } else if (archetypeOf(it) === 'schedule') {
       view = (
         <Schedule item={it} onBack={() => setScreen('detail')}
-          onDone={(slot) => set((prev) => ({
-            ...prev,
-            booked: { ...prev.booked, [it.id]: slot },
-            done: [...prev.done, it.id],
-            acting: null,
-            stage: it.id === 'p4' ? 'gate:consult' : 'detail',
-          }))} />
+          onDone={(slot) => set((prev) => {
+            /* Booking a consultation does not mean you attended it, so a step
+               with somewhere to be afterwards keeps its place in the plan and
+               changes what it says instead. */
+            const finishes = bookingCompletes(it);
+            return {
+              ...prev,
+              booked: { ...prev.booked, [it.id]: slot },
+              done: finishes ? [...prev.done, it.id] : prev.done,
+              acting: null, actMode: null,
+              stage: finishes && it.id === 'p4' ? 'gate:consult' : 'detail',
+            };
+          })} />
       );
     } else {
-      view = (
-        <Status item={it} onBack={() => setScreen('detail')}
-          onDone={() => set((prev) => ({
-            ...prev,
-            done: [...prev.done, it.id],
-            acting: null,
-            stage: it.id === 'p4' ? 'gate:consult' : 'detail',
-          }))} />
-      );
+      view = <Status item={it} onBack={() => setScreen('detail')} />;
     }
   } else if (screen === 'checkin') {
     view = (
@@ -260,7 +287,7 @@ export default function App() {
         logs={pt.logs || {}} target={pt.target}
         onBack={() => setScreen('home')}
         onChat={() => {}}
-        onOpen={(it) => set({ acting: it.id, stage: 'act' })}
+        onOpen={(it, mode) => set({ acting: it.id, actMode: mode || null, stage: 'act' })}
         onLog={(k) => {
           /* Symptoms is the real capture and opens the check-in. The other
              three record that the day was logged and nothing more, because the

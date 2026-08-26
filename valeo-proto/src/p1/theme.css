@@ -349,3 +349,60 @@ button { font:inherit; color:inherit; cursor:pointer; border:none; background:no
                    color:#fff; border:none; border-radius:999px; padding:7px 12px; cursor:pointer;
                    font-family:inherit; font-size:11px; font-weight:700; }
 .shead .chatpill:active { transform:scale(.97); }
+
+/* ── the states a step can be in ── */
+.chip-in { font-style:normal; margin-left:auto; font-size:9.5px; font-weight:800;
+           letter-spacing:.08em; text-transform:uppercase; color:var(--gold-deep);
+           background:var(--gold-soft); border-radius:5px; padding:3px 7px; }
+.move-sub { display:block; font-style:normal; font-size:12px; color:var(--ink-3); margin-top:3px; }
+/* An appointment, so the time is the largest thing on the card. */
+.appt { margin-top:12px; padding:12px 13px; border-radius:12px; background:var(--gold-soft);
+        border:1px solid var(--gold-2); }
+.appt span { display:block; font-size:9.5px; font-weight:800; letter-spacing:.14em;
+             text-transform:uppercase; color:var(--gold-deep); }
+.appt b { display:block; font-family:var(--f-head); font-size:19px; font-weight:600;
+          color:var(--ink); margin-top:3px; }
+.assure { list-style:none; margin:12px 0 0; padding:0; display:grid; gap:8px; }
+.assure li { display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--ink-2);
+             line-height:1.4; }
+.assure li .pip { flex:none; width:5px; height:5px; border-radius:50%; background:var(--gold);
+                  margin:0 6px; }
+.assure li .tick.sm { flex:none; width:17px; height:17px; }
+.prep-l { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+          color:var(--ink-3); margin-top:15px; }
+.strip { display:flex; align-items:center; gap:8px; margin-top:12px; padding:10px 12px;
+         border-radius:10px; background:rgba(19,41,63,.05); font-size:11.5px; color:var(--ink-2);
+         line-height:1.45; }
+.whos { display:flex; align-items:center; gap:9px; margin-top:12px; font-size:12px;
+        color:var(--ink-3); }
+.ghost-cta { background:var(--card); color:var(--ink); border:1px solid var(--line-2);
+             margin-top:12px; }
+
+/* ── the report ── */
+.rpt-sum { border-radius:14px; padding:14px; background:var(--gold-soft);
+           border:1px solid var(--gold-2); }
+.rpt-sum b { display:block; font-family:var(--f-head); font-size:17px; font-weight:600;
+             color:var(--ink); }
+.rpt-sum span { display:block; font-size:12.5px; color:var(--ink-2); margin-top:4px;
+                line-height:1.5; }
+.marker { display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:12px;
+          background:var(--card); border:1px solid var(--line); margin-bottom:7px; }
+.mk-l { flex:1; min-width:0; }
+.mk-l b { display:block; font-size:13px; font-weight:600; font-family:var(--f-head); }
+.mk-l span { display:block; font-size:11px; color:var(--ink-3); margin-top:1px; }
+.mk-r { flex:none; text-align:right; }
+.mk-r b { font-family:var(--f-head); font-size:17px; font-weight:600; }
+.mk-r i { font-style:normal; font-size:10.5px; color:var(--ink-3); margin-left:3px; }
+.mk-f { flex:none; font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+        border-radius:5px; padding:3px 6px; }
+.mk-f.ok { color:var(--green); background:var(--green-soft); }
+.mk-f.high, .mk-f.low { color:var(--red); background:var(--red-soft); }
+.marker.high, .marker.low { border-color:rgba(192,72,58,.3); }
+
+/* ── the call ── */
+.join-hero { text-align:center; padding:24px 16px; border-radius:18px; background:var(--card);
+             border:1px solid var(--line); }
+.join-hero .who-av.lg { width:56px; height:56px; border-radius:18px; font-size:20px;
+                        margin:0 auto 12px; }
+.join-hero b { display:block; font-family:var(--f-head); font-size:18px; font-weight:600; }
+.join-hero > span:last-child { display:block; font-size:12.5px; color:var(--ink-3); margin-top:3px; }

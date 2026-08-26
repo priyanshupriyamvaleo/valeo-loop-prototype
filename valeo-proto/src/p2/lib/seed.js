@@ -21,19 +21,55 @@
 export const RR_PLAN = [
   { id: 'p1',  t: 'Book nurse visit',        sub: 'Nothing else can start until this is done.',
     when: 'Day 0 to 3',  offset: 0,  actor: 'Patient', blocking: true,
-    action: { kind: 'book', label: 'Book your nurse visit' },
+    action: { kind: 'book', label: 'Choose a time' },
+    /* The three objections a home blood draw actually raises, answered before
+       the button rather than after it: who turns up, what it is like, and
+       whether anybody reads the result. */
+    ask: { tag: 'Step 1 of your protocol',
+      title: 'We start with your blood test.',
+      body: 'Your doctor needs these results before anything is prescribed.',
+      assure: ['A qualified nurse comes to you',
+               'Quick, and about twenty minutes',
+               'Read by one of our peptide doctors'] },
     card: 'Book your nurse visit' },
   { id: 'p2',  t: 'Blood sample collected',  sub: 'Recovery & Inflammation Panel, baseline.',
     when: 'Week 1',      offset: 5,  actor: 'Nurse',   blocking: true, locked: true,
     lockWhy: 'Your protocol starts with testing, not a product. It is also the clinical basis for prescribing.',
-    card: 'Nurse visiting Tuesday, 9am' },
+    /* Booked. The card stops being a task and becomes an appointment, so the
+       time is the largest thing on it. The slot comes from the step that
+       booked it. */
+    waiting: { tag: 'First step', title: 'At-home blood test',
+      whenLead: 'Arriving', slotFrom: 'p1',
+      prepLabel: 'Before your appointment',
+      prep: ['Fast for 10 hours, water is fine',
+             'Drink water before the nurse arrives',
+             'Have your ID ready',
+             'The nurse comes to you'] },
+    card: 'Nurse visit scheduled' },
   { id: 'p3',  t: 'Results ready',           sub: 'Automatic. No patient action.',
     when: 'Plus 3 days', offset: 8,  actor: 'Lab',
+    /* This used to say the doctor was reviewing results the moment the nurse
+       left, which is chronologically impossible. Claiming work nobody has
+       started is a small lie that costs trust the first time it is noticed. */
+    waiting: { tag: 'Sample received at the lab', chip: 'In progress',
+      title: 'We are analysing your sample.',
+      body: 'This usually takes 24 to 48 hours. Your doctor sees it before you do.' },
     card: 'Results in a few days' },
   { id: 'p4',  t: 'Doctor consultation',     sub: 'Injury and recovery assessment, results review, competition screening. Dispatch is blocked until this happens.',
     when: 'Week 1',      offset: 9,  actor: 'Patient books', blocking: true, locked: true,
     lockWhy: 'Dispensing depends on it. Removing it makes this a supplement sale.',
     action: { kind: 'book', label: 'Book your consultation' },
+    /* Two things to do at once, and the report comes first: reading it is what
+       makes the consultation worth booking. */
+    ask: { tag: 'Your results are in',
+      title: 'Your baseline panel is ready.',
+      body: 'Read it, then book a time to go through it with your doctor.',
+      secondary: { kind: 'report', label: 'View your report' } },
+    /* Booked, not yet attended. The appointment replaces the task. */
+    scheduled: { tag: 'Consultation booked', title: 'Consultation with your doctor',
+      whenLead: 'Scheduled for', sub: '30-minute video call',
+      strip: 'The link opens 10 minutes before your call.',
+      cta: 'Join consultation' },
     card: 'Your results are ready' },
   { id: 'p5',  t: 'Supplement voucher issued', sub: 'Automatic. AED 150.',
     when: 'After consult', offset: 10, actor: 'System',
@@ -41,6 +77,8 @@ export const RR_PLAN = [
   { id: 'p6',  t: 'Month 1 dispatched',      sub: 'BPC-157 pen, cold chain.',
     when: 'After consult', offset: 11, actor: 'Ops', milestone: true,
     action: { kind: 'track', label: 'Track delivery' },
+    waiting: { tag: 'Dispatched', title: 'Your medicine is on the way.',
+      body: 'BPC-157 pen, shipped cold chain from a fully licensed UAE compounding pharmacy.' },
     card: 'Month 1 on the way' },
   { id: 'p7',  t: 'Concierge call 1',        sub: 'Care team.',
     when: 'Day 10',      offset: 10, actor: 'Care team',

@@ -1,5 +1,5 @@
 import Icon from '../ui/Icon';
-import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures } from '../lib/journey';
+import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures, stateOf } from '../lib/journey';
 
 /*
  * ONE CARD AND ONE DETAIL SCREEN.
@@ -138,29 +138,83 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
   const follows = soon(plan, done, front ? [front.id] : [], 21, 3);
 
   /* ── 1. what happens now ──
-     Built only when there IS something next. JSX is constructed eagerly, so a
-     completed plan used to dereference a null item here and take the screen
-     down at the one moment the patient has finished twelve weeks. */
+     One card, four states. The words come from the step, not from here, so a
+     step published in the Studio arrives with its own voice.
+     Built only when there IS something next: JSX is constructed eagerly, so a
+     completed plan used to dereference a null item and take the screen down at
+     the one moment a patient has finished twelve weeks. */
+  const state = stateOf(front, booked);
   const next = !front ? null : (
     <div className="sect">
-      <div className="sect-h"><span>{mine ? 'Your next step' : 'Happening now'}</span></div>
-      <div className={`move ${front.blocking && mine ? 'block' : ''} ${mine ? '' : 'theirs'}`}>
-        {front.blocking && mine && <div className="move-k">Nothing else starts until this is done</div>}
-        {/* The item's `card` copy is written for the home screen, where it is
-            the only thing on show. Here the logbook is right underneath saying
-            the same week back, so the step's real name is the useful one. */}
-        <b>{front.t}</b>
-        <span>{front.sub}</span>
-        {mine ? (
-          <button className="cta" onClick={() => onOpen(front)}>
-            {front.action ? front.action.label : 'Open'} <Icon name="chev" size={15} />
+      <div className="sect-h">
+        <span>{state.tag || (mine ? 'Your next step' : 'Happening now')}</span>
+        {state.chip && <em className="chip-in">{state.chip}</em>}
+      </div>
+      <div className={`move ${front.blocking && state.k === 'ask' ? 'block' : ''} ${mine ? '' : 'theirs'}`}>
+        {front.blocking && state.k === 'ask' && (
+          <div className="move-k">Nothing else starts until this is done</div>
+        )}
+        <b>{state.title}</b>
+        {state.sub && <i className="move-sub">{state.sub}</i>}
+
+        {/* An appointment, so the time is the largest thing on the card. */}
+        {state.when && (
+          <div className="appt">
+            <span>{state.whenLead || 'Scheduled for'}</span>
+            <b>{state.when}</b>
+          </div>
+        )}
+
+        {state.body && <span>{state.body}</span>}
+
+        {state.assure && (
+          <ul className="assure">
+            {state.assure.map((a) => (
+              <li key={a}><span className="tick sm"><Icon name="check" size={9} /></span>{a}</li>
+            ))}
+          </ul>
+        )}
+
+        {state.prep && (
+          <>
+            <div className="prep-l">{state.prepLabel || 'Before your appointment'}</div>
+            <ul className="assure">
+              {state.prep.map((a) => <li key={a}><i className="pip" />{a}</li>)}
+            </ul>
+          </>
+        )}
+
+        {state.strip && (
+          <div className="strip"><Icon name="chat" size={12} />{state.strip}</div>
+        )}
+
+        {/* The report comes before the booking: reading it is what makes the
+            consultation worth booking. */}
+        {state.secondary && (
+          <button className="cta ghost-cta" onClick={() => onOpen(front, state.secondary.kind)}>
+            {state.secondary.label} <Icon name="chev" size={15} />
           </button>
-        ) : (
-          <button className="linkrow" style={{ marginTop: 12 }} onClick={() => onOpen(front)}>
+        )}
+
+        {/* Whose step it is decides the WORDS, not whether there is a button.
+            Tracking a delivery is the patient's to do even though the parcel is
+            the pharmacy's, so a step with an action keeps its button either
+            way, and the line naming who holds it sits underneath. */}
+        {state.k === 'scheduled' ? (
+          <button className="cta" onClick={() => onOpen(front, 'join')}>
+            {state.cta} <Icon name="chev" size={15} />
+          </button>
+        ) : front.action ? (
+          <button className={`cta ${mine ? '' : 'ghost-cta'}`} onClick={() => onOpen(front)}>
+            {front.action.label} <Icon name="chev" size={15} />
+          </button>
+        ) : null}
+
+        {!mine && (
+          <div className="whos">
             <span className="who-av sm">{front.doctorAdded ? 'D' : (front.actor || '?')[0]}</span>
             {front.doctorAdded ? 'Added by your doctor' : `${front.actor} has this`}
-            <Icon name="chev" size={13} />
-          </button>
+          </div>
         )}
       </div>
     </div>
