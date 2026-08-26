@@ -47,7 +47,12 @@ export function gateOpen(gateKey, studio, goalId) {
 export function planFor(studio, goalId, journey) {
   const pub = publishedFor(studio, goalId, 'plan');
   const base = (pub && pub.data) ? structuredClone(pub.data) : [];
-  const added = (studio && studio.consult && studio.consult.addedItems) || [];
+  /* Items the clinician added at the consultation only exist for a patient who
+     has HAD that consultation. Merging them on the mere existence of a consult
+     record showed a day-zero patient steps labelled "added at your consult"
+     before any consult had happened. */
+  const consulted = !!(journey && (journey.done || []).includes('p4'));
+  const added = (consulted && studio && studio.consult && studio.consult.addedItems) || [];
   const merged = [...base];
   added.forEach((a) => {
     if (merged.some((m) => m.id === a.id)) return;
@@ -94,3 +99,41 @@ export const WL_ENTRIES = {
   blood:  { t: 'Blood test booked', mods: ['blood_test_report', 'tracker'] },
   tagged: { t: 'Tagged GLP-1 by ops', mods: ['tracker'] },
 };
+
+/* ── WHOSE MOVE IS IT ──
+   Nine of the fourteen seeded steps belong to a nurse, a lab, the pharmacy or
+   the care team. Only five are the patient's. That ratio is the most important
+   fact about this protocol and the screen is built on it: most of the twelve
+   weeks is spent waiting while other people work, so the app has to render the
+   waiting as work rather than as silence. */
+export const isPatientMove = (item) => !!item && /^Patient/.test(item.actor || '');
+
+/* What Valeo is doing right now on this patient's behalf. Windowed, because a
+   list of everything still outstanding is the config dump we are replacing. */
+export function inMotion(plan, done, limit = 3) {
+  const front = nextItem(plan, done);
+  if (!front) return [];
+  return plan
+    .filter((i) => !done.includes(i.id) && !isPatientMove(i) && i.offset <= front.offset + 21)
+    .slice(0, limit);
+}
+
+/* The next fortnight, so the screen reads as current rather than encyclopedic.
+   `skip` carries the ids already shown higher up the screen. Without it the same
+   three steps appeared under both "In motion" and "Next two weeks", which is the
+   duplication that made the old list feel like a config dump. */
+export function soon(plan, done, skip = [], days = 14, limit = 4) {
+  const front = nextItem(plan, done);
+  if (!front) return [];
+  return plan
+    .filter((i) => !done.includes(i.id) && !skip.includes(i.id) && i.offset <= front.offset + days)
+    .slice(0, limit);
+}
+
+/* Which of the three action screens this item opens.
+   `book` and `track` already exist on the seeded items; everything else is
+   something happening elsewhere, which is a status view. */
+export const archetypeOf = (item) =>
+  (item && item.action && item.action.kind === 'book') ? 'schedule'
+    : (item && item.action && item.action.kind === 'track') ? 'status'
+      : 'status';

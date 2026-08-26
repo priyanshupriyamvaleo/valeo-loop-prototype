@@ -3,9 +3,10 @@ import './theme.css';
 import Icon from './ui/Icon';
 import Home from './screens/Home';
 import { Gate, Onboarding, Triage, PDP, Cart, Confirm } from './screens/Flow';
+import { Schedule, Status, CheckIn } from './screens/Actions';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor, GATES, SHARED } from '../shared/bus';
-import { planFor, nextItem, gateOpen } from './lib/journey';
+import { planFor, nextItem, gateOpen, archetypeOf } from './lib/journey';
 
 /*
  * VALEO — the patient app.
@@ -29,6 +30,9 @@ const INIT = {
   intake: null,        /* the onboarding answers and the details the doctor needs */
   answers: null,       /* the goal's own triage answers */
   done: [],
+  checkins: [],        /* pain and capacity, self-reported. The only thing logged. */
+  booked: {},          /* itemId -> the slot the patient chose */
+  acting: null,        /* the plan item whose action screen is open */
   consultSeen: 0,      /* the consult version this patient has already absorbed */
 };
 
@@ -206,20 +210,52 @@ export default function App() {
   } else if (screen === 'gate:consult') {
     view = <Gate gate={GATES.consult} title={goal.t} open={!consultPending} onBack={() => setScreen('home')}
       onContinue={() => set({ consultSeen: consultVersion, stage: 'home' })} />;
+  } else if (screen === 'act') {
+    const it = plan.find((x) => x.id === pt.acting);
+    /* An item published after the action screen was opened, or a stale id from
+       an older session, must not take the screen down. */
+    if (!it) {
+      view = <Gate gate={GATES.plan} title={goal.t} open onBack={() => setScreen('detail')}
+        onContinue={() => setScreen('detail')} />;
+    } else if (archetypeOf(it) === 'schedule') {
+      view = (
+        <Schedule item={it} onBack={() => setScreen('detail')}
+          onDone={(slot) => set((prev) => ({
+            ...prev,
+            booked: { ...prev.booked, [it.id]: slot },
+            done: [...prev.done, it.id],
+            acting: null,
+            stage: it.id === 'p4' ? 'gate:consult' : 'detail',
+          }))} />
+      );
+    } else {
+      view = (
+        <Status item={it} onBack={() => setScreen('detail')}
+          onDone={() => set((prev) => ({
+            ...prev,
+            done: [...prev.done, it.id],
+            acting: null,
+            stage: it.id === 'p4' ? 'gate:consult' : 'detail',
+          }))} />
+      );
+    }
+  } else if (screen === 'checkin') {
+    view = (
+      <CheckIn first={pt.checkins.length === 0} previous={pt.checkins[pt.checkins.length - 1]}
+        onBack={() => setScreen('detail')}
+        onDone={(v) => set((prev) => ({
+          ...prev,
+          checkins: [...prev.checkins, v],
+          stage: 'detail',
+        }))} />
+    );
   } else if (screen === 'detail') {
     view = (
-      <JourneyDetail title={goal.t} plan={plan} done={pt.done} onBack={() => setScreen('home')}
-        onComplete={(it) => {
-          /* The consultation is the one step that hands the journey to a
-             clinician. Everything stops until they record what happened.
-             Marked done and moved in one write: two writes race, and the
-             second one's stage would land on the first one's stale copy. */
-          set((p) => ({
-            ...p,
-            done: [...p.done, it.id],
-            stage: it.id === 'p4' ? 'gate:consult' : 'home',
-          }));
-        }} />
+      <JourneyDetail title={goal.t} plan={plan} done={pt.done}
+        checkins={pt.checkins || []} booked={pt.booked || {}}
+        onBack={() => setScreen('home')}
+        onCheckIn={() => setScreen('checkin')}
+        onOpen={(it) => set({ acting: it.id, stage: 'act' })} />
     );
   }
 

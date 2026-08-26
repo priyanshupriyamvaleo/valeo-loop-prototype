@@ -136,6 +136,32 @@ fourteen designs. It renders whichever plan item is due next, which is why the
 item you added in step 7 is already in the patient's journey without anybody
 writing a screen for it.
 
+Open it. The protocol screen is built on one fact: **nine of the fourteen steps
+are somebody else's move.** A nurse, a lab, the pharmacy, the care team. Only
+five belong to the patient. So most of twelve weeks is spent waiting, and the
+screen renders the waiting as work rather than as silence.
+
+Four sections, and the order flips:
+
+- **Your move** is nothing or one thing. When something is blocking it takes the
+  top of the screen. When nothing is, the app says so plainly and names who has
+  the next step.
+- **Where you are** is pain and what the body will do. Both are self-reported,
+  which is the point: recovery is measured in those two things and both are
+  available on day zero, before any blood is drawn. It is what stops the tracker
+  from being an empty chart in the first nine days, which is exactly when a
+  twelve-week commitment is most fragile.
+- **In motion** is what Valeo is doing right now on the patient's behalf.
+- **Next two weeks**, never the whole fourteen. The full plan stays folded.
+
+Set the starting point first, then book the nurse visit and watch the order
+flip: the numbers move to the top and Your move reads *"Nothing right now.
+Nurse has the next step."*
+
+Pressing anything opens one of **three screens, not fourteen**: a scheduler, a
+status view, or the check-in. A fifteenth step published in the Studio adds a
+state, not a screen. Same argument as the home card, one level down.
+
 Work through to the doctor consultation. The app stops:
 *"Consult outcome has not been published yet."*
 
@@ -184,6 +210,11 @@ nothing on the phone until Publish, and the version stamp on each surface says
 which one the app is reading.
 
 Clinical lists, panel contents and prices are placeholders pending sign-off.
+
+Logging is deliberately two numbers and nothing else. Weight, meals and scans
+need an ops backend that does not exist yet, and the screens say so where a
+number would otherwise be invented. Appointment slots and consignment tracking
+are labelled the same way.
 
 ## Running it locally
 
