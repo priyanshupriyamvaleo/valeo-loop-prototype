@@ -200,3 +200,43 @@ export function stateOf(item, booked = {}) {
    it is booked. A consultation you have not attended is not a consultation you
    have had. */
 export const bookingCompletes = (item) => !item || !item.scheduled;
+
+/* ── WHAT THE PATIENT IS ON, AS OPPOSED TO WHAT THEY MUST DO ──
+   Medicines, peptides and supplements have no date and nothing to turn up for.
+   Putting them in the plan made a shopping list wear a schedule as a costume,
+   so they are a standing list instead: what is already running, and what the
+   doctor has suggested on top of it.
+
+   The protocol's own medication steps supply the ongoing ones, so a patient
+   sees what they are taking before any consultation has happened. */
+export function medicinesFor(studio, goalId, journey) {
+  const pub = publishedFor(studio, goalId, 'plan');
+  const plan = (pub && pub.data) || [];
+  const done = (journey && journey.done) || [];
+  const out = new Map();
+
+  plan.forEach((it) => {
+    if (it.service && it.service.type === 'medication') {
+      /* The same medicine hangs off every month's dispatch step, so status is
+         decided by whether ANY of them has shipped. Taking the last one meant
+         Month 3 overwrote Month 1 and a patient already on their pen was told
+         it was still coming. Once shipped, it stays shipped. */
+      const shipped = done.includes(it.id) || out.get(it.service.id)?.status === 'ongoing';
+      out.set(it.service.id, { id: it.service.id, status: shipped ? 'ongoing' : 'coming' });
+    }
+  });
+
+  const consulted = done.includes('p4');
+  if (consulted && studio && studio.consult) {
+    (studio.consult.prescribed || []).forEach((r) => out.set(r.id, { ...r, fromDoctor: true }));
+  }
+  return [...out.values()];
+}
+
+/* Which product the supplement voucher is actually for. The plan ships a
+   default; the doctor's choice replaces it once the consultation has happened. */
+export function voucherFor(studio, item, journey) {
+  const done = (journey && journey.done) || [];
+  const chosen = done.includes('p4') && studio && studio.consult && studio.consult.voucher;
+  return chosen || (item && item.service && item.service.id) || null;
+}

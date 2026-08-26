@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Icon from '../ui/Icon';
 import { Field, Chip, Note } from '../ui/kit';
 import { useStudio } from '../lib/store';
-import { PATIENTS } from '../lib/seed';
+import { PATIENTS, SERVICES, findService } from '../lib/seed';
 import { goalOf, readPatient, subscribe } from '../../shared/bus';
 
 /*
@@ -229,17 +229,51 @@ function Consult({ patient, record, state, update }) {
   const [outcome, setOutcome] = useState(consult.outcome || OUTCOMES[0]);
   const [dose, setDose] = useState(consult.dose || 'BPC-157 250 mcg daily');
   const [competes, setCompetes] = useState(consult.competes || 'unanswered');
+  /* THREE DIFFERENT THINGS COME OUT OF A CONSULTATION, and conflating them is
+     how the plan filled up with products.
+       ORDERED    tests and visits. These are plan STEPS: they have a date, they
+                  block things, the patient has to turn up for them.
+       PRESCRIBED medicines, peptides and supplements. These are NOT steps. They
+                  are a standing list the patient reads and buys from, and
+                  putting them in the plan made a shopping list wear a schedule
+                  as a costume.
+       VOUCHER    which product the supplement voucher is actually for. The plan
+                  ships a default; the doctor decides the real one. */
   const [added, setAdded] = useState(consult.addedItems || []);
+  const [rx, setRx] = useState(consult.prescribed || []);
+  const [voucher, setVoucher] = useState(consult.voucher || 'sup_joint');
+  const [pickTest, setPickTest] = useState(SERVICES.lab.items[0].id);
+  const [pickRx, setPickRx] = useState(SERVICES.medication.items[0].id);
 
-  /* The whole gate, in one line. Unanswered is not the same as no. */
-  const tbOfferable = competes === 'no';
+  /* The whole gate, in one line. Unanswered is not the same as no, and the
+     rule lives on the catalogue item so anything WADA-prohibited inherits it
+     rather than one button knowing about one product. */
+  const blockedFor = (svc) => (svc && svc.gate === 'competes' && competes !== 'no');
 
   const addItem = (item) => setAdded((xs) => (xs.some((x) => x.id === item.id) ? xs : [...xs, item]));
   const drop = (id) => setAdded((xs) => xs.filter((x) => x.id !== id));
 
+  /* Ordered here means a step on THIS patient's plan, dated just after the
+     consultation that ordered it. It does not touch the template: one patient
+     needing a thyroid panel is not a reason for every patient to have one. */
+  const orderTest = () => {
+    const svc = findService(pickTest);
+    if (!svc || added.some((x) => x.id === `ord_${svc.id}`)) return;
+    setAdded((xs) => [...xs, {
+      id: `ord_${svc.id}`, t: svc.t, sub: svc.note,
+      when: 'After your consult', offset: 12, actor: 'Patient books nurse',
+      service: { type: svc.type, id: svc.id },
+      action: { kind: 'book', label: `Book your ${svc.t.toLowerCase()}` },
+    }]);
+  };
+
+  const prescribe = () => {
+    const svc = findService(pickRx);
+    if (!svc || blockedFor(svc) || rx.some((x) => x.id === svc.id)) return;
+    setRx((xs) => [...xs, { id: svc.id, status: 'recommended' }]);
+  };
+
   const OFFERS = [
-    { id: 'tb_500', t: 'TB-500 (Wolverine upgrade)', sub: 'AED 5,999 · adds TB-500 from Week 6',
-      gated: true, when: 'Week 6', offset: 43 },
     { id: 'nurse_admin', t: 'Nurse administration visits', sub: 'AED 99 per visit, 4-pack AED 349',
       when: 'Ongoing', offset: 14 },
     { id: 'physio', t: 'Physiotherapy referral', sub: 'Where clinically indicated',
@@ -248,7 +282,7 @@ function Consult({ patient, record, state, update }) {
 
   const save = () => update((d) => {
     d.consult = {
-      note, outcome, dose, competes, addedItems: added,
+      note, outcome, dose, competes, addedItems: added, prescribed: rx, voucher,
       at: new Date().toISOString(),
       version: ((d.consult && d.consult.version) || 0) + 1,
     };
@@ -322,31 +356,106 @@ function Consult({ patient, record, state, update }) {
         </div>
       </div>
 
-      {/* ── offers, with the gate enforced at the offer ── */}
+      {/* ── 1. ORDER A TEST. This becomes a step on the plan. ── */}
+      <div className="card card-pad" style={{ marginBottom: 14 }}>
+        <h3 style={{ marginBottom: 4 }}>Order a test</h3>
+        <p className="sub" style={{ marginBottom: 10 }}>
+          Becomes a dated step on this patient's plan, just after today. It does not
+          change the template: one patient needing a thyroid panel is not a reason for
+          every patient to have one.
+        </p>
+        <div className="row" style={{ gap: 8, alignItems: 'flex-end' }}>
+          <div className="grow">
+            <Field label="Panel" type="select" value={pickTest}
+              options={SERVICES.lab.items.map((x) => x.id)}
+              display={SERVICES.lab.items.reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
+              onChange={setPickTest}
+              hint={findService(pickTest)?.note} />
+          </div>
+          <button className="btn btn-gold btn-sm" onClick={orderTest}>
+            <Icon name="plus" size={12} /> Order
+          </button>
+        </div>
+      </div>
+
+      {/* ── 2. PRESCRIBE. This does NOT become a step. ── */}
+      <div className="card card-pad" style={{ marginBottom: 14 }}>
+        <h3 style={{ marginBottom: 4 }}>Prescribe or recommend</h3>
+        <p className="sub" style={{ marginBottom: 10 }}>
+          Medicines, peptides and supplements are not steps. They have no date and
+          nothing to turn up for, so they go to the patient's medicines list rather
+          than into the schedule.
+        </p>
+        <div className="row" style={{ gap: 8, alignItems: 'flex-end' }}>
+          <div className="grow">
+            <Field label="Product" type="select" value={pickRx}
+              options={[...SERVICES.medication.items, ...SERVICES.supplement.items].map((x) => x.id)}
+              display={[...SERVICES.medication.items, ...SERVICES.supplement.items]
+                .reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
+              onChange={setPickRx}
+              hint={blockedFor(findService(pickRx))
+                ? (competes === 'yes'
+                    ? 'Cannot be prescribed. This patient competes in tested sport and this is WADA-prohibited.'
+                    : 'Cannot be prescribed until the competition question is answered.')
+                : findService(pickRx)?.note} />
+          </div>
+          <button className="btn btn-gold btn-sm" disabled={blockedFor(findService(pickRx))}
+            onClick={prescribe}>
+            <Icon name="plus" size={12} /> Add
+          </button>
+        </div>
+
+        {rx.length > 0 && rx.map((r) => {
+          const svc = findService(r.id);
+          return (
+            <div className="item" key={r.id} style={{ marginTop: 8 }}>
+              <span className="when">{r.status}</span>
+              <div className="body">
+                <b>{svc?.t || r.id}</b>
+                <span>{svc?.note}{svc?.price ? ` · AED ${svc.price.toLocaleString()}` : ''}</span>
+              </div>
+              <div className="acts">
+                <Field type="select" value={r.status} options={['ongoing', 'recommended']}
+                  onChange={(v) => setRx((xs) => xs.map((x) => (x.id === r.id ? { ...x, status: v } : x)))} />
+                <button className="btn btn-ghost btn-sm"
+                  onClick={() => setRx((xs) => xs.filter((x) => x.id !== r.id))}>Remove</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── 3. THE VOUCHER. The plan ships a default; the doctor decides. ── */}
+      <div className="card card-pad" style={{ marginBottom: 14 }}>
+        <h3 style={{ marginBottom: 4 }}>What the supplement voucher is for</h3>
+        <p className="sub" style={{ marginBottom: 10 }}>
+          The protocol issues the voucher automatically. What it buys is a clinical
+          decision, so it is made here and the patient's voucher updates to match.
+        </p>
+        <Field label="Product" type="select" value={voucher}
+          options={SERVICES.supplement.items.map((x) => x.id)}
+          display={SERVICES.supplement.items.reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
+          onChange={setVoucher}
+          hint={findService(voucher)?.note} />
+      </div>
+
+      {/* ── referrals and visits, which are steps like any other ── */}
       <div className="card card-pad">
         <h3 style={{ marginBottom: 8 }}>Add to this patient's plan</h3>
         {OFFERS.map((o) => {
-          const blocked = o.gated && !tbOfferable;
           const on = added.some((x) => x.id === o.id);
           return (
-            <div className={`item ${blocked ? 'locked' : ''}`} key={o.id}>
+            <div className="item" key={o.id}>
               <span className="when">{o.when}</span>
               <div className="body">
                 <b>{o.t}</b>
                 <span>{o.sub}</span>
-                {blocked && (
-                  <span style={{ color: 'var(--red)', marginTop: 4 }}>
-                    {competes === 'yes'
-                      ? 'Cannot be offered. This patient competes in tested sport and TB-500 is WADA-prohibited.'
-                      : 'Cannot be offered until the competition question is answered.'}
-                  </span>
-                )}
               </div>
               <div className="acts">
                 {on ? (
                   <button className="btn btn-ghost btn-sm" onClick={() => drop(o.id)}>Remove</button>
                 ) : (
-                  <button className="btn btn-gold btn-sm" disabled={blocked}
+                  <button className="btn btn-gold btn-sm"
                     onClick={() => addItem({ id: o.id, t: o.t, sub: o.sub, when: o.when,
                                              offset: o.offset, actor: 'Doctor added' })}>
                     Offer

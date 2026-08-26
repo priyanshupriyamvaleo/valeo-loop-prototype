@@ -3,10 +3,10 @@ import './theme.css';
 import Icon from './ui/Icon';
 import Home from './screens/Home';
 import { Gate, Onboarding, Triage, PDP, Cart, Confirm } from './screens/Flow';
-import { Schedule, Status, CheckIn, Report, Join } from './screens/Actions';
+import { Schedule, Status, CheckIn, Report, Join, ProductPage } from './screens/Actions';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor, GATES, SHARED } from '../shared/bus';
-import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes } from './lib/journey';
+import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, voucherFor } from './lib/journey';
 import { serviceOf } from '../p2/lib/seed';
 
 /*
@@ -37,6 +37,7 @@ const INIT = {
   booked: {},          /* itemId -> the slot the patient chose */
   acting: null,        /* the plan item whose action screen is open */
   actMode: null,       /* which face of it: report, join, or the default */
+  product: null,       /* the medicine or supplement whose page is open */
   consultSeen: 0,      /* the consult version this patient has already absorbed */
 };
 
@@ -85,6 +86,7 @@ export default function App() {
   const triageCfg = publishedFor(studio, goalId, 'triage');
   const ppCfg = publishedFor(studio, goalId, 'prepurchase');
   const plan = planFor(studio, goalId, pt);
+  const medicines = medicinesFor(studio, goalId, pt);
   const item = nextItem(plan, pt.done);
 
   /* ── the consult gate ──
@@ -269,6 +271,12 @@ export default function App() {
     } else {
       view = <Status item={it} onBack={() => setScreen('detail')} />;
     }
+  } else if (screen === 'product') {
+    view = (
+      <ProductPage id={pt.product?.id} status={pt.product?.status}
+        onBack={() => setScreen('detail')}
+        onBuy={() => { window.alert('Checkout is not wired up in this prototype.'); }} />
+    );
   } else if (screen === 'checkin') {
     view = (
       <CheckIn first={pt.checkins.length === 0} previous={pt.checkins[pt.checkins.length - 1]}
@@ -284,6 +292,9 @@ export default function App() {
   } else if (screen === 'detail') {
     view = (
       <JourneyDetail title={goal.t} plan={plan} done={pt.done}
+        medicines={medicines}
+        voucherId={voucherFor(studio, plan.find((x) => x.id === 'p5'), pt)}
+        onProduct={(m) => set({ product: m, stage: 'product' })}
         checkins={pt.checkins || []} booked={pt.booked || {}}
         logs={pt.logs || {}} target={pt.target}
         onBack={() => setScreen('home')}

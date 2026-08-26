@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
-import { serviceOf } from '../../p2/lib/seed';
+import { serviceOf, findService } from '../../p2/lib/seed';
 
 /*
  * THREE ACTION SCREENS, NOT FOURTEEN.
@@ -301,6 +301,71 @@ export function CheckIn({ first, previous, onBack, onDone }) {
           onClick={() => onDone({ pain, capacity: cap }, first ? want * 10 : undefined)}>
           {first ? 'Set my starting point' : 'Save'} <Icon name="chev" size={16} />
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── 6. THE PRODUCT PAGE ──
+   Where a medicine or supplement goes when the patient taps it. Everything here
+   comes from the catalogue the Studio linked to, so a product the doctor added
+   this morning has a page this afternoon with nobody writing one. */
+export function ProductPage({ id, status, onBack, onBuy }) {
+  const svc = findService(id);
+  if (!svc) {
+    return (
+      <div className="screen">
+        <Head title="Not found" onBack={onBack} />
+        <div className="scroll pad"><p className="lead">This product is no longer listed.</p></div>
+      </div>
+    );
+  }
+  const ongoing = status === 'ongoing';
+  return (
+    <div className="screen">
+      <Head title={svc.t} sub={svc.type === 'medication' ? 'Medication' : 'Supplement'} onBack={onBack} />
+      <div className="scroll pad">
+        <div className="pdp-hero">
+          <span className="who-av lg">{svc.t[0]}</span>
+          <b>{svc.t}</b>
+          <span>{svc.note}</span>
+          {svc.price > 0
+            ? <div className="pdp-price">AED {svc.price.toLocaleString()}</div>
+            : <div className="pdp-price incl">Included in your protocol</div>}
+        </div>
+
+        {ongoing && (
+          <div className="act-who" style={{ marginTop: 14 }}>
+            <Icon name="check" size={15} />
+            <div>
+              <b>You are already on this</b>
+              <span>It came with your protocol. Nothing to buy.</span>
+            </div>
+          </div>
+        )}
+        {status === 'recommended' && (
+          <div className="act-who" style={{ marginTop: 14 }}>
+            <span className="who-av sm">D</span>
+            <div>
+              <b>Your doctor suggested this</b>
+              <span>Added at your consultation. It is a suggestion, not a requirement.</span>
+            </div>
+          </div>
+        )}
+
+        <p className="fineprint">
+          Product details and prices are placeholders pending sign-off. Checkout is
+          not wired up in this prototype.
+        </p>
+      </div>
+      <div className="foot">
+        {svc.price > 0 && !ongoing ? (
+          <button className="cta" onClick={onBuy}>
+            Add to cart · AED {svc.price.toLocaleString()} <Icon name="chev" size={16} />
+          </button>
+        ) : (
+          <div className="tiny">Nothing to buy. This is part of your protocol.</div>
+        )}
       </div>
     </div>
   );

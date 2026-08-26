@@ -413,3 +413,29 @@ button { font:inherit; color:inherit; cursor:pointer; border:none; background:no
 .svc-line > div { flex:1; min-width:0; }
 .svc-line b { display:block; font-size:12.5px; font-weight:700; color:var(--ink); }
 .svc-line span { display:block; font-size:11px; color:var(--ink-3); margin-top:2px; line-height:1.45; }
+
+/* ── medicines and supplements ──
+   A standing list, not a schedule. No dates, because there are none. */
+.medrow { display:flex; align-items:center; gap:11px; width:100%; text-align:left;
+          background:var(--card); border:1px solid var(--line); border-radius:13px;
+          padding:11px 12px; margin-bottom:7px; cursor:pointer; font-family:inherit;
+          color:var(--ink); }
+.medrow > div { flex:1; min-width:0; }
+.medrow b { display:block; font-size:13px; font-weight:600; font-family:var(--f-head); }
+.medrow span { display:block; font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+.med-dot { flex:none; width:9px; height:9px; border-radius:50%; }
+.med-dot.ongoing { background:var(--green); }
+.med-dot.coming { background:var(--gold); }
+.med-dot.recommended { background:transparent; border:2px solid var(--ink-3); }
+
+/* ── the product page ── */
+.pdp-hero { text-align:center; padding:24px 16px; border-radius:18px; background:var(--card);
+            border:1px solid var(--line); }
+.pdp-hero .who-av.lg { width:56px; height:56px; border-radius:18px; font-size:22px;
+                       margin:0 auto 12px; }
+.pdp-hero > b { display:block; font-family:var(--f-head); font-size:19px; font-weight:600; }
+.pdp-hero > span { display:block; font-size:12.5px; color:var(--ink-3); margin-top:4px;
+                   line-height:1.5; }
+.pdp-price { margin-top:12px; font-family:var(--f-head); font-size:22px; font-weight:600;
+             color:var(--ink); }
+.pdp-price.incl { font-size:14px; color:var(--green); }

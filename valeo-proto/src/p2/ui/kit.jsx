@@ -1,7 +1,7 @@
 import Icon from './Icon';
 
 export function Field({ label, value, onChange, type = 'text', rows = 3, hint,
-                        disabled, lockWhy, options, placeholder }) {
+                        disabled, lockWhy, options, placeholder, display }) {
   return (
     <div className="field">
       <label>
@@ -13,7 +13,12 @@ export function Field({ label, value, onChange, type = 'text', rows = 3, hint,
           onChange={(e) => onChange && onChange(e.target.value)} />
       ) : type === 'select' ? (
         <select value={value} disabled={disabled} onChange={(e) => onChange && onChange(e.target.value)}>
-          {(options || []).map((o) => <option key={o} value={o}>{o}</option>)}
+          {/* `display` lets a select carry ids as values and names as labels,
+              which is what linking to a catalogue needs: the id is what gets
+              stored, the name is what a human picks. */}
+          {(options || []).map((o) => (
+            <option key={o} value={o}>{display ? (display[o] || o) : o}</option>
+          ))}
         </select>
       ) : (
         <input type={type} value={value} disabled={disabled} placeholder={placeholder}

@@ -1,6 +1,6 @@
 import Icon from '../ui/Icon';
 import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures, stateOf } from '../lib/journey';
-import { serviceOf } from '../../p2/lib/seed';
+import { serviceOf, findService } from '../../p2/lib/seed';
 
 /*
  * ONE CARD AND ONE DETAIL SCREEN.
@@ -126,7 +126,7 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title }) {
  * So the logbook is full on day zero and Week 12 has something to read against.
  */
 export function JourneyDetail({ plan, done, checkins, logs, target, booked, title,
-                               onBack, onOpen, onLog, onChat }) {
+                               medicines, voucherId, onBack, onOpen, onLog, onChat, onProduct }) {
   const front = nextItem(plan, done);
   const p = progress(plan, done);
   const wk = weekOf(plan, done);
@@ -171,15 +171,21 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
         {/* What this step actually books, draws or ships. The Studio linked it
             to a service that already exists, so the patient gets its real name
             rather than a description somebody retyped. */}
-        {serviceOf(front.service) && (
-          <div className="svc-line">
-            <Icon name="clipboard" size={12} />
-            <div>
-              <b>{serviceOf(front.service).t}</b>
-              <span>{serviceOf(front.service).note}</span>
+        {(() => {
+          /* The voucher is the one step whose linked product the doctor can
+             override, so it resolves through the consult rather than straight
+             off the plan. */
+          const svc = front.id === 'p5' && voucherId ? findService(voucherId) : serviceOf(front.service);
+          return svc && (
+            <div className="svc-line">
+              <Icon name="clipboard" size={12} />
+              <div>
+                <b>{svc.t}</b>
+                <span>{svc.note}</span>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {state.assure && (
           <ul className="assure">
@@ -342,6 +348,31 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
         )}
 
         {whatFollows}
+
+        {medicines.length > 0 && (
+          <div className="sect">
+            <div className="sect-h"><span>Medicines and supplements</span></div>
+            {medicines.map((m) => {
+              const svc = findService(m.id);
+              if (!svc) return null;
+              return (
+                <button className="medrow" key={m.id} onClick={() => onProduct(m)}>
+                  <span className={`med-dot ${m.status}`} />
+                  <div>
+                    <b>{svc.t}</b>
+                    <span>
+                      {m.status === 'ongoing' ? 'You are on this'
+                        : m.status === 'coming' ? 'Ships with your protocol'
+                          : 'Suggested by your doctor'}
+                      {svc.price > 0 ? ` · AED ${svc.price.toLocaleString()}` : ''}
+                    </span>
+                  </div>
+                  <Icon name="chev" size={13} />
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         <div className="sect">
           <div className="sect-h"><span>Help</span></div>

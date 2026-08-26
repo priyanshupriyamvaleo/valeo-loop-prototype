@@ -47,26 +47,41 @@ export const SERVICES = {
   ] },
   homecare: { t: 'Home care', items: [
     { id: 'home_draw', t: 'Home nurse visit, blood draw', note: 'About 20 minutes' },
-    { id: 'home_injection', t: 'Home nurse visit, injection', note: 'AED 99 per visit' },
-    { id: 'home_pack4', t: 'Nurse administration, 4-pack', note: 'AED 349' },
+    { id: 'home_injection', t: 'Home nurse visit, injection', note: 'AED 99 per visit', price: 99 },
+    { id: 'home_pack4', t: 'Nurse administration, 4-pack', note: 'AED 349', price: 349 },
     { id: 'home_iv', t: 'IV drip at home', note: 'About 45 minutes' },
   ] },
   medication: { t: 'Medication', items: [
-    { id: 'med_bpc', t: 'BPC-157 pen, one month', note: 'Cold chain' },
-    { id: 'med_bpc_tb', t: 'BPC-157 with TB-500, one month', note: 'Cold chain' },
-    { id: 'med_ghk', t: 'GHK-Cu, one month', note: 'Where clinically indicated' },
-    { id: 'med_semaglutide', t: 'Semaglutide, one month', note: 'Cold chain' },
+    { id: 'med_bpc', t: 'BPC-157 pen, one month', note: 'Cold chain', price: 0,
+      inProtocol: true },
+    { id: 'med_tb500', t: 'TB-500, one month', note: 'The Wolverine upgrade', price: 5999,
+      /* WADA-prohibited, so it cannot be offered until the competition question
+         is answered no. The gate is a property of the PRODUCT, not of one
+         hardcoded button, so anything carrying TB-500 inherits it. */
+      gate: 'competes' },
+    { id: 'med_bpc_tb', t: 'BPC-157 with TB-500, one month', note: 'Cold chain', price: 5999,
+      gate: 'competes' },
+    { id: 'med_ghk', t: 'GHK-Cu, one month', note: 'Where clinically indicated', price: 1200 },
+    { id: 'med_semaglutide', t: 'Semaglutide, one month', note: 'Cold chain', price: 1745 },
   ] },
   supplement: { t: 'Supplement', items: [
-    { id: 'sup_voucher', t: 'Supplement voucher, AED 150', note: 'Spend against any stack' },
-    { id: 'sup_joint', t: 'Joint and tendon stack', note: 'Collagen, Vitamin C, Boswellia' },
-    { id: 'sup_d3k2', t: 'Vitamin D3 with K2', note: '90 days' },
-    { id: 'sup_magnesium', t: 'Magnesium glycinate', note: '90 days' },
-    { id: 'sup_omega', t: 'Omega-3', note: '90 days' },
+    { id: 'sup_voucher', t: 'Supplement voucher, AED 150', note: 'Spend against any stack', price: 150 },
+    { id: 'sup_joint', t: 'Joint and tendon stack', note: 'Collagen, Vitamin C, Boswellia', price: 220 },
+    { id: 'sup_d3k2', t: 'Vitamin D3 with K2', note: '90 days', price: 95 },
+    { id: 'sup_magnesium', t: 'Magnesium glycinate', note: '90 days', price: 85 },
+    { id: 'sup_omega', t: 'Omega-3', note: '90 days', price: 130 },
+    { id: 'sup_creatine', t: 'Creatine monohydrate', note: '90 days', price: 90 },
   ] },
 };
 
 export const SERVICE_TYPES = ['none', ...Object.keys(SERVICES)];
+
+/* Every catalogue item, flattened and tagged with the shelf it came from.
+   The console offers things and the patient app renders them, and neither
+   should have to know which category an id belongs to. */
+export const CATALOGUE = Object.entries(SERVICES).flatMap(([type, g]) =>
+  g.items.map((x) => ({ ...x, type })));
+export const findService = (id) => CATALOGUE.find((x) => x.id === id) || null;
 export const serviceTypeLabel = (k) => (k === 'none' ? 'Not linked' : (SERVICES[k]?.t || k));
 export const serviceOf = (svc) =>
   (!svc || !svc.type || svc.type === 'none' ? null
