@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
+import { serviceOf } from '../../p2/lib/seed';
 
 /*
  * THREE ACTION SCREENS, NOT FOURTEEN.
@@ -53,10 +54,10 @@ export function Schedule({ item, onBack, onDone }) {
         <div className="act-where">
           <Icon name={atHome ? 'home' : 'steth'} size={15} />
           <div>
-            <b>{atHome ? 'At your home' : 'Video call'}</b>
-            <span>{atHome
+            <b>{serviceOf(item.service)?.t || (atHome ? 'At your home' : 'Video call')}</b>
+            <span>{serviceOf(item.service)?.note || (atHome
               ? 'A Valeo nurse comes to you. Allow about twenty minutes.'
-              : 'With one of our peptide doctors. Allow about thirty minutes.'}</span>
+              : 'With one of our peptide doctors. Allow about thirty minutes.')}</span>
           </div>
         </div>
 
@@ -153,11 +154,11 @@ const PANEL = [
   { t: 'Magnesium', v: '0.85', u: 'mmol/L', ref: '0.7 to 1.0', flag: 'ok' },
 ];
 
-export function Report({ item, onBack, onBook }) {
+export function Report({ item, panelName, onBack, onBook }) {
   const off = PANEL.filter((m) => m.flag !== 'ok').length;
   return (
     <div className="screen">
-      <Head title="Your baseline panel" sub="Recovery and Inflammation" onBack={onBack} />
+      <Head title="Your baseline panel" sub={panelName || 'Recovery and Inflammation'} onBack={onBack} />
       <div className="scroll pad">
         <div className="rpt-sum">
           <b>{off} of {PANEL.length} outside range</b>

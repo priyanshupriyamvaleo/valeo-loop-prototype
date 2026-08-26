@@ -7,6 +7,7 @@ import { Schedule, Status, CheckIn, Report, Join } from './screens/Actions';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor, GATES, SHARED } from '../shared/bus';
 import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes } from './lib/journey';
+import { serviceOf } from '../p2/lib/seed';
 
 /*
  * VALEO — the patient app.
@@ -238,8 +239,8 @@ export default function App() {
       view = <Gate gate={GATES.plan} title={goal.t} open onBack={() => setScreen('detail')}
         onContinue={() => setScreen('detail')} />;
     } else if (pt.actMode === 'report') {
-      view = <Report item={it} onBack={() => setScreen('detail')}
-        onBook={() => set({ actMode: null })} />;
+      view = <Report item={it} panelName={serviceOf(plan.find((x) => x.id === 'p2')?.service)?.t}
+        onBack={() => setScreen('detail')} onBook={() => set({ actMode: null })} />;
     } else if (pt.actMode === 'join') {
       view = (
         <Join item={it} when={pt.booked[it.id]} onBack={() => setScreen('detail')}

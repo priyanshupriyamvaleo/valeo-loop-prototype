@@ -1,5 +1,6 @@
 import Icon from '../ui/Icon';
 import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures, stateOf } from '../lib/journey';
+import { serviceOf } from '../../p2/lib/seed';
 
 /*
  * ONE CARD AND ONE DETAIL SCREEN.
@@ -166,6 +167,19 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
         )}
 
         {state.body && <span>{state.body}</span>}
+
+        {/* What this step actually books, draws or ships. The Studio linked it
+            to a service that already exists, so the patient gets its real name
+            rather than a description somebody retyped. */}
+        {serviceOf(front.service) && (
+          <div className="svc-line">
+            <Icon name="clipboard" size={12} />
+            <div>
+              <b>{serviceOf(front.service).t}</b>
+              <span>{serviceOf(front.service).note}</span>
+            </div>
+          </div>
+        )}
 
         {state.assure && (
           <ul className="assure">

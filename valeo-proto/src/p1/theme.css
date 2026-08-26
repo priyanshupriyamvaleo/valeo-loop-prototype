@@ -406,3 +406,10 @@ button { font:inherit; color:inherit; cursor:pointer; border:none; background:no
                         margin:0 auto 12px; }
 .join-hero b { display:block; font-family:var(--f-head); font-size:18px; font-weight:600; }
 .join-hero > span:last-child { display:block; font-size:12.5px; color:var(--ink-3); margin-top:3px; }
+
+/* What the step actually is: a service that already exists, named. */
+.svc-line { display:flex; align-items:flex-start; gap:9px; margin-top:12px; padding:10px 12px;
+            border-radius:11px; background:rgba(19,41,63,.04); border:1px solid var(--line); }
+.svc-line > div { flex:1; min-width:0; }
+.svc-line b { display:block; font-size:12.5px; font-weight:700; color:var(--ink); }
+.svc-line span { display:block; font-size:11px; color:var(--ink-3); margin-top:2px; line-height:1.45; }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Icon from '../ui/Icon';
 import { Field, Chip, Note, IconBtn } from '../ui/kit';
 import { useStudio } from '../lib/store';
-import { LOCKED_RULES } from '../lib/seed';
+import { LOCKED_RULES, SERVICES, SERVICE_TYPES, serviceTypeLabel, serviceOf } from '../lib/seed';
 
 /*
  * THE PROTOCOL BUILDER — the after-purchase journey.
@@ -83,11 +83,22 @@ export default function ProtocolBuilder({ goalId }) {
               {plan.length} items · <Chip tone="block">blocking</Chip> stops everything downstream
               · <Chip tone="key">milestone</Chip> · <Chip tone="lock">locked</Chip> cannot be removed
             </span>
+            {/* A new step lands directly under whichever one is open, because
+                that is where somebody thinking about the plan wants it. The
+                offset is copied from the step above rather than picking a
+                number: the list is ordered by offset and equal offsets keep
+                their insertion order, so the row stays where it was dropped. */}
             <button className="btn btn-ghost btn-sm" onClick={() => patch((d) => {
-              d.plan.push({ id: 'p' + Date.now().toString(36), t: 'New step', sub: '',
-                            when: 'Week 1', offset: 7, actor: 'Patient' });
+              const at = d.plan.findIndex((x) => x.id === editing);
+              const after = at === -1 ? d.plan.length - 1 : at;
+              const prev = d.plan[after];
+              const born = { id: 'p' + Date.now().toString(36), t: 'New step', sub: '',
+                             when: prev ? prev.when : 'Week 1',
+                             offset: prev ? prev.offset : 0, actor: 'Patient' };
+              d.plan.splice(after + 1, 0, born);
+              setTimeout(() => setEditing(born.id), 0);
             })}>
-              <Icon name="plus" size={12} /> Add item
+              <Icon name="plus" size={12} /> {editing ? 'Add step below' : 'Add item'}
             </button>
           </div>
 
@@ -102,6 +113,9 @@ export default function ProtocolBuilder({ goalId }) {
                   {it.blocking && <Chip tone="block">blocking</Chip>}
                   {it.milestone && <Chip tone="key">milestone</Chip>}
                   {it.locked && <Chip tone="lock">locked</Chip>}
+                  {serviceOf(it.service) && (
+                    <Chip tone="live">{serviceOf(it.service).t}</Chip>
+                  )}
                   <span className="mono" style={{ color: 'var(--ink-3)' }}>day {it.offset}</span>
                 </div>
               </div>
@@ -131,9 +145,36 @@ export default function ProtocolBuilder({ goalId }) {
                     <Field label="Whose move" type="select" value={it.actor}
                       options={['Patient', 'Patient books', 'Nurse', 'Lab', 'Doctor', 'Care team', 'Ops', 'System']}
                       onChange={(v) => edit(i, 'actor', v)} />
-                    <Field label="Call to action" value={it.action || ''}
-                      onChange={(v) => edit(i, 'action', v)}
+                    {/* `action` is an object, and binding it straight to a text
+                        field printed [object Object] and would have replaced the
+                        whole thing with a string the moment anybody typed. */}
+                    <Field label="Call to action" value={it.action?.label || ''}
+                      onChange={(v) => edit(i, 'action', v.trim()
+                        ? { kind: it.action?.kind || 'book', label: v }
+                        : undefined)}
                       hint="The button on the home card. Leave empty for steps with nothing to press." />
+                  </div>
+
+                  {/* ── WHAT THIS STEP ACTUALLY IS ──
+                      Not a new thing to build. A service Valeo already sells,
+                      with a booking flow, a nurse rota, a lab handoff and a
+                      results upload already behind it. Link the step and every
+                      one of those is somebody else's solved problem. */}
+                  <div className="grid-2">
+                    <Field label="Service type" type="select"
+                      options={SERVICE_TYPES} value={it.service?.type || 'none'}
+                      onChange={(v) => edit(i, 'service', v === 'none' ? undefined
+                        : { type: v, id: (SERVICES[v].items[0] || {}).id })} />
+                    <Field label="Linked service" type="select"
+                      disabled={!it.service?.type || it.service.type === 'none'}
+                      options={(SERVICES[it.service?.type]?.items || []).map((x) => x.t)}
+                      value={serviceOf(it.service)?.t || ''}
+                      onChange={(v) => {
+                        const hit = (SERVICES[it.service.type].items || []).find((x) => x.t === v);
+                        if (hit) edit(i, 'service', { type: it.service.type, id: hit.id });
+                      }}
+                      hint={serviceOf(it.service)?.note
+                        || 'Booking, tracking and results already exist behind it.'} />
                   </div>
                   <div className="row" style={{ gap: 16, marginTop: 4, flexWrap: 'wrap' }}>
                     <label className="tick">

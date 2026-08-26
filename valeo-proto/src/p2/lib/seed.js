@@ -18,8 +18,63 @@
    panel, the consultation and the Week 12 panel are the product promise and
    the clinical basis for dispensing, so the builder refuses rather than
    trusting review to catch it. */
+/* ── WHAT VALEO ALREADY SELLS ──
+   A protocol step is not a new thing to build. It is a service that already
+   exists, with a booking flow, a nurse rota, a lab handoff and a results
+   upload behind it. So a step LINKS to one rather than describing one, and
+   everything downstream of that link is somebody else's solved problem.
+
+   This is the catalogue an admin panel would read from its own services table.
+   Names are representative of what Valeo runs today. */
+export const SERVICES = {
+  lab: { t: 'Lab panel', items: [
+    { id: 'panel_recovery', t: 'Recovery & Inflammation Panel',
+      note: 'CBC, hs-CRP, ESR, Vitamin D, Magnesium, CK, Liver, Kidney, HbA1c, Ferritin' },
+    { id: 'panel_male', t: 'Comprehensive Male Profile', note: '49 biomarkers' },
+    { id: 'panel_female', t: 'Comprehensive Female Profile', note: '49 biomarkers' },
+    { id: 'panel_wellbeing', t: 'General Well-being Test', note: '49 essential biomarkers' },
+    { id: 'panel_testosterone', t: 'Testosterone Profile', note: 'Total, free, SHBG, LH, FSH' },
+    { id: 'panel_thyroid', t: 'Thyroid Profile', note: 'TSH, T3, T4, antibodies' },
+    { id: 'panel_metabolic', t: 'Metabolic Profile', note: 'HbA1c, fasting insulin, lipids' },
+  ] },
+  consult: { t: 'Consultation', items: [
+    { id: 'consult_peptide', t: 'Peptide Therapy Consultation', note: '30 minutes, video' },
+    { id: 'consult_glp1', t: 'GLP-1 Weight Loss Consultation', note: '30 minutes, video' },
+    { id: 'consult_longevity', t: 'Longevity Consultation', note: '45 minutes, video' },
+    { id: 'consult_gp', t: 'General Physician Consultation', note: '15 minutes, video' },
+    { id: 'consult_discovery', t: 'Discovery Consultation', note: '20 minutes, video' },
+    { id: 'consult_review', t: 'Follow-up Review', note: '15 minutes, video' },
+  ] },
+  homecare: { t: 'Home care', items: [
+    { id: 'home_draw', t: 'Home nurse visit, blood draw', note: 'About 20 minutes' },
+    { id: 'home_injection', t: 'Home nurse visit, injection', note: 'AED 99 per visit' },
+    { id: 'home_pack4', t: 'Nurse administration, 4-pack', note: 'AED 349' },
+    { id: 'home_iv', t: 'IV drip at home', note: 'About 45 minutes' },
+  ] },
+  medication: { t: 'Medication', items: [
+    { id: 'med_bpc', t: 'BPC-157 pen, one month', note: 'Cold chain' },
+    { id: 'med_bpc_tb', t: 'BPC-157 with TB-500, one month', note: 'Cold chain' },
+    { id: 'med_ghk', t: 'GHK-Cu, one month', note: 'Where clinically indicated' },
+    { id: 'med_semaglutide', t: 'Semaglutide, one month', note: 'Cold chain' },
+  ] },
+  supplement: { t: 'Supplement', items: [
+    { id: 'sup_voucher', t: 'Supplement voucher, AED 150', note: 'Spend against any stack' },
+    { id: 'sup_joint', t: 'Joint and tendon stack', note: 'Collagen, Vitamin C, Boswellia' },
+    { id: 'sup_d3k2', t: 'Vitamin D3 with K2', note: '90 days' },
+    { id: 'sup_magnesium', t: 'Magnesium glycinate', note: '90 days' },
+    { id: 'sup_omega', t: 'Omega-3', note: '90 days' },
+  ] },
+};
+
+export const SERVICE_TYPES = ['none', ...Object.keys(SERVICES)];
+export const serviceTypeLabel = (k) => (k === 'none' ? 'Not linked' : (SERVICES[k]?.t || k));
+export const serviceOf = (svc) =>
+  (!svc || !svc.type || svc.type === 'none' ? null
+    : (SERVICES[svc.type]?.items || []).find((x) => x.id === svc.id) || null);
+
 export const RR_PLAN = [
   { id: 'p1',  t: 'Book nurse visit',        sub: 'Nothing else can start until this is done.',
+    service: { type: 'homecare', id: 'home_draw' },
     when: 'Day 0 to 3',  offset: 0,  actor: 'Patient', blocking: true,
     action: { kind: 'book', label: 'Choose a time' },
     /* The three objections a home blood draw actually raises, answered before
@@ -33,6 +88,7 @@ export const RR_PLAN = [
                'Read by one of our peptide doctors'] },
     card: 'Book your nurse visit' },
   { id: 'p2',  t: 'Blood sample collected',  sub: 'Recovery & Inflammation Panel, baseline.',
+    service: { type: 'lab', id: 'panel_recovery' },
     when: 'Week 1',      offset: 5,  actor: 'Nurse',   blocking: true, locked: true,
     lockWhy: 'Your protocol starts with testing, not a product. It is also the clinical basis for prescribing.',
     /* Booked. The card stops being a task and becomes an appointment, so the
@@ -56,6 +112,7 @@ export const RR_PLAN = [
       body: 'This usually takes 24 to 48 hours. Your doctor sees it before you do.' },
     card: 'Results in a few days' },
   { id: 'p4',  t: 'Doctor consultation',     sub: 'Injury and recovery assessment, results review, competition screening. Dispatch is blocked until this happens.',
+    service: { type: 'consult', id: 'consult_peptide' },
     when: 'Week 1',      offset: 9,  actor: 'Patient books', blocking: true, locked: true,
     lockWhy: 'Dispensing depends on it. Removing it makes this a supplement sale.',
     action: { kind: 'book', label: 'Book your consultation' },
@@ -72,9 +129,11 @@ export const RR_PLAN = [
       cta: 'Join consultation' },
     card: 'Your results are ready' },
   { id: 'p5',  t: 'Supplement voucher issued', sub: 'Automatic. AED 150.',
+    service: { type: 'supplement', id: 'sup_voucher' },
     when: 'After consult', offset: 10, actor: 'System',
     card: 'Voucher issued' },
   { id: 'p6',  t: 'Month 1 dispatched',      sub: 'BPC-157 pen, cold chain.',
+    service: { type: 'medication', id: 'med_bpc' },
     when: 'After consult', offset: 11, actor: 'Ops', milestone: true,
     action: { kind: 'track', label: 'Track delivery' },
     waiting: { tag: 'Dispatched', title: 'Your medicine is on the way.',
@@ -87,10 +146,12 @@ export const RR_PLAN = [
     when: 'Day 25',      offset: 25, actor: 'Care team',
     card: 'Week 4 of 12' },
   { id: 'p9',  t: 'Mid-point doctor review', sub: 'Response reviewed, dosing adjusted, TB-500 assessed.',
+    service: { type: 'consult', id: 'consult_review' },
     when: 'Week 6',      offset: 42, actor: 'Patient books', milestone: true,
     action: { kind: 'book', label: 'Book your Week 6 review' },
     card: 'Book your Week 6 review' },
   { id: 'p10', t: 'Month 2 dispatched',      sub: 'Ops.',
+    service: { type: 'medication', id: 'med_bpc' },
     when: 'Week 6',      offset: 43, actor: 'Ops', milestone: true,
     action: { kind: 'track', label: 'Track delivery' },
     card: 'Month 2 on the way' },
@@ -98,15 +159,18 @@ export const RR_PLAN = [
     when: 'Day 55, 85',  offset: 55, actor: 'Care team',
     card: 'Week 8 of 12' },
   { id: 'p12', t: 'Month 3 dispatched',      sub: 'Ops.',
+    service: { type: 'medication', id: 'med_bpc' },
     when: 'Week 9',      offset: 63, actor: 'Ops', milestone: true,
     action: { kind: 'track', label: 'Track delivery' },
     card: 'Week 9 of 12' },
   { id: 'p13', t: 'Repeat blood panel',      sub: 'Same panel as baseline.',
+    service: { type: 'lab', id: 'panel_recovery' },
     when: 'Week 12',     offset: 84, actor: 'Patient books nurse', blocking: true, locked: true,
     lockWhy: 'Promised on the page, and it is the renewal conversation.',
     action: { kind: 'book', label: 'Book your Week 12 test' },
     card: 'Book your Week 12 test' },
   { id: 'p14', t: 'Physician reassessment',  sub: 'Produces the maintenance plan and the renewal decision.',
+    service: { type: 'consult', id: 'consult_peptide' },
     when: 'Week 12',     offset: 86, actor: 'Patient books', milestone: true,
     action: { kind: 'book', label: 'Book your reassessment' },
     card: 'Book your reassessment' },

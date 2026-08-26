@@ -28,7 +28,7 @@
    is swept on load: drafts reseed, published clears, and nobody is left reading
    a snapshot of copy that no longer exists. Bump this whenever the seed changes
    in a way a patient or a category manager would notice. */
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 
 export const STUDIO_KEY = `valeo.studio.v${SEED_VERSION}`;   /* the Studio writes, the app reads */
 export const PATIENT_KEY = `valeo.patient.v${SEED_VERSION}`; /* the app writes, the Studio ignores */
