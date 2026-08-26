@@ -149,7 +149,11 @@ const DOTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 export function CheckIn({ first, previous, onBack, onDone }) {
   const [pain, setPain] = useState(previous ? previous.pain : null);
   const [cap, setCap] = useState(previous ? previous.capacity : null);
-  const ready = pain != null && cap != null;
+  /* Asked once, at the baseline. The target is the patient's own answer rather
+     than a number the product picked for them, because a goal somebody else set
+     is a goal nobody owns. */
+  const [want, setWant] = useState(null);
+  const ready = pain != null && cap != null && (!first || want != null);
 
   return (
     <div className="screen">
@@ -184,13 +188,27 @@ export function CheckIn({ first, previous, onBack, onDone }) {
           <div className="ends"><span>Nothing</span><span>Everything I want</span></div>
         </div>
 
+        {first && (
+          <div className="scale">
+            <div className="lbl-sm">Where you want to be by Week 12</div>
+            <div className="dots">
+              {DOTS.map((n) => (
+                <button key={n} className={`dot ${want === n ? 'on' : ''} ${want != null && n <= want ? 'fill' : ''}`}
+                  onClick={() => setWant(n)}>{n}</button>
+              ))}
+            </div>
+            <div className="ends"><span>As I am now</span><span>Back to full</span></div>
+          </div>
+        )}
+
         <p className="fineprint">
-          Self-reported, and deliberately the only thing logged here. Weight,
-          meals and scans need an ops backend this prototype does not have.
+          Self-reported, and deliberately so. This is your own account of your
+          recovery, which is the one reading that exists before any blood is drawn.
         </p>
       </div>
       <div className="foot">
-        <button className="cta" disabled={!ready} onClick={() => onDone({ pain, capacity: cap })}>
+        <button className="cta" disabled={!ready}
+          onClick={() => onDone({ pain, capacity: cap }, first ? want * 10 : undefined)}>
           {first ? 'Set my starting point' : 'Save'} <Icon name="chev" size={16} />
         </button>
       </div>

@@ -30,7 +30,9 @@ const INIT = {
   intake: null,        /* the onboarding answers and the details the doctor needs */
   answers: null,       /* the goal's own triage answers */
   done: [],
-  checkins: [],        /* pain and capacity, self-reported. The only thing logged. */
+  checkins: [],        /* pain and capacity, self-reported */
+  target: null,        /* where the patient says they want to be by Week 12 */
+  logs: {},            /* how many times each tile has been logged */
   booked: {},          /* itemId -> the slot the patient chose */
   acting: null,        /* the plan item whose action screen is open */
   consultSeen: 0,      /* the consult version this patient has already absorbed */
@@ -243,9 +245,11 @@ export default function App() {
     view = (
       <CheckIn first={pt.checkins.length === 0} previous={pt.checkins[pt.checkins.length - 1]}
         onBack={() => setScreen('detail')}
-        onDone={(v) => set((prev) => ({
+        onDone={(v, target) => set((prev) => ({
           ...prev,
           checkins: [...prev.checkins, v],
+          target: target != null ? target : prev.target,
+          logs: { ...prev.logs, symptoms: (prev.logs?.symptoms || 0) + 1 },
           stage: 'detail',
         }))} />
     );
@@ -253,9 +257,19 @@ export default function App() {
     view = (
       <JourneyDetail title={goal.t} plan={plan} done={pt.done}
         checkins={pt.checkins || []} booked={pt.booked || {}}
+        logs={pt.logs || {}} target={pt.target}
         onBack={() => setScreen('home')}
-        onCheckIn={() => setScreen('checkin')}
-        onOpen={(it) => set({ acting: it.id, stage: 'act' })} />
+        onChat={() => {}}
+        onOpen={(it) => set({ acting: it.id, stage: 'act' })}
+        onLog={(k) => {
+          /* Symptoms is the real capture and opens the check-in. The other
+             three record that the day was logged and nothing more, because the
+             numbers behind them need an ops backend that does not exist yet.
+             A tile that invented a weight would be worse than one that does
+             not pretend to have it. */
+          if (k === 'symptoms') { setScreen('checkin'); return; }
+          set((prev) => ({ ...prev, logs: { ...prev.logs, [k]: (prev.logs?.[k] || 0) + 1 } }));
+        }} />
     );
   }
 

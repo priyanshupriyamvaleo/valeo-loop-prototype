@@ -216,33 +216,6 @@ button { font:inherit; color:inherit; cursor:pointer; border:none; background:no
 .move .cta { margin-top:13px; }
 .move.quiet > b { font-size:15px; color:var(--ink-2); }
 
-/* the two numbers */
-.nums { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
-.num { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 13px; }
-.num .t { font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
-          color:var(--ink-3); display:block; }
-.num .v { display:flex; align-items:baseline; gap:5px; margin-top:5px; }
-.num .v em { font-style:normal; font-size:14px; color:var(--ink-3); text-decoration:line-through; }
-.num .v b { font-family:var(--f-head); font-size:26px; font-weight:600; color:var(--ink); line-height:1; }
-.num .v i { font-style:normal; font-size:10.5px; font-weight:700; margin-left:auto; color:var(--ink-3); }
-.num .v i.up { color:var(--green); }
-.num .v i.down { color:var(--red); }
-
-.baseline-cta { display:flex; align-items:center; gap:12px; width:100%; text-align:left;
-                background:var(--ink); color:#fff; border:none; border-radius:16px; padding:15px;
-                cursor:pointer; font-family:inherit; }
-.baseline-cta b { display:block; font-family:var(--f-head); font-size:15px; font-weight:600; }
-.baseline-cta span { display:block; font-size:12px; color:rgba(255,255,255,.66); margin-top:3px;
-                     line-height:1.45; }
-.baseline-cta > div { flex:1; min-width:0; }
-
-.linkrow { display:flex; align-items:center; justify-content:center; gap:5px; width:100%;
-           margin-top:9px; padding:9px; border:1px solid var(--line); border-radius:11px;
-           background:var(--card); font-family:inherit; font-size:12.5px; font-weight:600;
-           color:var(--ink); cursor:pointer; }
-.panel-line { display:flex; align-items:center; gap:7px; margin-top:10px; font-size:11.5px;
-              color:var(--ink-3); line-height:1.45; }
-
 /* in motion */
 .mrow { display:flex; align-items:center; gap:11px; width:100%; text-align:left; background:var(--card);
         border:1px solid var(--line); border-radius:13px; padding:11px 12px; margin-bottom:7px;
@@ -306,3 +279,73 @@ button { font:inherit; color:inherit; cursor:pointer; border:none; background:no
         color:var(--ink-3); }
 
 .cta.ghosted { background:var(--card); color:var(--ink-2); border:1px dashed var(--line-2); }
+
+/* ── the logbook hero ──
+   Dark, and the only dark thing on the screen, because it is the one card that
+   says where you are rather than what to do. */
+.runhero { position:relative; border-radius:20px; padding:16px; overflow:hidden; color:#fff;
+           background:linear-gradient(152deg,var(--ink),#0E2138); }
+.rh-bar { position:absolute; top:0; left:0; right:0; height:3px; background:rgba(255,255,255,.12); }
+.rh-bar i { display:block; height:100%; background:var(--gold); }
+.rh-top { display:flex; align-items:flex-start; gap:12px; }
+.rh-top > div:first-child { flex:1; min-width:0; }
+.rh-k { font-size:8.5px; font-weight:800; letter-spacing:.18em; text-transform:uppercase;
+        color:var(--gold); }
+.rh-wk { font-family:var(--f-head); font-size:22px; font-weight:600; margin-top:5px; }
+.rh-right { text-align:right; flex:none; }
+.rh-right b { display:block; font-family:var(--f-head); font-size:22px; font-weight:600; line-height:1; }
+.rh-right span { display:block; font-size:9.5px; color:rgba(255,255,255,.5); margin-top:3px; }
+
+.rh-score { display:flex; align-items:center; gap:12px; width:100%; text-align:left; margin-top:14px;
+            padding:12px; border-radius:13px; border:none; cursor:pointer; font-family:inherit;
+            background:rgba(255,255,255,.09); color:#fff; }
+.rh-sc-l { flex:1; min-width:0; }
+.rh-sc-l > span { display:block; font-size:9.5px; font-weight:800; letter-spacing:.14em;
+                  text-transform:uppercase; color:rgba(255,255,255,.55); }
+.rh-sc-l > b { display:block; font-family:var(--f-head); font-size:15px; font-weight:600; }
+.rh-sc-l > span + .rh-nums { margin-top:3px; }
+.rh-nums { display:flex; align-items:baseline; gap:6px; }
+.rh-nums b { font-family:var(--f-head); font-size:27px; font-weight:600; line-height:1; }
+.rh-nums i { font-style:normal; font-size:10.5px; color:rgba(255,255,255,.45); }
+.rh-nums em { font-style:normal; font-family:var(--f-head); font-size:17px; color:var(--gold); }
+.rh-score .rh-sc-l > span:not(:first-child) { color:rgba(255,255,255,.66); font-size:11px;
+                                              font-weight:400; letter-spacing:0; text-transform:none;
+                                              margin-top:3px; }
+.rh-meter { position:relative; flex:0 0 78px; height:6px; border-radius:4px;
+            background:rgba(255,255,255,.16); }
+.rh-meter i { display:block; height:100%; border-radius:4px; background:var(--gold); }
+.rh-meter u { position:absolute; top:-3px; width:2px; height:12px; background:#fff; border-radius:1px; }
+
+/* ── the four capture tiles ── */
+.tiles { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:10px; }
+.tile { text-align:left; border-radius:15px; padding:12px; cursor:pointer; font-family:inherit;
+        background:var(--card); border:1.5px solid transparent; color:var(--ink); }
+.tile.due { border-color:var(--gold-2); box-shadow:0 2px 12px -8px rgba(19,41,63,.4); }
+.tile.done { background:var(--green-soft); border-color:rgba(30,158,99,.35); }
+.tile.off { background:rgba(19,41,63,.03); opacity:.55; cursor:not-allowed; }
+.tile-h { display:flex; align-items:center; margin-bottom:9px; color:var(--ink-2); }
+.tile-h .pip { margin-left:auto; width:7px; height:7px; border-radius:50%; background:var(--gold); }
+.tile-h .tick.sm { margin-left:auto; width:17px; height:17px; }
+.tile b { display:block; font-size:13px; font-weight:700; }
+.tile span { display:block; font-size:10.5px; font-weight:600; color:var(--ink-3); margin-top:2px; }
+.tile.done span { color:var(--green); }
+.tile.due span { color:var(--gold-deep); }
+
+/* their move, not yours */
+.move.theirs { background:var(--card); }
+.move .linkrow { justify-content:flex-start; gap:9px; }
+
+/* help */
+.helprow { display:flex; align-items:center; gap:11px; width:100%; text-align:left; background:var(--card);
+           border:1px solid var(--line); border-radius:13px; padding:11px 12px; margin-bottom:7px;
+           cursor:pointer; font-family:inherit; color:var(--ink); }
+.helprow > div { flex:1; min-width:0; }
+.helprow b { display:block; font-size:13px; font-weight:600; font-family:var(--f-head); }
+.helprow span { display:block; font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+
+/* The coach sits in the header of the protocol screen too, in the same place
+   it occupies on the home card, so it is never somewhere new. */
+.shead .chatpill { display:flex; align-items:center; gap:5px; flex:none; background:var(--ink);
+                   color:#fff; border:none; border-radius:999px; padding:7px 12px; cursor:pointer;
+                   font-family:inherit; font-size:11px; font-weight:700; }
+.shead .chatpill:active { transform:scale(.97); }

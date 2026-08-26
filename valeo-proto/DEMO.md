@@ -136,27 +136,30 @@ fourteen designs. It renders whichever plan item is due next, which is why the
 item you added in step 7 is already in the patient's journey without anybody
 writing a screen for it.
 
-Open it. The protocol screen is built on one fact: **nine of the fourteen steps
-are somebody else's move.** A nurse, a lab, the pharmacy, the care team. Only
-five belong to the patient. So most of twelve weeks is spent waiting, and the
-screen renders the waiting as work rather than as silence.
+Open it. One fixed structure, top to bottom, and it does not rearrange itself:
 
-Four sections, and the order flips:
+- **Your next step**, always at the top, whether it is the patient's move or
+  somebody else's. A screen that reorders itself is one you have to read again
+  on every visit.
+- **Your logbook**: the week they are in, the recovery score, and four tiles.
+- **What follows**, so nothing arrives as a surprise.
+- **Help**: the AI coach and the care team, always in the same place. The coach
+  is also in the top right of the header, where it sits on the home card.
 
-- **Your move** is nothing or one thing. When something is blocking it takes the
-  top of the screen. When nothing is, the app says so plainly and names who has
-  the next step.
-- **Where you are** is pain and what the body will do. Both are self-reported,
-  which is the point: recovery is measured in those two things and both are
-  available on day zero, before any blood is drawn. It is what stops the tracker
-  from being an empty chart in the first nine days, which is exactly when a
-  twelve-week commitment is most fragile.
-- **In motion** is what Valeo is doing right now on the patient's behalf.
-- **Next two weeks**, never the whole fourteen. The full plan stays folded.
+The score is worth pausing on. Between paying and the first result there are
+about nine days with nothing true to say about the patient's body, and that is
+exactly when a twelve-week commitment is most fragile. But recovery is measured
+in pain and in what the body will do, and the patient can report both the minute
+they have paid. So the logbook is full on day zero, and the patient sets their
+own Week 12 target rather than being handed one.
 
-Set the starting point first, then book the nurse visit and watch the order
-flip: the numbers move to the top and Your move reads *"Nothing right now.
-Nurse has the next step."*
+The tiles unlock as the protocol reaches them: doses only once the medicine has
+shipped, meals after the first visit. Heart scan stays off and says why, because
+a tile that invented a reading would be worse than one that admits it cannot
+take it yet.
+
+With nothing left to do, the logbook rises to the top and the screen says the
+twelve weeks are complete. That is the one time the order changes.
 
 Pressing anything opens one of **three screens, not fourteen**: a scheduler, a
 status view, or the check-in. A fifteenth step published in the Studio adds a

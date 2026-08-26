@@ -137,3 +137,30 @@ export const archetypeOf = (item) =>
   (item && item.action && item.action.kind === 'book') ? 'schedule'
     : (item && item.action && item.action.kind === 'track') ? 'status'
       : 'status';
+
+/* ── THE RECOVERY SCORE ──
+   One number out of the two the patient actually reports. Pain and capacity
+   each say half of it and neither says it alone, so they are folded into a
+   single 0 to 100 that a card can carry and a doctor can read at a glance.
+   Nothing here is measured by a device: this is the patient's own account of
+   their recovery, which is the only thing available on day zero. */
+export const recoveryScore = (c) =>
+  (!c ? null : Math.round((((10 - c.pain) + c.capacity) / 20) * 100));
+
+/* The four things a Recover and Rebuild patient can log, and whether the plan
+   has reached the point where each one means anything yet. Doses before the
+   medicine has shipped is a tile asking for a number that cannot exist. */
+export function captures(done, logs = {}) {
+  const shipped = done.includes('p6');
+  const started = done.includes('p2');
+  return [
+    { k: 'symptoms', t: 'Symptoms', ic: 'activity', due: true,
+      note: 'Pain and capacity' },
+    { k: 'doses', t: 'Doses', ic: 'plus', due: shipped,
+      note: shipped ? 'BPC-157, daily' : 'From Month 1' },
+    { k: 'meals', t: 'Meals', ic: 'flask', due: started,
+      note: started ? 'Roughly what it was' : 'After your first visit' },
+    { k: 'scan', t: 'Heart scan', ic: 'chat', due: false,
+      note: 'Needs the camera build' },
+  ].map((c) => ({ ...c, count: logs[c.k] || 0 }));
+}

@@ -1,5 +1,5 @@
 import Icon from '../ui/Icon';
-import { nextItem, progress, weekOf, isPatientMove, inMotion, soon } from '../lib/journey';
+import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures } from '../lib/journey';
 
 /*
  * ONE CARD AND ONE DETAIL SCREEN.
@@ -97,79 +97,149 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title }) {
  * integration. So the tracker starts full on day zero, and the Week 12 panel
  * has something to be read against.
  */
-export function JourneyDetail({ plan, done, checkins, booked, title, onBack, onOpen, onCheckIn }) {
+
+/*
+ * THE PROTOCOL SCREEN — one fixed structure, top to bottom.
+ *
+ * It used to be the fourteen plan items printed as a list, which is how a
+ * category manager thinks about a protocol and not how anybody lives one.
+ *
+ * The order is deliberately NOT clever. Whatever is next sits at the top, every
+ * time, until the twelve weeks are done. A screen that rearranges itself is a
+ * screen you have to read again on every visit, and the whole point of this one
+ * is that a patient can glance at it and know what to do.
+ *
+ *   NEXT          what happens now, whether it is theirs or ours
+ *   YOUR LOGBOOK  where they are in the twelve weeks, the score, the four tiles
+ *   WHAT FOLLOWS  the next couple of steps, so nothing arrives as a surprise
+ *   HELP          the coach and the care team, always in the same place
+ *
+ * The one exception is the end: with nothing left to do, the logbook rises to
+ * the top, because logging is then the only thing the screen is for.
+ *
+ * ── WHY THE SCORE IS SELF-REPORTED ──
+ * Between paying and the first result there are about nine days with nothing
+ * true to say about the patient's body, and that is exactly when a twelve-week
+ * commitment is most fragile. Recovery, though, is measured in pain and in what
+ * the body will do, and the patient can report both the minute they have paid.
+ * So the logbook is full on day zero and Week 12 has something to read against.
+ */
+export function JourneyDetail({ plan, done, checkins, logs, target, booked, title,
+                               onBack, onOpen, onLog, onChat }) {
   const front = nextItem(plan, done);
   const p = progress(plan, done);
   const wk = weekOf(plan, done);
   const mine = isPatientMove(front);
-  const motion = inMotion(plan, done);
-  /* Everything already on screen above is excluded, so this section adds
-     information rather than repeating it. */
-  const shown = [...motion.map((i) => i.id), ...(front ? [front.id] : [])];
-  const near = soon(plan, done, shown);
-  const first = checkins.length === 0;
   const latest = checkins[checkins.length - 1];
-  const base = checkins[0];
-  const baselineDone = done.includes('p2');
+  const score = recoveryScore(latest);
+  const tiles = captures(done, logs);
+  /* Everything already named above is left out below, so the lower sections add
+     information rather than repeating it. */
+  const follows = soon(plan, done, front ? [front.id] : [], 21, 3);
 
-  /* ── the two numbers ── */
-  const numbers = (
+  /* ── 1. what happens now ──
+     Built only when there IS something next. JSX is constructed eagerly, so a
+     completed plan used to dereference a null item here and take the screen
+     down at the one moment the patient has finished twelve weeks. */
+  const next = !front ? null : (
     <div className="sect">
-      <div className="sect-h">
-        <span>{first ? 'Set your starting point' : 'Where you are'}</span>
-        {!first && <em>{checkins.length} check-in{checkins.length === 1 ? '' : 's'}</em>}
-      </div>
-      {first ? (
-        <button className="baseline-cta" onClick={onCheckIn}>
-          <div>
-            <b>Two numbers, before anything starts</b>
-            <span>Pain, and what your body will do. Week 12 gets read against them.</span>
-          </div>
-          <Icon name="chev" size={16} />
-        </button>
-      ) : (
-        <>
-          <div className="nums">
-            <Metric t="Pain" from={base.pain} to={latest.pain} lower alone={checkins.length === 1} />
-            <Metric t="Capacity" from={base.capacity} to={latest.capacity} alone={checkins.length === 1} />
-          </div>
-          <button className="linkrow" onClick={onCheckIn}>
-            Check in again <Icon name="chev" size={13} />
+      <div className="sect-h"><span>{mine ? 'Your next step' : 'Happening now'}</span></div>
+      <div className={`move ${front.blocking && mine ? 'block' : ''} ${mine ? '' : 'theirs'}`}>
+        {front.blocking && mine && <div className="move-k">Nothing else starts until this is done</div>}
+        {/* The item's `card` copy is written for the home screen, where it is
+            the only thing on show. Here the logbook is right underneath saying
+            the same week back, so the step's real name is the useful one. */}
+        <b>{front.t}</b>
+        <span>{front.sub}</span>
+        {mine ? (
+          <button className="cta" onClick={() => onOpen(front)}>
+            {front.action ? front.action.label : 'Open'} <Icon name="chev" size={15} />
           </button>
-        </>
-      )}
-      <div className="panel-line">
-        <Icon name="flask" size={13} />
-        {baselineDone
-          ? 'Baseline panel on file. The same panel repeats at Week 12.'
-          : 'Your baseline panel is drawn at the nurse visit.'}
+        ) : (
+          <button className="linkrow" style={{ marginTop: 12 }} onClick={() => onOpen(front)}>
+            <span className="who-av sm">{front.doctorAdded ? 'D' : (front.actor || '?')[0]}</span>
+            {front.doctorAdded ? 'Added by your doctor' : `${front.actor} has this`}
+            <Icon name="chev" size={13} />
+          </button>
+        )}
       </div>
     </div>
   );
 
-  /* ── your move ── */
-  const yourMove = (
+  /* ── 2. the logbook ── */
+  const logbook = (
     <div className="sect">
-      <div className="sect-h"><span>Your move</span></div>
-      {mine ? (
-        <div className={`move ${front.blocking ? 'block' : ''}`}>
-          {front.blocking && <div className="move-k">Nothing else starts until this is done</div>}
-          <b>{front.t}</b>
-          <span>{front.sub}</span>
-          <button className="cta" onClick={() => onOpen(front)}>
-            {front.action ? front.action.label : 'Open'} <Icon name="chev" size={15} />
+      <div className="sect-h"><span>Your logbook</span></div>
+
+      <div className="runhero">
+        <div className="rh-bar"><i style={{ width: `${p.pct}%` }} /></div>
+        <div className="rh-top">
+          <div>
+            <div className="rh-k">Recover and Rebuild</div>
+            <div className="rh-wk">Week {wk} of 12</div>
+          </div>
+          <div className="rh-right">
+            <b>{p.done}</b><span>of {p.total} steps</span>
+          </div>
+        </div>
+
+        <button className="rh-score" onClick={() => onLog('symptoms')}>
+          {score == null ? (
+            <>
+              <div className="rh-sc-l">
+                <b>Set your starting point</b>
+                <span>Two numbers. Week 12 gets read against them.</span>
+              </div>
+              <Icon name="chev" size={15} />
+            </>
+          ) : (
+            <>
+              <div className="rh-sc-l">
+                <span>Recovery score</span>
+                <div className="rh-nums">
+                  <b>{score}</b>
+                  {target != null && <><i>to</i><em>{target}</em></>}
+                </div>
+              </div>
+              <div className="rh-meter">
+                <i style={{ width: `${score}%` }} />
+                {target != null && <u style={{ left: `${target}%` }} />}
+              </div>
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="tiles">
+        {tiles.map((c) => (
+          <button key={c.k} className={`tile ${c.count ? 'done' : c.due ? 'due' : 'off'}`}
+            disabled={!c.due} onClick={() => onLog(c.k)}>
+            <div className="tile-h">
+              <Icon name={c.ic} size={15} />
+              {c.count > 0 && <span className="tick sm"><Icon name="check" size={9} /></span>}
+              {c.due && !c.count && <i className="pip" />}
+            </div>
+            <b>{c.t}</b>
+            <span>{c.count ? `Logged ${c.count}x` : c.note}</span>
           </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  /* ── 3. what follows ── */
+  const whatFollows = follows.length > 0 && (
+    <div className="sect">
+      <div className="sect-h"><span>What follows</span></div>
+      {follows.map((i) => (
+        <div className="nrow" key={i.id}>
+          <span className="when">{i.when}</span>
+          <div>
+            <b>{i.t}</b>
+            <em>{i.doctorAdded ? 'Added by your doctor' : i.actor}</em>
+          </div>
         </div>
-      ) : (
-        <div className="move quiet">
-          <b>Nothing right now</b>
-          <span>
-            {front
-              ? `${front.doctorAdded ? 'Your care team' : front.actor} has the next step. We will tell you when it moves.`
-              : 'Your twelve weeks are complete.'}
-          </span>
-        </div>
-      )}
+      ))}
     </div>
   );
 
@@ -179,49 +249,45 @@ export function JourneyDetail({ plan, done, checkins, booked, title, onBack, onO
         <button className="iconbtn" onClick={onBack}><Icon name="back" size={14} /></button>
         <div style={{ flex: 1 }}>
           <div className="stitle">{title}</div>
-          <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>
-            Week {wk} of 12 · {p.done} of {p.total} steps
-          </div>
+          <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>Week {wk} of 12</div>
         </div>
+        {/* Same place on every screen, because somebody who needs help should
+            never have to look for the way to ask for it. */}
+        <button className="chatpill" onClick={onChat}>
+          <Icon name="chat" size={11} /> AI coach
+        </button>
       </div>
 
       <div className="scroll pad">
-        <div className="pbar wide"><i style={{ width: `${p.pct}%` }} /></div>
-
-        {/* A blocking move outranks the numbers. With nothing to do, the numbers
-            lead and the app says so rather than inventing a task. */}
-        {mine ? <>{yourMove}{numbers}</> : <>{numbers}{yourMove}</>}
-
-        {motion.length > 0 && (
-          <div className="sect">
-            <div className="sect-h"><span>In motion</span><em>on your behalf</em></div>
-            {motion.map((i) => (
-              <button className="mrow" key={i.id} onClick={() => onOpen(i)}>
-                <span className="who-av sm">{(i.actor || '?')[0]}</span>
-                <div>
-                  <b>{i.t}</b>
-                  <span>{i.doctorAdded ? 'Added by your doctor' : i.actor} · {i.when}</span>
-                </div>
-                <Icon name="chev" size={13} />
-              </button>
-            ))}
-          </div>
-        )}
-
-        {near.length > 0 && (
-          <div className="sect">
-            <div className="sect-h"><span>Next two weeks</span></div>
-            {near.map((i) => (
-              <div className="nrow" key={i.id}>
-                <span className="when">{i.when}</span>
-                <div>
-                  <b>{i.t}</b>
-                  {i.doctorAdded && <em>added at your consult</em>}
-                </div>
+        {front ? <>{next}{logbook}</> : (
+          <>
+            {logbook}
+            <div className="sect">
+              <div className="sect-h"><span>What is left</span></div>
+              <div className="move quiet">
+                <b>Your twelve weeks are complete</b>
+                <span>Keep logging while your doctor reads the Week 12 panel. There is
+                  nothing else to book.</span>
               </div>
-            ))}
-          </div>
+            </div>
+          </>
         )}
+
+        {whatFollows}
+
+        <div className="sect">
+          <div className="sect-h"><span>Help</span></div>
+          <button className="helprow" onClick={onChat}>
+            <span className="who-av sm">AI</span>
+            <div><b>Your AI health coach</b><span>Any hour, any question</span></div>
+            <Icon name="chev" size={13} />
+          </button>
+          <button className="helprow" onClick={onChat}>
+            <span className="who-av sm">V</span>
+            <div><b>Your care team</b><span>A person, in working hours</span></div>
+            <Icon name="chev" size={13} />
+          </button>
+        </div>
 
         <details className="allplan">
           <summary>The whole plan, {plan.length} steps <Icon name="chev" size={12} /></summary>
@@ -235,36 +301,14 @@ export function JourneyDetail({ plan, done, checkins, booked, title, onBack, onO
                 <div style={{ flex: 1 }}>
                   <b style={{ textDecoration: isDone ? 'line-through' : 'none' }}>{it.t}</b>
                   <span>
-                    {it.when} · {it.actor}
+                    {it.when} · {it.doctorAdded ? 'Added by your doctor' : it.actor}
                     {booked[it.id] ? ` · ${booked[it.id]}` : ''}
-                    {it.doctorAdded ? ' · added at your consult' : ''}
                   </span>
                 </div>
               </div>
             );
           })}
         </details>
-      </div>
-    </div>
-  );
-}
-
-/* One number, and the thing that makes it mean something. A value on its own is
-   a fact; 6 to 4 is progress. */
-function Metric({ t, from, to, lower, alone }) {
-  const moved = to - from;
-  const good = lower ? moved < 0 : moved > 0;
-  return (
-    <div className="num">
-      <span className="t">{t}</span>
-      <div className="v">
-        {!alone && from !== to && <em>{from}</em>}
-        <b>{to}</b>
-        {/* With one reading there is nothing to compare against, and "no change"
-            against yourself reads as a failure rather than as a starting line. */}
-        <i className={alone || moved === 0 ? '' : good ? 'up' : 'down'}>
-          {alone ? 'baseline' : moved === 0 ? 'level' : `${moved > 0 ? '+' : ''}${moved}`}
-        </i>
       </div>
     </div>
   );
