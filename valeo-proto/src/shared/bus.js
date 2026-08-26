@@ -17,17 +17,30 @@
  * also notifies itself locally. Same subscribe call either way.
  */
 
-/* Bump these whenever the stored shape changes. Data in an older shape is worse
-   than no data at all: it looks fine until something reads a field that was
-   never written, and then a screen dies on a returning visitor who has no idea
-   why. v2 = the onboarding chat, which added a goal-less `shared` bucket to the
-   Studio and a chosen goal to the patient. */
-export const STUDIO_KEY = 'valeo.studio.v2';   /* the Studio writes, the app reads */
-export const PATIENT_KEY = 'valeo.patient.v2'; /* the app writes, the Studio ignores */
+/* ── WHY THE SEED HAS A VERSION ──
+   Publishing takes a COPY of the draft, which is the point: the app reads what
+   was published, not what somebody is typing. But the draft comes from a seed
+   that ships with the code, so every time the seed gains a field or better
+   words, anybody holding a published copy keeps seeing the old ones and has no
+   way to know why. The answer was "republish", which is a workflow, not a fix.
 
-/* Superseded keys, swept on load so a stale shape cannot come back later. */
-const OLD_KEYS = ['valeo.studio.v1', 'valeo.patient.v1'];
-try { OLD_KEYS.forEach((k) => localStorage.removeItem(k)); } catch { /* private mode */ }
+   So the storage keys carry the seed version. Ship a new seed and the old store
+   is swept on load: drafts reseed, published clears, and nobody is left reading
+   a snapshot of copy that no longer exists. Bump this whenever the seed changes
+   in a way a patient or a category manager would notice. */
+const SEED_VERSION = 3;
+
+export const STUDIO_KEY = `valeo.studio.v${SEED_VERSION}`;   /* the Studio writes, the app reads */
+export const PATIENT_KEY = `valeo.patient.v${SEED_VERSION}`; /* the app writes, the Studio ignores */
+
+/* Every superseded key, swept on load so a stale shape or stale copy cannot
+   come back later. */
+try {
+  for (let v = 1; v < SEED_VERSION; v += 1) {
+    localStorage.removeItem(`valeo.studio.v${v}`);
+    localStorage.removeItem(`valeo.patient.v${v}`);
+  }
+} catch { /* private mode */ }
 
 const listeners = new Set();
 
