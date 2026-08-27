@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
 import { serviceOf, findService } from '../../p2/lib/seed';
+import { actorOf, whenLabel } from '../lib/journey';
 
 /*
  * THREE ACTION SCREENS, NOT FOURTEEN.
@@ -98,16 +99,16 @@ export function Status({ item, onBack, onDone }) {
 
   return (
     <div className="screen">
-      <Head title={item.t} sub={item.when} onBack={onBack} />
+      <Head title={item.t} sub={whenLabel(item)} onBack={onBack} />
       <div className="scroll pad">
         <p className="lead">{item.sub}</p>
 
         <div className="act-who">
-          <span className="who-av">{item.doctorAdded ? 'D' : (item.actor || '?')[0]}</span>
+          <span className="who-av">{actorOf(item)[0]}</span>
           <div>
             {/* Items the clinician added carry the actor "Doctor added", which
                 reads as nonsense in a sentence. Name the source instead. */}
-            <b>{item.doctorAdded ? 'Added by your doctor' : `${item.actor} has this`}</b>
+            <b>{item.doctorAdded ? 'Added by your doctor' : `${actorOf(item)} has this`}</b>
             <span>
               {item.doctorAdded
                 ? 'Arranged at your consultation. Nothing is needed from you yet.'

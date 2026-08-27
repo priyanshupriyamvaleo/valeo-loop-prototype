@@ -3,6 +3,7 @@ import Icon from '../ui/Icon';
 import { Field, Chip, Note, IconBtn } from '../ui/kit';
 import { useStudio } from '../lib/store';
 import { LOCKED_RULES, SERVICES, SERVICE_TYPES, serviceTypeLabel, serviceOf } from '../lib/seed';
+import { actorOf, whenLabel } from '../../p1/lib/journey';
 
 /*
  * THE PROTOCOL BUILDER — the after-purchase journey.
@@ -99,9 +100,9 @@ export default function ProtocolBuilder({ goalId }) {
               const at = d.plan.findIndex((x) => x.id === editing);
               const after = at === -1 ? d.plan.length - 1 : at;
               const prev = d.plan[after];
+              const from = prev ? prev.window.from : 0;
               const born = { id: 'p' + Date.now().toString(36), t: 'New step', sub: '',
-                             when: prev ? prev.when : 'Week 1',
-                             offset: prev ? prev.offset : 0, actor: 'Patient' };
+                             window: { from, to: from } };
               d.plan.splice(after + 1, 0, born);
               setTimeout(() => setEditing(born.id), 0);
             })}>
@@ -111,18 +112,20 @@ export default function ProtocolBuilder({ goalId }) {
 
           {plan.map((it, i) => (
             <div className={`item ${it.locked ? 'locked' : ''}`} key={it.id}>
-              <span className="when">{it.when}</span>
+              <span className="when">{whenLabel(it)}</span>
               <div className="body">
                 <b>{it.t}</b>
                 <span>{it.sub}</span>
                 <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}>
-                  <Chip tone="draft">{it.actor}</Chip>
+                  <Chip tone="draft">{actorOf(it)}</Chip>
                   {it.milestone && <Chip tone="key">milestone</Chip>}
                   {it.locked && <Chip tone="lock">locked</Chip>}
                   {serviceOf(it.service) && (
                     <Chip tone="live">{serviceOf(it.service).t}</Chip>
                   )}
-                  <span className="mono" style={{ color: 'var(--ink-3)' }}>day {it.offset}</span>
+                  <span className="mono" style={{ color: 'var(--ink-3)' }}>
+                    day {it.window.from}{it.window.to !== it.window.from ? ` to ${it.window.to}` : ''}
+                  </span>
                 </div>
               </div>
               <div className="acts">
@@ -134,61 +137,82 @@ export default function ProtocolBuilder({ goalId }) {
                   title={it.locked ? 'Locked. Cannot be removed' : 'Remove item'} />
               </div>
               {editing === it.id && (
-                <div className="item-edit">
-                  <Field label="What the patient reads" value={it.t}
-                    onChange={(v) => edit(i, 't', v)} />
-                  <Field label="The line under it" value={it.sub}
-                    onChange={(v) => edit(i, 'sub', v)}
-                    hint="Say what happens, not how it will feel." />
-                  <div className="grid-2">
-                    <Field label="When, in words" value={it.when}
-                      onChange={(v) => edit(i, 'when', v)} placeholder="Week 6" />
-                    <Field label="Due on day" type="number" value={it.offset}
-                      onChange={(v) => edit(i, 'offset', Number(v) || 0)}
-                      hint="Days after purchase. This is what decides the order." />
-                  </div>
-                  <div className="grid-2">
-                    <Field label="Whose move" type="select" value={it.actor}
-                      options={['Patient', 'Patient books', 'Nurse', 'Lab', 'Doctor', 'Care team', 'Ops', 'System']}
-                      onChange={(v) => edit(i, 'actor', v)} />
-                    {/* `action` is an object, and binding it straight to a text
-                        field printed [object Object] and would have replaced the
-                        whole thing with a string the moment anybody typed. */}
+                <div className="item-edit split">
+                  {/* WORDS ON THE LEFT, WIRING ON THE RIGHT.
+                      They are two different jobs done by two different heads:
+                      somebody writing to a patient, and somebody deciding what
+                      the step is plugged into. Interleaving them made the whole
+                      panel read as one undifferentiated form. */}
+                  <div className="col">
+                    <div className="col-h">What the patient reads</div>
+                    <Field label="Title" value={it.t} onChange={(v) => edit(i, 't', v)} />
+                    <Field label="The line under it" value={it.sub}
+                      onChange={(v) => edit(i, 'sub', v)}
+                      hint="Say what happens, not how it will feel." />
                     <Field label="Call to action" value={it.action?.label || ''}
                       onChange={(v) => edit(i, 'action', v.trim()
                         ? { kind: it.action?.kind || 'book', label: v }
                         : undefined)}
-                      hint="The button on the home card. Leave empty for steps with nothing to press." />
+                      hint="The button the patient presses. Leave it empty and the step
+                            becomes something they wait on rather than something they do." />
                   </div>
 
-                  {/* ── WHAT THIS STEP ACTUALLY IS ──
-                      Not a new thing to build. A service Valeo already sells,
-                      with a booking flow, a nurse rota, a lab handoff and a
-                      results upload already behind it. Link the step and every
-                      one of those is somebody else's solved problem. */}
-                  <div className="grid-2">
+                  <div className="col">
+                    <div className="col-h">How it is wired</div>
+
+                    {/* ── WHEN, AS A WINDOW ──
+                        Not a date. The exact appointment comes from the booking,
+                        which is an API away. What is set here is the target: the
+                        panel inside week one, results in three to five days. */}
+                    <div className="grid-2">
+                      <Field label="From day" type="number" value={it.window.from}
+                        onChange={(v) => edit(i, 'window', {
+                          from: Number(v) || 0,
+                          to: Math.max(Number(v) || 0, it.window.to),
+                        })} />
+                      <Field label="To day" type="number" value={it.window.to}
+                        onChange={(v) => edit(i, 'window', {
+                          from: it.window.from,
+                          to: Math.max(it.window.from, Number(v) || 0),
+                        })} />
+                    </div>
+                    <div className="win-read">
+                      Patient sees <b>{whenLabel(it)}</b>. The start of the window is what
+                      orders the plan.
+                    </div>
+
+                    {/* ── WHAT THIS STEP ACTUALLY IS ──
+                        Not a new thing to build. A service Valeo already sells,
+                        with a booking flow, a nurse rota, a lab handoff and a
+                        results upload already behind it. */}
                     <Field label="Service type" type="select"
-                      options={SERVICE_TYPES} value={it.service?.type || 'none'}
+                      options={SERVICE_TYPES} display={SERVICE_TYPES.reduce(
+                        (a, k) => ({ ...a, [k]: serviceTypeLabel(k) }), {})}
+                      value={it.service?.type || 'none'}
                       onChange={(v) => edit(i, 'service', v === 'none' ? undefined
                         : { type: v, id: (SERVICES[v].items[0] || {}).id })} />
                     <Field label="Linked service" type="select"
                       disabled={!it.service?.type || it.service.type === 'none'}
-                      options={(SERVICES[it.service?.type]?.items || []).map((x) => x.t)}
-                      value={serviceOf(it.service)?.t || ''}
-                      onChange={(v) => {
-                        const hit = (SERVICES[it.service.type].items || []).find((x) => x.t === v);
-                        if (hit) edit(i, 'service', { type: it.service.type, id: hit.id });
-                      }}
+                      options={(SERVICES[it.service?.type]?.items || []).map((x) => x.id)}
+                      display={(SERVICES[it.service?.type]?.items || []).reduce(
+                        (a, x) => ({ ...a, [x.id]: x.t }), {})}
+                      value={it.service?.id || ''}
+                      onChange={(v) => edit(i, 'service', { type: it.service.type, id: v })}
                       hint={serviceOf(it.service)?.note
                         || 'Booking, tracking and results already exist behind it.'} />
-                  </div>
-                  <div className="row" style={{ gap: 16, marginTop: 4, flexWrap: 'wrap' }}>
-                    <label className="tick">
+
+                    <div className="win-read">
+                      Whose move: <b>{actorOf(it)}</b>. Read from the service and the call
+                      to action rather than set twice.
+                    </div>
+
+                    <label className="tick" style={{ marginTop: 4 }}>
                       <input type="checkbox" checked={!!it.milestone}
                         onChange={(e) => edit(i, 'milestone', e.target.checked)} />
                       Milestone. Marked on the patient's timeline.
                     </label>
                   </div>
+
                   {it.locked && (
                     <Note tone="gold" label="Locked step">
                       <p style={{ margin: 0 }}>

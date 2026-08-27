@@ -1,5 +1,5 @@
 import Icon from '../ui/Icon';
-import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures, stateOf } from '../lib/journey';
+import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures, stateOf, actorOf, whenLabel } from '../lib/journey';
 import { serviceOf, findService } from '../../p2/lib/seed';
 
 /*
@@ -12,10 +12,10 @@ import { serviceOf, findService } from '../../p2/lib/seed';
  * demonstrate.
  */
 
-export function ProtocolCard({ plan, done, onOpen, onChat, title }) {
+export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12 }) {
   const item = nextItem(plan, done);
   const p = progress(plan, done);
-  const wk = weekOf(plan, done);
+  const wk = weekOf(plan, done, weeks);
 
   return (
     <div className="jcard">
@@ -31,7 +31,7 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title }) {
               the plan and gated nothing. A step waiting on the patient is the
               one worth colouring; a step waiting on a lab is not. */}
           <div className="lbl" style={{ color: isPatientMove(item) ? 'var(--red)' : 'var(--gold-deep)' }}>
-            {isPatientMove(item) ? 'Action needed' : item.doctorAdded ? 'Added by your doctor' : item.when}
+            {isPatientMove(item) ? 'Action needed' : item.doctorAdded ? 'Added by your doctor' : whenLabel(item)}
           </div>
           <div className="big">{item.card || item.t}</div>
           <div className="sm" style={{ marginTop: 3 }}>{item.sub}</div>
@@ -59,7 +59,7 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title }) {
       {/* progress: purchased means there is a week to show */}
       <div className="mod">
         <div className="rowline" style={{ marginBottom: 5 }}>
-          <div className="sm" style={{ flex: 1 }}>Week <b style={{ fontSize: 14 }}>{wk}</b> of 12</div>
+          <div className="sm" style={{ flex: 1 }}>Week <b style={{ fontSize: 14 }}>{wk}</b> of {weeks}</div>
           <div className="sm">{p.done} of {p.total} steps</div>
         </div>
         <div className="pbar"><i style={{ width: `${p.pct}%` }} /></div>
@@ -129,10 +129,10 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title }) {
  * So the logbook is full on day zero and Week 12 has something to read against.
  */
 export function JourneyDetail({ plan, done, checkins, logs, target, booked, title,
-                               medicines, voucherId, onBack, onOpen, onLog, onChat, onProduct }) {
+                               medicines, voucherId, weeks = 12, onBack, onOpen, onLog, onChat, onProduct }) {
   const front = nextItem(plan, done);
   const p = progress(plan, done);
-  const wk = weekOf(plan, done);
+  const wk = weekOf(plan, done, weeks);
   const mine = isPatientMove(front);
   const latest = checkins[checkins.length - 1];
   const score = recoveryScore(latest);
@@ -232,8 +232,8 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
 
         {!mine && (
           <div className="whos">
-            <span className="who-av sm">{front.doctorAdded ? 'D' : (front.actor || '?')[0]}</span>
-            {front.doctorAdded ? 'Added by your doctor' : `${front.actor} has this`}
+            <span className="who-av sm">{actorOf(front)[0]}</span>
+            {actorOf(front)} {front.doctorAdded ? 'arranged this' : 'has this'}
           </div>
         )}
       </div>
@@ -250,7 +250,7 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
         <div className="rh-top">
           <div>
             <div className="rh-k">Recover and Rebuild</div>
-            <div className="rh-wk">Week {wk} of 12</div>
+            <div className="rh-wk">Week {wk} of {weeks}</div>
           </div>
           <div className="rh-right">
             <b>{p.done}</b><span>of {p.total} steps</span>
@@ -307,10 +307,10 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
       <div className="sect-h"><span>What follows</span></div>
       {follows.map((i) => (
         <div className="nrow" key={i.id}>
-          <span className="when">{i.when}</span>
+          <span className="when">{whenLabel(i)}</span>
           <div>
             <b>{i.t}</b>
-            <em>{i.doctorAdded ? 'Added by your doctor' : i.actor}</em>
+            <em>{i.doctorAdded ? 'Added by your doctor' : actorOf(i)}</em>
           </div>
         </div>
       ))}
@@ -323,7 +323,7 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
         <button className="iconbtn" onClick={onBack}><Icon name="back" size={14} /></button>
         <div style={{ flex: 1 }}>
           <div className="stitle">{title}</div>
-          <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>Week {wk} of 12</div>
+          <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>Week {wk} of {weeks}</div>
         </div>
         {/* Same place on every screen, because somebody who needs help should
             never have to look for the way to ask for it. */}
@@ -339,8 +339,8 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
             <div className="sect">
               <div className="sect-h"><span>What is left</span></div>
               <div className="move quiet">
-                <b>Your twelve weeks are complete</b>
-                <span>Keep logging while your doctor reads the Week 12 panel. There is
+                <b>Your {weeks} weeks are complete</b>
+                <span>Keep logging while your doctor reads the final panel. There is
                   nothing else to book.</span>
               </div>
             </div>
@@ -400,7 +400,7 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
                 <div style={{ flex: 1 }}>
                   <b style={{ textDecoration: isDone ? 'line-through' : 'none' }}>{it.t}</b>
                   <span>
-                    {it.when} · {it.doctorAdded ? 'Added by your doctor' : it.actor}
+                    {whenLabel(it)} · {it.doctorAdded ? 'Added by your doctor' : actorOf(it)}
                     {booked[it.id] ? ` · ${booked[it.id]}` : ''}
                   </span>
                 </div>

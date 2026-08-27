@@ -58,7 +58,7 @@ export function planFor(studio, goalId, journey) {
     if (merged.some((m) => m.id === a.id)) return;
     merged.push({ ...a, doctorAdded: true, action: { kind: 'view', label: 'View details' } });
   });
-  return merged.sort((a, b) => (a.offset || 0) - (b.offset || 0));
+  return merged.sort((a, b) => startOf(a) - startOf(b));
 }
 
 /* The earliest item not done. This is the whole state machine. */
@@ -75,11 +75,16 @@ export function progress(plan, done) {
 
 /* The week a patient is in, derived from the last completed offset rather than
    from a stored counter, so it cannot drift from the plan. */
-export function weekOf(plan, done) {
+export function weekOf(plan, done, weeks = 12) {
   const last = plan.filter((i) => done.includes(i.id)).slice(-1)[0];
-  const day = last ? last.offset : 0;
-  return Math.max(1, Math.min(12, Math.floor(day / 7) + 1));
+  const day = last ? startOf(last) : 0;
+  return Math.max(1, Math.min(weeks, Math.ceil(day / 7) || 1));
 }
+
+/* How long the protocol runs, from the Studio rather than from a number typed
+   into three screens. */
+export const weeksOf = (studio, goalId) =>
+  (publishedFor(studio, goalId, 'plan')?.weeks) || 12;
 
 /* ── WEIGHT LOSS ──
    Documented, not rebuilt. Four modules, each on its own condition, sorted by
@@ -106,7 +111,55 @@ export const WL_ENTRIES = {
    fact about this protocol and the screen is built on it: most of the twelve
    weeks is spent waiting while other people work, so the app has to render the
    waiting as work rather than as silence. */
-export const isPatientMove = (item) => !!item && /^Patient/.test(item.actor || '');
+/* ── WHO HAS THIS, DERIVED RATHER THAN TYPED ──
+   A step used to carry an `actor` field beside its linked service, which meant
+   saying the same thing twice and letting the two disagree: nothing stopped
+   somebody linking a lab panel and then setting the actor to Patient. The
+   service already says who does the work, and the call to action already says
+   whether the patient has to do anything, so both are read rather than asked
+   for a second time.
+
+   Booking is the patient's move. Tracking a parcel is not: the pharmacy still
+   has the parcel, the patient is only watching it. */
+export const isPatientMove = (item) => item?.action?.kind === 'book';
+
+const OWNER = {
+  lab: 'The lab',
+  homecare: 'Your nurse',
+  consult: 'Your doctor',
+  medication: 'The pharmacy',
+  supplement: 'Valeo',
+};
+
+export function actorOf(item) {
+  if (!item) return '';
+  if (item.doctorAdded) return 'Your care team';
+  if (isPatientMove(item)) return 'You';
+  return OWNER[item.service?.type] || 'Your care team';
+}
+
+/* ── WHEN, AS A WINDOW ──
+   A step does not happen on a day, it happens in a window. The exact time comes
+   from the booking, which is an API away and not something a category manager
+   should be typing. What the Studio sets is the target: results in three to
+   five days, first consultation inside week one.
+
+   Days read as days early on and as weeks later, because "day 42" means nothing
+   to somebody twelve weeks into a protocol and "Week 6" does. */
+export function whenLabel(item) {
+  const w = item && item.window;
+  if (!w) return '';
+  /* Day 42 is the Week 6 review and day 84 is the Week 12 panel, so the offsets
+     count to the END of a week. Flooring made both read a week late. */
+  const wk = (d) => Math.max(1, Math.ceil(d / 7));
+  if (w.from >= 14) {
+    return wk(w.from) === wk(w.to) ? `Week ${wk(w.from)}` : `Week ${wk(w.from)} to ${wk(w.to)}`;
+  }
+  return w.from === w.to ? `Day ${w.from}` : `Day ${w.from} to ${w.to}`;
+}
+
+/* Ordering is by the start of the window. */
+export const startOf = (item) => (item && item.window ? item.window.from : 0);
 
 /* What Valeo is doing right now on this patient's behalf. Windowed, because a
    list of everything still outstanding is the config dump we are replacing. */
@@ -114,7 +167,7 @@ export function inMotion(plan, done, limit = 3) {
   const front = nextItem(plan, done);
   if (!front) return [];
   return plan
-    .filter((i) => !done.includes(i.id) && !isPatientMove(i) && i.offset <= front.offset + 21)
+    .filter((i) => !done.includes(i.id) && !isPatientMove(i) && startOf(i) <= startOf(front) + 21)
     .slice(0, limit);
 }
 
@@ -126,7 +179,7 @@ export function soon(plan, done, skip = [], days = 14, limit = 4) {
   const front = nextItem(plan, done);
   if (!front) return [];
   return plan
-    .filter((i) => !done.includes(i.id) && !skip.includes(i.id) && i.offset <= front.offset + days)
+    .filter((i) => !done.includes(i.id) && !skip.includes(i.id) && startOf(i) <= startOf(front) + days)
     .slice(0, limit);
 }
 

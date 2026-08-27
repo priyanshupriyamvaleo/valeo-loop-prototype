@@ -261,7 +261,7 @@ function Consult({ patient, record, state, update }) {
     if (!svc || added.some((x) => x.id === `ord_${svc.id}`)) return;
     setAdded((xs) => [...xs, {
       id: `ord_${svc.id}`, t: svc.t, sub: svc.note,
-      when: 'After your consult', offset: 12, actor: 'Patient books nurse',
+      window: { from: 12, to: 16 },
       service: { type: svc.type, id: svc.id },
       action: { kind: 'book', label: `Book your ${svc.t.toLowerCase()}` },
     }]);
@@ -275,9 +275,9 @@ function Consult({ patient, record, state, update }) {
 
   const OFFERS = [
     { id: 'nurse_admin', t: 'Nurse administration visits', sub: 'AED 99 per visit, 4-pack AED 349',
-      when: 'Ongoing', offset: 14 },
+      window: { from: 14, to: 84 }, service: { type: 'homecare', id: 'home_injection' } },
     { id: 'physio', t: 'Physiotherapy referral', sub: 'Where clinically indicated',
-      when: 'Week 2', offset: 14 },
+      window: { from: 14, to: 21 } },
   ];
 
   const save = () => update((d) => {
@@ -446,7 +446,7 @@ function Consult({ patient, record, state, update }) {
           const on = added.some((x) => x.id === o.id);
           return (
             <div className="item" key={o.id}>
-              <span className="when">{o.when}</span>
+              <span className="when">day {o.window.from}</span>
               <div className="body">
                 <b>{o.t}</b>
                 <span>{o.sub}</span>
@@ -456,8 +456,8 @@ function Consult({ patient, record, state, update }) {
                   <button className="btn btn-ghost btn-sm" onClick={() => drop(o.id)}>Remove</button>
                 ) : (
                   <button className="btn btn-gold btn-sm"
-                    onClick={() => addItem({ id: o.id, t: o.t, sub: o.sub, when: o.when,
-                                             offset: o.offset, actor: 'Doctor added' })}>
+                    onClick={() => addItem({ id: o.id, t: o.t, sub: o.sub, window: o.window,
+                                             service: o.service })}>
                     Offer
                   </button>
                 )}

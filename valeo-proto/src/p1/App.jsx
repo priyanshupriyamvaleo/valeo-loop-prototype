@@ -6,7 +6,7 @@ import { Gate, Onboarding, Triage, PDP, Cart, Confirm } from './screens/Flow';
 import { Schedule, Status, CheckIn, Report, Join, ProductPage } from './screens/Actions';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor, GATES, SHARED } from '../shared/bus';
-import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, voucherFor } from './lib/journey';
+import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, voucherFor, weeksOf } from './lib/journey';
 import { serviceOf } from '../p2/lib/seed';
 
 /*
@@ -87,6 +87,7 @@ export default function App() {
   const ppCfg = publishedFor(studio, goalId, 'prepurchase');
   const plan = planFor(studio, goalId, pt);
   const medicines = medicinesFor(studio, goalId, pt);
+  const weeks = weeksOf(studio, goalId);
   const item = nextItem(plan, pt.done);
 
   /* ── the consult gate ──
@@ -190,7 +191,7 @@ export default function App() {
         onChat={() => {}}
         onStart={() => set({ mode: 'none', stage: 'gate:onboarding' })}
         protocolCard={
-          <ProtocolCard title={goal.t} plan={plan} done={pt.done}
+          <ProtocolCard title={goal.t} plan={plan} done={pt.done} weeks={weeks}
             onChat={() => {}} onOpen={() => setScreen('detail')} />
         }
       />
@@ -291,7 +292,7 @@ export default function App() {
     );
   } else if (screen === 'detail') {
     view = (
-      <JourneyDetail title={goal.t} plan={plan} done={pt.done}
+      <JourneyDetail title={goal.t} plan={plan} done={pt.done} weeks={weeks}
         medicines={medicines}
         voucherId={voucherFor(studio, plan.find((x) => x.id === 'p5'), pt)}
         onProduct={(m) => set({ product: m, stage: 'product' })}

@@ -58,6 +58,10 @@ export function StudioProvider({ children }) {
         version: (prev ? prev.version : 0) + 1,
         at: new Date().toISOString(),
         data: structuredClone(draft[part]),
+        /* How long the protocol runs travels with the plan, so the patient app
+           reads one published number instead of three screens each hardcoding
+           twelve. */
+        ...(part === 'plan' ? { weeks: draft.meta?.listing?.duration || 12 } : {}),
       };
     });
   }, [update]);
