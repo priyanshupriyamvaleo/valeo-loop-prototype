@@ -2,7 +2,7 @@
  * THE SEED — Recover and Rebuild, as the spec wrote it.
  *
  * Every value here is lifted from the Recover and Rebuild document rather than
- * invented: the fourteen plan items with their offsets and blocking flags, the
+ * invented: the fourteen plan items with their offsets and actors, the
  * listing copy, the panel, the prices, and the TB-500 gate. A prototype whose
  * numbers drift from the brief teaches the room the wrong thing.
  *
@@ -90,7 +90,7 @@ export const serviceOf = (svc) =>
 export const RR_PLAN = [
   { id: 'p1',  t: 'Book nurse visit',        sub: 'Nothing else can start until this is done.',
     service: { type: 'homecare', id: 'home_draw' },
-    when: 'Day 0 to 3',  offset: 0,  actor: 'Patient', blocking: true,
+    when: 'Day 0 to 3',  offset: 0,  actor: 'Patient',
     action: { kind: 'book', label: 'Choose a time' },
     /* The three objections a home blood draw actually raises, answered before
        the button rather than after it: who turns up, what it is like, and
@@ -104,7 +104,7 @@ export const RR_PLAN = [
     card: 'Book your nurse visit' },
   { id: 'p2',  t: 'Blood sample collected',  sub: 'Recovery & Inflammation Panel, baseline.',
     service: { type: 'lab', id: 'panel_recovery' },
-    when: 'Week 1',      offset: 5,  actor: 'Nurse',   blocking: true, locked: true,
+    when: 'Week 1',      offset: 5,  actor: 'Nurse', locked: true,
     lockWhy: 'Your protocol starts with testing, not a product. It is also the clinical basis for prescribing.',
     /* Booked. The card stops being a task and becomes an appointment, so the
        time is the largest thing on it. The slot comes from the step that
@@ -128,7 +128,7 @@ export const RR_PLAN = [
     card: 'Results in a few days' },
   { id: 'p4',  t: 'Doctor consultation',     sub: 'Injury and recovery assessment, results review, competition screening. Dispatch is blocked until this happens.',
     service: { type: 'consult', id: 'consult_peptide' },
-    when: 'Week 1',      offset: 9,  actor: 'Patient books', blocking: true, locked: true,
+    when: 'Week 1',      offset: 9,  actor: 'Patient books', locked: true,
     lockWhy: 'Dispensing depends on it. Removing it makes this a supplement sale.',
     action: { kind: 'book', label: 'Book your consultation' },
     /* Two things to do at once, and the report comes first: reading it is what
@@ -180,7 +180,7 @@ export const RR_PLAN = [
     card: 'Week 9 of 12' },
   { id: 'p13', t: 'Repeat blood panel',      sub: 'Same panel as baseline.',
     service: { type: 'lab', id: 'panel_recovery' },
-    when: 'Week 12',     offset: 84, actor: 'Patient books nurse', blocking: true, locked: true,
+    when: 'Week 12',     offset: 84, actor: 'Patient books nurse', locked: true,
     lockWhy: 'Promised on the page, and it is the renewal conversation.',
     action: { kind: 'book', label: 'Book your Week 12 test' },
     card: 'Book your Week 12 test' },

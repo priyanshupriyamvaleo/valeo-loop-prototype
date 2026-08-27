@@ -80,7 +80,14 @@ export default function ProtocolBuilder({ goalId }) {
         <>
           <div className="row" style={{ marginBottom: 8, gap: 8 }}>
             <span className="hint grow">
-              {plan.length} items · <Chip tone="block">blocking</Chip> stops everything downstream
+              {/* There used to be a "blocking" chip here claiming it stopped
+                  everything downstream. Nothing read it. The plan runs in order
+                  of day offset and the app only ever shows the earliest step
+                  not yet done, so every step already waits for the one above
+                  it. A flag that restates the rule is a promise the code does
+                  not keep, and the first person to notice stops trusting the
+                  rest of the legend. */}
+              {plan.length} items, in order of day. Each one waits for the one above it
               · <Chip tone="key">milestone</Chip> · <Chip tone="lock">locked</Chip> cannot be removed
             </span>
             {/* A new step lands directly under whichever one is open, because
@@ -110,7 +117,6 @@ export default function ProtocolBuilder({ goalId }) {
                 <span>{it.sub}</span>
                 <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}>
                   <Chip tone="draft">{it.actor}</Chip>
-                  {it.blocking && <Chip tone="block">blocking</Chip>}
                   {it.milestone && <Chip tone="key">milestone</Chip>}
                   {it.locked && <Chip tone="lock">locked</Chip>}
                   {serviceOf(it.service) && (
@@ -177,11 +183,6 @@ export default function ProtocolBuilder({ goalId }) {
                         || 'Booking, tracking and results already exist behind it.'} />
                   </div>
                   <div className="row" style={{ gap: 16, marginTop: 4, flexWrap: 'wrap' }}>
-                    <label className="tick">
-                      <input type="checkbox" checked={!!it.blocking}
-                        onChange={(e) => edit(i, 'blocking', e.target.checked)} />
-                      Blocking. Nothing downstream starts until it is done.
-                    </label>
                     <label className="tick">
                       <input type="checkbox" checked={!!it.milestone}
                         onChange={(e) => edit(i, 'milestone', e.target.checked)} />

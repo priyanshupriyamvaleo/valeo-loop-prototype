@@ -119,11 +119,23 @@ Then it stops: *"Protocol plan has not been published yet."*
 ### 7. Studio: Protocol Builder
 
 The Recover and Rebuild template, pre-filled: 14 items, each with a due offset
-in days. Edit any of them with the pencil. Add one. Reorder them.
+in days. Edit any of them with the pencil. Add one and it lands directly under
+whichever step is open. Reorder them.
+
+Each step links to a service Valeo already sells: a lab panel, a consultation, a
+home visit, a medicine. That is the sentence worth saying out loud, because it
+means none of this is a new operation to build. The booking flow, the nurse
+rota, the lab handoff and the results upload already exist behind that link.
+Change the type and the second dropdown follows.
 
 Three items refuse to be deleted: the baseline panel, the doctor consultation
 and the Week 12 panel. Press the bin on one and it tells you why. Their wording
 is still yours to change; the step itself stays.
+
+There is no "blocking" flag any more. The plan runs in order of day and the app
+only ever shows the earliest step not yet done, so every step already waits for
+the one above it. A flag that restated the rule was a promise the code did not
+keep.
 
 Publish.
 

@@ -27,8 +27,11 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title }) {
       {item ? (
         <div className="mod">
           {/* action_needed outranks everything else, per the module table */}
-          <div className="lbl" style={{ color: item.blocking ? 'var(--red)' : 'var(--gold-deep)' }}>
-            {item.blocking ? 'Action needed' : item.doctorAdded ? 'Added by your doctor' : item.when}
+          {/* Emphasis follows whose move it is, not a flag that claimed to gate
+              the plan and gated nothing. A step waiting on the patient is the
+              one worth colouring; a step waiting on a lab is not. */}
+          <div className="lbl" style={{ color: isPatientMove(item) ? 'var(--red)' : 'var(--gold-deep)' }}>
+            {isPatientMove(item) ? 'Action needed' : item.doctorAdded ? 'Added by your doctor' : item.when}
           </div>
           <div className="big">{item.card || item.t}</div>
           <div className="sm" style={{ marginTop: 3 }}>{item.sub}</div>
@@ -84,9 +87,9 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title }) {
  *   IN MOTION     what Valeo is doing right now, because the waiting IS the product
  *   NEXT          a fortnight, never the whole fourteen
  *
- * The order flips. A blocking action takes the top; when there is none the
- * numbers do, and the app says plainly that nothing is needed. Same components,
- * order decided by state, which is the rule the home card already runs on.
+ * Whatever is next sits at the top, every time, until the twelve weeks are
+ * done. The plan runs in order of day, so each step already waits for the one
+ * above it and nothing needs a flag to say so.
  *
  * ── THE DAY ZERO PROBLEM, AND WHY PAIN AND CAPACITY SOLVE IT ──
  * Between paying and the first result there are about nine days with nothing
@@ -151,10 +154,7 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
         <span>{state.tag || (mine ? 'Your next step' : 'Happening now')}</span>
         {state.chip && <em className="chip-in">{state.chip}</em>}
       </div>
-      <div className={`move ${front.blocking && state.k === 'ask' ? 'block' : ''} ${mine ? '' : 'theirs'}`}>
-        {front.blocking && state.k === 'ask' && (
-          <div className="move-k">Nothing else starts until this is done</div>
-        )}
+      <div className={`move ${state.k === 'ask' ? 'block' : ''} ${mine ? '' : 'theirs'}`}>
         <b>{state.title}</b>
         {state.sub && <i className="move-sub">{state.sub}</i>}
 
