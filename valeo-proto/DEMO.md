@@ -21,6 +21,9 @@ screen turns into a **Continue** button, live, with no refresh.
 
 So the demo is a loop, run five times: **stop, configure, publish, continue.**
 
+There are five surfaces in the Studio: the two chat builders, the Package
+Builder, the Protocol Builder, the Clinician Console and the User Console.
+
 ## The run
 
 ### 1. The home screen, in three states
@@ -92,9 +95,16 @@ Continue and answer. The third question is the one you just wrote.
 
 The app stops: *"Pre-purchase flow has not been published yet."*
 
-### 5. Studio: Pre-purchase Builder
+### 5. Studio: Package Builder
 
 Three tabs: PDP, Cart, Confirmation.
+
+On **PDP**, scroll to **What is included**. This is a price calculator, not a
+list of sentences: each line points at a service Valeo already sells with a
+quantity, so the package adds up. It shows what the package costs to deliver
+against the list price, and names the margin. Change a quantity and watch it
+recalculate; push it far enough and it says **sold below cost**. That is the
+answer to "how do we know 3,799 is the right number".
 
 Two things on this screen are refusals rather than fields:
 
@@ -191,30 +201,45 @@ Work through to the doctor consultation. The app stops:
 ### 9. Studio: Clinician Console
 
 It opens on a **queue**, because a doctor does not arrive at one patient, she
-arrives at a list: who is waiting, how long, and for what. Ahmad is the patient
-sitting in the other tab and is marked **live**; the other three are marked
-**fixture** and exist to show what a queue looks like.
+arrives at a list. Ahmad is the patient sitting in the other tab and is marked
+**live**; the other three are **fixture**.
 
-Open Ahmad and read **Before this call**. His whole history is folded shut, one
-section at a time: onboarding, triage, purchase, progress, previous consults.
-None of it is authored anywhere. It is read out of the patient app, so the
-answers on this screen are the answers that were really given next door. Open
-the onboarding fold and you will see the height and weight you typed in step 4.
+Open Ahmad and read **Before this call**. His history is folded shut, one section
+at a time, and none of it is authored anywhere: it is read out of the patient
+app, so the answers on screen are the answers really given next door. The fold
+**Changed for this patient** is what the plan no longer shares with the template.
 
-Switch to Leila and back to see the folds and the form reset. A doctor who
-switches patients gets a clean screen, never the last person's half-typed note.
+Then three sections, in the order a consultation actually goes:
 
-Then the outcome itself: a checklist, not a free editor, because a doctor
-leaving a call has two minutes.
+1. **Is this patient approved?** Three buttons, not a dropdown with a default
+   already sitting in it. *Continue as planned*, *Not suitable*, *Modify*.
+2. **What this patient actually gets** appears under Modify. The protocol ships a
+   default on each changeable step; the doctor swaps the product and sets the
+   dose. Dose appears only on things you can be on a dose of, so the pens and the
+   voucher have one and the blood panel does not. Reach for TB-500 and the
+   WADA question appears right there, rather than as a card at the top of the
+   page that everybody scrolls past.
+3. **Add to this patient's plan**: a medicine, a supplement or a blood test. Pick
+   the product and the coach then words the step themselves, the same way a
+   category manager would. It lands **directly after whatever step the patient is
+   on right now**, and the panel says which step that is.
 
-Record an outcome and a dose note. Then look at **TB-500 (Wolverine upgrade)**:
-it cannot be offered while the competition question is unanswered, and it cannot
-be offered if the answer is *yes, tested sport*, because TB-500 is
-WADA-prohibited. Answer *No* and the control turns on.
+Save. Note the line under the button: this writes to the patient, not to the
+template. One patient needing a B12 test is not a reason for every patient to
+have one.
 
-Offer the upgrade, nurse visits and physiotherapy. **Save consult outcome.**
-This is the one surface in the Studio that writes to a patient rather than to a
-template.
+### 9b. Studio: User Console
+
+Read only, and the only screen in the Studio that shows what a protocol has
+*become*.
+
+**The package** lists every service this patient has, which step it comes from
+and what it costs, split into what the protocol covers and what the doctor added
+since, ending in what this patient is worth.
+
+**Their journey** splits completed from remaining, and every finished step shows
+the week it was planned for against the week it actually happened in. That is
+where "this patient is running a week late" becomes visible.
 
 ### 10. Patient app: the doctor's additions
 
