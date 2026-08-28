@@ -2,8 +2,8 @@ import { useState } from 'react';
 import Icon from '../ui/Icon';
 import { Field, Chip, Note, IconBtn } from '../ui/kit';
 import { useStudio } from '../lib/store';
-import { LOCKED_RULES, SERVICES, SERVICE_TYPES, serviceTypeLabel, serviceOf } from '../lib/seed';
-import { actorOf, whenLabel } from '../../p1/lib/journey';
+import { LOCKED_RULES, SERVICE_GROUPS, findService } from '../lib/seed';
+import { actorOf, whenLabel, weekNo } from '../../p1/lib/journey';
 
 /*
  * THE PROTOCOL BUILDER — the after-purchase journey.
@@ -24,6 +24,9 @@ import { actorOf, whenLabel } from '../../p1/lib/journey';
  * for dispensing. The delete button is disabled and says why, because a rule
  * you can read at the moment you try to break it is worth ten in a document.
  */
+/* The protocol is twelve weeks, and the duration is set on the Listing tab. */
+const WEEKS = Array.from({ length: 12 }, (_, i) => i + 1);
+
 const TABS = [['plan', 'Plan template'], ['listing', 'Listing'],
                ['clinical', 'Clinical'], ['commercial', 'Commercial']];
 
@@ -83,12 +86,12 @@ export default function ProtocolBuilder({ goalId }) {
             <span className="hint grow">
               {/* There used to be a "blocking" chip here claiming it stopped
                   everything downstream. Nothing read it. The plan runs in order
-                  of day offset and the app only ever shows the earliest step
+                  of week and the app only ever shows the earliest step
                   not yet done, so every step already waits for the one above
                   it. A flag that restates the rule is a promise the code does
                   not keep, and the first person to notice stops trusting the
                   rest of the legend. */}
-              {plan.length} items, in order of day. Each one waits for the one above it
+              {plan.length} items, in order of week. Each one waits for the one above it
               · <Chip tone="key">milestone</Chip> · <Chip tone="lock">locked</Chip> cannot be removed
             </span>
             {/* A new step lands directly under whichever one is open, because
@@ -100,9 +103,8 @@ export default function ProtocolBuilder({ goalId }) {
               const at = d.plan.findIndex((x) => x.id === editing);
               const after = at === -1 ? d.plan.length - 1 : at;
               const prev = d.plan[after];
-              const from = prev ? prev.window.from : 0;
               const born = { id: 'p' + Date.now().toString(36), t: 'New step', sub: '',
-                             window: { from, to: from } };
+                             week: prev ? prev.week : 1 };
               d.plan.splice(after + 1, 0, born);
               setTimeout(() => setEditing(born.id), 0);
             })}>
@@ -117,15 +119,15 @@ export default function ProtocolBuilder({ goalId }) {
                 <b>{it.t}</b>
                 <span>{it.sub}</span>
                 <div className="row" style={{ gap: 5, marginTop: 6, flexWrap: 'wrap' }}>
-                  <Chip tone="draft">{actorOf(it)}</Chip>
+                  {actorOf(it) && <Chip tone="draft">{actorOf(it)}</Chip>}
                   {it.milestone && <Chip tone="key">milestone</Chip>}
                   {it.locked && <Chip tone="lock">locked</Chip>}
-                  {serviceOf(it.service) && (
-                    <Chip tone="live">{serviceOf(it.service).t}</Chip>
+                  {findService(it.serviceId) && (
+                    <Chip tone="live">{findService(it.serviceId).t}</Chip>
                   )}
-                  <span className="mono" style={{ color: 'var(--ink-3)' }}>
-                    day {it.window.from}{it.window.to !== it.window.from ? ` to ${it.window.to}` : ''}
-                  </span>
+                  {it.blocker && <Chip tone="block">blocks what follows</Chip>}
+                  {it.clinicianCanSet && <Chip tone="ed">doctor can change</Chip>}
+
                 </div>
               </div>
               <div className="acts">
@@ -160,50 +162,55 @@ export default function ProtocolBuilder({ goalId }) {
                   <div className="col">
                     <div className="col-h">How it is wired</div>
 
-                    {/* ── WHEN, AS A WINDOW ──
-                        Not a date. The exact appointment comes from the booking,
-                        which is an API away. What is set here is the target: the
-                        panel inside week one, results in three to five days. */}
-                    <div className="grid-2">
-                      <Field label="From day" type="number" value={it.window.from}
-                        onChange={(v) => edit(i, 'window', {
-                          from: Number(v) || 0,
-                          to: Math.max(Number(v) || 0, it.window.to),
-                        })} />
-                      <Field label="To day" type="number" value={it.window.to}
-                        onChange={(v) => edit(i, 'window', {
-                          from: it.window.from,
-                          to: Math.max(it.window.from, Number(v) || 0),
-                        })} />
-                    </div>
-                    <div className="win-read">
-                      Patient sees <b>{whenLabel(it)}</b>. The start of the window is what
-                      orders the plan.
-                    </div>
+                    {/* ── WHEN, AS A WEEK ──
+                        Not a date, and no longer a span of days. The plan is
+                        sold in weeks and its milestones are named in weeks; the
+                        exact appointment comes from the booking, which is an API
+                        away and not something a category manager should type. */}
+                    <Field label="Week" type="select" value={String(weekNo(it))}
+                      options={WEEKS.map(String)}
+                      display={WEEKS.reduce((a, w) => ({ ...a, [String(w)]: `Week ${w}` }), {})}
+                      onChange={(v) => edit(i, 'week', Number(v))}
+                      hint="Steps in the same week keep the order they are listed in, so the
+                            arrows above decide what comes first." />
 
                     {/* ── WHAT THIS STEP ACTUALLY IS ──
-                        Not a new thing to build. A service Valeo already sells,
-                        with a booking flow, a nurse rota, a lab handoff and a
-                        results upload already behind it. */}
-                    <Field label="Service type" type="select"
-                      options={SERVICE_TYPES} display={SERVICE_TYPES.reduce(
-                        (a, k) => ({ ...a, [k]: serviceTypeLabel(k) }), {})}
-                      value={it.service?.type || 'none'}
-                      onChange={(v) => edit(i, 'service', v === 'none' ? undefined
-                        : { type: v, id: (SERVICES[v].items[0] || {}).id })} />
+                        One dropdown, grouped by category. There is no separate
+                        service type control: which catalogue a step draws from
+                        is a property of the step, not a decision, and asking
+                        twice let the two answers disagree. */}
                     <Field label="Linked service" type="select"
-                      disabled={!it.service?.type || it.service.type === 'none'}
-                      options={(SERVICES[it.service?.type]?.items || []).map((x) => x.id)}
-                      display={(SERVICES[it.service?.type]?.items || []).reduce(
-                        (a, x) => ({ ...a, [x.id]: x.t }), {})}
-                      value={it.service?.id || ''}
-                      onChange={(v) => edit(i, 'service', { type: it.service.type, id: v })}
-                      hint={serviceOf(it.service)?.note
+                      value={it.serviceId || ''}
+                      groups={[{ label: 'None', items: [{ value: '', label: 'Not linked' }] },
+                               ...SERVICE_GROUPS]}
+                      onChange={(v) => edit(i, 'serviceId', v || undefined)}
+                      hint={findService(it.serviceId)?.note
                         || 'Booking, tracking and results already exist behind it.'} />
 
+                    {/* ── A LABEL, NOT A MECHANISM ──
+                        The backend reads this and decides what waits on what.
+                        Nothing in this prototype gates on it, and the hint says
+                        so: last time a chip here claimed to stop everything
+                        downstream while no code read it, and the first person to
+                        check stopped trusting the rest of the legend. */}
+                    <Field label="Blocking" type="select"
+                      value={it.blocker ? 'blocks' : 'free'}
+                      options={['free', 'blocks']}
+                      display={{ free: 'Does not block what follows',
+                                 blocks: 'Blocks what follows' }}
+                      onChange={(v) => edit(i, 'blocker', v === 'blocks' || undefined)}
+                      hint="Declared here, enforced by the backend. This prototype runs the
+                            plan in order either way." />
+
+                    <label className="tick">
+                      <input type="checkbox" checked={!!it.clinicianCanSet}
+                        onChange={(e) => edit(i, 'clinicianCanSet', e.target.checked)} />
+                      The doctor can change this for one patient at the consultation.
+                    </label>
+
                     <div className="win-read">
-                      Whose move: <b>{actorOf(it)}</b>. Read from the service and the call
-                      to action rather than set twice.
+                      Whose move: <b>{actorOf(it) || 'nobody named'}</b>. Read from the service
+                      and the call to action rather than set twice.
                     </div>
 
                     <label className="tick" style={{ marginTop: 4 }}>
@@ -260,7 +267,7 @@ export default function ProtocolBuilder({ goalId }) {
             onChange={(v) => patch((d) => { d.meta.listing.duration = v; })} />
           <Note>
             Title, hero, symptoms, included list and the timeline blocks live in the
-            Pre-purchase Builder, because they are the page the patient reads. Editing
+            Package Builder, because they are the page the patient reads. Editing
             them in two places is how a protocol ends up describing itself differently
             on the shelf and in the plan.
           </Note>

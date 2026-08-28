@@ -9,6 +9,7 @@ import ChatBuilder from './builders/ChatBuilder';
 import PrePurchase from './builders/PrePurchase';
 import ProtocolBuilder from './builders/ProtocolBuilder';
 import Clinician from './builders/Clinician';
+import UserConsole from './builders/UserConsole';
 
 /*
  * VALEO STUDIO — where a protocol is authored.
@@ -48,9 +49,12 @@ export const SURFACES = [
   /* The chat surface holds two publishable chats. Which one is open is the
      third segment of the route, so the publish bar below can target the right
      one and a reload lands back on the same tab. */
-  { k: 'prepurchase', t: 'Pre-purchase Builder', part: 'prepurchase', short: 'PDP, cart, confirmation' },
+  { k: 'prepurchase', t: 'Package Builder', part: 'prepurchase', short: 'The package, its price and the cart' },
   { k: 'protocol', t: 'Protocol Builder', part: 'plan', short: 'The after-purchase plan' },
   { k: 'clinician', t: 'Clinician Console', part: 'consult', short: 'Consult outcome' },
+  /* Reads one patient rather than editing a template, so it publishes nothing
+     and the bar stays hidden for it. */
+  { k: 'user', t: 'User Console', part: 'user', short: 'One patient, as they are' },
 ];
 
 class Boundary extends Component {
@@ -85,15 +89,20 @@ function Shell() {
   const pubShort = sharedChat ? 'onboarding chat' : surface.short.toLowerCase();
 
   const isConsult = surfaceKey === 'clinician';
+  /* Two surfaces write to a patient rather than to a template, so neither has
+     anything to publish. */
+  const isReadOnly = surfaceKey === 'user';
   const ps = isConsult
-    ? { live: !!state.consult, dirty: false, version: state.consult?.version || 0 }
+    ? { live: !!state.consults?.live, dirty: false, version: state.consults?.live?.version || 0 }
     : pubState(state, pubScope, pubPart);
   /* The refusals, computed every render so the button turns on the moment the
      missing thing is typed in. */
-  const blockers = (sharedChat || goal.built) && !isConsult ? publishBlockers(state, pubScope, pubPart) : [];
+  const blockers = (sharedChat || goal.built) && !isConsult && !isReadOnly
+    ? publishBlockers(state, pubScope, pubPart) : [];
 
   const Body = { chat: ChatBuilder, prepurchase: PrePurchase,
-                 protocol: ProtocolBuilder, clinician: Clinician }[surfaceKey];
+                 protocol: ProtocolBuilder, clinician: Clinician,
+                 user: UserConsole }[surfaceKey];
 
   const NavItem = ({ item }) => (
     <button className={`nav-item ${item.open ? 'on' : ''}`}
@@ -191,7 +200,7 @@ function Shell() {
           )}
         </div>
 
-        {(sharedChat || goal.built) && (
+        {(sharedChat || goal.built) && !isReadOnly && (
           <div className="pubbar">
             <div className="grow">
               <div className="pub-state">

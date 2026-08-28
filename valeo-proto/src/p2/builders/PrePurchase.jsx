@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Icon from '../ui/Icon';
 import { Field, Chip, Note, IconBtn } from '../ui/kit';
 import { useStudio } from '../lib/store';
+import { SERVICE_GROUPS, findService } from '../lib/seed';
 
 /*
  * THE PRE-PURCHASE BUILDER — the PDP, the cart, and the confirmation.
@@ -21,6 +22,85 @@ import { useStudio } from '../lib/store';
  * the single most important line on the page and the fix for one-month churn,
  * so the builder treats it as structural rather than as copy.
  */
+/* ── WHAT IS IN THE PACKAGE, AND WHAT IT COSTS ──
+   This used to be eight sentences somebody typed, which meant the package had a
+   price nobody could check: the number in the cart was an assertion.
+
+   Each line now points at a service in the catalogue and says how many of it the
+   protocol includes, so the components add up. The list price sits beside that
+   total, and the gap between them is the margin. A category manager pricing a
+   protocol should be able to see that gap without opening a spreadsheet. */
+function Included({ lines, price, patch, }) {
+  const rows = lines.map((l) => ({ ...l, svc: findService(l.serviceId) })).filter((r) => r.svc);
+  const cost = rows.reduce((n, r) => n + (r.svc.price || 0) * (r.qty || 1), 0);
+  const margin = price - cost;
+
+  const set = (i, key, value) => patch((p) => { p.pdp.included[i][key] = value; });
+
+  return (
+    <div>
+      <div className="row" style={{ marginBottom: 8 }}>
+        <div className="grow">
+          <label className="lbl-inline">What is included</label>
+          <span className="hint">
+            Each line is a real service, so the package can be added up rather than
+            asserted.
+          </span>
+        </div>
+        <button className="btn btn-ghost btn-sm" onClick={() => patch((p) => {
+          p.pdp.included.push({ serviceId: 'consult_gp', qty: 1, note: '' });
+        })}>
+          <Icon name="plus" size={12} /> Add a line
+        </button>
+      </div>
+
+      <table className="invoice">
+        <thead>
+          <tr><th>Service</th><th className="n">Qty</th><th className="n">Unit</th>
+            <th className="n">Total</th><th /></tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={`${r.serviceId}-${i}`}>
+              <td>
+                <Field type="select" value={r.serviceId}
+                  groups={SERVICE_GROUPS}
+                  onChange={(v) => set(i, 'serviceId', v)} />
+                <input className="inv-note" value={r.note || ''} placeholder={r.svc.note}
+                  onChange={(e) => set(i, 'note', e.target.value)} />
+              </td>
+              <td className="n">
+                <input className="inv-qty" type="number" min="1" value={r.qty || 1}
+                  onChange={(e) => set(i, 'qty', Math.max(1, Number(e.target.value) || 1))} />
+              </td>
+              <td className="n mono">{(r.svc.price || 0).toLocaleString()}</td>
+              <td className="n mono">{((r.svc.price || 0) * (r.qty || 1)).toLocaleString()}</td>
+              <td className="n">
+                <IconBtn name="trash" danger title="Remove line"
+                  onClick={() => patch((p) => { p.pdp.included.splice(i, 1); })} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr><td colSpan={3}>What the package costs to deliver</td>
+            <td className="n mono">AED {cost.toLocaleString()}</td><td /></tr>
+          <tr><td colSpan={3}>List price on the cart</td>
+            <td className="n mono">AED {price.toLocaleString()}</td><td /></tr>
+          <tr className={margin < 0 ? 'bad' : 'good'}>
+            <td colSpan={3}>{margin < 0 ? 'Sold below cost' : 'Margin'}</td>
+            <td className="n mono">AED {Math.abs(margin).toLocaleString()}</td><td /></tr>
+        </tfoot>
+      </table>
+
+      <span className="hint">
+        Catalogue prices are placeholders pending sign-off, so the total is only as good
+        as they are.
+      </span>
+    </div>
+  );
+}
+
 export default function PrePurchase({ goalId }) {
   const { state, update } = useStudio();
   const draft = state.drafts?.[goalId];
@@ -37,7 +117,7 @@ export default function PrePurchase({ goalId }) {
     <>
       <div className="row" style={{ marginBottom: 14 }}>
         <div className="grow">
-          <h2>Pre-purchase flow</h2>
+          <h2>The package</h2>
           <p className="sub">
             The three screens between triage and a paid protocol. The patient app
             renders exactly what is here, in this order.
@@ -90,10 +170,7 @@ export default function PrePurchase({ goalId }) {
               value={(pp.pdp.symptoms || []).join('\n')}
               onChange={(v) => patch((p) => { p.pdp.symptoms = v.split('\n').filter((s) => s.trim()); })}
               hint="One per line. This is also what the goal picker matches against." />
-            <Field label="What's included" type="textarea" rows={8}
-              value={(pp.pdp.included || []).join('\n')}
-              onChange={(v) => patch((p) => { p.pdp.included = v.split('\n').filter((s) => s.trim()); })}
-              hint="One per line." />
+            <Included lines={pp.pdp.included || []} price={pp.cart?.price || 0} patch={patch} />
             <Field label="Service provider line" value={pp.pdp.provider}
               onChange={(v) => patch((p) => { p.pdp.provider = v; })}
               hint="Never name a doctor or the pharmacy. Copy rule." />

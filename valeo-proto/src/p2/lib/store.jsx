@@ -19,7 +19,12 @@ const blank = () => ({
   drafts: emptyDraft(),
   /* SHARED holds the onboarding chat, which belongs to no goal. */
   published: Object.fromEntries([...GOALS.map((g) => g.id), SHARED].map((id) => [id, {}])),
-  consult: null,
+  /* ONE CONSULT RECORD PER PATIENT.
+     This used to be a single global object with no patient id on it, so every
+     patient's form initialised from the same record: opening Leila showed
+     Ahmad's note and outcome, and saving hers overwrote his. A console that
+     claims to show one patient's protocol cannot sit on top of that. */
+  consults: {},
 });
 
 export function StudioProvider({ children }) {

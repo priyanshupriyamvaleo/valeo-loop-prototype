@@ -3,6 +3,7 @@ import Icon from '../ui/Icon';
 import { Field, Chip, Note } from '../ui/kit';
 import { useStudio } from '../lib/store';
 import { PATIENTS, SERVICES, findService } from '../lib/seed';
+import { planFor, nextItem, consultFor } from '../../p1/lib/journey';
 import { goalOf, readPatient, subscribe } from '../../shared/bus';
 
 /*
@@ -24,7 +25,31 @@ import { goalOf, readPatient, subscribe } from '../../shared/bus';
  * the upgrade without asking about competition" means once it is software
  * rather than a line in a brief.
  */
-const OUTCOMES = ['Continue as planned', 'Dose adjusted', 'Paused pending review'];
+const OUTCOMES = ['Continue as planned', 'Not suitable', 'Modify'];
+
+/* ── WHAT A COACH CAN ADD, AND WHAT IT BECOMES ──
+   Three kinds, and each lands in the plan as a different sort of step. The
+   defaults are filled from the product so the common case is one press, and the
+   coach then edits the step the same way a category manager would.
+
+   Medicines and supplements do BOTH: a step marks that it happened, and the
+   product joins the standing Medicines list the patient buys from. The step is
+   the news, the list is the shelf. */
+const ADDABLE = {
+  medicine: {
+    t: 'Medicine', group: 'medication', prescribes: true,
+    step: (svc) => ({ t: `Rx added: ${svc.t}`, sub: svc.note, action: undefined }),
+  },
+  supplement: {
+    t: 'Supplement', group: 'supplement', prescribes: true,
+    step: (svc) => ({ t: `Voucher issued: ${svc.t}`, sub: svc.note, action: undefined }),
+  },
+  test: {
+    t: 'Blood test', group: 'lab', prescribes: false,
+    step: (svc) => ({ t: svc.t, sub: svc.note,
+      action: { kind: 'book', label: 'Book your test' } }),
+  },
+};
 
 /* ── THE QUEUE ──
    A doctor does not arrive at one patient, she arrives at a list. Who is
@@ -32,7 +57,7 @@ const OUTCOMES = ['Continue as planned', 'Dose adjusted', 'Paused pending review
 
    Ahmad is the patient sitting in the other tab and his record is read live out
    of the patient app. The rest are fixtures, labelled as fixtures. */
-function Queue({ patients, chosen, onChoose }) {
+export function Queue({ patients, chosen, onChoose }) {
   return (
     <div className="queue">
       {patients.map((p) => {
@@ -130,6 +155,22 @@ function Record({ rec }) {
         ) : <p className="empty-line">The protocol has not started.</p>}
       </Fold>
 
+      {/* ── WHAT THIS PATIENT'S PLAN NO LONGER SHARES WITH THE TEMPLATE ──
+          The history used to stop at counts, so a doctor picking up somebody
+          else's patient could not see that the plan in front of them had
+          already been changed. */}
+      <Fold t="Changed for this patient" open={open === 'mod'} onToggle={() => toggle('mod')}
+        sub={rec.changes && rec.changes.length ? `${rec.changes.length} change${rec.changes.length === 1 ? '' : 's'}` : 'None'}>
+        {rec.changes && rec.changes.length
+          ? rec.changes.map((c, i) => (
+              <div className="prev" key={i}>
+                <span className="when">{c.kind}</span>
+                <div><b>{c.what}</b><p>{c.why}</p></div>
+              </div>
+            ))
+          : <p className="empty-line">This patient is on the protocol as published.</p>}
+      </Fold>
+
       <Fold t="Previous consults" open={open === 'con'} onToggle={() => toggle('con')}
         sub={c.length ? `${c.length} on record` : 'None yet'}>
         {c.length ? c.map((x, i) => (
@@ -160,14 +201,17 @@ function liveRecord(pt, studio, goalId) {
   const asRows = (cfg, answers) => Object.fromEntries(
     Object.entries(answers || {}).map(([k, v]) => [label(cfg, k), [].concat(v).join(', ')]));
 
-  const plan = studio?.published?.[goalId]?.plan?.data || [];
-  const extra = studio?.consult?.addedItems || [];
-  const total = plan.length + extra.length;
+  /* The same resolver the patient app uses, so the doctor is reading the plan
+     the patient is actually on. Reading the raw published array meant the two
+     disagreed about the order and about whether the doctor's own additions
+     counted. */
+  const plan = planFor(studio, goalId, pt);
+  const total = plan.length;
   const done = (pt.done || []).length;
-  const next = plan.find((i) => !(pt.done || []).includes(i.id));
+  const next = nextItem(plan, pt.done || []);
   const bought = !!pt.goal && ['gate:plan', 'home', 'detail', 'gate:consult'].includes(pt.stage) && pt.mode === 'protocol';
   const pp = studio?.published?.[goalId]?.prepurchase?.data;
-  const c = studio?.consult;
+  const c = consultFor(studio);
 
   return {
     profile: pt.intake?.profile,
@@ -180,6 +224,23 @@ function liveRecord(pt, studio, goalId) {
     consults: c && c.version
       ? [{ on: 'Earlier today', outcome: c.outcome, note: c.note || 'No note recorded.' }]
       : [],
+    changes: !c ? [] : [
+      ...Object.entries(c.overrides || {}).map(([stepId, sid]) => {
+        const step = plan.find((x) => x.id === stepId);
+        return { kind: 'swapped', what: findService(sid)?.t || sid,
+                 why: `Replaces the protocol default on ${step ? step.t : stepId}.` };
+      }),
+      ...(c.addedItems || []).map((a) => ({
+        kind: 'added', what: a.t,
+        why: `Week ${a.week}${a.afterStepId ? `, straight after ${plan.find((x) => x.id === a.afterStepId)?.t || a.afterStepId}` : ''}.`,
+      })),
+      ...(c.prescribed || []).map((r) => ({
+        kind: r.status, what: findService(r.id)?.t || r.id,
+        why: 'On their medicines list.',
+      })),
+      ...(c.outcome === 'Not suitable'
+        ? [{ kind: 'stopped', what: 'Protocol paused', why: 'The doctor found it not suitable.' }] : []),
+    ],
     flags: [`Competes in tested sport: ${(c && c.competes && c.competes !== 'unanswered') ? c.competes : 'not asked yet'}`],
   };
 }
@@ -217,17 +278,24 @@ export default function Clinician({ goalId }) {
           Without it the folds stay open on the last person's history and, far
           worse, a half-typed note stays in the box and gets saved against
           whoever is now on screen. */}
-      <Consult key={patient.id} patient={patient} record={record}
+      <Consult key={patient.id} patient={patient} record={record} goalId={goalId}
+        currentStep={patient.live ? nextItem(planFor(state, goalId, pt || {}), (pt && pt.done) || []) : null}
         state={state} update={update} />
     </>
   );
 }
 
-function Consult({ patient, record, state, update }) {
-  const consult = state.consult || {};
+function Consult({ patient, record, state, update, goalId, currentStep }) {
+  /* This patient's record, not the last one anybody opened. */
+  const consult = state.consults?.[patient.id] || {};
   const [note, setNote] = useState(consult.note || '');
   const [outcome, setOutcome] = useState(consult.outcome || OUTCOMES[0]);
-  const [dose, setDose] = useState(consult.dose || 'BPC-157 250 mcg daily');
+  /* A dose belongs to a product, not to a consultation. One global dose field
+     meant a doctor changing two medicines had one box to say it in. */
+  const [doses, setDoses] = useState(consult.doses || {});
+  /* Which gated product somebody just reached for, so the question can be asked
+     where it is needed instead of sitting unanswered at the top of the page. */
+  const [gateAsked, setGateAsked] = useState(null);
   const [competes, setCompetes] = useState(consult.competes || 'unanswered');
   /* THREE DIFFERENT THINGS COME OUT OF A CONSULTATION, and conflating them is
      how the plan filled up with products.
@@ -237,54 +305,89 @@ function Consult({ patient, record, state, update }) {
                   are a standing list the patient reads and buys from, and
                   putting them in the plan made a shopping list wear a schedule
                   as a costume.
-       VOUCHER    which product the supplement voucher is actually for. The plan
-                  ships a default; the doctor decides the real one. */
+       OVERRIDES  which product a step actually carries. The builder marks the
+                  steps a doctor may change, ships a default on each, and this
+                  holds whatever they swapped it for. The supplement voucher was
+                  the first of these; the monthly dispatches and the repeat panel
+                  need exactly the same thing. */
   const [added, setAdded] = useState(consult.addedItems || []);
   const [rx, setRx] = useState(consult.prescribed || []);
-  const [voucher, setVoucher] = useState(consult.voucher || 'sup_joint');
-  const [pickTest, setPickTest] = useState(SERVICES.lab.items[0].id);
-  const [pickRx, setPickRx] = useState(SERVICES.medication.items[0].id);
+  /* One map, not a voucher special case. The builder sets a default on each
+     step it marks changeable; this holds whatever the doctor swapped it for.
+     The old version defaulted to a supplement the plan did not even carry, so
+     the console showed one product and the plan held another. */
+  const [overrides, setOverrides] = useState(consult.overrides || {});
+  /* The step the coach is defining right now, before it joins the plan. */
+  const [draft, setDraft] = useState(null);
+
+  /* The steps the builder marked as the doctor's to decide. Read from the plan
+     rather than listed here, so marking a new one in the Protocol Builder makes
+     it appear on this screen with no code written. */
+  const changeable = (state.published?.[goalId]?.plan?.data || [])
+    .filter((x) => x.clinicianCanSet && x.serviceId);
 
   /* The whole gate, in one line. Unanswered is not the same as no, and the
      rule lives on the catalogue item so anything WADA-prohibited inherits it
      rather than one button knowing about one product. */
   const blockedFor = (svc) => (svc && svc.gate === 'competes' && competes !== 'no');
 
-  const addItem = (item) => setAdded((xs) => (xs.some((x) => x.id === item.id) ? xs : [...xs, item]));
-  const drop = (id) => setAdded((xs) => xs.filter((x) => x.id !== id));
 
-  /* Ordered here means a step on THIS patient's plan, dated just after the
-     consultation that ordered it. It does not touch the template: one patient
-     needing a thyroid panel is not a reason for every patient to have one. */
-  const orderTest = () => {
-    const svc = findService(pickTest);
-    if (!svc || added.some((x) => x.id === `ord_${svc.id}`)) return;
-    setAdded((xs) => [...xs, {
-      id: `ord_${svc.id}`, t: svc.t, sub: svc.note,
-      window: { from: 12, to: 16 },
-      service: { type: svc.type, id: svc.id },
-      action: { kind: 'book', label: `Book your ${svc.t.toLowerCase()}` },
-    }]);
+  /* ── ADDING SOMETHING ──
+     Two moves, deliberately. `begin` fills a step from the product so the coach
+     sees something sensible immediately; `commit` puts it on the plan. In
+     between the coach edits it, because a step nobody worded is a step that
+     reads like a database row on somebody's phone.
+
+     Everything lands on THIS patient's plan. It does not touch the template:
+     one patient needing a B12 test is not a reason for every patient to have
+     one. */
+  const begin = (kind) => {
+    const spec = ADDABLE[kind];
+    const svc = SERVICES[spec.group].items.find((x) => !blockedFor(x));
+    if (!svc) return;
+    /* Lands in the week the patient is actually in, not week one. */
+    setDraft({ kind, serviceId: svc.id, blocker: false,
+               week: currentStep?.week || 1, ...spec.step(svc) });
   };
 
-  const prescribe = () => {
-    const svc = findService(pickRx);
-    if (!svc || blockedFor(svc) || rx.some((x) => x.id === svc.id)) return;
-    setRx((xs) => [...xs, { id: svc.id, status: 'recommended' }]);
+  /* Repointing the draft at a different product rewrites the wording it came
+     with, unless the coach has already changed it themselves. */
+  const repoint = (serviceId) => setDraft((d) => {
+    const svc = findService(serviceId);
+    const wasDefault = ADDABLE[d.kind].step(findService(d.serviceId));
+    const touched = d.t !== wasDefault.t || d.sub !== wasDefault.sub;
+    return { ...d, serviceId, ...(touched ? {} : ADDABLE[d.kind].step(svc)) };
+  });
+
+  const commit = () => {
+    if (!draft || !draft.t.trim()) return;
+    const svc = findService(draft.serviceId);
+    if (blockedFor(svc)) return;
+    const id = `add_${draft.serviceId}_${draft.kind}`;
+    if (!added.some((x) => x.id === id)) {
+      setAdded((xs) => [...xs, {
+        id, t: draft.t, sub: draft.sub, week: draft.week,
+        serviceId: draft.serviceId,
+        action: draft.action,
+        blocker: draft.blocker || undefined,
+        /* Straight after whatever the patient is on right now. */
+        afterStepId: currentStep?.id || undefined,
+      }]);
+    }
+    /* A medicine or a supplement is also something they are now on. */
+    if (ADDABLE[draft.kind].prescribes && !rx.some((x) => x.id === draft.serviceId)) {
+      setRx((xs) => [...xs, { id: draft.serviceId, status: 'recommended', dose: draft.dose || undefined }]);
+    }
+    setDraft(null);
   };
 
-  const OFFERS = [
-    { id: 'nurse_admin', t: 'Nurse administration visits', sub: 'AED 99 per visit, 4-pack AED 349',
-      window: { from: 14, to: 84 }, service: { type: 'homecare', id: 'home_injection' } },
-    { id: 'physio', t: 'Physiotherapy referral', sub: 'Where clinically indicated',
-      window: { from: 14, to: 21 } },
-  ];
 
   const save = () => update((d) => {
-    d.consult = {
-      note, outcome, dose, competes, addedItems: added, prescribed: rx, voucher,
+    if (!d.consults) d.consults = {};
+    d.consults[patient.id] = {
+      note, outcome, doses, competes, addedItems: added, prescribed: rx, overrides,
       at: new Date().toISOString(),
-      version: ((d.consult && d.consult.version) || 0) + 1,
+      version: ((d.consults[patient.id] && d.consults[patient.id].version) || 0) + 1,
     };
   });
 
@@ -315,157 +418,221 @@ function Consult({ patient, record, state, update }) {
         </div>
       )}
 
-      <h3 style={{ marginBottom: 10 }}>Consult outcome</h3>
-      <p className="sub" style={{ marginBottom: 12 }}>
+      {/* ── 1. THE DECISION ──
+          First, because it is the only thing that must be answered. Everything
+          below it is what "modify" means, and a console that shows all of it at
+          once makes "continue as planned" look like a choice nobody made. */}
+      <h3 style={{ marginBottom: 4 }}>Is this patient approved?</h3>
+      <p className="sub" style={{ marginBottom: 10 }}>
         A checklist, not a free editor. What is recorded here becomes items on this
         patient's plan, and the plan is what their next screen shows.
       </p>
-
-      <div className="card card-pad" style={{ display: 'grid', gap: 12, marginBottom: 14 }}>
-        <Field label="Outcome" type="select" options={OUTCOMES} value={outcome} onChange={setOutcome} />
-        <Field label="Dose" value={dose} onChange={setDose} />
-        <Field label="Note for the record" type="textarea" rows={3} value={note} onChange={setNote}
-          placeholder="Response so far, tolerance, anything the care team should know." />
-      </div>
-
-      {/* ── the mandatory screening question ── */}
-      <div className="card card-pad" style={{ marginBottom: 14 }}>
-        <div className="row" style={{ marginBottom: 8 }}>
-          <h3 className="grow">Screening · mandatory</h3>
-          <Chip tone={competes === 'unanswered' ? 'block' : 'live'}>
-            {competes === 'unanswered' ? 'unanswered' : `answered: ${competes}`}
-          </Chip>
-        </div>
-        <p style={{ fontSize: 13.5, marginBottom: 10 }}>Do you compete in tested sport?</p>
-        <div className="row" style={{ gap: 8 }}>
-          {['yes', 'no'].map((v) => (
-            <button key={v} className={`btn btn-sm ${competes === v ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setCompetes(v)}>{v === 'yes' ? 'Yes, tested sport' : 'No'}</button>
+      <div className="card card-pad" style={{ marginBottom: 6 }}>
+        <div className="decide">
+          {OUTCOMES.map((o) => (
+            <button key={o} className={`decide-b ${outcome === o ? 'on' : ''} ${o === 'Not suitable' ? 'no' : ''}`}
+              onClick={() => setOutcome(o)}>{o}</button>
           ))}
-          {competes !== 'unanswered' && (
-            <button className="btn btn-ghost btn-sm" onClick={() => setCompetes('unanswered')}>
-              Clear
-            </button>
-          )}
         </div>
-        <div style={{ marginTop: 10 }}>
-          <span className="hint">
-            Asked in the Week 1 consult so the answer exists before Week 6. WADA-prohibited
-            substances are gated on it.
-          </span>
+        <div style={{ marginTop: 12 }}>
+          <Field label="Note for the record" type="textarea" rows={2} value={note} onChange={setNote}
+            placeholder="Response so far, tolerance, anything the care team should know." />
         </div>
       </div>
 
-      {/* ── 1. ORDER A TEST. This becomes a step on the plan. ── */}
-      <div className="card card-pad" style={{ marginBottom: 14 }}>
-        <h3 style={{ marginBottom: 4 }}>Order a test</h3>
-        <p className="sub" style={{ marginBottom: 10 }}>
-          Becomes a dated step on this patient's plan, just after today. It does not
-          change the template: one patient needing a thyroid panel is not a reason for
-          every patient to have one.
-        </p>
-        <div className="row" style={{ gap: 8, alignItems: 'flex-end' }}>
-          <div className="grow">
-            <Field label="Panel" type="select" value={pickTest}
-              options={SERVICES.lab.items.map((x) => x.id)}
-              display={SERVICES.lab.items.reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
-              onChange={setPickTest}
-              hint={findService(pickTest)?.note} />
-          </div>
-          <button className="btn btn-gold btn-sm" onClick={orderTest}>
-            <Icon name="plus" size={12} /> Order
-          </button>
+      {outcome === 'Not suitable' && (
+        <div style={{ marginTop: 8, marginBottom: 14 }}>
+          <Note tone="red" label="This protocol stops here">
+            <p style={{ margin: 0 }}>
+              Saving this pauses the plan on the patient's phone. They see that a doctor
+              has stopped it and who to talk to, rather than a next step they should not
+              take.
+            </p>
+          </Note>
         </div>
-      </div>
+      )}
 
-      {/* ── 2. PRESCRIBE. This does NOT become a step. ── */}
-      <div className="card card-pad" style={{ marginBottom: 14 }}>
-        <h3 style={{ marginBottom: 4 }}>Prescribe or recommend</h3>
-        <p className="sub" style={{ marginBottom: 10 }}>
-          Medicines, peptides and supplements are not steps. They have no date and
-          nothing to turn up for, so they go to the patient's medicines list rather
-          than into the schedule.
-        </p>
-        <div className="row" style={{ gap: 8, alignItems: 'flex-end' }}>
-          <div className="grow">
-            <Field label="Product" type="select" value={pickRx}
-              options={[...SERVICES.medication.items, ...SERVICES.supplement.items].map((x) => x.id)}
-              display={[...SERVICES.medication.items, ...SERVICES.supplement.items]
-                .reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
-              onChange={setPickRx}
-              hint={blockedFor(findService(pickRx))
-                ? (competes === 'yes'
-                    ? 'Cannot be prescribed. This patient competes in tested sport and this is WADA-prohibited.'
-                    : 'Cannot be prescribed until the competition question is answered.')
-                : findService(pickRx)?.note} />
-          </div>
-          <button className="btn btn-gold btn-sm" disabled={blockedFor(findService(pickRx))}
-            onClick={prescribe}>
-            <Icon name="plus" size={12} /> Add
-          </button>
-        </div>
-
-        {rx.length > 0 && rx.map((r) => {
-          const svc = findService(r.id);
-          return (
-            <div className="item" key={r.id} style={{ marginTop: 8 }}>
-              <span className="when">{r.status}</span>
-              <div className="body">
-                <b>{svc?.t || r.id}</b>
-                <span>{svc?.note}{svc?.price ? ` · AED ${svc.price.toLocaleString()}` : ''}</span>
-              </div>
-              <div className="acts">
-                <Field type="select" value={r.status} options={['ongoing', 'recommended']}
-                  onChange={(v) => setRx((xs) => xs.map((x) => (x.id === r.id ? { ...x, status: v } : x)))} />
-                <button className="btn btn-ghost btn-sm"
-                  onClick={() => setRx((xs) => xs.filter((x) => x.id !== r.id))}>Remove</button>
-              </div>
+      {/* The screening question no longer has a card of its own. It appears
+          where it is actually needed: the moment somebody reaches for a
+          WADA-prohibited product. A mandatory question sitting unanswered at the
+          top of every consultation is a question people learn to scroll past. */}
+      {gateAsked && (
+        <div style={{ marginTop: 8, marginBottom: 14 }}>
+          <Note tone="gold" label="This one is WADA-prohibited">
+            <p style={{ margin: 0 }}>Does this patient compete in tested sport?</p>
+            <div className="row" style={{ gap: 8, marginTop: 10 }}>
+              <button className="btn btn-sm btn-ghost" onClick={() => { setCompetes('yes'); setGateAsked(null); }}>
+                Yes, tested sport
+              </button>
+              <button className="btn btn-sm btn-primary" onClick={() => { setCompetes('no'); setGateAsked(null); }}>
+                No
+              </button>
             </div>
-          );
-        })}
-      </div>
+          </Note>
+        </div>
+      )}
 
-      {/* ── 3. THE VOUCHER. The plan ships a default; the doctor decides. ── */}
-      <div className="card card-pad" style={{ marginBottom: 14 }}>
-        <h3 style={{ marginBottom: 4 }}>What the supplement voucher is for</h3>
-        <p className="sub" style={{ marginBottom: 10 }}>
-          The protocol issues the voucher automatically. What it buys is a clinical
-          decision, so it is made here and the patient's voucher updates to match.
-        </p>
-        <Field label="Product" type="select" value={voucher}
-          options={SERVICES.supplement.items.map((x) => x.id)}
-          display={SERVICES.supplement.items.reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
-          onChange={setVoucher}
-          hint={findService(voucher)?.note} />
-      </div>
+      {outcome !== 'Not suitable' && (
+        <>
+          {/* ── 2. WHAT THEY GET, AND AT WHAT DOSE ── */}
+          <div className="card card-pad" style={{ marginTop: 8, marginBottom: 14 }}>
+            <h3 style={{ marginBottom: 4 }}>What this patient actually gets</h3>
+            <p className="sub" style={{ marginBottom: 10 }}>
+              The protocol ships a default on each of these. What it turns out to be, and
+              at what dose, is a clinical decision, so it is made here and the patient's
+              plan updates to match.
+            </p>
+            {/* This card used to disappear when the list was empty, which read as
+                a missing feature rather than a missing protocol. It says why
+                instead. */}
+            {changeable.length === 0 && (
+              <p className="empty-line">
+                Nothing to change yet. This reads the PUBLISHED plan, so publish it in the
+                Protocol Builder first, and mark the steps a doctor may decide with
+                "The doctor can change this" there.
+              </p>
+            )}
+            {changeable.map((step) => {
+                const current = findService(overrides[step.id] || step.serviceId);
+                const group = SERVICES[current?.type];
+                const dosable = current?.type === 'medication' || current?.type === 'supplement';
+                return (
+                  <div className="chg" key={step.id}>
+                    <div className="chg-h">
+                      <span className="when">Week {step.week}</span>
+                      <div className="grow">
+                        <b>{step.t}</b>
+                        <span>Protocol default: {findService(step.serviceId)?.t || 'none'}</span>
+                      </div>
+                    </div>
+                    <div className="chg-f">
+                      <Field label="Product" type="select" value={current?.id || ''}
+                        options={(group?.items || []).map((x) => x.id)}
+                        display={(group?.items || []).reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
+                        onChange={(v) => {
+                          /* Reaching for a gated product asks the question here
+                             rather than refusing silently. */
+                          const svc = findService(v);
+                          if (blockedFor(svc)) { setGateAsked(v); return; }
+                          setOverrides((o) => ({ ...o, [step.id]: v }));
+                        }} />
+                      {/* Only things you can be on a dose of get a dose. */}
+                      {dosable && (
+                        <Field label="Dose" value={doses[step.id] || ''}
+                          placeholder="250 mcg daily"
+                          onChange={(v) => setDoses((d) => ({ ...d, [step.id]: v }))} />
+                      )}
+                    </div>
+                  </div>
+                );
+            })}
+          </div>
 
-      {/* ── referrals and visits, which are steps like any other ── */}
-      <div className="card card-pad">
-        <h3 style={{ marginBottom: 8 }}>Add to this patient's plan</h3>
-        {OFFERS.map((o) => {
-          const on = added.some((x) => x.id === o.id);
-          return (
-            <div className="item" key={o.id}>
-              <span className="when">day {o.window.from}</span>
-              <div className="body">
-                <b>{o.t}</b>
-                <span>{o.sub}</span>
-              </div>
-              <div className="acts">
-                {on ? (
-                  <button className="btn btn-ghost btn-sm" onClick={() => drop(o.id)}>Remove</button>
-                ) : (
-                  <button className="btn btn-gold btn-sm"
-                    onClick={() => addItem({ id: o.id, t: o.t, sub: o.sub, window: o.window,
-                                             service: o.service })}>
-                    Offer
+          {/* ── 3. ADD SOMETHING NEW ── */}
+          <div className="card card-pad">
+            <h3 style={{ marginBottom: 4 }}>Add to this patient's plan</h3>
+            <p className="sub" style={{ marginBottom: 10 }}>
+              Each of these becomes a step, placed directly after
+              {currentStep ? <> <b>{currentStep.t}</b>, which is where this patient is
+                right now</> : ' wherever the patient has reached'}. Medicines and
+              supplements also join their medicines list.
+            </p>
+
+            <div className="row" style={{ gap: 8, marginBottom: 12 }}>
+              {Object.entries(ADDABLE).map(([k, spec]) => (
+                <button key={k} className={`btn btn-sm ${draft?.kind === k ? 'btn-gold' : 'btn-ghost'}`}
+                  onClick={() => begin(k)}>
+                  <Icon name="plus" size={12} /> {spec.t}
+                </button>
+              ))}
+            </div>
+
+            {draft && (
+              <div className="item-edit split" style={{ marginTop: 4 }}>
+                <div className="col">
+                  <div className="col-h">What the patient reads</div>
+                  <Field label="Title" value={draft.t}
+                    onChange={(v) => setDraft({ ...draft, t: v })} />
+                  <Field label="The line under it" value={draft.sub || ''}
+                    onChange={(v) => setDraft({ ...draft, sub: v })}
+                    hint="Say what happens, not how it will feel." />
+                  <Field label="Call to action" value={draft.action?.label || ''}
+                    onChange={(v) => setDraft({ ...draft,
+                      action: v.trim() ? { kind: draft.action?.kind || 'book', label: v } : undefined })}
+                    hint="Leave it empty and the step becomes something they wait on." />
+                </div>
+
+                <div className="col">
+                  <div className="col-h">How it is wired</div>
+                  <Field label={ADDABLE[draft.kind].t} type="select" value={draft.serviceId}
+                    options={SERVICES[ADDABLE[draft.kind].group].items.map((x) => x.id)}
+                    display={SERVICES[ADDABLE[draft.kind].group].items
+                      .reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
+                    onChange={(v) => {
+                      const svc = findService(v);
+                      if (blockedFor(svc)) { setGateAsked(v); return; }
+                      repoint(v);
+                    }}
+                    hint={findService(draft.serviceId)?.note} />
+                  {(findService(draft.serviceId)?.type === 'medication'
+                    || findService(draft.serviceId)?.type === 'supplement') && (
+                    <Field label="Dose" value={draft.dose || ''} placeholder="250 mcg daily"
+                      onChange={(v) => setDraft({ ...draft, dose: v })} />
+                  )}
+                  <Field label="Week" type="select" value={String(draft.week)}
+                    options={Array.from({ length: 12 }, (_, n) => String(n + 1))}
+                    display={Array.from({ length: 12 }, (_, n) => n + 1)
+                      .reduce((a, w) => ({ ...a, [String(w)]: `Week ${w}` }), {})}
+                    onChange={(v) => setDraft({ ...draft, week: Number(v) })} />
+                  <Field label="Blocking" type="select"
+                    value={draft.blocker ? 'blocks' : 'free'}
+                    options={['free', 'blocks']}
+                    display={{ free: 'Does not block what follows',
+                               blocks: 'Blocks what follows' }}
+                    onChange={(v) => setDraft({ ...draft, blocker: v === 'blocks' })}
+                    hint="Declared here, enforced by the backend." />
+                  <div className="win-read">
+                    Costs <b>AED {(findService(draft.serviceId)?.price || 0).toLocaleString()}</b>
+                    {' '}on top of the protocol.
+                  </div>
+                </div>
+
+                <div className="row" style={{ gridColumn: '1 / -1', gap: 8 }}>
+                  <button className="btn btn-primary" onClick={commit}>
+                    <Icon name="plus" size={13} /> Add this step
                   </button>
-                )}
+                  <button className="btn btn-ghost" onClick={() => setDraft(null)}>Cancel</button>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            )}
+
+            {rx.length > 0 && (
+              <>
+                <div className="lbl-sm" style={{ marginTop: 16 }}>Also on their medicines list</div>
+                {rx.map((r) => {
+                  const svc = findService(r.id);
+                  return (
+                    <div className="item" key={r.id}>
+                      <span className="when">{r.status}</span>
+                      <div className="body">
+                        <b>{svc?.t || r.id}</b>
+                        <span>{svc?.note}{r.dose ? ` · ${r.dose}` : ''}
+                          {svc?.price ? ` · AED ${svc.price.toLocaleString()}` : ''}</span>
+                      </div>
+                      <div className="acts">
+                        <Field type="select" value={r.status} options={['ongoing', 'recommended']}
+                          onChange={(v) => setRx((xs) => xs.map((x) => (x.id === r.id ? { ...x, status: v } : x)))} />
+                        <button className="btn btn-ghost btn-sm"
+                          onClick={() => setRx((xs) => xs.filter((x) => x.id !== r.id))}>Remove</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        </>
+      )}
 
       {added.length > 0 && (
         <div style={{ marginTop: 14 }}>

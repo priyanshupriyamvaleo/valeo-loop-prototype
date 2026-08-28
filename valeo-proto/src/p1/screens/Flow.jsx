@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
-import { suggestGoal } from '../../p2/lib/seed';
+import { suggestGoal, findService } from '../../p2/lib/seed';
 
 /* ── THE WAITING SCREEN ──
    The demo's hinge. When the app reaches something the Studio has not authored
@@ -255,7 +255,7 @@ export function Onboarding({ config, goals, onDone, onBack }) {
 
 /* ── PDP · CART · CONFIRMATION ──
    Three screens rendered from one published config, in the order the
-   Pre-purchase Builder holds them. */
+   Package Builder holds them. */
 export function PDP({ cfg, onBuy, onBack }) {
   const [tab, setTab] = useState('measured');
   const p = cfg.pdp;
@@ -300,9 +300,21 @@ export function PDP({ cfg, onBuy, onBack }) {
         {tab === 'symptoms' && p.symptoms.map((s) => (
           <div className="rowitem" key={s}><div className="tick"><Icon name="check" size={10} /></div><div><b>{s}</b></div></div>
         ))}
-        {tab === 'included' && p.included.map((s) => (
-          <div className="rowitem" key={s}><div className="tick"><Icon name="check" size={10} /></div><div><span style={{ marginTop: 0, color: 'var(--ink)' }}>{s}</span></div></div>
-        ))}
+        {/* Each line is a real service now, so the patient reads the same words
+            the package was actually costed from. */}
+        {tab === 'included' && p.included.map((line) => {
+          const svc = findService(line.serviceId);
+          if (!svc) return null;
+          return (
+            <div className="rowitem" key={line.serviceId}>
+              <div className="tick"><Icon name="check" size={10} /></div>
+              <div>
+                <b>{line.qty > 1 ? `${line.qty} × ` : ''}{svc.t}</b>
+                <span>{line.note || svc.note}</span>
+              </div>
+            </div>
+          );
+        })}
         {tab === 'measured' && (
           <div className="p" style={{ marginTop: 0 }}>
             Recovery &amp; Inflammation Panel, at baseline and again at Week 12. The same

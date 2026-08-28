@@ -238,3 +238,69 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
             border-radius: 8px; padding: 8px 10px; }
 .win-read b { color: var(--ink); }
 @media (max-width: 900px) { .item-edit.split { grid-template-columns: 1fr; } }
+
+/* ── the user console ── */
+.uc-group { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+            color:var(--ink-3); padding:12px 16px 6px; border-top:1px solid var(--line); }
+.uc-line, .uc-step { display:flex; align-items:center; gap:10px; padding:9px 16px;
+                     border-top:1px solid var(--line); }
+.uc-line b, .uc-step b { display:block; font-size:13px; font-weight:600; font-family:var(--f-head); }
+.uc-line span:not(.chip):not(.uc-price), .uc-step span:not(.chip):not(.uc-wk):not(.uc-drift) {
+  display:block; font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+.uc-price { flex:none; font-family:var(--f-mono); font-size:11.5px; color:var(--ink-2); }
+.uc-wk { flex:0 0 62px; font-family:var(--f-mono); font-size:10.5px; color:var(--amber); }
+.uc-step.done { background:var(--surface-2); }
+.uc-step.done b { color:var(--ink-2); }
+.uc-drift { flex:none; font-size:10.5px; font-weight:700; color:var(--green); }
+.uc-drift.late { color:var(--red); }
+.uc-total { border-top:1px solid var(--line-2); padding:4px 16px 14px; }
+.uc-tot-row { display:flex; align-items:baseline; justify-content:space-between; padding:7px 0; }
+.uc-tot-row span { font-size:12.5px; color:var(--ink-2); }
+.uc-tot-row.grand { border-top:1px solid var(--line); margin-top:4px; padding-top:11px; }
+.uc-tot-row.grand span { font-weight:700; color:var(--ink); }
+.money { font-family:var(--f-head); font-size:15px; font-weight:600; color:var(--ink); }
+.uc-tot-row.grand .money { font-size:21px; }
+
+/* ── the package invoice ──
+   A table, because the point is that the numbers add up and you can see them do
+   it. Anything prettier would hide the arithmetic. */
+.lbl-inline { display:block; font-size:11px; font-weight:700; letter-spacing:.05em;
+              text-transform:uppercase; color:var(--ink-2); margin-bottom:3px; }
+.invoice { width:100%; border-collapse:collapse; margin:8px 0 10px; }
+.invoice th { font-size:9.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+              color:var(--ink-3); text-align:left; padding:0 8px 7px; border-bottom:1px solid var(--line); }
+.invoice th.n, .invoice td.n { text-align:right; }
+.invoice td { padding:8px; border-bottom:1px solid var(--line); vertical-align:top; }
+.invoice td.mono { font-family:var(--f-mono); font-size:12px; color:var(--ink-2);
+                   white-space:nowrap; padding-top:14px; }
+.invoice .field { margin:0; }
+.inv-note { display:block; width:100%; margin-top:5px; border:none; background:none;
+            font:inherit; font-size:11.5px; color:var(--ink-3); outline:none; padding:0; }
+.inv-note:focus { color:var(--ink); }
+.inv-qty { width:56px; text-align:right; border:1px solid var(--line); border-radius:7px;
+           padding:7px 8px; font:inherit; font-size:13px; color:var(--ink); }
+.invoice tfoot td { border-bottom:none; padding:6px 8px; font-size:12.5px; color:var(--ink-2); }
+.invoice tfoot tr:first-child td { padding-top:12px; }
+.invoice tfoot tr.good td, .invoice tfoot tr.bad td { font-weight:700; color:var(--ink);
+  border-top:1px solid var(--line-2); padding-top:10px; }
+.invoice tfoot tr.bad td { color:var(--red); }
+
+/* ── the decision, as three buttons rather than a dropdown ──
+   It is the one thing that must be answered, so it should look like a choice
+   being made and not like a form field with a default already in it. */
+.decide { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.decide-b { padding:13px 12px; border-radius:11px; border:1.5px solid var(--line);
+            background:var(--surface); cursor:pointer; font-family:inherit;
+            font-size:13.5px; font-weight:600; color:var(--ink-2); }
+.decide-b:hover { border-color:var(--line-2); }
+.decide-b.on { border-color:var(--gold); background:var(--gold-soft); color:var(--ink); }
+.decide-b.no.on { border-color:var(--red); background:var(--red-soft); color:var(--red); }
+
+/* ── one changeable step, with its dose ── */
+.chg { border:1px solid var(--line); border-radius:11px; padding:11px 12px; margin-bottom:8px;
+       background:var(--surface); }
+.chg-h { display:flex; align-items:flex-start; gap:12px; }
+.chg-h b { display:block; font-size:13px; font-weight:600; font-family:var(--f-head); }
+.chg-h span:not(.when) { display:block; font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+.chg-f { display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-top:10px; }
+@media (max-width: 760px) { .chg-f { grid-template-columns:1fr; } }

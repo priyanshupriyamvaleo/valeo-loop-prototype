@@ -1,4 +1,11 @@
 import { publishedFor, GATES } from '../../shared/bus';
+import { findService } from '../../p2/lib/seed';
+
+/* THE ONE PATIENT THIS APP IS.
+   Consult records are keyed by patient in the Studio. The phone is Ahmad, so it
+   reads his and only his. */
+export const LIVE_PATIENT = 'live';
+export const consultFor = (studio, id = LIVE_PATIENT) => (studio?.consults?.[id]) || null;
 
 /*
  * THE RESOLVER.
@@ -36,7 +43,7 @@ export function gateFor(stage, studio, goalId) {
 /* Is the thing that gate is waiting for available yet? */
 export function gateOpen(gateKey, studio, goalId) {
   if (!studio) return false;
-  if (gateKey === 'consult') return !!studio.consult;
+  if (gateKey === 'consult') return !!consultFor(studio);
   const pub = publishedFor(studio, goalId, gateKey);
   return !!(pub && pub.data);
 }
@@ -52,13 +59,32 @@ export function planFor(studio, goalId, journey) {
      record showed a day-zero patient steps labelled "added at your consult"
      before any consult had happened. */
   const consulted = !!(journey && (journey.done || []).includes('p4'));
-  const added = (consulted && studio && studio.consult && studio.consult.addedItems) || [];
+  const added = (consulted && consultFor(studio)?.addedItems) || [];
   const merged = [...base];
   added.forEach((a) => {
     if (merged.some((m) => m.id === a.id)) return;
-    merged.push({ ...a, doctorAdded: true, action: { kind: 'view', label: 'View details' } });
+    /* The clinician DEFINED this step, so it keeps what she gave it. This used
+       to overwrite every added item's action with a view-only one, which meant
+       a blood test a doctor ordered was a step the patient could look at and
+       never book. */
+    const item = { ...a, doctorAdded: true };
+    /* Straight after the step the patient was on when it was added, rather
+       than at the end. The item carries that step's week, so the stable sort
+       below holds it exactly where it was put. */
+    /* Each one goes after the last thing already inserted behind that step, not
+       straight after the step itself, or three additions would come out in the
+       reverse of the order the doctor added them. */
+    const anchor = a.afterStepId ? merged.findIndex((m) => m.id === a.afterStepId) : -1;
+    if (anchor === -1) { merged.push(item); return; }
+    let at = anchor;
+    while (at + 1 < merged.length && merged[at + 1].doctorAdded
+           && merged[at + 1].afterStepId === a.afterStepId) at += 1;
+    merged.splice(at + 1, 0, item);
   });
-  return merged.sort((a, b) => startOf(a) - startOf(b));
+  /* Week first, then the order they were authored in. Array sort is stable, so
+     the several steps that share a week keep their position, which is what
+     finally makes the builder's up and down arrows reach the patient. */
+  return merged.sort((a, b) => weekNo(a) - weekNo(b));
 }
 
 /* The earliest item not done. This is the whole state machine. */
@@ -77,12 +103,35 @@ export function progress(plan, done) {
    from a stored counter, so it cannot drift from the plan. */
 export function weekOf(plan, done, weeks = 12) {
   const last = plan.filter((i) => done.includes(i.id)).slice(-1)[0];
-  const day = last ? startOf(last) : 0;
-  return Math.max(1, Math.min(weeks, Math.ceil(day / 7) || 1));
+  return Math.max(1, Math.min(weeks, last ? weekNo(last) : 1));
 }
 
 /* How long the protocol runs, from the Studio rather than from a number typed
    into three screens. */
+/* ── ELAPSED TIME, SIMULATED ──
+   There is no clock in this prototype: a presenter moves time from the demo
+   rail. But a plan that only knows the week each step was PLANNED for cannot
+   say whether the patient is running late, and running late is the whole point
+   of a per-patient view. So the patient carries a day counter, and each step
+   records the day it was actually completed on. */
+export const weekOfDay = (day) => Math.max(1, Math.ceil(((day || 0) + 1) / 7));
+
+/* Completing a step moves time into that step's planned week, plus a little
+   slack, so drift accumulates the way it does in life rather than every step
+   landing exactly on plan. */
+export function dayAfter(day, item) {
+  const earliest = (weekNo(item) - 1) * 7 + 2;
+  return Math.max((day || 0) + 2, earliest);
+}
+
+/* Planned against actual, for one completed step. */
+export function drift(item, completedOn) {
+  const on = completedOn && completedOn[item.id];
+  if (on == null) return null;
+  const actual = weekOfDay(on);
+  return { planned: weekNo(item), actual, late: actual - weekNo(item) };
+}
+
 export const weeksOf = (studio, goalId) =>
   (publishedFor(studio, goalId, 'plan')?.weeks) || 12;
 
@@ -131,55 +180,42 @@ const OWNER = {
   supplement: 'Valeo',
 };
 
+/* Returns null rather than guessing. Two steps carry no linked service, and
+   falling through to "your care team" told the patient the wrong thing about
+   both: the nurse draws the blood and the lab runs it. Where this is null the
+   caller omits the line, and the step's own copy carries who has it. */
+/* The avatar letter. "The pharmacy" and "Your nurse" both start with a word
+   that says nothing, so the initial comes from the first word that does. */
+export const actorInitial = (name) =>
+  (String(name || '?').replace(/^(the|your|a)\s+/i, '')[0] || '?').toUpperCase();
+
 export function actorOf(item) {
-  if (!item) return '';
+  if (!item) return null;
   if (item.doctorAdded) return 'Your care team';
   if (isPatientMove(item)) return 'You';
-  return OWNER[item.service?.type] || 'Your care team';
+  const svc = findService(item.serviceId);
+  return svc ? (OWNER[svc.type] || null) : null;
 }
 
-/* ── WHEN, AS A WINDOW ──
-   A step does not happen on a day, it happens in a window. The exact time comes
-   from the booking, which is an API away and not something a category manager
-   should be typing. What the Studio sets is the target: results in three to
-   five days, first consultation inside week one.
+/* ── WHEN, AS A WEEK ──
+   A step used to carry a window in days and two separate places converted it.
+   The plan is sold in weeks, its milestones are named in weeks, and the exact
+   date comes from the booking rather than from here, so the week is all a step
+   needs to say and the label is now a read rather than a calculation. */
+export const weekNo = (item) => (item && item.week) || 1;
+export const whenLabel = (item) => (item ? `Week ${weekNo(item)}` : '');
 
-   Days read as days early on and as weeks later, because "day 42" means nothing
-   to somebody twelve weeks into a protocol and "Week 6" does. */
-export function whenLabel(item) {
-  const w = item && item.window;
-  if (!w) return '';
-  /* Day 42 is the Week 6 review and day 84 is the Week 12 panel, so the offsets
-     count to the END of a week. Flooring made both read a week late. */
-  const wk = (d) => Math.max(1, Math.ceil(d / 7));
-  if (w.from >= 14) {
-    return wk(w.from) === wk(w.to) ? `Week ${wk(w.from)}` : `Week ${wk(w.from)} to ${wk(w.to)}`;
-  }
-  return w.from === w.to ? `Day ${w.from}` : `Day ${w.from} to ${w.to}`;
-}
 
-/* Ordering is by the start of the window. */
-export const startOf = (item) => (item && item.window ? item.window.from : 0);
-
-/* What Valeo is doing right now on this patient's behalf. Windowed, because a
-   list of everything still outstanding is the config dump we are replacing. */
-export function inMotion(plan, done, limit = 3) {
-  const front = nextItem(plan, done);
-  if (!front) return [];
-  return plan
-    .filter((i) => !done.includes(i.id) && !isPatientMove(i) && startOf(i) <= startOf(front) + 21)
-    .slice(0, limit);
-}
-
-/* The next fortnight, so the screen reads as current rather than encyclopedic.
+/* The next few weeks, so the screen reads as current rather than encyclopedic.
    `skip` carries the ids already shown higher up the screen. Without it the same
    three steps appeared under both "In motion" and "Next two weeks", which is the
    duplication that made the old list feel like a config dump. */
-export function soon(plan, done, skip = [], days = 14, limit = 4) {
+export function soon(plan, done, skip = [], weeks = 3, limit = 4) {
   const front = nextItem(plan, done);
   if (!front) return [];
   return plan
-    .filter((i) => !done.includes(i.id) && !skip.includes(i.id) && startOf(i) <= startOf(front) + days)
+    .filter((i) => !done.includes(i.id) && !skip.includes(i.id)
+      && weekNo(i) <= weekNo(front) + weeks)
     .slice(0, limit);
 }
 
@@ -269,27 +305,87 @@ export function medicinesFor(studio, goalId, journey) {
   const out = new Map();
 
   plan.forEach((it) => {
-    if (it.service && it.service.type === 'medication') {
+    const svc = findService(it.serviceId);
+    if (svc && svc.type === 'medication') {
       /* The same medicine hangs off every month's dispatch step, so status is
          decided by whether ANY of them has shipped. Taking the last one meant
          Month 3 overwrote Month 1 and a patient already on their pen was told
          it was still coming. Once shipped, it stays shipped. */
-      const shipped = done.includes(it.id) || out.get(it.service.id)?.status === 'ongoing';
-      out.set(it.service.id, { id: it.service.id, status: shipped ? 'ongoing' : 'coming' });
+      const shipped = done.includes(it.id) || out.get(svc.id)?.status === 'ongoing';
+      out.set(svc.id, { id: svc.id, status: shipped ? 'ongoing' : 'coming' });
     }
   });
 
   const consulted = done.includes('p4');
-  if (consulted && studio && studio.consult) {
-    (studio.consult.prescribed || []).forEach((r) => out.set(r.id, { ...r, fromDoctor: true }));
-  }
+  const c = consulted && consultFor(studio);
+  if (c) (c.prescribed || []).forEach((r) => out.set(r.id, { ...r, fromDoctor: true }));
   return [...out.values()];
 }
 
-/* Which product the supplement voucher is actually for. The plan ships a
-   default; the doctor's choice replaces it once the consultation has happened. */
-export function voucherFor(studio, item, journey) {
+/* ── WHICH SERVICE A STEP ACTUALLY CARRIES ──
+   The builder sets a default; for the steps flagged `clinicianCanSet` the doctor
+   can change it for one patient at the consultation, and from then on that is
+   what the step is.
+
+   This used to exist only for the supplement voucher, and only on the card when
+   the voucher happened to be the front item, so the same step named a different
+   product in What follows and in the full plan list. One resolver, used
+   everywhere a service is named. */
+/* The doctor found this protocol unsuitable, so it stops. The patient should
+   see that a person decided it, not a next step they should not take. */
+export const pausedBy = (studio, journey) =>
+  ((journey?.done || []).includes('p4') && consultFor(studio)?.outcome === 'Not suitable')
+    ? consultFor(studio) : null;
+
+export function serviceForStep(studio, item, journey) {
+  if (!item) return null;
   const done = (journey && journey.done) || [];
-  const chosen = done.includes('p4') && studio && studio.consult && studio.consult.voucher;
-  return chosen || (item && item.service && item.service.id) || null;
+  const overrides = (done.includes('p4') && consultFor(studio)?.overrides) || {};
+  return findService(overrides[item.id] || item.serviceId);
+}
+
+/* ── WHAT THIS PATIENT IS ACTUALLY BUYING ──
+   The protocol has one price and everything in it is covered. What the doctor
+   adds afterwards is not, and the difference is the only number anybody
+   handling an account actually wants: the protocol, plus what has been added on
+   top, equals what this patient is worth.
+
+   Read off the resolved plan rather than a stored basket, because there is no
+   basket: the plan IS the order, and a second copy of it would drift. */
+export function packageFor(studio, goalId, journey) {
+  const plan = planFor(studio, goalId, journey);
+  const pp = publishedFor(studio, goalId, 'prepurchase');
+  const base = pp?.data?.cart?.price || 0;
+  const c = consultFor(studio);
+
+  const lines = [];
+  const seen = new Set();
+  plan.forEach((it) => {
+    const svc = serviceForStep(studio, it, journey);
+    if (!svc) return;
+    const key = `${svc.id}@${it.id}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    lines.push({
+      key, id: svc.id, t: svc.t, note: svc.note, type: svc.type,
+      price: svc.price || 0,
+      step: it.t, week: it.week,
+      /* Anything the doctor put there is on top of the protocol price. */
+      added: !!it.doctorAdded,
+      swapped: !!(c?.overrides && c.overrides[it.id]),
+    });
+  });
+
+  /* Products on the medicines list that are not a step of their own. */
+  (c?.prescribed || []).forEach((r) => {
+    if (lines.some((l) => l.id === r.id)) return;
+    const svc = findService(r.id);
+    if (!svc) return;
+    lines.push({ key: `rx_${r.id}`, id: svc.id, t: svc.t, note: svc.note, type: svc.type,
+      price: svc.price || 0, step: 'Prescribed at the consultation', week: null,
+      added: true, swapped: false });
+  });
+
+  const extra = lines.filter((l) => l.added).reduce((n, l) => n + l.price, 0);
+  return { lines, base, extra, total: base + extra };
 }

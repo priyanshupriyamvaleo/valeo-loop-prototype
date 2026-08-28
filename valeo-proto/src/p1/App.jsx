@@ -6,8 +6,8 @@ import { Gate, Onboarding, Triage, PDP, Cart, Confirm } from './screens/Flow';
 import { Schedule, Status, CheckIn, Report, Join, ProductPage } from './screens/Actions';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor, GATES, SHARED } from '../shared/bus';
-import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, voucherFor, weeksOf } from './lib/journey';
-import { serviceOf } from '../p2/lib/seed';
+import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy } from './lib/journey';
+
 
 /*
  * VALEO — the patient app.
@@ -39,6 +39,8 @@ const INIT = {
   actMode: null,       /* which face of it: report, join, or the default */
   product: null,       /* the medicine or supplement whose page is open */
   consultSeen: 0,      /* the consult version this patient has already absorbed */
+  day: 0,              /* simulated days since purchase, moved from the demo rail */
+  completedOn: {},     /* stepId -> the day it was actually done, for planned against actual */
 };
 
 export default function App() {
@@ -69,6 +71,20 @@ export default function App() {
     setPt(p);
   }), []);
 
+  /* Completing a step is always the same three writes: mark it done, stamp the
+     day it happened on, and move time into its week. Doing this in one place
+     stops the three call sites drifting apart. */
+  const complete = (item, extra = {}) => set((prev) => {
+    const day = dayAfter(prev.day, item);
+    return {
+      ...prev,
+      done: [...prev.done, item.id],
+      day,
+      completedOn: { ...prev.completedOn, [item.id]: day },
+      ...extra,
+    };
+  });
+
   const set = (patch) => {
     const prev = ptRef.current;
     const next = typeof patch === 'function' ? patch(prev) : { ...prev, ...patch };
@@ -88,13 +104,14 @@ export default function App() {
   const plan = planFor(studio, goalId, pt);
   const medicines = medicinesFor(studio, goalId, pt);
   const weeks = weeksOf(studio, goalId);
+  const paused = !!pausedBy(studio, pt);
   const item = nextItem(plan, pt.done);
 
   /* ── the consult gate ──
      Completing the doctor consultation stops the journey until the clinician
      records an outcome next door. Their added items then merge into the plan. */
   const consultDone = pt.done.includes('p4');
-  const consultVersion = studio?.consult?.version || 0;
+  const consultVersion = consultFor(studio)?.version || 0;
   /* Two different states used to share one flag, and absorbing the outcome
      therefore threw the patient straight back into waiting for it.
      PENDING is "the clinician has recorded nothing at all", which blocks.
@@ -111,9 +128,9 @@ export default function App() {
   const gateRows = [
     ['onboarding', 'Onboarding chat', !!onbCfg],
     ['triage', `Triage · ${goal.t}`, !!triageCfg],
-    ['prepurchase', 'Pre-purchase flow', !!ppCfg],
+    ['prepurchase', 'The package', !!ppCfg],
     ['plan', 'Protocol plan', !!publishedFor(studio, RR, 'plan')],
-    ['consult', 'Consult outcome', !!studio?.consult],
+    ['consult', 'Consult outcome', !!consultFor(studio)],
   ];
 
   const rail = (
@@ -168,11 +185,7 @@ export default function App() {
             from out here. */}
         {pt.mode === 'protocol' && item && (
           <button className="ghost" style={{ marginBottom: 8 }}
-            onClick={() => set((prev) => ({
-              ...prev,
-              done: [...prev.done, item.id],
-              stage: item.id === 'p4' ? 'gate:consult' : prev.stage,
-            }))}>
+            onClick={() => complete(item, item.id === 'p4' ? { stage: 'gate:consult' } : {})}>
             Move time on · {item.t}
           </button>
         )}
@@ -242,28 +255,34 @@ export default function App() {
       view = <Gate gate={GATES.plan} title={goal.t} open onBack={() => setScreen('detail')}
         onContinue={() => setScreen('detail')} />;
     } else if (pt.actMode === 'report') {
-      view = <Report item={it} panelName={serviceOf(plan.find((x) => x.id === 'p2')?.service)?.t}
+      view = <Report item={it}
+        panelName={serviceForStep(studio, plan.find((x) => x.id === 'p1'), pt)?.t}
         onBack={() => setScreen('detail')} onBook={() => set({ actMode: null })} />;
     } else if (pt.actMode === 'join') {
       view = (
         <Join item={it} when={pt.booked[it.id]} onBack={() => setScreen('detail')}
-          onDone={() => set((prev) => ({
-            ...prev, done: [...prev.done, it.id], acting: null, actMode: null,
+          onDone={() => complete(it, {
+            acting: null, actMode: null,
             stage: it.id === 'p4' ? 'gate:consult' : 'detail',
-          }))} />
+          })} />
       );
     } else if (archetypeOf(it) === 'schedule') {
       view = (
-        <Schedule item={it} onBack={() => setScreen('detail')}
+        <Schedule item={it} service={serviceForStep(studio, it, pt)}
+          onBack={() => setScreen('detail')}
           onDone={(slot) => set((prev) => {
             /* Booking a consultation does not mean you attended it, so a step
                with somewhere to be afterwards keeps its place in the plan and
                changes what it says instead. */
             const finishes = bookingCompletes(it);
+            const day = finishes ? dayAfter(prev.day, it) : prev.day;
             return {
               ...prev,
               booked: { ...prev.booked, [it.id]: slot },
               done: finishes ? [...prev.done, it.id] : prev.done,
+              day,
+              completedOn: finishes
+                ? { ...prev.completedOn, [it.id]: day } : prev.completedOn,
               acting: null, actMode: null,
               stage: finishes && it.id === 'p4' ? 'gate:consult' : 'detail',
             };
@@ -292,9 +311,9 @@ export default function App() {
     );
   } else if (screen === 'detail') {
     view = (
-      <JourneyDetail title={goal.t} plan={plan} done={pt.done} weeks={weeks}
+      <JourneyDetail title={goal.t} plan={plan} done={pt.done} weeks={weeks} paused={paused}
         medicines={medicines}
-        voucherId={voucherFor(studio, plan.find((x) => x.id === 'p5'), pt)}
+        serviceFor={(it) => serviceForStep(studio, it, pt)}
         onProduct={(m) => set({ product: m, stage: 'product' })}
         checkins={pt.checkins || []} booked={pt.booked || {}}
         logs={pt.logs || {}} target={pt.target}

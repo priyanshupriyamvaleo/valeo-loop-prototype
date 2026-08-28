@@ -29,27 +29,34 @@
 export const SERVICES = {
   lab: { t: 'Lab panel', items: [
     { id: 'panel_recovery', t: 'Recovery & Inflammation Panel',
-      note: 'CBC, hs-CRP, ESR, Vitamin D, Magnesium, CK, Liver, Kidney, HbA1c, Ferritin' },
-    { id: 'panel_male', t: 'Comprehensive Male Profile', note: '49 biomarkers' },
-    { id: 'panel_female', t: 'Comprehensive Female Profile', note: '49 biomarkers' },
-    { id: 'panel_wellbeing', t: 'General Well-being Test', note: '49 essential biomarkers' },
-    { id: 'panel_testosterone', t: 'Testosterone Profile', note: 'Total, free, SHBG, LH, FSH' },
-    { id: 'panel_thyroid', t: 'Thyroid Profile', note: 'TSH, T3, T4, antibodies' },
-    { id: 'panel_metabolic', t: 'Metabolic Profile', note: 'HbA1c, fasting insulin, lipids' },
+      note: 'CBC, hs-CRP, ESR, Vitamin D, Magnesium, CK, Liver, Kidney, HbA1c, Ferritin', price: 890 },
+    { id: 'panel_male', t: 'Comprehensive Male Profile', note: '49 biomarkers', price: 1290 },
+    { id: 'panel_female', t: 'Comprehensive Female Profile', note: '49 biomarkers', price: 1290 },
+    { id: 'panel_wellbeing', t: 'General Well-being Test', note: '49 essential biomarkers', price: 1190 },
+    { id: 'panel_testosterone', t: 'Testosterone Profile', note: 'Total, free, SHBG, LH, FSH', price: 540 },
+    { id: 'panel_thyroid', t: 'Thyroid Profile', note: 'TSH, T3, T4, antibodies', price: 460 },
+    { id: 'panel_metabolic', t: 'Metabolic Profile', note: 'HbA1c, fasting insulin, lipids', price: 620 },
+    /* Targeted single-marker tests. A doctor chasing one thing should not have
+       to order forty-nine biomarkers to get it. */
+    { id: 'test_b12', t: 'Vitamin B12', note: 'Single marker', price: 90 },
+    { id: 'test_vitd', t: 'Vitamin D', note: 'Single marker', price: 110 },
+    { id: 'test_iron', t: 'Iron studies', note: 'Ferritin, transferrin, saturation', price: 180 },
+    { id: 'test_hba1c', t: 'HbA1c', note: 'Single marker', price: 95 },
+    { id: 'test_crp', t: 'hs-CRP', note: 'Single marker, inflammation', price: 85 },
   ] },
   consult: { t: 'Consultation', items: [
-    { id: 'consult_peptide', t: 'Peptide Therapy Consultation', note: '30 minutes, video' },
-    { id: 'consult_glp1', t: 'GLP-1 Weight Loss Consultation', note: '30 minutes, video' },
-    { id: 'consult_longevity', t: 'Longevity Consultation', note: '45 minutes, video' },
-    { id: 'consult_gp', t: 'General Physician Consultation', note: '15 minutes, video' },
-    { id: 'consult_discovery', t: 'Discovery Consultation', note: '20 minutes, video' },
-    { id: 'consult_review', t: 'Follow-up Review', note: '15 minutes, video' },
+    { id: 'consult_peptide', t: 'Peptide Therapy Consultation', note: '30 minutes, video', price: 350 },
+    { id: 'consult_glp1', t: 'GLP-1 Weight Loss Consultation', note: '30 minutes, video', price: 350 },
+    { id: 'consult_longevity', t: 'Longevity Consultation', note: '45 minutes, video', price: 500 },
+    { id: 'consult_gp', t: 'General Physician Consultation', note: '15 minutes, video', price: 150 },
+    { id: 'consult_discovery', t: 'Discovery Consultation', note: '20 minutes, video', price: 0 },
+    { id: 'consult_review', t: 'Follow-up Review', note: '15 minutes, video', price: 200 },
   ] },
   homecare: { t: 'Home care', items: [
-    { id: 'home_draw', t: 'Home nurse visit, blood draw', note: 'About 20 minutes' },
+    { id: 'home_draw', t: 'Home nurse visit, blood draw', note: 'About 20 minutes', price: 120 },
     { id: 'home_injection', t: 'Home nurse visit, injection', note: 'AED 99 per visit', price: 99 },
     { id: 'home_pack4', t: 'Nurse administration, 4-pack', note: 'AED 349', price: 349 },
-    { id: 'home_iv', t: 'IV drip at home', note: 'About 45 minutes' },
+    { id: 'home_iv', t: 'IV drip at home', note: 'About 45 minutes', price: 690 },
   ] },
   medication: { t: 'Medication', items: [
     { id: 'med_bpc', t: 'BPC-157 pen, one month', note: 'Cold chain', price: 0,
@@ -74,7 +81,15 @@ export const SERVICES = {
   ] },
 };
 
-export const SERVICE_TYPES = ['none', ...Object.keys(SERVICES)];
+/* The dropdown is grouped by category and stores a bare id. There is no
+   separate "service type" control: which catalogue a step draws from is a
+   property of the step, not a decision, and asking for it twice let the two
+   answers disagree. */
+export const SERVICE_GROUPS = Object.entries(SERVICES).map(([type, g]) => ({
+  label: g.t,
+  items: g.items.map((x) => ({ value: x.id, label: x.t })),
+  type,
+}));
 
 /* Every catalogue item, flattened and tagged with the shelf it came from.
    The console offers things and the patient app renders them, and neither
@@ -82,15 +97,10 @@ export const SERVICE_TYPES = ['none', ...Object.keys(SERVICES)];
 export const CATALOGUE = Object.entries(SERVICES).flatMap(([type, g]) =>
   g.items.map((x) => ({ ...x, type })));
 export const findService = (id) => CATALOGUE.find((x) => x.id === id) || null;
-export const serviceTypeLabel = (k) => (k === 'none' ? 'Not linked' : (SERVICES[k]?.t || k));
-export const serviceOf = (svc) =>
-  (!svc || !svc.type || svc.type === 'none' ? null
-    : (SERVICES[svc.type]?.items || []).find((x) => x.id === svc.id) || null);
 
 export const RR_PLAN = [
   { id: 'p1',  t: 'Book nurse visit',        sub: 'Nothing else can start until this is done.',
-    service: { type: 'homecare', id: 'home_draw' },
-    window: { from: 0, to: 3 },
+    serviceId: 'panel_recovery', week: 1,
     action: { kind: 'book', label: 'Choose a time' },
     /* The three objections a home blood draw actually raises, answered before
        the button rather than after it: who turns up, what it is like, and
@@ -106,8 +116,7 @@ export const RR_PLAN = [
     /* The VISIT, not the panel. This step is the nurse turning up; the panel is
        what the lab runs afterwards, and that is the next step. Linking both to
        the panel made the app say the lab was drawing the blood. */
-    service: { type: 'homecare', id: 'home_draw' },
-    window: { from: 5, to: 7 }, locked: true,
+    week: 1, blocker: true, locked: true,
     lockWhy: 'Your protocol starts with testing, not a product. It is also the clinical basis for prescribing.',
     /* Booked. The card stops being a task and becomes an appointment, so the
        time is the largest thing on it. The slot comes from the step that
@@ -121,8 +130,7 @@ export const RR_PLAN = [
              'The nurse comes to you'] },
     card: 'Nurse visit scheduled' },
   { id: 'p3',  t: 'Results ready',           sub: 'Automatic. No patient action.',
-    service: { type: 'lab', id: 'panel_recovery' },
-    window: { from: 8, to: 10 },
+    week: 2,
     /* This used to say the doctor was reviewing results the moment the nurse
        left, which is chronologically impossible. Claiming work nobody has
        started is a small lie that costs trust the first time it is noticed. */
@@ -131,8 +139,7 @@ export const RR_PLAN = [
       body: 'This usually takes 24 to 48 hours. Your doctor sees it before you do.' },
     card: 'Results in a few days' },
   { id: 'p4',  t: 'Doctor consultation',     sub: 'Injury and recovery assessment, results review, competition screening. Dispatch is blocked until this happens.',
-    service: { type: 'consult', id: 'consult_peptide' },
-    window: { from: 9, to: 14 }, locked: true,
+    serviceId: 'consult_peptide', week: 2, blocker: true, locked: true,
     lockWhy: 'Dispensing depends on it. Removing it makes this a supplement sale.',
     action: { kind: 'book', label: 'Book your consultation' },
     /* Two things to do at once, and the report comes first: reading it is what
@@ -148,49 +155,42 @@ export const RR_PLAN = [
       cta: 'Join consultation' },
     card: 'Your results are ready' },
   { id: 'p5',  t: 'Supplement voucher issued', sub: 'Automatic. AED 150.',
-    service: { type: 'supplement', id: 'sup_voucher' },
-    window: { from: 10, to: 10 },
+    serviceId: 'sup_voucher', week: 2, clinicianCanSet: true,
     card: 'Voucher issued' },
   { id: 'p6',  t: 'Month 1 dispatched',      sub: 'BPC-157 pen, cold chain.',
-    service: { type: 'medication', id: 'med_bpc' },
-    window: { from: 11, to: 13 }, milestone: true,
+    serviceId: 'med_bpc', week: 2, clinicianCanSet: true, milestone: true,
     action: { kind: 'track', label: 'Track delivery' },
     waiting: { tag: 'Dispatched', title: 'Your medicine is on the way.',
       body: 'BPC-157 pen, shipped cold chain from a fully licensed UAE compounding pharmacy.' },
     card: 'Month 1 on the way' },
   { id: 'p7',  t: 'Concierge call 1',        sub: 'Care team.',
-    window: { from: 10, to: 12 },
+    serviceId: 'consult_gp', week: 2,
     card: 'Week 2 of 12' },
   { id: 'p8',  t: 'Concierge call 2',        sub: 'Care team.',
-    window: { from: 25, to: 28 },
+    serviceId: 'consult_gp', week: 4,
     card: 'Week 4 of 12' },
   { id: 'p9',  t: 'Mid-point doctor review', sub: 'Response reviewed, dosing adjusted, TB-500 assessed.',
-    service: { type: 'consult', id: 'consult_review' },
-    window: { from: 38, to: 42 }, milestone: true,
+    serviceId: 'consult_review', week: 6, milestone: true,
     action: { kind: 'book', label: 'Book your Week 6 review' },
     card: 'Book your Week 6 review' },
   { id: 'p10', t: 'Month 2 dispatched',      sub: 'Ops.',
-    service: { type: 'medication', id: 'med_bpc' },
-    window: { from: 43, to: 49 }, milestone: true,
+    serviceId: 'med_bpc', week: 7, clinicianCanSet: true, milestone: true,
     action: { kind: 'track', label: 'Track delivery' },
     card: 'Month 2 on the way' },
   { id: 'p11', t: 'Monthly concierge calls', sub: 'Care team. Recurring.',
-    window: { from: 55, to: 84 },
+    serviceId: 'consult_gp', week: 8,
     card: 'Week 8 of 12' },
   { id: 'p12', t: 'Month 3 dispatched',      sub: 'Ops.',
-    service: { type: 'medication', id: 'med_bpc' },
-    window: { from: 57, to: 63 }, milestone: true,
+    serviceId: 'med_bpc', week: 10, clinicianCanSet: true, milestone: true,
     action: { kind: 'track', label: 'Track delivery' },
     card: 'Week 9 of 12' },
   { id: 'p13', t: 'Repeat blood panel',      sub: 'Same panel as baseline.',
-    service: { type: 'lab', id: 'panel_recovery' },
-    window: { from: 78, to: 84 }, locked: true,
+    serviceId: 'panel_recovery', week: 12, blocker: true, clinicianCanSet: true, locked: true,
     lockWhy: 'Promised on the page, and it is the renewal conversation.',
     action: { kind: 'book', label: 'Book your Week 12 test' },
     card: 'Book your Week 12 test' },
   { id: 'p14', t: 'Physician reassessment',  sub: 'Produces the maintenance plan and the renewal decision.',
-    service: { type: 'consult', id: 'consult_peptide' },
-    window: { from: 80, to: 84 }, milestone: true,
+    serviceId: 'consult_peptide', week: 12, milestone: true,
     action: { kind: 'book', label: 'Book your reassessment' },
     card: 'Book your reassessment' },
 ];
@@ -276,7 +276,7 @@ export const RR_PREPURCHASE = {
       { t: 'Week 1 · Testing and first steps',
         s: 'At-home blood sample collection with a nurse. Doctor consultation and results review. Supplement voucher issued (AED 150). Your first month of therapy is dispatched.' },
       { t: 'Weeks 2 to 5 · Building the base',
-        s: 'Daily injectable therapy. Concierge check-in calls at Day 10 and Day 25. It is normal to notice little change in this period.' },
+        s: 'Daily injectable therapy. Concierge check-in calls at Week 2 and Week 4. It is normal to notice little change in this period.' },
       { t: 'Week 6 · First review',
         s: 'Mid-point review with your doctor. Response reviewed, dosing adjusted. Month 2 dispatched.' },
       { t: 'Weeks 7 to 12 · Full protocol',
@@ -284,15 +284,18 @@ export const RR_PREPURCHASE = {
     ],
     symptoms: ['Joint or tendon pain', 'Slow recovery', 'An unresolved old injury',
                'Lingering soreness', 'Gut discomfort', 'Reduced capacity', 'Morning stiffness'],
+    /* ── WHAT THE PACKAGE IS MADE OF ──
+       Not a list of sentences somebody typed. Each line points at a service in
+       the catalogue and says how many of it the protocol includes, so the
+       package has a cost that can be added up rather than asserted. */
     included: [
-      'At-home blood test with a nurse, baseline and Week 12',
-      'Doctor consultation and results review',
-      '3 × BPC-157 pens, dispatched monthly in cold chain',
-      'Unlimited doctor consultations for the full 12 weeks',
-      'Concierge care-team calls at Day 10, Day 25 and monthly thereafter',
-      'Week 6 mid-point review',
-      'Week 12 physician reassessment',
-      'Supplement voucher worth AED 150, issued after your doctor consultation',
+      { serviceId: 'panel_recovery', qty: 2, note: 'Baseline and Week 12' },
+      { serviceId: 'home_draw', qty: 2, note: 'A nurse comes to you, both times' },
+      { serviceId: 'consult_peptide', qty: 2, note: 'First consultation and the Week 12 reassessment' },
+      { serviceId: 'consult_review', qty: 1, note: 'Week 6 mid-point review' },
+      { serviceId: 'consult_gp', qty: 4, note: 'Concierge calls, Week 2, Week 4 and monthly' },
+      { serviceId: 'med_bpc', qty: 3, note: 'Dispatched monthly, cold chain' },
+      { serviceId: 'sup_voucher', qty: 1, note: 'Issued after your doctor consultation' },
     ],
     provider: 'Prepared by a fully licensed UAE compounding pharmacy regulated by MOH and EDE.',
   },

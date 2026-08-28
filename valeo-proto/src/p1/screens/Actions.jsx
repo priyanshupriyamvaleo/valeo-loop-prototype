@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
-import { serviceOf, findService } from '../../p2/lib/seed';
-import { actorOf, whenLabel } from '../lib/journey';
+import { findService } from '../../p2/lib/seed';
+import { actorOf, actorInitial, whenLabel } from '../lib/journey';
 
 /*
  * THREE ACTION SCREENS, NOT FOURTEEN.
@@ -42,7 +42,7 @@ function Head({ title, sub, onBack }) {
 }
 
 /* ── 1. SCHEDULE ── */
-export function Schedule({ item, onBack, onDone }) {
+export function Schedule({ item, service, onBack, onDone }) {
   const [slot, setSlot] = useState(null);
   const atHome = /nurse/i.test(item.t) || /nurse/i.test(item.action?.label || '');
 
@@ -55,8 +55,8 @@ export function Schedule({ item, onBack, onDone }) {
         <div className="act-where">
           <Icon name={atHome ? 'home' : 'steth'} size={15} />
           <div>
-            <b>{serviceOf(item.service)?.t || (atHome ? 'At your home' : 'Video call')}</b>
-            <span>{serviceOf(item.service)?.note || (atHome
+            <b>{service?.t || (atHome ? 'At your home' : 'Video call')}</b>
+            <span>{service?.note || (atHome
               ? 'A Valeo nurse comes to you. Allow about twenty minutes.'
               : 'With one of our peptide doctors. Allow about thirty minutes.')}</span>
           </div>
@@ -104,11 +104,12 @@ export function Status({ item, onBack, onDone }) {
         <p className="lead">{item.sub}</p>
 
         <div className="act-who">
-          <span className="who-av">{actorOf(item)[0]}</span>
+          <span className="who-av">{actorInitial(actorOf(item))}</span>
           <div>
             {/* Items the clinician added carry the actor "Doctor added", which
                 reads as nonsense in a sentence. Name the source instead. */}
-            <b>{item.doctorAdded ? 'Added by your doctor' : `${actorOf(item)} has this`}</b>
+            <b>{item.doctorAdded ? 'Added by your doctor'
+              : actorOf(item) ? `${actorOf(item)} has this` : 'In progress'}</b>
             <span>
               {item.doctorAdded
                 ? 'Arranged at your consultation. Nothing is needed from you yet.'

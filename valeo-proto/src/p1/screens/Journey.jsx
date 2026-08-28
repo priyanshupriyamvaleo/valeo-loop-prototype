@@ -1,6 +1,6 @@
 import Icon from '../ui/Icon';
-import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures, stateOf, actorOf, whenLabel } from '../lib/journey';
-import { serviceOf, findService } from '../../p2/lib/seed';
+import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures, stateOf, actorOf, actorInitial, whenLabel } from '../lib/journey';
+import { findService } from '../../p2/lib/seed';
 
 /*
  * ONE CARD AND ONE DETAIL SCREEN.
@@ -129,7 +129,7 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12 }) 
  * So the logbook is full on day zero and Week 12 has something to read against.
  */
 export function JourneyDetail({ plan, done, checkins, logs, target, booked, title,
-                               medicines, voucherId, weeks = 12, onBack, onOpen, onLog, onChat, onProduct }) {
+                               medicines, serviceFor, weeks = 12, paused, onBack, onOpen, onLog, onChat, onProduct }) {
   const front = nextItem(plan, done);
   const p = progress(plan, done);
   const wk = weekOf(plan, done, weeks);
@@ -139,7 +139,7 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
   const tiles = captures(done, logs);
   /* Everything already named above is left out below, so the lower sections add
      information rather than repeating it. */
-  const follows = soon(plan, done, front ? [front.id] : [], 21, 3);
+  const follows = soon(plan, done, front ? [front.id] : [], 4, 3);
 
   /* ── 1. what happens now ──
      One card, four states. The words come from the step, not from here, so a
@@ -171,21 +171,17 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
         {/* What this step actually books, draws or ships. The Studio linked it
             to a service that already exists, so the patient gets its real name
             rather than a description somebody retyped. */}
-        {(() => {
-          /* The voucher is the one step whose linked product the doctor can
-             override, so it resolves through the consult rather than straight
-             off the plan. */
-          const svc = front.id === 'p5' && voucherId ? findService(voucherId) : serviceOf(front.service);
-          return svc && (
-            <div className="svc-line">
-              <Icon name="clipboard" size={12} />
-              <div>
-                <b>{svc.t}</b>
-                <span>{svc.note}</span>
-              </div>
+        {/* The builder set a default and the doctor may have changed it for
+            this patient. One resolver, used everywhere a service is named. */}
+        {serviceFor(front) && (
+          <div className="svc-line">
+            <Icon name="clipboard" size={12} />
+            <div>
+              <b>{serviceFor(front).t}</b>
+              <span>{serviceFor(front).note}</span>
             </div>
-          );
-        })()}
+          </div>
+        )}
 
         {state.assure && (
           <ul className="assure">
@@ -230,9 +226,9 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
           </button>
         ) : null}
 
-        {!mine && (
+        {!mine && actorOf(front) && (
           <div className="whos">
-            <span className="who-av sm">{actorOf(front)[0]}</span>
+            <span className="who-av sm">{actorInitial(actorOf(front))}</span>
             {actorOf(front)} {front.doctorAdded ? 'arranged this' : 'has this'}
           </div>
         )}
@@ -302,7 +298,9 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
   );
 
   /* ── 3. what follows ── */
-  const whatFollows = follows.length > 0 && (
+  /* Nothing follows a protocol a doctor has stopped. Listing next week's steps
+     under a hold notice invites the patient to go and do them. */
+  const whatFollows = !paused && follows.length > 0 && (
     <div className="sect">
       <div className="sect-h"><span>What follows</span></div>
       {follows.map((i) => (
@@ -310,7 +308,7 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
           <span className="when">{whenLabel(i)}</span>
           <div>
             <b>{i.t}</b>
-            <em>{i.doctorAdded ? 'Added by your doctor' : actorOf(i)}</em>
+            <em>{i.doctorAdded ? 'Added by your doctor' : (serviceFor(i)?.t || actorOf(i) || '')}</em>
           </div>
         </div>
       ))}
@@ -333,7 +331,24 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
       </div>
 
       <div className="scroll pad">
-        {front ? <>{next}{logbook}</> : (
+        {paused ? (
+          <>
+            <div className="sect">
+              <div className="sect-h"><span>Stopped by your doctor</span></div>
+              <div className="move quiet">
+                <b>This protocol is on hold</b>
+                <span>
+                  Your doctor has reviewed your results and paused it. Nothing further is
+                  scheduled. Your care team will talk you through what happens next.
+                </span>
+                <button className="cta" style={{ marginTop: 12 }} onClick={onChat}>
+                  Talk to your care team <Icon name="chev" size={15} />
+                </button>
+              </div>
+            </div>
+            {logbook}
+          </>
+        ) : front ? <>{next}{logbook}</> : (
           <>
             {logbook}
             <div className="sect">
@@ -400,7 +415,10 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
                 <div style={{ flex: 1 }}>
                   <b style={{ textDecoration: isDone ? 'line-through' : 'none' }}>{it.t}</b>
                   <span>
-                    {whenLabel(it)} · {it.doctorAdded ? 'Added by your doctor' : actorOf(it)}
+                    {whenLabel(it)}
+                    {it.doctorAdded ? ' · Added by your doctor'
+                      : actorOf(it) ? ` · ${actorOf(it)}` : ''}
+                    {serviceFor(it) ? ` · ${serviceFor(it).t}` : ''}
                     {booked[it.id] ? ` · ${booked[it.id]}` : ''}
                   </span>
                 </div>

@@ -1,7 +1,7 @@
 import Icon from './Icon';
 
 export function Field({ label, value, onChange, type = 'text', rows = 3, hint,
-                        disabled, lockWhy, options, placeholder, display }) {
+                        disabled, lockWhy, options, placeholder, display, groups }) {
   return (
     <div className="field">
       <label>
@@ -15,10 +15,20 @@ export function Field({ label, value, onChange, type = 'text', rows = 3, hint,
         <select value={value} disabled={disabled} onChange={(e) => onChange && onChange(e.target.value)}>
           {/* `display` lets a select carry ids as values and names as labels,
               which is what linking to a catalogue needs: the id is what gets
-              stored, the name is what a human picks. */}
-          {(options || []).map((o) => (
-            <option key={o} value={o}>{display ? (display[o] || o) : o}</option>
-          ))}
+              stored, the name is what a human picks. `groups` adds the headings,
+              so one dropdown can offer a whole catalogue without a second
+              dropdown first asking which shelf to look on. */}
+          {groups
+            ? groups.map((g) => (
+                g.items.length === 0 ? null : (
+                  <optgroup key={g.label} label={g.label}>
+                    {g.items.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </optgroup>
+                )
+              ))
+            : (options || []).map((o) => (
+                <option key={o} value={o}>{display ? (display[o] || o) : o}</option>
+              ))}
         </select>
       ) : (
         <input type={type} value={value} disabled={disabled} placeholder={placeholder}
