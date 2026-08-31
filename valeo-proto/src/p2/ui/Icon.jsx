@@ -18,7 +18,7 @@ const P = {
   check:'M4 12l5 5L20 6', chev:'M9 5l7 7-7 7', back:'M15 5l-7 7 7 7',
   bolt:'M13 3L5 14h6l-1 7 8-11h-6z', spark:'M12 3v5m0 8v5M3 12h5m8 0h5M6 6l3 3m6 6l3 3M18 6l-3 3M9 15l-3 3',
   scale:'M12 3v18M6 7l-3 6h6zM18 7l-3 6h6zM7 3h10', eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7m10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6',
-  send:'M4 12l16-8-6 16-2-6z', panel:'M4 4h16v16H4zM10 4v16',
+  send:'M4 12l16-8-6 16-2-6z', search:'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14M20 20l-4-4', panel:'M4 4h16v16H4zM10 4v16',
 };
 export default function Icon({ name, size = 15, stroke = 1.7, className = '' }) {
   const d = P[name] || P.box;

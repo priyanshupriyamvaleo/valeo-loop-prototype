@@ -2,9 +2,13 @@ import { useEffect, useState } from 'react';
 import Icon from '../ui/Icon';
 import { Field, Chip, Note } from '../ui/kit';
 import { useStudio } from '../lib/store';
-import { PATIENTS, SERVICES, findService } from '../lib/seed';
-import { planFor, nextItem, consultFor } from '../../p1/lib/journey';
+import { PATIENTS, SERVICES, findService, ORDERS, ORDER_CATEGORIES, COACHES,
+         orderFor, RR_PLAN } from '../lib/seed';
+import { planFor, nextItem, consultFor, captures, recoveryScore, weekOfDay, weeksOf }
+  from '../../p1/lib/journey';
+import { PANEL } from '../../p1/screens/Actions';
 import { goalOf, readPatient, subscribe } from '../../shared/bus';
+import { go } from '../lib/router';
 
 /*
  * THE CLINICIAN CONSOLE — the end of a consultation.
@@ -245,47 +249,543 @@ function liveRecord(pt, studio, goalId) {
   };
 }
 
-export default function Clinician({ goalId }) {
+/* ══ PART ONE — PAST ORDERS ═══════════════════════════════════════════════
+   A coach does not arrive at a protocol. They arrive at Past Orders, filter it,
+   and open a row. This is that screen, with the columns and filters the live
+   panel already has and one category added: Protocols.
+
+   Everything on it is the existing panel's. The single new thing in this whole
+   surface is one button, four screens further in. */
+
+const ALL = '';   /* the "no filter" value, so a select can hold it */
+
+function Filter({ value, onChange, options, placeholder }) {
+  return (
+    <div className="of">
+      <select value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value={ALL}>{placeholder}</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+      <Icon name="chev" size={12} />
+    </div>
+  );
+}
+
+function OrdersList({ goalId }) {
+  const [typed, setTyped] = useState('');
+  const [q, setQ] = useState('');
+  const [cat, setCat] = useState(ALL);
+  const [coach, setCoach] = useState(ALL);
+  const [pkg, setPkg] = useState(ALL);
+  const [country, setCountry] = useState(ALL);
+  const [rx, setRx] = useState(ALL);
+
+  const packages = [...new Set(ORDERS.map((o) => o.pkg))].sort();
+  const countries = [...new Set(ORDERS.map((o) => o.country))].sort();
+
+  const hit = (o) => {
+    const term = q.trim().toLowerCase();
+    if (term && ![o.id, o.name, o.email, o.pkg].join(' ').toLowerCase().includes(term)) return false;
+    if (cat && cat !== 'All Orders' && o.category !== cat) return false;
+    if (coach && o.coach !== coach) return false;
+    if (pkg && o.pkg !== pkg) return false;
+    if (country && o.country !== country) return false;
+    if (rx && o.rx !== rx) return false;
+    return true;
+  };
+  const rows = ORDERS.filter(hit);
+  const search = (e) => { e.preventDefault(); setQ(typed); };
+
+  return (
+    <>
+      <div className="row" style={{ marginBottom: 16 }}>
+        <div className="grow">
+          <h2>Past Orders</h2>
+          <p className="sub">
+            Every order this coach can act on. Filter to <b>Protocols</b> and open one
+            to reach that patient.
+          </p>
+        </div>
+        <form className="osearch" onSubmit={search}>
+          <Icon name="search" size={13} />
+          <input value={typed} placeholder="Search"
+            onChange={(e) => { setTyped(e.target.value); if (!e.target.value) setQ(''); }} />
+          <button className="btn btn-primary btn-sm" type="submit">Search</button>
+        </form>
+      </div>
+
+      <div className="ofilters">
+        <Filter value={cat} onChange={setCat} options={ORDER_CATEGORIES.slice(1)} placeholder="All Orders" />
+        <Filter value={coach} onChange={setCoach} options={COACHES} placeholder="All coaches" />
+        <Filter value={pkg} onChange={setPkg} options={packages} placeholder="Select Package" />
+        <Filter value={country} onChange={setCountry} options={countries} placeholder="Filter by Country" />
+        <Filter value={rx} onChange={setRx} options={['Yes', 'No']} placeholder="Prescription Required" />
+      </div>
+
+      <div className="otable-wrap">
+        <table className="otable">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Coach Review Date</th>
+              <th>Feedback Done By</th>
+              <th>Primary User Name</th>
+              <th>Primary User Email</th>
+              <th>Dependent Name</th>
+              <th>Dependent Relation</th>
+              <th>Package</th>
+              <th>Purchased Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((o) => {
+              /* Only protocol rows open. The rest are the panel's existing
+                 order types and this prototype does not rebuild them. */
+              const open = !!o.patientId;
+              return (
+                <tr key={o.id} className={open ? 'go' : ''}
+                  onClick={open ? () => go(`/${goalId}/clinician/${o.id}`) : undefined}
+                  title={open ? 'Open this patient' : 'Not a protocol order'}>
+                  <td>{open ? <b className="olink">{o.id}</b> : o.id}</td>
+                  <td className="mono-sm">{o.reviewed || '–'}</td>
+                  <td>{o.coach}</td>
+                  <td>{o.name}</td>
+                  <td className="omail">{o.email}</td>
+                  <td>–</td>
+                  <td>–</td>
+                  <td className="opkg">{o.pkg}</td>
+                  <td className="mono-sm">{o.purchased}</td>
+                </tr>
+              );
+            })}
+            {rows.length === 0 && (
+              <tr><td colSpan={9} className="oempty">No order matches these filters.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <p className="ofoot">
+        {rows.length} of {ORDERS.length} orders.
+        {cat !== 'Protocols' && ' Protocol orders are the ones that open.'}
+      </p>
+    </>
+  );
+}
+
+/* ══ PART TWO — THE ORDER ══════════════════════════════════════════════════
+   The patient details page exactly as it already is: what was bought on the
+   left, who bought it on the right, the panel underneath, and a row of buttons
+   for the surveys already on file.
+
+   One button in that row is new. */
+
+const PILLS = [
+  ['Client Notes', 'Notes the coach has written against this client.'],
+  ['Health Profile', 'The medical profile survey results.'],
+  ['Lifestyle Profile', 'The lifestyle survey results.'],
+  ['General Survey', 'Whichever survey this package carries.'],
+];
+
+const Rows = ({ rows }) => (
+  <table className="drow">
+    <tbody>
+      {rows.map(([k, v, edit]) => (
+        <tr key={k}>
+          <td>{k}</td>
+          <td>{v ?? '–'}</td>
+          {edit !== undefined && (
+            <td className="dedit">
+              {edit && (
+                <button className="btn-green"
+                  onClick={() => window.alert('Editing a client record is the existing panel’s job. This prototype only reads it.')}>
+                  Edit
+                </button>
+              )}
+            </td>
+          )}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
+function OrderDetail({ goalId, order, patient, pt, record }) {
+  const live = !!patient?.live;
+  const profile = live ? (pt?.intake?.profile || null) : record?.profile;
+  const done = live ? (pt?.done || []) : RR_PLAN.slice(0, record?.progress?.done || 0).map((x) => x.id);
+  /* The panel only holds results once the sample has actually been read. */
+  const resulted = done.includes('p3');
+
+  const others = ORDERS.filter((o) => o.email === order.email && o.id !== order.id);
+
+  return (
+    <>
+      <button className="crumb" onClick={() => go(`/${goalId}/clinician`)}>
+        <Icon name="back" size={12} /> Past Orders
+      </button>
+
+      <div className="row" style={{ margin: '10px 0 16px' }}>
+        <div className="grow">
+          <h2>View Test Results</h2>
+          <p className="sub">Order {order.id} · {order.name}</p>
+        </div>
+        <div className="pills">
+          {PILLS.map(([t, why]) => (
+            <button key={t} className="pill"
+              onClick={() => window.alert(`${t}: ${why}\n\nThis screen already exists in the panel and is not rebuilt here.`)}>
+              {t}
+            </button>
+          ))}
+          {/* ── THE ONE NEW BUTTON ──
+              Everything to its left is a survey already on file. This opens the
+              protocol: the record, the decision, and what the patient gets. */}
+          <button className="pill pill-new"
+            onClick={() => go(`/${goalId}/clinician/${order.id}/journey`)}>
+            <Icon name="clipboard" size={12} /> Protocol Journey
+          </button>
+        </div>
+      </div>
+
+      <div className="grid-2" style={{ alignItems: 'start' }}>
+        <div className="card">
+          <div className="card-pad"><h3>Order Details</h3></div>
+          <Rows rows={[
+            ['Order ID', order.id],
+            ['Purchased Date', order.purchased.split(',').slice(0, 2).join(',')],
+            ['Package Name', order.pkg],
+            ['Previous Orders', others.length
+              ? <span className="olinks">{others.map((o) => <i key={o.id}>{o.pkg}</i>)}</span>
+              : 'None'],
+          ]} />
+          <div className="card-pad" style={{ borderTop: '1px solid var(--line)' }}>
+            <h4 className="mini-h">Customer Transactions</h4>
+          </div>
+          <table className="otable otable-in">
+            <thead><tr><th>Id</th><th>Name</th><th>Purchased On</th></tr></thead>
+            <tbody>
+              {[order, ...others].map((o) => (
+                <tr key={o.id}>
+                  <td><b className="olink">{o.id}</b></td>
+                  <td className="opkg">{o.pkg}</td>
+                  <td className="mono-sm">{o.purchased}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="card">
+          <div className="card-pad"><h3>Client Details</h3></div>
+          <Rows rows={[
+            ['ID', order.patientId === 'live' ? '29798' : order.id - 88000],
+            ['Name', order.name],
+            ['Email', order.email],
+            /* Onboarding asks for age, not a date of birth. Saying so is more
+               use to a doctor than a plausible date nobody entered. */
+            ['Date of Birth', <span className="dmute">Not collected. Onboarding asks for age.</span>, false],
+            ['Age', profile?.age ? `${profile.age} Years` : null, false],
+            ['Height', profile?.height ? `${profile.height} cm` : null, true],
+            ['Weight', profile?.weight ? `${profile.weight} kg` : null, true],
+            ['Phone Number', null],
+            ['Gender', profile?.sex],
+            ['Location', `${order.city}, ${order.country}`],
+            ['Feedback Done By', order.coach],
+            ['Longevity Score', <span className="dmute">Not part of this prototype</span>],
+            ['Longevity Percentile', <span className="dmute">Not part of this prototype</span>],
+            ['Last Consultation Date', done.includes('p4') ? 'This session' : 'N/A'],
+            ['Wearable Status', 'INACTIVE'],
+          ]} />
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 16 }}>
+        <div className="card-pad">
+          <h3>Tests</h3>
+          <p className="sub" style={{ marginTop: 2 }}>
+            The baseline panel, as the lab returned it. This is the same record the
+            patient reads in their own app.
+          </p>
+        </div>
+        {resulted ? (
+          <table className="otable otable-in">
+            <thead>
+              <tr><th>Test</th><th>Panel</th><th>Result</th><th>Reference</th><th>Unit</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {PANEL.map((m) => (
+                <tr key={m.t}>
+                  <td>{m.t}</td>
+                  <td className="dmute">Recovery &amp; Inflammation Panel</td>
+                  <td className="ores"><b>{m.v}</b></td>
+                  <td className="dmute">{m.ref}</td>
+                  <td className="mono-sm">{m.u}</td>
+                  <td>
+                    <span className={`orange ${m.flag}`}>
+                      {m.flag === 'ok' ? 'In Range' : 'Out Of Range'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="card-pad" style={{ paddingTop: 0 }}>
+            <p className="empty-line">
+              No results yet. The sample has not been collected and read.
+            </p>
+          </div>
+        )}
+        <div className="card-pad" style={{ borderTop: '1px solid var(--line)' }}>
+          <p className="fine">
+            Marker values and reference ranges are placeholders pending clinical sign-off.
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ══ WHAT THE PATIENT HAS BEEN LOGGING ═════════════════════════════════════
+   The plan says what should happen. This says what the patient reports is
+   happening, and it is the only part of the record they write themselves.
+
+   Three things, in the order a clinician reads them:
+
+     THE SCORE    where they are against where they said they wanted to be,
+                  and the shape of the run that got them there.
+     THE TWO      pain and capacity apart, because the score folds them together
+     NUMBERS      and pain-down-capacity-down is a different call from
+                  pain-down-capacity-up.
+     WHAT IS      how often each thing is being logged, and when it last was.
+     BEING KEPT   Somebody who logged twice in week one and nothing since is the
+                  case this section exists to make impossible to miss.
+
+   Nothing here is invented. Where a capture has no backend the row says so,
+   because a clinician must not read "no heart scans" as non-adherence when the
+   camera build does not exist. */
+
+const CAP_LABEL = { symptoms: 'Symptoms', doses: 'Doses', meals: 'Meals', scan: 'Heart scan' };
+
+/* One patient's logbook, from whichever side it lives on. */
+function logbookFor(patient, pt) {
+  if (patient.live) {
+    return { day: pt?.day || 0, checkins: pt?.checkins || [], target: pt?.target ?? null,
+             logs: pt?.logs || {}, logAt: pt?.logAt || {}, done: pt?.done || [], real: true };
+  }
+  const r = patient.record || {};
+  return { day: r.day || 0, checkins: r.checkins || [], target: r.target ?? null,
+           logs: r.logs || {}, logAt: r.logAt || {},
+           done: RR_PLAN.slice(0, r.progress?.done || 0).map((x) => x.id), real: false };
+}
+
+const Track = ({ label, from, to, max, invert, only }) => {
+  const move = to - from;
+  const good = invert ? move < 0 : move > 0;
+  return (
+    <div className="trk">
+      <span className="trk-l">{label}</span>
+      <span className="trk-dots">
+        {Array.from({ length: max }, (_, i) => (
+          <i key={i} className={i < to ? 'on' : i < from ? 'was' : ''} />
+        ))}
+      </span>
+      {/* One check-in is a reading, not a trend. Saying "no change" of a single
+          number invites a doctor to read a flat line that does not exist. */}
+      <span className="trk-v"><b>{to}</b>{!only && <em>from {from}</em>}</span>
+      <span className={`trk-d ${only || move === 0 ? '' : good ? 'up' : 'down'}`}>
+        {only ? 'first reading' : move === 0 ? 'no change' : `${move > 0 ? '+' : ''}${move}`}
+      </span>
+    </div>
+  );
+};
+
+function PatientLogs({ patient, pt, weeks = 12 }) {
+  const lb = logbookFor(patient, pt);
+  const { checkins } = lb;
+  const first = checkins[0];
+  const last = checkins[checkins.length - 1];
+  const score = recoveryScore(last);
+  const was = recoveryScore(first);
+  const nowWeek = weekOfDay(lb.day);
+
+  /* The chart is the protocol's twelve weeks, not a row of however many bars
+     happen to exist. A gap is then a week nobody checked in, which is the thing
+     worth seeing; six bars crushed against the left edge is not. */
+  const byWeek = new Map();
+  checkins.forEach((c) => byWeek.set(weekOfDay(c.day), recoveryScore(c)));
+  const slots = Array.from({ length: weeks }, (_, i) => ({
+    week: i + 1, v: byWeek.get(i + 1) ?? null, now: i + 1 === nowWeek,
+  }));
+
+  /* Due-ness comes from the plan, so a capture the protocol has not reached yet
+     reads as "not due" rather than as a patient who is not bothering. */
+  const caps = captures(lb.done, lb.logs).map((c) => {
+    const at = lb.logAt[c.k];
+    const silentFor = at == null ? null : nowWeek - weekOfDay(at);
+    const state = c.k === 'scan' ? 'none'
+      : !c.due ? 'later'
+      : !c.count ? 'never'
+      : silentFor >= 2 ? 'quiet'
+      : 'on';
+    return { ...c, at, silentFor, state };
+  });
+  const quiet = caps.filter((c) => c.state === 'quiet' || c.state === 'never').length;
+
+  return (
+    <div className="card logs" style={{ marginBottom: 14 }}>
+      <div className="card-pad logs-h">
+        <div className="grow">
+          <h3>What they have logged</h3>
+          <p className="sub">
+            Read out of the patient's own app. None of it is authored here, and none
+            of it is a number this prototype made up.
+          </p>
+        </div>
+        <Chip tone={checkins.length ? 'live' : 'draft'}>
+          {checkins.length
+            ? `week ${nowWeek} · ${checkins.length} check-in${checkins.length === 1 ? '' : 's'}`
+            : 'nothing logged yet'}
+        </Chip>
+      </div>
+
+      {checkins.length === 0 ? (
+        <div className="card-pad" style={{ paddingTop: 0 }}>
+          <p className="empty-line">
+            This patient has not checked in. There is no trend to read, which is itself
+            worth saying on the call.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* ── the score, and the run that made it ── */}
+          <div className="logs-score">
+            <div className="ls-now">
+              <span className="ls-k">Recovery score</span>
+              <div className="ls-v">
+                <b>{score}</b>
+                {lb.target != null && <em>to {lb.target}</em>}
+              </div>
+              <span className={`ls-d ${score - was > 0 ? 'up' : score - was < 0 ? 'down' : ''}`}>
+                {checkins.length === 1
+                  ? `one check-in, week ${weekOfDay(first.day)}`
+                  : score === was
+                    ? `unchanged since week ${weekOfDay(first.day)}`
+                    : `${score - was > 0 ? '+' : ''}${score - was} since week ${weekOfDay(first.day)}`}
+              </span>
+            </div>
+            <div className="ls-chart">
+              {slots.map((sl) => (
+                <div className={`ls-bar ${sl.v == null ? 'gap' : ''} ${sl.now ? 'now' : ''}`}
+                  key={sl.week}
+                  title={sl.v == null ? `Week ${sl.week} · no check-in` : `Week ${sl.week} · ${sl.v}`}>
+                  {sl.v == null ? <u /> : <i style={{ height: `${Math.max(4, sl.v)}%` }} />}
+                  <span>{sl.week}</span>
+                </div>
+              ))}
+              {lb.target != null && (
+                <div className="ls-target" style={{ bottom: `${lb.target}%` }}><span>target</span></div>
+              )}
+            </div>
+          </div>
+
+          {/* ── the two numbers, apart ── */}
+          <div className="logs-tracks">
+            <Track label="Pain" from={first.pain} to={last.pain} max={10} invert
+              only={checkins.length === 1} />
+            <Track label="Capacity" from={first.capacity} to={last.capacity} max={10}
+              only={checkins.length === 1} />
+          </div>
+        </>
+      )}
+
+      {/* ── what is being kept, and what has gone quiet ── */}
+      <div className="logs-caps">
+        {caps.map((c) => (
+          <div className={`cap cap-${c.state}`} key={c.k}>
+            <div className="cap-h">
+              <Icon name={c.ic} size={13} />
+              <b>{CAP_LABEL[c.k]}</b>
+            </div>
+            <span className="cap-n">
+              {c.state === 'none' ? '–' : c.count ? `${c.count}×` : '0'}
+            </span>
+            <span className="cap-s">
+              {c.state === 'none' ? 'Needs the camera build'
+                : c.state === 'later' ? c.note
+                : c.state === 'never' ? 'Never logged'
+                : c.state === 'quiet' ? `Nothing for ${c.silentFor} weeks`
+                : `Last week ${weekOfDay(c.at)}`}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {quiet > 0 && (
+        <div className="card-pad" style={{ paddingTop: 0 }}>
+          <Note tone="gold" label="Worth asking about on the call">
+            <p style={{ margin: 0 }}>
+              {caps.filter((c) => c.state === 'quiet' || c.state === 'never')
+                   .map((c) => CAP_LABEL[c.k]).join(' and ')}
+              {' '}
+              {quiet === 1 ? 'has' : 'have'} gone quiet. The plan cannot tell you that; only
+              this can.
+            </p>
+          </Note>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══ THE SURFACE ══════════════════════════════════════════════════════════
+   Three screens, one route. #/<goal>/clinician[/<orderId>[/journey]]
+
+     no order        Past Orders, filtered
+     an order        that patient's record, as the panel already shows it
+     .../journey     the protocol: what happened, how they are doing, and the
+                     decision that changes their next screen
+*/
+export default function Clinician({ goalId, parts = [] }) {
   const { state, update } = useStudio();
   const draft = state.drafts?.[goalId];
 
-  const [chosen, setChosen] = useState('live');
   /* The patient app writes while this screen is open, so follow it. */
   const [pt, setPt] = useState(() => readPatient(null));
   useEffect(() => subscribe(() => setPt(readPatient(null))), []);
 
-  const patient = PATIENTS.find((p) => p.id === chosen) || PATIENTS[0];
-  const record = patient.live ? liveRecord(pt, state, goalId) : patient.record;
+  const orderId = Number(parts[2]) || null;
+  const order = ORDERS.find((o) => o.id === orderId && o.patientId) || null;
+  const patient = order ? PATIENTS.find((p) => p.id === order.patientId) : null;
+  const journey = !!order && parts[3] === 'journey';
 
   if (!draft || !draft.plan) {
     return <div className="card card-pad empty">No protocol for this goal, so there is nothing to consult on.</div>;
   }
+  if (!order) return <OrdersList goalId={goalId} />;
+
+  const record = patient.live ? liveRecord(pt, state, goalId) : patient.record;
+
+  if (!journey) {
+    return <OrderDetail goalId={goalId} order={order} patient={patient} pt={pt} record={record} />;
+  }
 
   return (
     <>
-      <div className="row" style={{ marginBottom: 14 }}>
-        <div className="grow">
-          <h2>Consult queue</h2>
-          <p className="sub">
-            Who is waiting, and for what. Open one to read the record before the call.
-          </p>
-        </div>
-      </div>
-
-      <Queue patients={PATIENTS} chosen={chosen} onChoose={setChosen} />
-
+      <button className="crumb" onClick={() => go(`/${goalId}/clinician/${order.id}`)}>
+        <Icon name="back" size={12} /> Order {order.id}
+      </button>
       {/* Keyed on the patient so that switching gives a genuinely fresh screen.
           Without it the folds stay open on the last person's history and, far
           worse, a half-typed note stays in the box and gets saved against
           whoever is now on screen. */}
-      <Consult key={patient.id} patient={patient} record={record} goalId={goalId}
+      <Consult key={patient.id} patient={patient} record={record} goalId={goalId} pt={pt}
         currentStep={patient.live ? nextItem(planFor(state, goalId, pt || {}), (pt && pt.done) || []) : null}
         state={state} update={update} />
     </>
   );
 }
 
-function Consult({ patient, record, state, update, goalId, currentStep }) {
+function Consult({ patient, record, state, update, goalId, currentStep, pt }) {
   /* This patient's record, not the last one anybody opened. */
   const consult = state.consults?.[patient.id] || {};
   const [note, setNote] = useState(consult.note || '');
@@ -406,6 +906,10 @@ function Consult({ patient, record, state, update, goalId, currentStep }) {
       </div>
 
       <Record rec={record} />
+
+      {/* Between the record and the decision, because it is evidence a doctor
+          reads BEFORE choosing, not a report she is shown afterwards. */}
+      <PatientLogs patient={patient} pt={pt} weeks={weeksOf(state, goalId)} />
 
       {!patient.live && (
         <div style={{ marginBottom: 14 }}>

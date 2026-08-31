@@ -304,3 +304,145 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
 .chg-h span:not(.when) { display:block; font-size:11.5px; color:var(--ink-3); margin-top:1px; }
 .chg-f { display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-top:10px; }
 @media (max-width: 760px) { .chg-f { grid-template-columns:1fr; } }
+
+/* ══ THE COACH'S ORDERS SCREENS ═══════════════════════════════════════════
+   The panel already has these. They are rendered in the Studio's own language
+   rather than copied pixel for pixel, but the columns, the filters and the
+   button row are the ones a coach already knows, because the point of this
+   surface is that only one thing on it is new. */
+
+.crumb { display:inline-flex; align-items:center; gap:6px; padding:4px 9px 4px 6px;
+         border-radius:7px; font-size:11.5px; font-weight:600; color:var(--ink-2);
+         background:var(--surface-2); }
+.crumb:hover { background:var(--surface-3); color:var(--ink); }
+
+/* ── search and filters ── */
+.osearch { display:flex; align-items:center; gap:8px; background:var(--surface);
+           border:1px solid var(--line); border-radius:10px; padding:4px 4px 4px 11px; }
+.osearch svg { color:var(--ink-3); flex:none; }
+.osearch input { border:none; outline:none; background:none; width:190px; font-size:13px; }
+.osearch input::placeholder { color:var(--ink-3); }
+
+.ofilters { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:14px; }
+.of { position:relative; }
+.of select { width:100%; appearance:none; background:var(--surface); border:1px solid var(--line);
+             border-radius:9px; padding:9px 28px 9px 11px; font-size:12.5px; color:var(--ink);
+             cursor:pointer; }
+.of select:hover { border-color:var(--line-2); }
+.of svg { position:absolute; right:9px; top:50%; margin-top:-6px; transform:rotate(90deg);
+          color:var(--ink-3); pointer-events:none; }
+
+/* ── the orders table ── */
+.otable-wrap { background:var(--surface); border:1px solid var(--line); border-radius:12px;
+               overflow:auto; }
+.otable { width:100%; min-width:1080px; border-collapse:collapse; font-size:12.5px; }
+.otable th { text-align:left; padding:9px 11px; background:var(--surface-2);
+             font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+             color:var(--ink-2); white-space:nowrap; border-bottom:1px solid var(--line); }
+.otable td { padding:10px 11px; border-bottom:1px solid var(--line); vertical-align:top;
+             color:var(--ink); }
+.otable tbody tr:last-child td { border-bottom:none; }
+.otable tr.go { cursor:pointer; }
+.otable tr.go:hover td { background:var(--gold-soft); }
+.otable .olink { color:var(--violet); font-weight:700; }
+.otable .omail { color:var(--ink-2); word-break:break-word; width:170px; font-size:11.5px; }
+.otable .opkg { min-width:150px; }
+.otable .oempty { text-align:center; color:var(--ink-3); padding:28px 12px; }
+.mono-sm { font-family:var(--f-mono); font-size:11px; color:var(--ink-2); white-space:nowrap; }
+.ofoot { margin:9px 2px 0; font-size:11.5px; color:var(--ink-3); }
+
+/* Nested in a card, so it loses the outer frame. */
+.otable-in { border-top:1px solid var(--line); min-width:0; }
+.otable-in th { background:var(--surface); }
+.otable .ores b { font-family:var(--f-mono); font-size:13px; }
+.orange { font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:5px; white-space:nowrap; }
+.orange.ok { background:var(--green-soft); color:var(--green); }
+.orange.high, .orange.low { background:var(--red-soft); color:var(--red); }
+
+/* ── the button row, and the one new button in it ── */
+.pills { display:flex; flex-wrap:wrap; gap:7px; }
+.pill { padding:8px 13px; border-radius:8px; font-size:12px; font-weight:600;
+        background:var(--violet); color:#fff; border:1px solid transparent; }
+.pill:hover { filter:brightness(1.08); }
+.pill-new { display:inline-flex; align-items:center; gap:6px;
+            background:var(--ink); color:var(--gold); }
+.pill-new:hover { filter:none; background:#0F2438; }
+
+/* ── the two detail cards ── */
+.drow { width:100%; border-collapse:collapse; font-size:12.5px; }
+.drow td { padding:9px 16px; border-top:1px solid var(--line); vertical-align:middle; }
+.drow td:first-child { color:var(--ink-2); width:38%; }
+.drow td:nth-child(2) { color:var(--ink); font-weight:500; }
+.drow .dedit { width:74px; text-align:right; padding-right:14px; }
+.dmute { color:var(--ink-3); font-weight:400; }
+.btn-green { background:#C6DB2E; color:#2C3A00; font-size:11.5px; font-weight:700;
+             padding:5px 16px; border-radius:6px; }
+.btn-green:hover { filter:brightness(1.05); }
+.olinks i { display:block; font-style:normal; color:var(--violet); font-weight:600; }
+.mini-h { font-size:12.5px; font-weight:700; font-family:var(--f-head); }
+.fine { margin:0; font-size:11px; color:var(--ink-3); line-height:1.5; }
+
+/* ══ WHAT THE PATIENT HAS BEEN LOGGING ════════════════════════════════════
+   The one part of the record the patient writes. It gets its own band between
+   the history and the decision, because it is evidence, not a report. */
+.logs-h { display:flex; align-items:flex-start; gap:12px; }
+
+.logs-score { display:grid; grid-template-columns:180px 1fr; gap:20px; align-items:end;
+              padding:4px 16px 14px; border-top:1px solid var(--line); }
+.ls-k { font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+        color:var(--ink-3); }
+.ls-v { display:flex; align-items:baseline; gap:7px; margin-top:4px; }
+.ls-v b { font-family:var(--f-head); font-size:34px; font-weight:700; line-height:1; }
+.ls-v em { font-style:normal; font-size:13px; color:var(--ink-3); }
+.ls-d { display:block; margin-top:5px; font-size:11.5px; color:var(--ink-3); }
+.ls-d.up { color:var(--green); } .ls-d.down { color:var(--red); }
+
+.ls-chart { position:relative; display:flex; align-items:flex-end; gap:6px; height:86px;
+            border-bottom:1px solid var(--line); }
+.ls-bar { flex:1; height:100%; display:flex; flex-direction:column; padding:0 3px;
+          justify-content:flex-end; align-items:center; position:relative; }
+.ls-bar i { display:block; width:100%; background:var(--gold); border-radius:4px 4px 0 0; }
+/* A week with no check-in is a gap, not a zero. */
+.ls-bar u { display:block; width:100%; height:3px; background:var(--surface-3); border-radius:2px; }
+.ls-bar.now i { background:var(--ink); }
+.ls-bar.now span { color:var(--ink); font-weight:600; }
+.ls-bar span { position:absolute; bottom:-17px; font-family:var(--f-mono); font-size:9.5px;
+               color:var(--ink-3); }
+.ls-target { position:absolute; left:0; right:0; border-top:1.5px dashed var(--line-2); }
+.ls-target span { position:absolute; right:0; top:-14px; font-size:9.5px; color:var(--ink-3); }
+
+/* Pain and capacity apart, because the score folds them together and the two
+   directions mean different things. */
+.logs-tracks { display:grid; gap:9px; padding:20px 16px 14px; }
+.trk { display:grid; grid-template-columns:70px 1fr 96px 74px; gap:12px; align-items:center; }
+.trk-l { font-size:12px; font-weight:600; color:var(--ink-2); }
+.trk-dots { display:flex; gap:3px; }
+.trk-dots i { flex:1; height:7px; border-radius:3px; background:var(--surface-3); }
+.trk-dots i.was { background:var(--gold-soft); box-shadow:inset 0 0 0 1px var(--line-2); }
+.trk-dots i.on { background:var(--ink); }
+.trk-v { display:flex; align-items:baseline; gap:6px; }
+.trk-v b { font-family:var(--f-mono); font-size:14px; }
+.trk-v em { font-style:normal; font-size:11px; color:var(--ink-3); }
+.trk-d { font-size:11px; font-weight:700; color:var(--ink-3); text-align:right; }
+.trk-d.up { color:var(--green); } .trk-d.down { color:var(--red); }
+
+/* One row per capture. The state is the point: a tile that has gone quiet reads
+   differently from one the plan has not reached yet. */
+.logs-caps { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:6px 16px 14px; }
+.cap { border:1px solid var(--line); border-radius:10px; padding:10px 11px; background:var(--surface); }
+.cap-h { display:flex; align-items:center; gap:6px; color:var(--ink-2); }
+.cap-h b { font-size:12px; font-weight:600; color:var(--ink); }
+.cap-n { display:block; font-family:var(--f-head); font-size:20px; font-weight:700; margin-top:5px; }
+.cap-s { display:block; font-size:10.5px; color:var(--ink-3); margin-top:1px; line-height:1.4; }
+.cap-on { border-color:var(--green); background:var(--green-soft); }
+.cap-on .cap-n { color:var(--green); }
+.cap-quiet, .cap-never { border-color:var(--gold); background:var(--gold-soft); }
+.cap-quiet .cap-n, .cap-never .cap-n { color:var(--amber); }
+.cap-later, .cap-none { background:var(--surface-2); }
+.cap-later .cap-n, .cap-none .cap-n { color:var(--ink-3); }
+
+@media (max-width: 1100px) {
+  .ofilters { grid-template-columns:repeat(2,1fr); }
+  .logs-caps { grid-template-columns:repeat(2,1fr); }
+  .logs-score { grid-template-columns:1fr; }
+}

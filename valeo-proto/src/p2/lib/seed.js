@@ -380,6 +380,17 @@ export const PATIENTS = [
           note: 'Baseline hs-CRP raised. Start as written, review at Week 6.' },
       ],
       flags: ['Competes in tested sport: no'],
+      /* What she has logged in her own app. Six weeks in, still reporting,
+         and the numbers are moving the right way. */
+      day: 41,
+      checkins: [
+        { pain: 8, capacity: 3, day: 2 },  { pain: 7, capacity: 4, day: 9 },
+        { pain: 7, capacity: 4, day: 16 }, { pain: 6, capacity: 5, day: 24 },
+        { pain: 5, capacity: 6, day: 31 }, { pain: 4, capacity: 7, day: 38 },
+      ],
+      target: 85,
+      logs: { symptoms: 6, doses: 22, meals: 9 },
+      logAt: { symptoms: 38, doses: 40, meals: 19 },
     } },
   { id: 'p_omar', name: 'Omar Rashid',
     goal: 'recover-rebuild', waiting: 'Week 1 consult', since: 'Today, 11:00',
@@ -398,6 +409,14 @@ export const PATIENTS = [
       progress: { done: 3, total: 14, next: 'Doctor consultation' },
       consults: [],
       flags: ['Competes in tested sport: not asked yet'],
+      /* One check-in in week one and nothing since. The interesting case: the
+         console has to make "logged once, then stopped" visible, because that
+         is what the coach is meant to act on. */
+      day: 16,
+      checkins: [{ pain: 9, capacity: 2, day: 1 }],
+      target: 80,
+      logs: { symptoms: 1 },
+      logAt: { symptoms: 1 },
     } },
   { id: 'p_sara', name: 'Sara Nasser',
     goal: 'skin-hair', waiting: 'Week 1 consult', since: 'Yesterday, 16:20',
@@ -413,8 +432,98 @@ export const PATIENTS = [
       progress: { done: 1, total: 11, next: 'Blood sample collected' },
       consults: [],
       flags: ['Skin and hair is not built out in this prototype'],
+      day: 4,
+      checkins: [],
+      target: null,
+      logs: {},
+      logAt: {},
     } },
 ];
+
+/* ── THE ORDERS LIST ──
+   The coach does not arrive at a protocol, they arrive at Past Orders. This is
+   that list: the same columns and the same filters the live panel has, with one
+   category added.
+
+   Most of these rows are not protocols. That is deliberate — selecting
+   Protocols has to visibly narrow a real list, or the dropdown is decoration. */
+export const ORDER_CATEGORIES = [
+  'All Orders', 'Blood Package', 'Bundle', 'Coach Package',
+  'Coach Consultation Package', 'Custom Package', 'Medicine', 'Mini Package',
+  'Protocols', 'Supplement',
+];
+
+export const COACHES = ['Dr. Mahmoud Musa', 'Durga Coach', 'Dr. Rania Khoury'];
+
+export const ORDERS = [
+  /* The four protocol orders. Each one points at a patient in PATIENTS, which
+     is what makes the row openable. */
+  { id: 117955, patientId: 'live', category: 'Protocols',
+    pkg: 'Recovery & Repair Peptide Protocol', price: 3799,
+    name: 'Ahmad Al Mansouri', email: 'ahmad.almansouri@example.ae',
+    coach: 'Dr. Mahmoud Musa', reviewed: null,
+    purchased: 'Feb 10, 2026, 07:39 AM', country: 'United Arab Emirates',
+    city: 'Dubai', rx: 'Yes' },
+  { id: 117931, patientId: 'p_leila', category: 'Protocols',
+    pkg: 'Recovery & Repair Peptide Protocol', price: 3799,
+    name: 'Leila Haddad', email: 'leila.haddad@example.ae',
+    coach: 'Dr. Mahmoud Musa', reviewed: 'Jul 21, 2025',
+    purchased: 'Jul 14, 2025, 11:02 AM', country: 'United Arab Emirates',
+    city: 'Dubai', rx: 'Yes' },
+  { id: 117902, patientId: 'p_omar', category: 'Protocols',
+    pkg: 'Recovery & Repair Peptide Protocol', price: 4047,
+    name: 'Omar Rashid', email: 'omar.rashid@example.ae',
+    coach: 'Dr. Mahmoud Musa', reviewed: null,
+    purchased: 'Aug 19, 2025, 09:14 AM', country: 'United Arab Emirates',
+    city: 'Abu Dhabi', rx: 'Yes' },
+  { id: 117884, patientId: 'p_sara', category: 'Protocols',
+    pkg: 'Skin & Hair Peptide Protocol', price: 2499,
+    name: 'Sara Nasser', email: 'sara.nasser@example.ae',
+    coach: 'Dr. Rania Khoury', reviewed: null,
+    purchased: 'Aug 22, 2025, 04:20 PM', country: 'United Arab Emirates',
+    city: 'Dubai', rx: 'Yes' },
+
+  /* Everything else the coach's queue actually holds. Not openable: these are
+     the panel's existing order types and this prototype does not rebuild them. */
+  { id: 117954, category: 'Blood Package', pkg: 'VO2 Analyzer', price: 890,
+    name: 'Ahmad Al Mansouri', email: 'ahmad.almansouri@example.ae',
+    coach: 'Dr. Mahmoud Musa', reviewed: null,
+    purchased: 'Feb 10, 2026, 07:39 AM', country: 'United Arab Emirates',
+    city: 'Dubai', rx: 'No' },
+  { id: 117953, category: 'Custom Package', pkg: 'Comprehensive Food Intolerance Test',
+    price: 1290, name: 'Ahmad Al Mansouri', email: 'ahmad.almansouri@example.ae',
+    coach: 'Dr. Mahmoud Musa', reviewed: 'Feb 15, 2026',
+    purchased: 'Feb 10, 2026, 07:39 AM', country: 'United Arab Emirates',
+    city: 'Dubai', rx: 'No' },
+  { id: 117840, category: 'Blood Package', pkg: 'Comprehensive Male Profile',
+    price: 1290, name: 'Yousef Karim', email: 'yousef.karim@example.ae',
+    coach: 'Durga Coach', reviewed: 'Feb 09, 2026',
+    purchased: 'Feb 02, 2026, 08:30 AM', country: 'United Arab Emirates',
+    city: 'Sharjah', rx: 'No' },
+  { id: 117802, category: 'Medicine', pkg: 'Semaglutide, one month', price: 1745,
+    name: 'Mariam Al Zaabi', email: 'mariam.alzaabi@example.ae',
+    coach: 'Durga Coach', reviewed: null,
+    purchased: 'Jan 28, 2026, 06:11 PM', country: 'Saudi Arabia',
+    city: 'Riyadh', rx: 'Yes' },
+  { id: 117771, category: 'Supplement', pkg: 'Joint and tendon stack', price: 220,
+    name: 'Hassan Ali', email: 'hassan.ali@example.ae',
+    coach: 'Durga Coach', reviewed: 'Jan 24, 2026',
+    purchased: 'Jan 20, 2026, 12:45 PM', country: 'United Arab Emirates',
+    city: 'Dubai', rx: 'No' },
+  { id: 117740, category: 'Coach Consultation Package', pkg: 'Peptide Therapy Consultation',
+    price: 350, name: 'Nadia Farouk', email: 'nadia.farouk@example.ae',
+    coach: 'Dr. Rania Khoury', reviewed: 'Jan 18, 2026',
+    purchased: 'Jan 15, 2026, 10:05 AM', country: 'Kuwait',
+    city: 'Kuwait City', rx: 'No' },
+  { id: 117712, category: 'Mini Package', pkg: 'Vitamin D', price: 110,
+    name: 'Leila Haddad', email: 'leila.haddad@example.ae',
+    coach: 'Dr. Mahmoud Musa', reviewed: 'Jan 12, 2026',
+    purchased: 'Jan 09, 2026, 03:22 PM', country: 'United Arab Emirates',
+    city: 'Dubai', rx: 'No' },
+];
+
+export const orderFor = (patientId) =>
+  ORDERS.find((o) => o.patientId === patientId) || null;
 
 export const LOCKED_RULES = [
   { t: 'Remove the baseline panel', why: '“Your protocol starts with testing, not a product” is the product. Also the clinical basis for prescribing.' },

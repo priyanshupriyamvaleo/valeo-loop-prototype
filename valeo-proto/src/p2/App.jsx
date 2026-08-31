@@ -88,10 +88,14 @@ function Shell() {
   const pubPart = sharedChat ? 'onboarding' : surface.part;
   const pubShort = sharedChat ? 'onboarding chat' : surface.short.toLowerCase();
 
-  const isConsult = surfaceKey === 'clinician';
+  /* The clinician surface is three screens deep. Only the last one records
+     anything, so only the last one gets the bar at the foot. */
+  const onJourney = surfaceKey === 'clinician' && parts[3] === 'journey';
+  const isConsult = onJourney;
   /* Two surfaces write to a patient rather than to a template, so neither has
      anything to publish. */
-  const isReadOnly = surfaceKey === 'user';
+  const isReadOnly = surfaceKey === 'user'
+    || (surfaceKey === 'clinician' && !onJourney);
   const ps = isConsult
     ? { live: !!state.consults?.live, dirty: false, version: state.consults?.live?.version || 0 }
     : pubState(state, pubScope, pubPart);
@@ -182,8 +186,14 @@ function Shell() {
 
         <div className="page-in">
           <div style={{ marginBottom: 18 }}>
-            <h1>{goal.t}</h1>
-            <p className="sub">{sharedChat ? 'Shared by every goal · Onboarding chat' : `${goal.protocol} · ${surface.short}`}</p>
+            <h1>{surfaceKey === 'clinician' ? 'Order Management' : goal.t}</h1>
+            <p className="sub">
+              {surfaceKey === 'clinician'
+                ? `Past Orders · ${goal.t}`
+                : sharedChat
+                  ? 'Shared by every goal · Onboarding chat'
+                  : `${goal.protocol} · ${surface.short}`}
+            </p>
           </div>
 
           {!goal.built ? (
@@ -196,7 +206,9 @@ function Shell() {
               </p>
             </Note>
           ) : (
-            <Boundary key={goalId + surfaceKey + chatTab}><Body goalId={goalId} tab={chatTab} /></Boundary>
+            <Boundary key={goalId + surfaceKey + chatTab + parts.slice(2).join('/')}>
+              <Body goalId={goalId} tab={chatTab} parts={parts} />
+            </Boundary>
           )}
         </div>
 

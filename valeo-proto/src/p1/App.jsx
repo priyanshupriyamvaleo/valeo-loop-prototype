@@ -34,6 +34,8 @@ const INIT = {
   checkins: [],        /* pain and capacity, self-reported */
   target: null,        /* where the patient says they want to be by Week 12 */
   logs: {},            /* how many times each tile has been logged */
+  logAt: {},           /* and the day each was last logged, which is what tells
+                          a clinician that somebody has gone quiet */
   booked: {},          /* itemId -> the slot the patient chose */
   acting: null,        /* the plan item whose action screen is open */
   actMode: null,       /* which face of it: report, join, or the default */
@@ -303,9 +305,12 @@ export default function App() {
         onBack={() => setScreen('detail')}
         onDone={(v, target) => set((prev) => ({
           ...prev,
-          checkins: [...prev.checkins, v],
+          /* Stamped with the day, because a check-in without a date is a number
+             the clinician cannot put on a trend. */
+          checkins: [...prev.checkins, { ...v, day: prev.day || 0 }],
           target: target != null ? target : prev.target,
           logs: { ...prev.logs, symptoms: (prev.logs?.symptoms || 0) + 1 },
+          logAt: { ...prev.logAt, symptoms: prev.day || 0 },
           stage: 'detail',
         }))} />
     );
@@ -327,7 +332,11 @@ export default function App() {
              A tile that invented a weight would be worse than one that does
              not pretend to have it. */
           if (k === 'symptoms') { setScreen('checkin'); return; }
-          set((prev) => ({ ...prev, logs: { ...prev.logs, [k]: (prev.logs?.[k] || 0) + 1 } }));
+          set((prev) => ({
+            ...prev,
+            logs: { ...prev.logs, [k]: (prev.logs?.[k] || 0) + 1 },
+            logAt: { ...prev.logAt, [k]: prev.day || 0 },
+          }));
         }} />
     );
   }

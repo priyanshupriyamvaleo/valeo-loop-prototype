@@ -95,10 +95,12 @@ button { font:inherit; color:inherit; cursor:pointer; border:none; background:no
 .hero .k { font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); }
 .hero h2 { font-family:var(--f-head); font-size:21px; font-weight:700; margin-top:6px; line-height:1.15; }
 .hero p { font-size:12.5px; color:rgba(255,255,255,.7); margin-top:6px; line-height:1.5; }
-.goalrow { display:flex; align-items:center; gap:11px; background:rgba(255,255,255,.08);
-           border:1px solid rgba(255,255,255,.14); border-radius:13px; padding:11px 12px; margin-top:8px; }
+/* These sit at the end of the onboarding chat, on cream, not inside the dark
+   hero they were first written for. */
+.goalrow { display:flex; align-items:center; gap:11px; background:var(--card);
+           border:1px solid var(--line); border-radius:13px; padding:11px 12px; margin-top:8px; }
 .goalrow b { font-family:var(--f-head); font-size:13.5px; font-weight:600; display:block; }
-.goalrow span { font-size:11px; color:rgba(255,255,255,.65); }
+.goalrow span { font-size:11px; color:var(--ink-2); }
 
 .sectlbl { font-size:10.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
            color:var(--ink-2); margin:22px 16px 10px; }

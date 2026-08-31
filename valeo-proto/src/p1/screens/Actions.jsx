@@ -147,7 +147,7 @@ export function Status({ item, onBack, onDone }) {
    What "your results are ready" actually opens. Markers are placeholders
    pending clinical sign-off, and the screen says so rather than presenting
    invented numbers as findings. */
-const PANEL = [
+export const PANEL = [
   { t: 'hs-CRP', v: '4.1', u: 'mg/L', ref: 'under 3.0', flag: 'high' },
   { t: 'ESR', v: '18', u: 'mm/hr', ref: 'under 15', flag: 'high' },
   { t: 'Vitamin D', v: '41', u: 'nmol/L', ref: '75 to 125', flag: 'low' },
