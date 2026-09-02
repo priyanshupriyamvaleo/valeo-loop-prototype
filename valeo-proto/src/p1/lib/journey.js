@@ -1,5 +1,5 @@
 import { publishedFor, GATES } from '../../shared/bus';
-import { findService } from '../../p2/lib/seed';
+import { findService, priceOf } from '../../p2/lib/seed';
 
 /* THE ONE PATIENT THIS APP IS.
    Consult records are keyed by patient in the Studio. The phone is Ahmad, so it
@@ -32,7 +32,7 @@ export const STAGES = {
 };
 
 /* Which gate, if any, is blocking the journey at this point. */
-export function gateFor(stage, studio, goalId) {
+export function gateFor(stage, studio, scope) {
   if (stage === 'gate:triage')      return { key: 'triage', ...GATES.triage };
   if (stage === 'gate:prepurchase') return { key: 'prepurchase', ...GATES.prepurchase };
   if (stage === 'gate:plan')        return { key: 'plan', ...GATES.plan };
@@ -41,18 +41,18 @@ export function gateFor(stage, studio, goalId) {
 }
 
 /* Is the thing that gate is waiting for available yet? */
-export function gateOpen(gateKey, studio, goalId) {
+export function gateOpen(gateKey, studio, scope) {
   if (!studio) return false;
   if (gateKey === 'consult') return !!consultFor(studio);
-  const pub = publishedFor(studio, goalId, gateKey);
+  const pub = publishedFor(studio, scope, gateKey);
   return !!(pub && pub.data);
 }
 
 /* The patient's own plan: the published template, plus anything the doctor
    added at a consult. The doctor's items are merged in by offset, so they take
    their natural place in the schedule rather than landing at the end. */
-export function planFor(studio, goalId, journey) {
-  const pub = publishedFor(studio, goalId, 'plan');
+export function planFor(studio, scope, journey) {
+  const pub = publishedFor(studio, scope, 'plan');
   const base = (pub && pub.data) ? structuredClone(pub.data) : [];
   /* Items the clinician added at the consultation only exist for a patient who
      has HAD that consultation. Merging them on the mere existence of a consult
@@ -132,8 +132,8 @@ export function drift(item, completedOn) {
   return { planned: weekNo(item), actual, late: actual - weekNo(item) };
 }
 
-export const weeksOf = (studio, goalId) =>
-  (publishedFor(studio, goalId, 'plan')?.weeks) || 12;
+export const weeksOf = (studio, scope) =>
+  (publishedFor(studio, scope, 'plan')?.weeks) || 12;
 
 /* ── WEIGHT LOSS ──
    Documented, not rebuilt. Four modules, each on its own condition, sorted by
@@ -298,8 +298,8 @@ export const bookingCompletes = (item) => !item || !item.scheduled;
 
    The protocol's own medication steps supply the ongoing ones, so a patient
    sees what they are taking before any consultation has happened. */
-export function medicinesFor(studio, goalId, journey) {
-  const pub = publishedFor(studio, goalId, 'plan');
+export function medicinesFor(studio, scope, journey) {
+  const pub = publishedFor(studio, scope, 'plan');
   const plan = (pub && pub.data) || [];
   const done = (journey && journey.done) || [];
   const out = new Map();
@@ -352,10 +352,15 @@ export function serviceForStep(studio, item, journey) {
 
    Read off the resolved plan rather than a stored basket, because there is no
    basket: the plan IS the order, and a second copy of it would drift. */
-export function packageFor(studio, goalId, journey) {
-  const plan = planFor(studio, goalId, journey);
-  const pp = publishedFor(studio, goalId, 'prepurchase');
-  const base = pp?.data?.cart?.price || 0;
+export function packageFor(studio, scope, journey) {
+  const plan = planFor(studio, scope, journey);
+  const pp = publishedFor(studio, scope, 'prepurchase');
+  /* The region the protocol was published in. Every price below is that
+     region's price, because there is no other kind. */
+  const region = pp?.region || publishedFor(studio, scope, 'plan')?.region || 'uae';
+  /* Stamped at publish, computed from the invoice. The phone does not
+     recompute a discount to find out what it was charged. */
+  const base = pp?.price || 0;
   const c = consultFor(studio);
 
   const lines = [];
@@ -368,7 +373,7 @@ export function packageFor(studio, goalId, journey) {
     seen.add(key);
     lines.push({
       key, id: svc.id, t: svc.t, note: svc.note, type: svc.type,
-      price: svc.price || 0,
+      price: priceOf(svc, region),
       step: it.t, week: it.week,
       /* Anything the doctor put there is on top of the protocol price. */
       added: !!it.doctorAdded,
@@ -382,10 +387,10 @@ export function packageFor(studio, goalId, journey) {
     const svc = findService(r.id);
     if (!svc) return;
     lines.push({ key: `rx_${r.id}`, id: svc.id, t: svc.t, note: svc.note, type: svc.type,
-      price: svc.price || 0, step: 'Prescribed at the consultation', week: null,
+      price: priceOf(svc, region), step: 'Prescribed at the consultation', week: null,
       added: true, swapped: false });
   });
 
   const extra = lines.filter((l) => l.added).reduce((n, l) => n + l.price, 0);
-  return { lines, base, extra, total: base + extra };
+  return { lines, base, extra, total: base + extra, region };
 }

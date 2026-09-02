@@ -2,9 +2,10 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-/* ── TWO PROTOTYPES, ONE ORIGIN ──
-   The patient app and the Studio are separate products with separate URLs, and
-   they are built and reasoned about separately. They are served from one origin
+/* ── THREE PROTOTYPES, ONE ORIGIN ──
+   Three separate products with three URLs, built and reasoned about
+   separately: the consumer app, the Admin Panel that authors protocols, and
+   the Coach Panel a clinician works a queue in. They are served from one origin
    on purpose: localStorage is origin-scoped, and the `storage` event only
    reaches other tabs of the SAME origin.
    That event is the whole demo. Publish in the Studio tab and the patient tab
@@ -28,6 +29,7 @@ export default defineConfig({
         index: resolve(__dirname, 'index.html'),
         p1: resolve(__dirname, 'p1/index.html'),
         p2: resolve(__dirname, 'p2/index.html'),
+        p3: resolve(__dirname, 'p3/index.html'),
       },
     },
   },

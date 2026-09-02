@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
-import { findService } from '../../p2/lib/seed';
+import { findService, priceOf } from '../../p2/lib/seed';
+import { money } from '../../shared/bus';
 import { actorOf, actorInitial, whenLabel } from '../lib/journey';
 
 /*
@@ -312,7 +313,7 @@ export function CheckIn({ first, previous, onBack, onDone }) {
    Where a medicine or supplement goes when the patient taps it. Everything here
    comes from the catalogue the Studio linked to, so a product the doctor added
    this morning has a page this afternoon with nobody writing one. */
-export function ProductPage({ id, status, onBack, onBuy }) {
+export function ProductPage({ id, status, onBack, onBuy, region = 'uae' }) {
   const svc = findService(id);
   if (!svc) {
     return (
@@ -331,8 +332,11 @@ export function ProductPage({ id, status, onBack, onBuy }) {
           <span className="who-av lg">{svc.t[0]}</span>
           <b>{svc.t}</b>
           <span>{svc.note}</span>
-          {svc.price > 0
-            ? <div className="pdp-price">AED {svc.price.toLocaleString()}</div>
+          {/* A protocol ships this rather than selling it, so its catalogue
+              price is not the patient's business. It has one; they are not
+              paying it. */}
+          {!svc.inProtocol && priceOf(svc, region) > 0
+            ? <div className="pdp-price">{money(priceOf(svc, region), region)}</div>
             : <div className="pdp-price incl">Included in your protocol</div>}
         </div>
 
@@ -361,9 +365,9 @@ export function ProductPage({ id, status, onBack, onBuy }) {
         </p>
       </div>
       <div className="foot">
-        {svc.price > 0 && !ongoing ? (
+        {!svc.inProtocol && priceOf(svc, region) > 0 && !ongoing ? (
           <button className="cta" onClick={onBuy}>
-            Add to cart · AED {svc.price.toLocaleString()} <Icon name="chev" size={16} />
+            Add to cart · {money(priceOf(svc, region), region)} <Icon name="chev" size={16} />
           </button>
         ) : (
           <div className="tiny">Nothing to buy. This is part of your protocol.</div>

@@ -29,55 +29,58 @@
 export const SERVICES = {
   lab: { t: 'Lab panel', items: [
     { id: 'panel_recovery', t: 'Recovery & Inflammation Panel',
-      note: 'CBC, hs-CRP, ESR, Vitamin D, Magnesium, CK, Liver, Kidney, HbA1c, Ferritin', price: 890 },
-    { id: 'panel_male', t: 'Comprehensive Male Profile', note: '49 biomarkers', price: 1290 },
-    { id: 'panel_female', t: 'Comprehensive Female Profile', note: '49 biomarkers', price: 1290 },
-    { id: 'panel_wellbeing', t: 'General Well-being Test', note: '49 essential biomarkers', price: 1190 },
-    { id: 'panel_testosterone', t: 'Testosterone Profile', note: 'Total, free, SHBG, LH, FSH', price: 540 },
-    { id: 'panel_thyroid', t: 'Thyroid Profile', note: 'TSH, T3, T4, antibodies', price: 460 },
-    { id: 'panel_metabolic', t: 'Metabolic Profile', note: 'HbA1c, fasting insulin, lipids', price: 620 },
+      note: 'CBC, hs-CRP, ESR, Vitamin D, Magnesium, CK, Liver, Kidney, HbA1c, Ferritin', price: { uae: 890, ksa: 920 } },
+    { id: 'panel_male', t: 'Comprehensive Male Profile', note: '49 biomarkers', price: { uae: 1290, ksa: 1340 } },
+    { id: 'panel_female', t: 'Comprehensive Female Profile', note: '49 biomarkers', price: { uae: 1290, ksa: 1340 } },
+    { id: 'panel_wellbeing', t: 'General Well-being Test', note: '49 essential biomarkers', price: { uae: 1190, ksa: 1230 } },
+    { id: 'panel_testosterone', t: 'Testosterone Profile', note: 'Total, free, SHBG, LH, FSH', price: { uae: 540, ksa: 560 } },
+    { id: 'panel_thyroid', t: 'Thyroid Profile', note: 'TSH, T3, T4, antibodies', price: { uae: 460, ksa: 480 } },
+    { id: 'panel_metabolic', t: 'Metabolic Profile', note: 'HbA1c, fasting insulin, lipids', price: { uae: 620, ksa: 640 } },
     /* Targeted single-marker tests. A doctor chasing one thing should not have
        to order forty-nine biomarkers to get it. */
-    { id: 'test_b12', t: 'Vitamin B12', note: 'Single marker', price: 90 },
-    { id: 'test_vitd', t: 'Vitamin D', note: 'Single marker', price: 110 },
-    { id: 'test_iron', t: 'Iron studies', note: 'Ferritin, transferrin, saturation', price: 180 },
-    { id: 'test_hba1c', t: 'HbA1c', note: 'Single marker', price: 95 },
-    { id: 'test_crp', t: 'hs-CRP', note: 'Single marker, inflammation', price: 85 },
+    { id: 'test_b12', t: 'Vitamin B12', note: 'Single marker', price: { uae: 90, ksa: 95 } },
+    { id: 'test_vitd', t: 'Vitamin D', note: 'Single marker', price: { uae: 110, ksa: 115 } },
+    { id: 'test_iron', t: 'Iron studies', note: 'Ferritin, transferrin, saturation', price: { uae: 180, ksa: 190 } },
+    { id: 'test_hba1c', t: 'HbA1c', note: 'Single marker', price: { uae: 95, ksa: 100 } },
+    { id: 'test_crp', t: 'hs-CRP', note: 'Single marker, inflammation', price: { uae: 85, ksa: 90 } },
   ] },
   consult: { t: 'Consultation', items: [
-    { id: 'consult_peptide', t: 'Peptide Therapy Consultation', note: '30 minutes, video', price: 350 },
-    { id: 'consult_glp1', t: 'GLP-1 Weight Loss Consultation', note: '30 minutes, video', price: 350 },
-    { id: 'consult_longevity', t: 'Longevity Consultation', note: '45 minutes, video', price: 500 },
-    { id: 'consult_gp', t: 'General Physician Consultation', note: '15 minutes, video', price: 150 },
-    { id: 'consult_discovery', t: 'Discovery Consultation', note: '20 minutes, video', price: 0 },
-    { id: 'consult_review', t: 'Follow-up Review', note: '15 minutes, video', price: 200 },
+    { id: 'consult_peptide', t: 'Peptide Therapy Consultation', note: '30 minutes, video', price: { uae: 350, ksa: 365 } },
+    { id: 'consult_glp1', t: 'GLP-1 Weight Loss Consultation', note: '30 minutes, video', price: { uae: 350, ksa: 365 } },
+    { id: 'consult_longevity', t: 'Longevity Consultation', note: '45 minutes, video', price: { uae: 500, ksa: 520 } },
+    { id: 'consult_gp', t: 'General Physician Consultation', note: '15 minutes, video', price: { uae: 150, ksa: 160 } },
+    { id: 'consult_discovery', t: 'Discovery Consultation', note: '20 minutes, video', price: { uae: 0, ksa: 0 } },
+    { id: 'consult_review', t: 'Follow-up Review', note: '15 minutes, video', price: { uae: 200, ksa: 210 } },
   ] },
   homecare: { t: 'Home care', items: [
-    { id: 'home_draw', t: 'Home nurse visit, blood draw', note: 'About 20 minutes', price: 120 },
-    { id: 'home_injection', t: 'Home nurse visit, injection', note: 'AED 99 per visit', price: 99 },
-    { id: 'home_pack4', t: 'Nurse administration, 4-pack', note: 'AED 349', price: 349 },
-    { id: 'home_iv', t: 'IV drip at home', note: 'About 45 minutes', price: 690 },
+    { id: 'home_draw', t: 'Home nurse visit, blood draw', note: 'About 20 minutes', price: { uae: 120, ksa: 135 } },
+    { id: 'home_injection', t: 'Home nurse visit, injection', note: 'Per visit', price: { uae: 99, ksa: 110 } },
+    { id: 'home_pack4', t: 'Nurse administration, 4-pack', note: 'Four visits', price: { uae: 349, ksa: 385 } },
+    { id: 'home_iv', t: 'IV drip at home', note: 'About 45 minutes', price: { uae: 690 } },
   ] },
   medication: { t: 'Medication', items: [
-    { id: 'med_bpc', t: 'BPC-157 pen, one month', note: 'Cold chain', price: 0,
-      inProtocol: true },
-    { id: 'med_tb500', t: 'TB-500, one month', note: 'The Wolverine upgrade', price: 5999,
+    /* Priced like everything else, and flagged as something a protocol ships
+       rather than sells separately. With no price the package had no component
+       to discount and its total was an assertion again. */
+    { id: 'med_bpc', t: 'BPC-157 pen, one month', note: 'Cold chain',
+      price: { uae: 1400, ksa: 1450 }, inProtocol: true },
+    { id: 'med_tb500', t: 'TB-500, one month', note: 'The Wolverine upgrade', price: { uae: 5999, ksa: 6250 },
       /* WADA-prohibited, so it cannot be offered until the competition question
          is answered no. The gate is a property of the PRODUCT, not of one
          hardcoded button, so anything carrying TB-500 inherits it. */
       gate: 'competes' },
-    { id: 'med_bpc_tb', t: 'BPC-157 with TB-500, one month', note: 'Cold chain', price: 5999,
+    { id: 'med_bpc_tb', t: 'BPC-157 with TB-500, one month', note: 'Cold chain', price: { uae: 5999, ksa: 6250 },
       gate: 'competes' },
-    { id: 'med_ghk', t: 'GHK-Cu, one month', note: 'Where clinically indicated', price: 1200 },
-    { id: 'med_semaglutide', t: 'Semaglutide, one month', note: 'Cold chain', price: 1745 },
+    { id: 'med_ghk', t: 'GHK-Cu, one month', note: 'Where clinically indicated', price: { uae: 1200 } },
+    { id: 'med_semaglutide', t: 'Semaglutide, one month', note: 'Cold chain', price: { uae: 1745, ksa: 1810 } },
   ] },
   supplement: { t: 'Supplement', items: [
-    { id: 'sup_voucher', t: 'Supplement voucher, AED 150', note: 'Spend against any stack', price: 150 },
-    { id: 'sup_joint', t: 'Joint and tendon stack', note: 'Collagen, Vitamin C, Boswellia', price: 220 },
-    { id: 'sup_d3k2', t: 'Vitamin D3 with K2', note: '90 days', price: 95 },
-    { id: 'sup_magnesium', t: 'Magnesium glycinate', note: '90 days', price: 85 },
-    { id: 'sup_omega', t: 'Omega-3', note: '90 days', price: 130 },
-    { id: 'sup_creatine', t: 'Creatine monohydrate', note: '90 days', price: 90 },
+    { id: 'sup_voucher', t: 'Supplement voucher', note: 'Spend against any stack', price: { uae: 150, ksa: 155 } },
+    { id: 'sup_joint', t: 'Joint and tendon stack', note: 'Collagen, Vitamin C, Boswellia', price: { uae: 220, ksa: 230 } },
+    { id: 'sup_d3k2', t: 'Vitamin D3 with K2', note: '90 days', price: { uae: 95, ksa: 99 } },
+    { id: 'sup_magnesium', t: 'Magnesium glycinate', note: '90 days', price: { uae: 85, ksa: 89 } },
+    { id: 'sup_omega', t: 'Omega-3', note: '90 days', price: { uae: 130, ksa: 135 } },
+    { id: 'sup_creatine', t: 'Creatine monohydrate', note: '90 days', price: { uae: 90, ksa: 95 } },
   ] },
 };
 
@@ -97,6 +100,58 @@ export const SERVICE_GROUPS = Object.entries(SERVICES).map(([type, g]) => ({
 export const CATALOGUE = Object.entries(SERVICES).flatMap(([type, g]) =>
   g.items.map((x) => ({ ...x, type })));
 export const findService = (id) => CATALOGUE.find((x) => x.id === id) || null;
+
+/* ── READING THE CATALOGUE IN A REGION ──
+   A service has one price per country it is sold in, and is absent from the
+   ones it is not. So "what does this cost" is not a property of the item, it is
+   a question you can only ask once you know where. */
+export const inRegion = (svc, region = 'uae') =>
+  !!svc && svc.price != null && svc.price[region] != null;
+export const priceOf = (svc, region = 'uae') =>
+  (svc && svc.price && svc.price[region]) || 0;
+
+/* The same grouped dropdown, holding only what that region actually sells. The
+   options carry no country tag: the builder is already scoped to one, and
+   repeating it on every line is how a scope stops being read. */
+/* ── WHAT THE PACKAGE COSTS ──
+   The one answer, computed the one way, from what the package is made of.
+
+   Components at their own list price, less a cut per line, less a cut on the
+   subtotal. Category managers set either, both or neither, and the number that
+   falls out is the price on the cart — there is no second field to type it into.
+
+   The bundle argument reads straight off it: a patient buying these separately
+   pays `list`; the protocol is `total`; the difference is what the bundle is
+   worth. That is a claim anybody in the room can check. */
+export function invoiceOf(pp, region = 'uae') {
+  const rows = (pp?.pdp?.included || [])
+    .map((l) => ({ ...l, svc: findService(l.serviceId) }))
+    .filter((r) => r.svc)
+    .map((r) => {
+      const unit = priceOf(r.svc, region);
+      const qty = r.qty || 1;
+      const disc = Math.min(100, Math.max(0, r.discount || 0));
+      const gross = unit * qty;
+      return { ...r, unit, qty, disc, gross, net: Math.round(gross * (1 - disc / 100)),
+               sold: inRegion(r.svc, region) };
+    });
+  const list = rows.reduce((n, r) => n + r.gross, 0);
+  const afterLines = rows.reduce((n, r) => n + r.net, 0);
+  const pkgDisc = Math.min(100, Math.max(0, pp?.pdp?.discount || 0));
+  const total = Math.round(afterLines * (1 - pkgDisc / 100));
+  return { rows, list, afterLines, lineSaved: list - afterLines,
+           pkgDisc, pkgSaved: afterLines - total, total, saved: list - total,
+           /* A line pointing at something this region does not sell. */
+           unsold: rows.filter((r) => !r.sold) };
+}
+export const packagePrice = (pp, region = 'uae') => invoiceOf(pp, region).total;
+
+export const serviceGroupsFor = (region = 'uae') =>
+  Object.entries(SERVICES).map(([type, g]) => ({
+    label: g.t,
+    items: g.items.filter((x) => inRegion(x, region)).map((x) => ({ value: x.id, label: x.t })),
+    type,
+  })).filter((g) => g.items.length);
 
 export const RR_PLAN = [
   { id: 'p1',  t: 'Book nurse visit',        sub: 'Nothing else can start until this is done.',
@@ -232,6 +287,18 @@ export const ONBOARDING = {
       options: ['Nothing yet', 'Rest and time', 'Physio or a change in training',
                 'Supplements', 'Prescription medicine', 'A doctor, with no clear answer'] },
   ],
+  /* ── WHO IS THIS FOR ──
+     Asked first, and not as one of the questions, because the answer changes
+     who "you" means in every question after it. A parent buying for a child
+     should not have to work out whose height is being asked for. */
+  who: {
+    t: 'Before we start',
+    sub: 'Is this for you, or for someone in your family?',
+    selfLabel: 'For myself',
+    memberLabel: 'For a family member',
+    namePrompt: 'Who is it for?',
+    relations: ['Spouse', 'Parent', 'Child', 'Sibling', 'Other'],
+  },
   profile: {
     t: 'About you',
     sub: 'The doctor needs these before anything is prescribed. None of it changes the price.',
@@ -294,18 +361,22 @@ export const RR_PREPURCHASE = {
       { serviceId: 'consult_peptide', qty: 2, note: 'First consultation and the Week 12 reassessment' },
       { serviceId: 'consult_review', qty: 1, note: 'Week 6 mid-point review' },
       { serviceId: 'consult_gp', qty: 4, note: 'Concierge calls, Week 2, Week 4 and monthly' },
-      { serviceId: 'med_bpc', qty: 3, note: 'Dispatched monthly, cold chain' },
+      /* The peptide is the line the bundle exists to carry, so it is the line
+         that takes the biggest cut. */
+      { serviceId: 'med_bpc', qty: 3, discount: 50, note: 'Dispatched monthly, cold chain' },
       { serviceId: 'sup_voucher', qty: 1, note: 'Issued after your doctor consultation' },
     ],
+    /* Off the subtotal, after the per-line cuts. Either, both or neither. */
+    discount: 34,
     provider: 'Prepared by a fully licensed UAE compounding pharmacy regulated by MOH and EDE.',
   },
   cart: {
-    price: 3799,
+    /* No price field. The price IS the invoice, computed from what the package
+       is made of; two places to set one number is how a cart and a package
+       description start disagreeing about what a protocol costs. */
     instalmentCount: 3,
-    instalmentAmount: 1349,
     widgets: ['Tamara: split in 4 payments', 'Tabby: 4 interest-free payments'],
     promoAllowed: false,
-    cta: 'Add to cart · AED 3,799',
   },
   confirmation: {
     title: 'Your protocol starts with testing.',
@@ -315,39 +386,6 @@ export const RR_PREPURCHASE = {
   },
 };
 
-/* ── listing, clinical and commercial ──
-   Editability follows the artifact: clinical fields propose rather than
-   publish, and the discount field is refused outright. */
-export const RR_META = {
-  listing: {
-    duration: 12,
-    symptomNote: 'The symptom list is what the goal-picker triage matches against.',
-  },
-  clinical: {
-    panel: 'Recovery & Inflammation: CBC · hs-CRP · ESR · Vitamin D · Magnesium · CK · Liver · Kidney · HbA1c · Ferritin',
-    gateClass: 'Class 1 to 2',
-    screening: [
-      { id: 's1', q: 'Do you compete in tested sport?', mandatory: true,
-        gates: 'tb_500', note: 'Gates the TB-500 upgrade. WADA-prohibited.' },
-    ],
-    addOns: [
-      { id: 'tb_500', t: 'TB-500 (Wolverine)', price: 5999,
-        requires: 'competes_in_tested_sport == "no"', offeredAt: 'Week 6 review' },
-      { id: 'nurse', t: 'Nurse administration visits', price: 99, note: '4-pack AED 349' },
-      { id: 'ghk', t: 'GHK-Cu addition', price: 0, note: 'Where clinically indicated' },
-      { id: 'physio', t: 'Physiotherapy', price: 0, note: 'Where clinically indicated' },
-    ],
-  },
-  commercial: {
-    price: 3799,
-    upgrade: { t: 'Wolverine, adds TB-500', price: 5999 },
-    instalments: '3 × AED 1,349 · Tamara · Tabby',
-    addOnPricing: 'Nurse visit AED 99, 4-pack AED 349',
-    discountCodes: 'Not permitted on protocol SKUs',
-  },
-};
-
-/* Refused by the builder, not by review. */
 /* ── THE CONSULT QUEUE ──
    One doctor, several patients waiting. Ahmad is the patient sitting in the
    other tab: his record is read live out of the patient app, so whatever was
@@ -525,29 +563,42 @@ export const ORDERS = [
 export const orderFor = (patientId) =>
   ORDERS.find((o) => o.patientId === patientId) || null;
 
-export const LOCKED_RULES = [
-  { t: 'Remove the baseline panel', why: '“Your protocol starts with testing, not a product” is the product. Also the clinical basis for prescribing.' },
-  { t: 'Remove the consultation', why: 'Dispensing depends on it. Removing it makes this a supplement sale.' },
-  { t: 'Remove the Week 12 panel', why: 'Promised on the page, and it is the renewal conversation.' },
-  { t: 'Apply a discount code', why: 'The protocol is the offer. Bundle or discount, never both.' },
-  { t: 'Offer TB-500 without the competition question', why: 'WADA-prohibited.' },
-  { t: 'Name a doctor or the pharmacy', why: 'Copy rule. Use “our peptide doctors” and “a fully licensed UAE compounding pharmacy regulated by MOH and EDE”.' },
-  { t: 'Publish without the 12-week statement', why: 'The single most important line on the page. The fix for one-month churn.' },
-  { t: 'Say “free” consultation', why: 'Copy rule. “Included”, never “free”.' },
+/* ── PROTOCOLS ARE THINGS THAT GET CREATED ──
+   Not three fixed goals. A category manager builds a protocol for a goal in a
+   region, and there can be several: the same programme priced for two
+   countries is two protocols, because the catalogue behind it is two
+   catalogues.
+
+   How far through one is is NOT stored here. It is which of its two parts have
+   been published, derived in the store, because a protocol that carried its own
+   progress as a field could claim to be live while its tabs said draft.
+
+   ── THE SEEDED ONES ARE LOCKED ──
+   These two are already selling. You do not edit a protocol patients are on:
+   you duplicate it, change the copy, and publish the copy. So they open
+   read-only with one action on them — Duplicate — and everything editable in
+   this Studio is something somebody made themselves. */
+export const PROTOCOL_SEED = [
+  { id: 'rr-uae', name: 'Recovery & Repair', goal: 'recover-rebuild',
+    region: 'uae', weeks: 12, createdAt: '14 July 2025', locked: true },
+  { id: 'rr-ksa', name: 'Recovery & Repair', goal: 'recover-rebuild',
+    region: 'ksa', weeks: 12, createdAt: '2 February 2026', locked: true },
 ];
 
+/* A new protocol starts from the seeded one rather than from nothing, because
+   the clinical spine is the same programme every time and retyping fourteen
+   steps is not authoring. */
+export const newProtocolDraft = () => ({
+  triage: structuredClone(RR_TRIAGE),
+  prepurchase: structuredClone(RR_PREPURCHASE),
+  plan: structuredClone(RR_PLAN),
+});
+
 export const emptyDraft = () => ({
-  /* No goal owns the onboarding chat, so it sits under a pseudo-goal and gets
-     the same drafts, publish and version machinery as everything else. */
+  /* No protocol owns the onboarding chat, so it sits under a pseudo-scope and
+     gets the same drafts, publish and version machinery as everything else. */
   shared: {
     onboarding: structuredClone(ONBOARDING),
   },
-  'recover-rebuild': {
-    triage: structuredClone(RR_TRIAGE),
-    prepurchase: structuredClone(RR_PREPURCHASE),
-    plan: structuredClone(RR_PLAN),
-    meta: structuredClone(RR_META),
-  },
-  'weight-loss': { existing: true },
-  'skin-hair': { thin: true },
+  ...Object.fromEntries(PROTOCOL_SEED.map((p) => [p.id, newProtocolDraft()])),
 });

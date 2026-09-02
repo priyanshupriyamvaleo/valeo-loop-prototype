@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the two prototypes and place them at /p1/ and /p2/ on the Pages site.
+# Build the three prototypes and place them at /p1/, /p2/ and /p3/ on the Pages site.
 #
 # The build stages into .proto-build first. Copying rather than building in
 # place is deliberate: the repo root carries its own `assets/` folder of real
@@ -16,15 +16,17 @@ cd "$here"
 npx vite build
 
 # Replace only the three paths this build owns.
-rm -rf "$root/p1" "$root/p2" "$root/proto-assets"
+rm -rf "$root/p1" "$root/p2" "$root/p3" "$root/proto-assets"
 cp -R "$stage/p1"           "$root/p1"
 cp -R "$stage/p2"           "$root/p2"
+cp -R "$stage/p3"           "$root/p3"
 cp -R "$stage/proto-assets" "$root/proto-assets"
-# The launcher that links the two, kept off the repo root so it cannot shadow
+# The launcher that links the three, kept off the repo root so it cannot shadow
 # anything already served from there.
 mkdir -p "$root/proto"
 cp "$stage/index.html" "$root/proto/index.html"
 
 echo "p1  -> $root/p1"
 echo "p2  -> $root/p2"
+echo "p3  -> $root/p3"
 echo "assets -> $root/proto-assets"

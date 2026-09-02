@@ -156,6 +156,36 @@ function Onboarding({ draft, update }) {
       <Questions qs={ob.questions || []} patch={patch} editing={editing}
         setEditing={setEditing} addLabel="Add question" />
 
+      {/* ── WHO THIS IS FOR ──
+          Asked before the questions, because the answer decides who "you" means
+          in all of them. A parent buying for a child should not have to work out
+          whose height is being asked for. */}
+      <div className="row" style={{ marginTop: 22, marginBottom: 8 }}>
+        <h3 className="grow">Who this is for</h3>
+        <span className="hint">Asked first. It decides whose details the next step collects.</span>
+      </div>
+      <div className="card card-pad" style={{ display: 'grid', gap: 12 }}>
+        <div className="grid-2">
+          <Field label="Step heading" value={ob.who?.t || ''}
+            onChange={(v) => patch((c) => { c.who.t = v; })} />
+          <Field label="Question" value={ob.who?.sub || ''}
+            onChange={(v) => patch((c) => { c.who.sub = v; })} />
+        </div>
+        <div className="grid-2">
+          <Field label="First answer" value={ob.who?.selfLabel || ''}
+            onChange={(v) => patch((c) => { c.who.selfLabel = v; })} />
+          <Field label="Second answer" value={ob.who?.memberLabel || ''}
+            onChange={(v) => patch((c) => { c.who.memberLabel = v; })}
+            hint="Choosing this one asks for a name and a relation. Nothing else changes." />
+        </div>
+        <Field label="Relations offered" type="textarea" rows={2}
+          value={(ob.who?.relations || []).join('\n')}
+          onChange={(v) => patch((c) => {
+            c.who.relations = v.split('\n').map((x) => x.trim()).filter(Boolean);
+          })}
+          hint="One per line. Whichever is chosen is what the coach's queue shows as the dependent relation." />
+      </div>
+
       <div className="row" style={{ marginTop: 22, marginBottom: 8 }}>
         <h3 className="grow">Details collected ({fields.length})</h3>
         <button className="btn btn-ghost btn-sm"
@@ -249,9 +279,9 @@ function Onboarding({ draft, update }) {
 }
 
 /* ── the per-goal triage chat ── */
-function Triage({ goalId, draft, update }) {
+function Triage({ scope, draft, update, readOnly = false }) {
   const [editing, setEditing] = useState(null);
-  const patch = (fn) => update((d) => { fn(d.drafts[goalId].triage); });
+  const patch = readOnly ? () => {} : (fn) => update((d) => { fn(d.drafts[scope].triage); });
 
   if (!draft) {
     return <div className="card card-pad empty">No triage chat is configured for this goal yet.</div>;
@@ -290,9 +320,11 @@ function Triage({ goalId, draft, update }) {
   );
 }
 
-export default function ChatBuilder({ goalId, tab }) {
+export default function ChatBuilder({ scope, tab, readOnly = false }) {
   const { state, update } = useStudio();
   return tab === 'triage'
-    ? <Triage goalId={goalId} draft={state.drafts?.[goalId]?.triage} update={update} />
+    ? <div className={readOnly ? 'ro' : ''}>
+        <Triage scope={scope} draft={state.drafts?.[scope]?.triage} update={update} readOnly={readOnly} />
+      </div>
     : <Onboarding draft={state.drafts?.[SHARED]?.onboarding} update={update} />;
 }

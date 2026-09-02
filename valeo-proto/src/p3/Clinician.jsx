@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import Icon from '../ui/Icon';
-import { Field, Chip, Note } from '../ui/kit';
-import { useStudio } from '../lib/store';
+import Icon from '../p2/ui/Icon';
+import { Field, Chip, Note } from '../p2/ui/kit';
+import { useStudio } from '../p2/lib/store';
 import { PATIENTS, SERVICES, findService, ORDERS, ORDER_CATEGORIES, COACHES,
-         orderFor, RR_PLAN } from '../lib/seed';
+         orderFor, RR_PLAN, serviceGroupsFor, priceOf } from '../p2/lib/seed';
 import { planFor, nextItem, consultFor, captures, recoveryScore, weekOfDay, weeksOf }
-  from '../../p1/lib/journey';
-import { PANEL } from '../../p1/screens/Actions';
-import { goalOf, readPatient, subscribe } from '../../shared/bus';
-import { go } from '../lib/router';
+  from '../p1/lib/journey';
+import { PANEL } from '../p1/screens/Actions';
+import { goalOf, readPatient, subscribe, scopeFor, regionOf, money } from '../shared/bus';
+import { go } from '../p2/lib/router';
 
 /*
  * THE CLINICIAN CONSOLE — the end of a consultation.
@@ -197,11 +197,11 @@ function Record({ rec }) {
 /* The live patient's record is not authored anywhere. It is assembled from what
    the patient app actually wrote, which is the point: the doctor reads the
    answers that were really given, not a mock of them. */
-function liveRecord(pt, studio, goalId) {
+function liveRecord(pt, studio, scope) {
   if (!pt) return { flags: ['This patient has not opened the app yet.'] };
   const label = (cfg, id) => (cfg?.questions || []).find((q) => q.id === id)?.q || id;
   const onbCfg = studio?.published?.shared?.onboarding?.data;
-  const triCfg = studio?.published?.[goalId]?.triage?.data;
+  const triCfg = studio?.published?.[scope]?.triage?.data;
   const asRows = (cfg, answers) => Object.fromEntries(
     Object.entries(answers || {}).map(([k, v]) => [label(cfg, k), [].concat(v).join(', ')]));
 
@@ -209,12 +209,13 @@ function liveRecord(pt, studio, goalId) {
      the patient is actually on. Reading the raw published array meant the two
      disagreed about the order and about whether the doctor's own additions
      counted. */
-  const plan = planFor(studio, goalId, pt);
+  const plan = planFor(studio, scope, pt);
   const total = plan.length;
   const done = (pt.done || []).length;
   const next = nextItem(plan, pt.done || []);
   const bought = !!pt.goal && ['gate:plan', 'home', 'detail', 'gate:consult'].includes(pt.stage) && pt.mode === 'protocol';
-  const pp = studio?.published?.[goalId]?.prepurchase?.data;
+  const pub = studio?.published?.[scope]?.prepurchase;
+  const pp = pub?.data;
   const c = consultFor(studio);
 
   return {
@@ -222,7 +223,7 @@ function liveRecord(pt, studio, goalId) {
     onboarding: asRows(onbCfg, pt.intake?.answers),
     triage: asRows(triCfg, pt.answers),
     purchase: bought && pp
-      ? { what: pp.pdp?.title || 'Protocol', paid: `AED ${(pp.cart?.price || 0).toLocaleString()}`, on: 'This session' }
+      ? { what: pp.pdp?.title || 'Protocol', paid: money(pub?.price || 0, pub?.region), on: 'This session' }
       : null,
     progress: total ? { done, total, next: next ? next.t : null } : null,
     consults: c && c.version
@@ -271,7 +272,7 @@ function Filter({ value, onChange, options, placeholder }) {
   );
 }
 
-function OrdersList({ goalId }) {
+function OrdersList() {
   const [typed, setTyped] = useState('');
   const [q, setQ] = useState('');
   const [cat, setCat] = useState(ALL);
@@ -344,7 +345,7 @@ function OrdersList({ goalId }) {
               const open = !!o.patientId;
               return (
                 <tr key={o.id} className={open ? 'go' : ''}
-                  onClick={open ? () => go(`/${goalId}/clinician/${o.id}`) : undefined}
+                  onClick={open ? () => go(`/clinician/${o.id}`) : undefined}
                   title={open ? 'Open this patient' : 'Not a protocol order'}>
                   <td>{open ? <b className="olink">{o.id}</b> : o.id}</td>
                   <td className="mono-sm">{o.reviewed || '–'}</td>
@@ -409,7 +410,7 @@ const Rows = ({ rows }) => (
   </table>
 );
 
-function OrderDetail({ goalId, order, patient, pt, record }) {
+function OrderDetail({ order, patient, pt, record, scope, region = 'uae' }) {
   const live = !!patient?.live;
   const profile = live ? (pt?.intake?.profile || null) : record?.profile;
   const done = live ? (pt?.done || []) : RR_PLAN.slice(0, record?.progress?.done || 0).map((x) => x.id);
@@ -420,7 +421,7 @@ function OrderDetail({ goalId, order, patient, pt, record }) {
 
   return (
     <>
-      <button className="crumb" onClick={() => go(`/${goalId}/clinician`)}>
+      <button className="crumb" onClick={() => go('/clinician')}>
         <Icon name="back" size={12} /> Past Orders
       </button>
 
@@ -440,7 +441,7 @@ function OrderDetail({ goalId, order, patient, pt, record }) {
               Everything to its left is a survey already on file. This opens the
               protocol: the record, the decision, and what the patient gets. */}
           <button className="pill pill-new"
-            onClick={() => go(`/${goalId}/clinician/${order.id}/journey`)}>
+            onClick={() => go(`/clinician/${order.id}/journey`)}>
             <Icon name="clipboard" size={12} /> Protocol Journey
           </button>
         </div>
@@ -745,47 +746,67 @@ function PatientLogs({ patient, pt, weeks = 12 }) {
      .../journey     the protocol: what happened, how they are doing, and the
                      decision that changes their next screen
 */
-export default function Clinician({ goalId, parts = [] }) {
+export default function Clinician({ parts = [] }) {
   const { state, update } = useStudio();
-  const draft = state.drafts?.[goalId];
 
   /* The patient app writes while this screen is open, so follow it. */
   const [pt, setPt] = useState(() => readPatient(null));
   useEffect(() => subscribe(() => setPt(readPatient(null))), []);
 
-  const orderId = Number(parts[2]) || null;
+  const orderId = Number(parts[1]) || null;
   const order = ORDERS.find((o) => o.id === orderId && o.patientId) || null;
   const patient = order ? PATIENTS.find((p) => p.id === order.patientId) : null;
-  const journey = !!order && parts[3] === 'journey';
+  const journey = !!order && parts[2] === 'journey';
+
+  if (!order) return <OrdersList />;
+
+  /* ── WHICH PROTOCOL THIS PATIENT IS ON ──
+     Their goal, in their country. The console does not get to pick: it reads
+     the same protocol the phone reads, or the two disagree about what the plan
+     even is. */
+  const region = patient.live ? (pt?.region || 'uae') : (order.country === 'Saudi Arabia' ? 'ksa' : 'uae');
+  const scope = scopeFor(state, patient.goal, region);
+  const draft = state.drafts?.[scope];
 
   if (!draft || !draft.plan) {
-    return <div className="card card-pad empty">No protocol for this goal, so there is nothing to consult on.</div>;
+    return (
+      <>
+        <button className="crumb" onClick={() => go('/clinician')}>
+          <Icon name="back" size={12} /> Past Orders
+        </button>
+        <div className="card card-pad empty" style={{ marginTop: 12 }}>
+          No protocol is authored for {goalOf(patient.goal)?.t} in {regionOf(region).t},
+          so there is nothing to consult on.
+        </div>
+      </>
+    );
   }
-  if (!order) return <OrdersList goalId={goalId} />;
 
-  const record = patient.live ? liveRecord(pt, state, goalId) : patient.record;
+  const record = patient.live ? liveRecord(pt, state, scope) : patient.record;
 
   if (!journey) {
-    return <OrderDetail goalId={goalId} order={order} patient={patient} pt={pt} record={record} />;
+    return <OrderDetail order={order} patient={patient} pt={pt} record={record}
+      scope={scope} region={region} />;
   }
 
   return (
     <>
-      <button className="crumb" onClick={() => go(`/${goalId}/clinician/${order.id}`)}>
+      <button className="crumb" onClick={() => go(`/clinician/${order.id}`)}>
         <Icon name="back" size={12} /> Order {order.id}
       </button>
       {/* Keyed on the patient so that switching gives a genuinely fresh screen.
           Without it the folds stay open on the last person's history and, far
           worse, a half-typed note stays in the box and gets saved against
           whoever is now on screen. */}
-      <Consult key={patient.id} patient={patient} record={record} goalId={goalId} pt={pt}
-        currentStep={patient.live ? nextItem(planFor(state, goalId, pt || {}), (pt && pt.done) || []) : null}
+      <Consult key={patient.id} patient={patient} record={record} scope={scope} pt={pt}
+        region={region}
+        currentStep={patient.live ? nextItem(planFor(state, scope, pt || {}), (pt && pt.done) || []) : null}
         state={state} update={update} />
     </>
   );
 }
 
-function Consult({ patient, record, state, update, goalId, currentStep, pt }) {
+function Consult({ patient, record, state, update, scope, currentStep, pt, region = 'uae' }) {
   /* This patient's record, not the last one anybody opened. */
   const consult = state.consults?.[patient.id] || {};
   const [note, setNote] = useState(consult.note || '');
@@ -823,7 +844,7 @@ function Consult({ patient, record, state, update, goalId, currentStep, pt }) {
   /* The steps the builder marked as the doctor's to decide. Read from the plan
      rather than listed here, so marking a new one in the Protocol Builder makes
      it appear on this screen with no code written. */
-  const changeable = (state.published?.[goalId]?.plan?.data || [])
+  const changeable = (state.published?.[scope]?.plan?.data || [])
     .filter((x) => x.clinicianCanSet && x.serviceId);
 
   /* The whole gate, in one line. Unanswered is not the same as no, and the
@@ -909,7 +930,7 @@ function Consult({ patient, record, state, update, goalId, currentStep, pt }) {
 
       {/* Between the record and the decision, because it is evidence a doctor
           reads BEFORE choosing, not a report she is shown afterwards. */}
-      <PatientLogs patient={patient} pt={pt} weeks={weeksOf(state, goalId)} />
+      <PatientLogs patient={patient} pt={pt} weeks={weeksOf(state, scope)} />
 
       {!patient.live && (
         <div style={{ marginBottom: 14 }}>
@@ -1096,7 +1117,7 @@ function Consult({ patient, record, state, update, goalId, currentStep, pt }) {
                     onChange={(v) => setDraft({ ...draft, blocker: v === 'blocks' })}
                     hint="Declared here, enforced by the backend." />
                   <div className="win-read">
-                    Costs <b>AED {(findService(draft.serviceId)?.price || 0).toLocaleString()}</b>
+                    Costs <b>{money(priceOf(findService(draft.serviceId), region), region)}</b>
                     {' '}on top of the protocol.
                   </div>
                 </div>
@@ -1121,7 +1142,7 @@ function Consult({ patient, record, state, update, goalId, currentStep, pt }) {
                       <div className="body">
                         <b>{svc?.t || r.id}</b>
                         <span>{svc?.note}{r.dose ? ` · ${r.dose}` : ''}
-                          {svc?.price ? ` · AED ${svc.price.toLocaleString()}` : ''}</span>
+                          {svc && priceOf(svc, region) ? ` · ${money(priceOf(svc, region), region)}` : ''}</span>
                       </div>
                       <div className="acts">
                         <Field type="select" value={r.status} options={['ongoing', 'recommended']}

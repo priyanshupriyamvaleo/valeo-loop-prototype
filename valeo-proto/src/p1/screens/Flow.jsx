@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
 import { suggestGoal, findService } from '../../p2/lib/seed';
+import { money } from '../../shared/bus';
 
 /* ── THE WAITING SCREEN ──
    The demo's hinge. When the app reaches something the Studio has not authored
@@ -24,7 +25,7 @@ export function Gate({ gate, title, open, onContinue, onBack }) {
               : 'This part of the journey is configuration, not code. Nothing is hardcoded here, so the app has nothing to show until somebody publishes it.'}
           </p>
           <div className="where">
-            <Icon name={open ? 'check' : 'lock'} size={12} /> Valeo Studio · {gate.studio}
+            <Icon name={open ? 'check' : 'lock'} size={12} /> {gate.studio}
           </div>
         </div>
       </div>
@@ -127,16 +128,25 @@ export function Triage({ title, config, onDone, onBack }) {
 export function Onboarding({ config, goals, onDone, onBack }) {
   const qs = config.questions || [];
   const fields = config.profile?.fields || [];
+  const who = config.who;
   const [i, setI] = useState(0);
   const [answers, setAnswers] = useState({});
   const [multi, setMulti] = useState([]);
   const [profile, setProfile] = useState({});
+  /* null until answered. `self` decides whose details the next step is asking
+     for, which is why it comes first rather than sitting among the questions. */
+  const [forWhom, setForWhom] = useState(null);
 
-  /* One flat sequence: every question, then the details step, then the goal. */
-  const stepCount = qs.length + 2;
-  const onProfile = i === qs.length;
-  const onGoal = i === qs.length + 1;
-  const q = qs[i];
+  /* One flat sequence: who this is for, every question, the details, the goal. */
+  const lead = who ? 1 : 0;
+  const stepCount = qs.length + 2 + lead;
+  const onWho = lead && i === 0;
+  const onProfile = i === qs.length + lead;
+  const onGoal = i === qs.length + 1 + lead;
+  const q = qs[i - lead];
+  const whoReady = forWhom && (forWhom.self || String(forWhom.name || '').trim());
+  const subject = forWhom && !forWhom.self
+    ? (String(forWhom.name || '').trim().split(' ')[0] || 'them') : null;
 
   const commit = (val) => {
     setAnswers((a) => ({ ...a, [q.id]: val }));
@@ -159,17 +169,68 @@ export function Onboarding({ config, goals, onDone, onBack }) {
 
       <div className="scroll pad">
         <div className="bub">{config.intro}</div>
-        {qs.slice(0, i).map((prev) => (
+        {lead && i > 0 && forWhom && (
+          <>
+            <div className="bub">{who.t}. {who.sub}</div>
+            <div className="bub me">
+              {forWhom.self ? who.selfLabel : `${forWhom.name} · ${forWhom.relation}`}
+            </div>
+          </>
+        )}
+        {qs.slice(0, Math.max(0, i - lead)).map((prev) => (
           <div key={prev.id}>
             <div className="bub">{prev.q}</div>
             <div className="bub me">{[].concat(answers[prev.id] || []).join(', ')}</div>
           </div>
         ))}
+        {onWho && (
+          <>
+            <div className="bub">{who.t}. {who.sub}</div>
+            <div className="whopick">
+              {[[true, who.selfLabel], [false, who.memberLabel]].map(([self, label]) => (
+                <button key={String(self)}
+                  className={`whoopt ${forWhom && forWhom.self === self ? 'on' : ''}`}
+                  onClick={() => setForWhom((f) => (
+                    f && f.self === self ? f : { self, name: '', relation: who.relations[0] }))}>
+                  <Icon name={self ? 'users' : 'heart'} size={15} />
+                  <b>{label}</b>
+                </button>
+              ))}
+            </div>
+            {/* Only asked once the answer makes it necessary. A name field on
+                screen before anybody said it was for somebody else is a field
+                that reads as a demand. */}
+            {forWhom && !forWhom.self && (
+              <div className="whoform">
+                <label className="pf">
+                  <span>{who.namePrompt}</span>
+                  <div className="pf-in">
+                    <input value={forWhom.name}
+                      placeholder="Their name"
+                      onChange={(e) => setForWhom((f) => ({ ...f, name: e.target.value }))} />
+                  </div>
+                </label>
+                <label className="pf">
+                  <span>Their relation to you</span>
+                  <div className="chips">
+                    {who.relations.map((r) => (
+                      <button key={r} className={`chip-a ${forWhom.relation === r ? 'on' : ''}`}
+                        onClick={() => setForWhom((f) => ({ ...f, relation: r }))}>{r}</button>
+                    ))}
+                  </div>
+                </label>
+              </div>
+            )}
+          </>
+        )}
+
         {q && <div className="bub">{q.q}</div>}
 
         {onProfile && (
           <>
-            <div className="bub">{config.profile.t}. {config.profile.sub}</div>
+            <div className="bub">
+              {subject ? `About ${subject}` : config.profile.t}. {config.profile.sub}
+            </div>
             <div className="profile">
               {fields.map((f) => (
                 <label className="pf" key={f.id}>
@@ -201,7 +262,7 @@ export function Onboarding({ config, goals, onDone, onBack }) {
             <div style={{ marginTop: 10 }}>
               {goals.map((g) => (
                 <button className="goalrow" key={g.id} style={{ width: '100%' }}
-                  onClick={() => onDone({ answers, profile, goal: g.id })}>
+                  onClick={() => onDone({ answers, profile, goal: g.id, who: forWhom })}>
                   <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,201,60,.18)',
                                 display: 'grid', placeItems: 'center', color: 'var(--gold)', flex: 'none' }}>
                     <Icon name={g.ic} size={16} />
@@ -219,7 +280,11 @@ export function Onboarding({ config, goals, onDone, onBack }) {
       </div>
 
       <div className="foot">
-        {onProfile ? (
+        {onWho ? (
+          <button className="cta" disabled={!whoReady} onClick={() => setI(i + 1)}>
+            Continue <Icon name="chev" size={16} />
+          </button>
+        ) : onProfile ? (
           <button className="cta" disabled={!profileDone} onClick={() => setI(i + 1)}>
             Continue <Icon name="chev" size={16} />
           </button>
@@ -256,7 +321,7 @@ export function Onboarding({ config, goals, onDone, onBack }) {
 /* ── PDP · CART · CONFIRMATION ──
    Three screens rendered from one published config, in the order the
    Package Builder holds them. */
-export function PDP({ cfg, onBuy, onBack }) {
+export function PDP({ cfg, price, region, onBuy, onBack }) {
   const [tab, setTab] = useState('measured');
   const p = cfg.pdp;
   return (
@@ -323,9 +388,12 @@ export function PDP({ cfg, onBuy, onBack }) {
         )}
 
         <div className="pricebox">
-          <div className="price">AED {cfg.cart.price.toLocaleString()}</div>
+          {/* One number, computed from the invoice in the Package Builder. The
+              phone does not add anything up and cannot disagree with it. */}
+          <div className="price">{money(price, region)}</div>
           <div className="p" style={{ marginTop: 2 }}>
-            Or {cfg.cart.instalmentCount} monthly payments of AED {cfg.cart.instalmentAmount.toLocaleString()}
+            Or {cfg.cart.instalmentCount} monthly payments of{' '}
+            {money(Math.ceil(price / Math.max(1, cfg.cart.instalmentCount)), region)}
           </div>
           {cfg.cart.widgets.map((w) => (
             <div key={w} style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 5 }}>{w}</div>
@@ -334,13 +402,15 @@ export function PDP({ cfg, onBuy, onBack }) {
         </div>
       </div>
       <div className="foot">
-        <button className="cta gold" onClick={onBuy}>{cfg.cart.cta}</button>
+        <button className="cta gold" onClick={onBuy}>
+          Add to cart · {money(price, region)}
+        </button>
       </div>
     </div>
   );
 }
 
-export function Cart({ cfg, onPay, onBack }) {
+export function Cart({ cfg, price, region, onPay, onBack }) {
   const c = cfg.cart;
   return (
     <div className="screen">
@@ -352,9 +422,9 @@ export function Cart({ cfg, onPay, onBack }) {
         <div className="pricebox" style={{ marginTop: 4 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{cfg.pdp.title}</div>
           <div className="p" style={{ marginTop: 4 }}>12 weeks · testing, therapy, unlimited consultations</div>
-          <div className="price" style={{ marginTop: 12 }}>AED {c.price.toLocaleString()}</div>
+          <div className="price" style={{ marginTop: 12 }}>{money(price, region)}</div>
           <div className="p" style={{ marginTop: 2 }}>
-            or {c.instalmentCount} × AED {c.instalmentAmount.toLocaleString()}
+            or {c.instalmentCount} × {money(Math.ceil(price / Math.max(1, c.instalmentCount)), region)}
           </div>
         </div>
         {!c.promoAllowed && (
@@ -373,7 +443,7 @@ export function Cart({ cfg, onPay, onBack }) {
         ))}
       </div>
       <div className="foot">
-        <button className="cta gold" onClick={onPay}>Pay AED {c.price.toLocaleString()}</button>
+        <button className="cta gold" onClick={onPay}>Pay {money(price, region)}</button>
         <div className="tiny">Nothing is dispensed until your doctor has read your baseline panel.</div>
       </div>
     </div>

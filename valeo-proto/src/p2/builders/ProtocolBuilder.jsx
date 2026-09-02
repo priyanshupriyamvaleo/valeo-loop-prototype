@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Icon from '../ui/Icon';
 import { Field, Chip, Note, IconBtn } from '../ui/kit';
 import { useStudio } from '../lib/store';
-import { LOCKED_RULES, SERVICE_GROUPS, findService } from '../lib/seed';
+import { serviceGroupsFor, findService, priceOf } from '../lib/seed';
 import { actorOf, whenLabel, weekNo } from '../../p1/lib/journey';
 
 /*
@@ -24,26 +24,35 @@ import { actorOf, whenLabel, weekNo } from '../../p1/lib/journey';
  * for dispensing. The delete button is disabled and says why, because a rule
  * you can read at the moment you try to break it is worth ten in a document.
  */
-/* The protocol is twelve weeks, and the duration is set on the Listing tab. */
-const WEEKS = Array.from({ length: 12 }, (_, i) => i + 1);
-
-const TABS = [['plan', 'Plan template'], ['listing', 'Listing'],
-               ['clinical', 'Clinical'], ['commercial', 'Commercial']];
-
-export default function ProtocolBuilder({ goalId }) {
+/*
+ * ── ONE THING, NOT FOUR TABS ──
+ * This screen used to carry Listing, Clinical and Commercial beside the plan.
+ * Listing held one field that mattered — how many weeks — and that is a
+ * property of the protocol, so it now sits in the protocol's own header beside
+ * its name and its region. Clinical and Commercial were read-only restatements
+ * of things authored elsewhere: the panel is a service on a step, the prices are
+ * the package's invoice, and the screening gate lives on the catalogue item it
+ * gates. A tab that only repeats another screen is a second place for the same
+ * fact to be wrong.
+ */
+export default function ProtocolBuilder({ scope, protocol, readOnly = false }) {
   const { state, update } = useStudio();
-  const draft = state.drafts?.[goalId];
-  const [tab, setTab] = useState('plan');
+  const draft = state.drafts?.[scope];
   const [refused, setRefused] = useState(null);
   const [editing, setEditing] = useState(null);   /* id of the row open for editing */
 
   if (!draft || !draft.plan) {
-    return <div className="card card-pad empty">No protocol template configured for this goal.</div>;
+    return <div className="card card-pad empty">This protocol has no plan template.</div>;
   }
 
+  const region = protocol?.region || 'uae';
+  const weeksTotal = protocol?.weeks || 12;
+  const WEEKS = Array.from({ length: weeksTotal }, (_, i) => i + 1);
+  const groups = serviceGroupsFor(region);
   const plan = draft.plan;
-  const meta = draft.meta;
-  const patch = (fn) => update((d) => { fn(d.drafts[goalId]); });
+  /* The one guard that matters. A locked protocol's draft cannot be written,
+     whatever a control on screen looks like it would do. */
+  const patch = readOnly ? () => {} : (fn) => update((d) => { fn(d.drafts[scope]); });
 
   const move = (i, dir) => patch((d) => {
     const j = i + dir;
@@ -63,7 +72,7 @@ export default function ProtocolBuilder({ goalId }) {
   const edit = (i, field, value) => patch((d) => { d.plan[i][field] = value; });
 
   return (
-    <>
+    <div className={readOnly ? 'ro' : ''}>
       <div className="row" style={{ marginBottom: 14 }}>
         <div className="grow">
           <h2>Protocol template</h2>
@@ -73,15 +82,9 @@ export default function ProtocolBuilder({ goalId }) {
             Adding an item adds a state without adding a screen.
           </p>
         </div>
-        <div className="tabs">
-          {TABS.map(([k, t]) => (
-            <button key={k} className={`tab ${tab === k ? 'on' : ''}`} onClick={() => setTab(k)}>{t}</button>
-          ))}
-        </div>
       </div>
 
-      {tab === 'plan' && (
-        <>
+      <>
           <div className="row" style={{ marginBottom: 8, gap: 8 }}>
             <span className="hint grow">
               {/* There used to be a "blocking" chip here claiming it stopped
@@ -181,8 +184,12 @@ export default function ProtocolBuilder({ goalId }) {
                         twice let the two answers disagree. */}
                     <Field label="Linked service" type="select"
                       value={it.serviceId || ''}
+                      /* Only what this region sells, and with no country on
+                         the labels: the builder is already scoped to one, and
+                         repeating it on every option is how a scope stops
+                         being read. */
                       groups={[{ label: 'None', items: [{ value: '', label: 'Not linked' }] },
-                               ...SERVICE_GROUPS]}
+                               ...groups]}
                       onChange={(v) => edit(i, 'serviceId', v || undefined)}
                       hint={findService(it.serviceId)?.note
                         || 'Booking, tracking and results already exist behind it.'} />
@@ -241,104 +248,7 @@ export default function ProtocolBuilder({ goalId }) {
               </Note>
             </div>
           )}
-
-          <div style={{ marginTop: 16 }}>
-            <h3 style={{ marginBottom: 8 }}>What the builder refuses</h3>
-            <div className="card">
-              {LOCKED_RULES.map((r) => (
-                <div className="row" key={r.t} style={{
-                  padding: '10px 14px', borderBottom: '1px solid var(--line)', alignItems: 'flex-start',
-                }}>
-                  <Icon name="lock" size={13} className="grow" style={{ flex: 'none' }} />
-                  <div className="grow">
-                    <b style={{ fontSize: 13 }}>{r.t}</b>
-                    <div className="hint">{r.why}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {tab === 'listing' && (
-        <div className="card card-pad" style={{ display: 'grid', gap: 12 }}>
-          <Field label="Duration (weeks)" type="number" value={meta.listing.duration}
-            onChange={(v) => patch((d) => { d.meta.listing.duration = v; })} />
-          <Note>
-            Title, hero, symptoms, included list and the timeline blocks live in the
-            Package Builder, because they are the page the patient reads. Editing
-            them in two places is how a protocol ends up describing itself differently
-            on the shelf and in the plan.
-          </Note>
-        </div>
-      )}
-
-      {tab === 'clinical' && (
-        <div style={{ display: 'grid', gap: 14 }}>
-          <div className="card card-pad" style={{ display: 'grid', gap: 12 }}>
-            <Field label="Panel" type="textarea" rows={3} value={meta.clinical.panel} disabled
-              lockWhy="Clinical only. Panel composition and gate class need Dr. Rayan's sign-off, so the builder routes these edits for approval rather than publishing them." />
-            <Field label="Clinical gate class" value={meta.clinical.gateClass} disabled
-              lockWhy="Clinical only." />
-          </div>
-
-          <div className="card card-pad">
-            <h3 style={{ marginBottom: 8 }}>Screening questions</h3>
-            {meta.clinical.screening.map((s) => (
-              <div className="item" key={s.id}>
-                <span className="when">mandatory</span>
-                <div className="body">
-                  <b>{s.q}</b>
-                  <span>{s.note}</span>
-                </div>
-                <div className="acts"><Chip tone="clin">clinical only</Chip></div>
-              </div>
-            ))}
-          </div>
-
-          <div className="card card-pad">
-            <h3 style={{ marginBottom: 8 }}>Add-ons</h3>
-            {meta.clinical.addOns.map((a) => (
-              <div className="item" key={a.id}>
-                <span className="when">{a.price ? `AED ${a.price.toLocaleString()}` : 'clinical'}</span>
-                <div className="body">
-                  <b>{a.t}</b>
-                  <span>{a.requires ? `Requires ${a.requires} · offered at ${a.offeredAt}` : a.note}</span>
-                </div>
-                <div className="acts">{a.requires ? <Chip tone="block">gated</Chip> : <Chip tone="ed">open</Chip>}</div>
-              </div>
-            ))}
-            <div style={{ marginTop: 12 }}>
-              <Note tone="red" label="The TB-500 gate">
-                <p style={{ margin: 0 }}>
-                  TB-500 is WADA-prohibited. Tested athletes stay on BPC-157 alone. The
-                  upgrade never renders in the app for a patient who answered yes or who
-                  has not been asked, and the doctor's consult screen cannot surface it
-                  either. This is a gate on the offer itself, not a marketing suppression.
-                </p>
-              </Note>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {tab === 'commercial' && (
-        <div className="card card-pad" style={{ display: 'grid', gap: 12 }}>
-          <div className="grid-2">
-            <Field label="Price (AED)" type="number" value={meta.commercial.price}
-              onChange={(v) => patch((d) => { d.meta.commercial.price = v; })} />
-            <Field label="Upgrade SKU (AED)" type="number" value={meta.commercial.upgrade.price}
-              onChange={(v) => patch((d) => { d.meta.commercial.upgrade.price = v; })} />
-          </div>
-          <Field label="Instalments" value={meta.commercial.instalments}
-            onChange={(v) => patch((d) => { d.meta.commercial.instalments = v; })} />
-          <Field label="Add-on pricing" value={meta.commercial.addOnPricing}
-            onChange={(v) => patch((d) => { d.meta.commercial.addOnPricing = v; })} />
-          <Field label="Discount codes" value={meta.commercial.discountCodes} disabled
-            lockWhy="Locked. The protocol is the offer. Bundle or discount, never both." />
-        </div>
-      )}
-    </>
+      </>
+    </div>
   );
 }

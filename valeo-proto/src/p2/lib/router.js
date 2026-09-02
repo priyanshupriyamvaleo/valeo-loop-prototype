@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-/* Hash routing, twenty lines. #/goal/<goalId>/<surface> */
+/* Hash routing, twenty lines. #/protocols, #/p/<protocolId>/<tab>, #/clinician/... */
 export const go = (path) => { window.location.hash = path; };
 
 export function useRoute() {

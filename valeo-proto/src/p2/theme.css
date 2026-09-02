@@ -446,3 +446,148 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
   .logs-caps { grid-template-columns:repeat(2,1fr); }
   .logs-score { grid-template-columns:1fr; }
 }
+
+/* ══ PROTOCOLS AS A LIST ══════════════════════════════════════════════════ */
+.plist { display:grid; gap:8px; }
+.prow { display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+        padding:13px 14px; border:1px solid var(--line); border-radius:12px;
+        background:var(--surface); cursor:pointer; font-family:inherit; }
+.prow:hover { border-color:var(--gold); background:var(--gold-soft); }
+.prow-ic { flex:none; width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
+           background:var(--surface-2); color:var(--ink-2); }
+.prow:hover .prow-ic { background:#fff; color:var(--amber); }
+.prow-main { flex:1; min-width:0; }
+.prow-main b { display:block; font-family:var(--f-head); font-size:14px; font-weight:600; }
+.prow-main i { display:block; font-style:normal; font-size:11.5px; color:var(--ink-3); margin-top:2px; }
+/* The one place a region belongs on a row: out here, no scope is established. */
+.prow-rg { flex:none; font-family:var(--f-mono); font-size:10.5px; font-weight:600;
+           letter-spacing:.06em; color:var(--ink-2); background:var(--surface-2);
+           border:1px solid var(--line); border-radius:6px; padding:3px 8px; }
+.prow-price { flex:none; font-family:var(--f-mono); font-size:13px; font-weight:500; width:104px;
+              text-align:right; }
+.prow-st { flex:none; width:186px; text-align:right; }
+.prow-st i { display:block; font-style:normal; font-size:10px; color:var(--ink-3);
+             margin-top:3px; font-family:var(--f-mono); }
+.prow-go { flex:none; color:var(--ink-3); }
+
+/* ══ THE PROTOCOL HEADER ══════════════════════════════════════════════════
+   The scope, stated once. Everything below it is this region's catalogue at
+   this region's prices, and no row inside repeats the fact. */
+.phead { margin-bottom: 18px; }
+.scopebtn { display:inline-flex; align-items:center; gap:7px; padding:8px 11px;
+            border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+.scopebtn:hover, .scopebtn.on { border-color:var(--gold); background:var(--gold-soft); }
+.scopebtn b { font-family:var(--f-mono); font-size:12px; font-weight:600; letter-spacing:.04em; }
+.scopebtn span { font-size:11px; color:var(--ink-3); }
+.scopebtn .sbx { color:var(--ink-3); transition:transform .15s; }
+.scopebtn.on .sbx { transform:rotate(90deg); }
+.scopepanel { margin-top:10px; display:grid; gap:14px; }
+
+.ptabs { display:flex; gap:6px; margin-top:16px; border-bottom:1px solid var(--line);
+         padding-bottom:0; }
+.ptab { display:flex; align-items:center; gap:8px; padding:9px 13px 11px;
+        border-bottom:2px solid transparent; color:var(--ink-2); font-size:13px; font-weight:600; }
+.ptab:hover { color:var(--ink); }
+.ptab.on { color:var(--ink); border-bottom-color:var(--gold); }
+.ptab-n { flex:none; width:17px; height:17px; border-radius:50%; display:grid; place-items:center;
+          background:var(--surface-3); color:var(--ink-2); font-size:9.5px; font-weight:800;
+          font-style:normal; font-family:var(--f-mono); }
+.ptab.on .ptab-n { background:var(--ink); color:var(--gold); }
+
+.tbar-crumb { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink-3); }
+.tbar-crumb b { color:var(--ink); font-weight:600; }
+.nav-grand em { font-style:normal; font-family:var(--f-mono); font-size:9px; opacity:.6;
+                margin-left:5px; letter-spacing:.05em; }
+
+/* ══ THE INVOICE, WITH DISCOUNTS ═══════════════════════════════════════════ */
+.inv-pct { display:inline-flex; align-items:center; gap:2px; }
+.inv-pct input { width:42px; text-align:right; border:1px solid var(--line); border-radius:6px;
+                 padding:4px 5px; font-family:var(--f-mono); font-size:11.5px; background:var(--surface); }
+.inv-pct input:focus { outline:none; border-color:var(--gold); }
+.inv-pct i { font-style:normal; font-size:10.5px; color:var(--ink-3); }
+.invoice tr.gone td { background:var(--red-soft); }
+.invoice td s { display:block; font-size:10.5px; color:var(--ink-3); }
+.invoice tfoot tr.grand td { font-weight:700; color:var(--ink); border-top:1.5px solid var(--line-2); }
+.inv-total-row { display:flex; align-items:center; gap:10px; }
+.cart-price { font-family:var(--f-head); font-size:32px; font-weight:700; line-height:1.1;
+              margin:3px 0 4px; }
+
+/* The bundle argument, as a number rather than a claim. */
+.bundle { margin-top:12px; padding:12px 14px; border-radius:11px;
+          background:var(--green-soft); border:1px solid rgba(30,142,90,.28); }
+.bundle b { display:block; font-size:13px; color:var(--green); }
+.bundle span { display:block; font-size:12px; color:var(--ink-2); margin-top:4px; line-height:1.55; }
+.bundle.bad { background:var(--red-soft); border-color:rgba(181,67,47,.3); }
+.bundle.bad b { color:var(--red); }
+
+/* ══ USER CONSOLE, SIDE BY SIDE ═══════════════════════════════════════════ */
+.uc-split { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; align-items:start; }
+.uc-main { min-width:0; }
+.uc-side { position:sticky; top:74px; }
+.uc-open { display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left;
+           padding:14px 16px; background:none; }
+.uc-open:hover { background:var(--surface-2); }
+.uc-open.on { border-bottom:1px solid var(--line); }
+.uc-big { font-family:var(--f-head); font-size:26px; font-weight:700; line-height:1.15;
+          margin:4px 0 3px; }
+.uc-chev { flex:none; text-align:center; color:var(--ink-3); padding-top:4px; }
+.uc-chev svg { transition:transform .15s; }
+.uc-open.on .uc-chev svg { transform:rotate(90deg); }
+.uc-chev i { display:block; font-style:normal; font-size:9.5px; margin-top:2px; }
+
+/* One list, with the live step called out. Two sections hid the only thing
+   this screen is opened for. */
+.uc-steps { padding:2px 0 6px; }
+.uc-step { display:flex; align-items:flex-start; gap:11px; padding:9px 16px 9px 14px; }
+.uc-rail { flex:none; width:16px; display:flex; justify-content:center; padding-top:3px; }
+.uc-rail i { width:14px; height:14px; border-radius:50%; border:1.5px solid var(--line-2);
+             display:grid; place-items:center; color:#fff; background:var(--surface); }
+.uc-rail i.tick { background:var(--green); border-color:var(--green); }
+.uc-rail i.dot { border-color:var(--gold); border-width:4px; background:var(--surface); }
+.uc-step.now { background:var(--gold-soft); border-left:2px solid var(--gold); padding-left:12px; }
+.uc-nowlbl { display:block; font-size:9.5px; font-weight:800; letter-spacing:.11em;
+             text-transform:uppercase; color:var(--amber); margin-bottom:2px; }
+.uc-step.done b { color:var(--ink-3); text-decoration:line-through; }
+.uc-step.done span { color:var(--ink-3); }
+
+@media (max-width: 1180px) {
+  .uc-split { grid-template-columns:1fr; }
+  .uc-side { position:static; }
+  .prow-st { width:auto; }
+  .prow-price { width:auto; }
+}
+
+/* ══ READ ONLY ════════════════════════════════════════════════════════════
+   A locked protocol is one patients are on. The real guard is that its draft
+   cannot be written at all; this is so the screen looks like what it is. Tabs
+   and folds stay live, because reading it is the whole point. */
+.ro input, .ro select, .ro textarea {
+  pointer-events:none; background:var(--surface-2); color:var(--ink-2);
+  border-color:var(--line);
+}
+.ro .btn, .ro .icon-btn, .ro .btn-green { pointer-events:none; opacity:.4; }
+.ro .tabs .tab, .ro .fold-h { pointer-events:auto; opacity:1; }
+
+.lockbar { display:flex; gap:11px; align-items:flex-start; margin-top:12px;
+           padding:11px 14px; border-radius:11px; background:var(--surface-2);
+           border:1px solid var(--line-2); color:var(--ink-2); }
+.lockbar b { display:block; font-size:12.5px; color:var(--ink); }
+.lockbar span { display:block; font-size:12px; margin-top:3px; line-height:1.55; }
+.scopebtn.ro { opacity:.7; cursor:default; }
+
+/* A locked row keeps its own action, so the row is no longer one big button. */
+.prow { padding:0; overflow:hidden; }
+.prow-hit { display:flex; align-items:center; gap:14px; flex:1; min-width:0;
+            text-align:left; padding:13px 14px; background:none; }
+.prow.lockedrow { background:var(--surface-2); }
+.prow.lockedrow:hover { border-color:var(--line-2); background:var(--surface-2); }
+.prow-act { flex:none; padding-right:12px; }
+
+/* The coach panel's own badge and its identity in the bar. */
+.brand-mark.coach { background:var(--violet); color:#fff; }
+.whoami { display:flex; align-items:center; gap:9px; }
+.whoami .who-av { width:28px; height:28px; border-radius:50%; display:grid; place-items:center;
+                  background:var(--violet-soft); color:var(--violet); font-size:10.5px;
+                  font-weight:800; }
+.whoami b { display:block; font-size:12.5px; }
+.whoami i { display:block; font-style:normal; font-size:10.5px; color:var(--ink-3); }

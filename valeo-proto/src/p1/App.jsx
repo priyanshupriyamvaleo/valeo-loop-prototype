@@ -5,7 +5,8 @@ import Home from './screens/Home';
 import { Gate, Onboarding, Triage, PDP, Cart, Confirm } from './screens/Flow';
 import { Schedule, Status, CheckIn, Report, Join, ProductPage } from './screens/Actions';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
-import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor, GATES, SHARED } from '../shared/bus';
+import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor,
+         GATES, SHARED, scopeFor, membersOf, memberOf } from '../shared/bus';
 import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy } from './lib/journey';
 
 
@@ -28,6 +29,8 @@ const INIT = {
   wlEntry: 'rx',
   stage: 'home',
   goal: null,          /* chosen at the end of the onboarding chat, not before it */
+  region: 'uae',       /* the account's country. Not asked: it is already known */
+  member: 'self',      /* whose journey the home card is showing */
   intake: null,        /* the onboarding answers and the details the doctor needs */
   answers: null,       /* the goal's own triage answers */
   done: [],
@@ -100,12 +103,26 @@ export default function App() {
      something to render before anybody has been through onboarding. */
   const goalId = pt.goal || RR;
   const goal = goalOf(goalId);
+  /* ── WHICH PROTOCOL ──
+     Not the goal. The protocol authored for this goal in this account's
+     country, because the catalogue behind a goal differs by region and there
+     can be one protocol per region. */
+  const scope = scopeFor(studio, goalId, pt.region || 'uae');
   const onbCfg = publishedFor(studio, SHARED, 'onboarding');
-  const triageCfg = publishedFor(studio, goalId, 'triage');
-  const ppCfg = publishedFor(studio, goalId, 'prepurchase');
-  const plan = planFor(studio, goalId, pt);
-  const medicines = medicinesFor(studio, goalId, pt);
-  const weeks = weeksOf(studio, goalId);
+  const triageCfg = publishedFor(studio, scope, 'triage');
+  const ppCfg = publishedFor(studio, scope, 'prepurchase');
+  /* ── WHOSE JOURNEY ──
+     A protocol was bought for one person. If that person is a family member,
+     the account holder can switch between them on the home card, and selecting
+     somebody the protocol is not for has to show nothing rather than show
+     somebody else's plan. */
+  const members = membersOf(pt);
+  const forMember = pt.intake?.who && !pt.intake.who.self ? 'm1' : 'self';
+  const viewing = pt.member || forMember;
+  const theirs = viewing === forMember;
+  const plan = theirs ? planFor(studio, scope, pt) : [];
+  const medicines = theirs ? medicinesFor(studio, scope, pt) : [];
+  const weeks = weeksOf(studio, scope);
   const paused = !!pausedBy(studio, pt);
   const item = nextItem(plan, pt.done);
 
@@ -131,7 +148,7 @@ export default function App() {
     ['onboarding', 'Onboarding chat', !!onbCfg],
     ['triage', `Triage · ${goal.t}`, !!triageCfg],
     ['prepurchase', 'The package', !!ppCfg],
-    ['plan', 'Protocol plan', !!publishedFor(studio, RR, 'plan')],
+    ['plan', 'Protocol plan', !!publishedFor(studio, scope, 'plan')],
     ['consult', 'Consult outcome', !!consultFor(studio)],
   ];
 
@@ -207,6 +224,10 @@ export default function App() {
         onStart={() => set({ mode: 'none', stage: 'gate:onboarding' })}
         protocolCard={
           <ProtocolCard title={goal.t} plan={plan} done={pt.done} weeks={weeks}
+            /* Shown only when the account covers more than one person, which is
+               only when somebody said this was for a family member. */
+            members={members} viewing={viewing} theirs={theirs}
+            onMember={(id) => set({ member: id })}
             onChat={() => {}} onOpen={() => setScreen('detail')} />
         }
       />
@@ -218,14 +239,18 @@ export default function App() {
     view = (
       <Onboarding config={onbCfg.data} goals={GOALS}
         onBack={() => setScreen('gate:onboarding')}
-        onDone={({ answers, profile, goal: picked }) => {
+        onDone={({ answers, profile, goal: picked, who }) => {
+          /* The details collected belong to whoever this is for, so `who` is
+             stored beside them rather than inferred later. */
+          const intake = { answers, profile, who: who || { self: true } };
+          const member = who && !who.self ? 'm1' : 'self';
           /* Weight loss is the journey Valeo already ships, so choosing it hands
              the patient to that home state rather than into this flow. */
           if (picked === 'weight-loss') {
-            set({ intake: { answers, profile }, goal: picked, mode: 'wl', stage: 'home' });
+            set({ intake, member, goal: picked, mode: 'wl', stage: 'home' });
             return;
           }
-          set({ intake: { answers, profile }, goal: picked, mode: 'none', stage: 'gate:triage' });
+          set({ intake, member, goal: picked, mode: 'none', stage: 'gate:triage' });
         }} />
     );
   } else if (screen === 'gate:triage') {
@@ -238,9 +263,11 @@ export default function App() {
     view = <Gate gate={GATES.prepurchase} title={goal.t} open={!!ppCfg} onBack={() => setScreen('home')}
       onContinue={() => setScreen('pdp')} />;
   } else if (screen === 'pdp') {
-    view = <PDP cfg={ppCfg.data} onBack={() => setScreen('gate:prepurchase')} onBuy={() => setScreen('cart')} />;
+    view = <PDP cfg={ppCfg.data} price={ppCfg.price || 0} region={ppCfg.region || 'uae'}
+      onBack={() => setScreen('gate:prepurchase')} onBuy={() => setScreen('cart')} />;
   } else if (screen === 'cart') {
-    view = <Cart cfg={ppCfg.data} onBack={() => setScreen('pdp')} onPay={() => setScreen('confirm')} />;
+    view = <Cart cfg={ppCfg.data} price={ppCfg.price || 0} region={ppCfg.region || 'uae'}
+      onBack={() => setScreen('pdp')} onPay={() => setScreen('confirm')} />;
   } else if (screen === 'confirm') {
     view = <Confirm cfg={ppCfg.data} onDone={() => setScreen('gate:plan')} />;
   } else if (screen === 'gate:plan') {
@@ -295,7 +322,7 @@ export default function App() {
     }
   } else if (screen === 'product') {
     view = (
-      <ProductPage id={pt.product?.id} status={pt.product?.status}
+      <ProductPage id={pt.product?.id} status={pt.product?.status} region={pt.region || 'uae'}
         onBack={() => setScreen('detail')}
         onBuy={() => { window.alert('Checkout is not wired up in this prototype.'); }} />
     );
@@ -317,6 +344,7 @@ export default function App() {
   } else if (screen === 'detail') {
     view = (
       <JourneyDetail title={goal.t} plan={plan} done={pt.done} weeks={weeks} paused={paused}
+        region={pt.region || 'uae'}
         medicines={medicines}
         serviceFor={(it) => serviceForStep(studio, it, pt)}
         onProduct={(m) => set({ product: m, stage: 'product' })}

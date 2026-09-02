@@ -2,7 +2,8 @@ import { useState } from 'react';
 import Icon from '../ui/Icon';
 import { Field, Chip, Note, IconBtn } from '../ui/kit';
 import { useStudio } from '../lib/store';
-import { SERVICE_GROUPS, findService } from '../lib/seed';
+import { serviceGroupsFor, findService, invoiceOf } from '../lib/seed';
+import { money, ccyOf, regionOf } from '../../shared/bus';
 
 /*
  * THE PRE-PURCHASE BUILDER — the PDP, the cart, and the confirmation.
@@ -26,16 +27,23 @@ import { SERVICE_GROUPS, findService } from '../lib/seed';
    This used to be eight sentences somebody typed, which meant the package had a
    price nobody could check: the number in the cart was an assertion.
 
-   Each line now points at a service in the catalogue and says how many of it the
-   protocol includes, so the components add up. The list price sits beside that
-   total, and the gap between them is the margin. A category manager pricing a
-   protocol should be able to see that gap without opening a spreadsheet. */
-function Included({ lines, price, patch, }) {
-  const rows = lines.map((l) => ({ ...l, svc: findService(l.serviceId) })).filter((r) => r.svc);
-  const cost = rows.reduce((n, r) => n + (r.svc.price || 0) * (r.qty || 1), 0);
-  const margin = price - cost;
+   Now it is an invoice. Each line points at a service this region actually
+   sells, at that region's price, with a quantity and a cut. A second cut comes
+   off the subtotal. The number that falls out IS the price on the cart — there
+   is no field to type it into, because two places to set one price is how a
+   cart and a package description start disagreeing.
 
+   ── DISCOUNTS ARE NOT PROMO CODES ──
+   A promo code is a patient stacking a saving on top of a bundle, and that is
+   still refused on the cart. This is how the bundle's own price is arrived at.
+   The difference between what the parts cost separately and what the protocol
+   costs is the whole argument for buying it as one thing, and it is now a
+   number in front of the person setting it rather than a claim in a deck. */
+function Included({ pp, region, patch }) {
+  const inv = invoiceOf(pp, region);
+  const ccy = ccyOf(region);
   const set = (i, key, value) => patch((p) => { p.pdp.included[i][key] = value; });
+  const pct = (v) => Math.min(100, Math.max(0, Number(v) || 0));
 
   return (
     <div>
@@ -43,12 +51,12 @@ function Included({ lines, price, patch, }) {
         <div className="grow">
           <label className="lbl-inline">What is included</label>
           <span className="hint">
-            Each line is a real service, so the package can be added up rather than
-            asserted.
+            Every line is a real service at {regionOf(region).short} prices, so the package
+            adds up instead of being asserted.
           </span>
         </div>
         <button className="btn btn-ghost btn-sm" onClick={() => patch((p) => {
-          p.pdp.included.push({ serviceId: 'consult_gp', qty: 1, note: '' });
+          p.pdp.included.push({ serviceId: 'consult_gp', qty: 1, discount: 0, note: '' });
         })}>
           <Icon name="plus" size={12} /> Add a line
         </button>
@@ -57,24 +65,39 @@ function Included({ lines, price, patch, }) {
       <table className="invoice">
         <thead>
           <tr><th>Service</th><th className="n">Qty</th><th className="n">Unit</th>
-            <th className="n">Total</th><th /></tr>
+            <th className="n">Off</th><th className="n">Total</th><th /></tr>
         </thead>
         <tbody>
-          {rows.map((r, i) => (
-            <tr key={`${r.serviceId}-${i}`}>
+          {inv.rows.map((r, i) => (
+            <tr key={`${r.serviceId}-${i}`} className={r.sold ? '' : 'gone'}>
               <td>
                 <Field type="select" value={r.serviceId}
-                  groups={SERVICE_GROUPS}
+                  groups={serviceGroupsFor(region)}
                   onChange={(v) => set(i, 'serviceId', v)} />
                 <input className="inv-note" value={r.note || ''} placeholder={r.svc.note}
                   onChange={(e) => set(i, 'note', e.target.value)} />
+                {!r.sold && (
+                  <span className="hint">
+                    Not sold in {regionOf(region).short}. It prices at zero here.
+                  </span>
+                )}
               </td>
               <td className="n">
-                <input className="inv-qty" type="number" min="1" value={r.qty || 1}
+                <input className="inv-qty" type="number" min="1" value={r.qty}
                   onChange={(e) => set(i, 'qty', Math.max(1, Number(e.target.value) || 1))} />
               </td>
-              <td className="n mono">{(r.svc.price || 0).toLocaleString()}</td>
-              <td className="n mono">{((r.svc.price || 0) * (r.qty || 1)).toLocaleString()}</td>
+              <td className="n mono">{r.unit.toLocaleString()}</td>
+              <td className="n">
+                <div className="inv-pct">
+                  <input type="number" min="0" max="100" value={r.disc || ''} placeholder="0"
+                    onChange={(e) => set(i, 'discount', pct(e.target.value))} />
+                  <i>%</i>
+                </div>
+              </td>
+              <td className="n mono">
+                {r.disc > 0 && <s>{r.gross.toLocaleString()}</s>}
+                {r.net.toLocaleString()}
+              </td>
               <td className="n">
                 <IconBtn name="trash" danger title="Remove line"
                   onClick={() => patch((p) => { p.pdp.included.splice(i, 1); })} />
@@ -83,15 +106,48 @@ function Included({ lines, price, patch, }) {
           ))}
         </tbody>
         <tfoot>
-          <tr><td colSpan={3}>What the package costs to deliver</td>
-            <td className="n mono">AED {cost.toLocaleString()}</td><td /></tr>
-          <tr><td colSpan={3}>List price on the cart</td>
-            <td className="n mono">AED {price.toLocaleString()}</td><td /></tr>
-          <tr className={margin < 0 ? 'bad' : 'good'}>
-            <td colSpan={3}>{margin < 0 ? 'Sold below cost' : 'Margin'}</td>
-            <td className="n mono">AED {Math.abs(margin).toLocaleString()}</td><td /></tr>
+          <tr><td colSpan={4}>Components at their own list price</td>
+            <td className="n mono">{inv.list.toLocaleString()}</td><td /></tr>
+          {inv.lineSaved > 0 && (
+            <tr><td colSpan={4}>Less the cuts on individual lines</td>
+              <td className="n mono">−{inv.lineSaved.toLocaleString()}</td><td /></tr>
+          )}
+          <tr>
+            <td colSpan={4}>
+              <div className="inv-total-row">
+                <span>Less a cut on the whole package</span>
+                <div className="inv-pct">
+                  <input type="number" min="0" max="100" value={pp.pdp.discount || ''} placeholder="0"
+                    onChange={(e) => patch((p) => { p.pdp.discount = pct(e.target.value); })} />
+                  <i>%</i>
+                </div>
+              </div>
+            </td>
+            <td className="n mono">{inv.pkgSaved ? `−${inv.pkgSaved.toLocaleString()}` : '—'}</td><td />
+          </tr>
+          <tr className="grand">
+            <td colSpan={4}>The price on the cart</td>
+            <td className="n mono">{ccy} {inv.total.toLocaleString()}</td><td />
+          </tr>
         </tfoot>
       </table>
+
+      {/* The bundle argument, in the one form anybody can check. */}
+      <div className={`bundle ${inv.total <= 0 ? 'bad' : ''}`}>
+        {inv.total <= 0 ? (
+          <b>The package prices at zero. Publishing is refused until it does not.</b>
+        ) : (
+          <>
+            <b>Bought separately, these come to {money(inv.list, region)}.</b>
+            <span>
+              The protocol is {money(inv.total, region)}, so a patient keeps{' '}
+              {money(inv.saved, region)} — {Math.round((inv.saved / inv.list) * 100)}% —
+              by taking it as one thing. That is the whole argument for the bundle, and
+              it is a number rather than a claim.
+            </span>
+          </>
+        )}
+      </div>
 
       <span className="hint">
         Catalogue prices are placeholders pending sign-off, so the total is only as good
@@ -101,26 +157,31 @@ function Included({ lines, price, patch, }) {
   );
 }
 
-export default function PrePurchase({ goalId }) {
+export default function PrePurchase({ scope, protocol, readOnly = false }) {
   const { state, update } = useStudio();
-  const draft = state.drafts?.[goalId];
+  const draft = state.drafts?.[scope];
   const [tab, setTab] = useState('pdp');
 
   if (!draft || !draft.prepurchase) {
-    return <div className="card card-pad empty">No pre-purchase flow configured for this goal.</div>;
+    return <div className="card card-pad empty">This protocol has no package.</div>;
   }
 
+  const region = protocol?.region || 'uae';
   const pp = draft.prepurchase;
-  const patch = (fn) => update((d) => { fn(d.drafts[goalId].prepurchase); });
+  const inv = invoiceOf(pp, region);
+  /* The one guard that matters. A locked protocol's draft cannot be written,
+     whatever a control on screen looks like it would do. */
+  const patch = readOnly ? () => {} : (fn) => update((d) => { fn(d.drafts[scope].prepurchase); });
 
   return (
-    <>
+    <div className={readOnly ? 'ro' : ''}>
       <div className="row" style={{ marginBottom: 14 }}>
         <div className="grow">
           <h2>The package</h2>
           <p className="sub">
-            The three screens between triage and a paid protocol. The patient app
-            renders exactly what is here, in this order.
+            The three screens between triage and a paid protocol, at{' '}
+            {regionOf(region).t} prices. The patient app renders exactly what is here,
+            in this order.
           </p>
         </div>
         <div className="tabs">
@@ -170,7 +231,7 @@ export default function PrePurchase({ goalId }) {
               value={(pp.pdp.symptoms || []).join('\n')}
               onChange={(v) => patch((p) => { p.pdp.symptoms = v.split('\n').filter((s) => s.trim()); })}
               hint="One per line. This is also what the goal picker matches against." />
-            <Included lines={pp.pdp.included || []} price={pp.cart?.price || 0} patch={patch} />
+            <Included pp={pp} region={region} patch={patch} />
             <Field label="Service provider line" value={pp.pdp.provider}
               onChange={(v) => patch((p) => { p.pdp.provider = v; })}
               hint="Never name a doctor or the pharmacy. Copy rule." />
@@ -179,22 +240,40 @@ export default function PrePurchase({ goalId }) {
       )}
 
       {tab === 'cart' && (
-        <div className="card card-pad" style={{ display: 'grid', gap: 14 }}>
-          <div className="grid-2">
-            <Field label="Price (AED)" type="number" value={pp.cart.price}
-              onChange={(v) => patch((p) => { p.cart.price = v; })} />
-            <Field label="Instalment amount (AED)" type="number" value={pp.cart.instalmentAmount}
-              onChange={(v) => patch((p) => { p.cart.instalmentAmount = v; })} />
+        <div style={{ display: 'grid', gap: 14 }}>
+          {/* ── THE PRICE IS NOT A FIELD ──
+              It is the invoice on the PDP tab. This screen shows what that came
+              to and how it splits, and nothing here can contradict it. */}
+          <div className="card card-pad">
+            <div className="row" style={{ alignItems: 'flex-end' }}>
+              <div className="grow">
+                <span className="ls-k">The price on the cart</span>
+                <div className="cart-price">{money(inv.total, region)}</div>
+                <span className="hint">
+                  Computed from what the package is made of. To change it, change the
+                  package or its discounts on the <b>PDP</b> tab.
+                </span>
+              </div>
+              <button className="btn btn-ghost btn-sm" onClick={() => setTab('pdp')}>
+                Open the invoice <Icon name="chev" size={12} />
+              </button>
+            </div>
           </div>
-          <Field label="Number of instalments" type="number" value={pp.cart.instalmentCount}
-            onChange={(v) => patch((p) => { p.cart.instalmentCount = v; })} />
-          <Field label="Payment widgets" type="textarea" rows={2}
-            value={(pp.cart.widgets || []).join('\n')}
-            onChange={(v) => patch((p) => { p.cart.widgets = v.split('\n').filter((s) => s.trim()); })} />
-          <Field label="Promo code field" value="Not permitted on protocol SKUs" disabled
-            lockWhy="The protocol is the offer. Bundle or discount, never both. This is refused by the builder, not by review." />
-          <Field label="Cart CTA" value={pp.cart.cta}
-            onChange={(v) => patch((p) => { p.cart.cta = v; })} />
+
+          <div className="card card-pad" style={{ display: 'grid', gap: 14 }}>
+            <div className="grid-2">
+              <Field label="Number of instalments" type="number" value={pp.cart.instalmentCount}
+                onChange={(v) => patch((p) => { p.cart.instalmentCount = Math.max(1, v || 1); })} />
+              <Field label="Each instalment" disabled
+                value={money(Math.ceil(inv.total / Math.max(1, pp.cart.instalmentCount || 1)), region)}
+                hint="The price divided by the number of instalments. Not a second number to set." />
+            </div>
+            <Field label="Payment widgets" type="textarea" rows={2}
+              value={(pp.cart.widgets || []).join('\n')}
+              onChange={(v) => patch((p) => { p.cart.widgets = v.split('\n').filter((s) => s.trim()); })} />
+            <Field label="Promo code field" value="Not permitted on protocol SKUs" disabled
+              lockWhy="The discount is already in the price, set on the invoice by whoever priced the package. A code on top of that is a second discount nobody approved. Refused by the builder, not by review." />
+          </div>
         </div>
       )}
 
@@ -215,6 +294,6 @@ export default function PrePurchase({ goalId }) {
           </Note>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -441,3 +441,26 @@ button { font:inherit; color:inherit; cursor:pointer; border:none; background:no
 .pdp-price { margin-top:12px; font-family:var(--f-head); font-size:22px; font-weight:600;
              color:var(--ink); }
 .pdp-price.incl { font-size:14px; color:var(--green); }
+
+/* ── WHO IS THIS FOR ──
+   The first step of the onboarding chat. Two large choices, and the name field
+   appears only once the answer makes it necessary. */
+.whopick { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+.whoopt { display:flex; flex-direction:column; align-items:flex-start; gap:7px;
+          padding:13px 12px; border-radius:14px; border:1.5px solid var(--line);
+          background:var(--card); color:var(--ink-2); text-align:left; }
+.whoopt.on { border-color:var(--gold); background:var(--gold-soft); color:var(--ink); }
+.whoopt b { font-family:var(--f-head); font-size:13px; font-weight:600; }
+.whoform { margin-top:12px; display:grid; gap:12px; }
+
+/* The member switcher, top right of the protocol card. It answers "who is this
+   card about" before anything the card says can be read correctly. */
+.jcard .hd b { min-width:0; }
+.jcard .hd .whoswitch { flex:none; display:inline-flex; align-items:center; gap:5px; position:relative;
+                        background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);
+                        border-radius:999px; padding:4px 8px 4px 9px; color:#fff; }
+.whoswitch select { appearance:none; background:none; border:none; color:#fff; font-size:11px;
+                    font-weight:600; padding:0 2px; max-width:118px; }
+.whoswitch select option { color:var(--ink); }
+.whoswitch .wsx { opacity:.7; transform:rotate(90deg); }
+.chatpill.tight { padding:5px 7px; }

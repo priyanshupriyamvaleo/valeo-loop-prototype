@@ -1,6 +1,7 @@
 import Icon from '../ui/Icon';
 import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures, stateOf, actorOf, actorInitial, whenLabel } from '../lib/journey';
-import { findService } from '../../p2/lib/seed';
+import { findService, priceOf } from '../../p2/lib/seed';
+import { money } from '../../shared/bus';
 
 /*
  * ONE CARD AND ONE DETAIL SCREEN.
@@ -12,19 +13,55 @@ import { findService } from '../../p2/lib/seed';
  * demonstrate.
  */
 
-export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12 }) {
+export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12,
+                               members = [], viewing = 'self', theirs = true, onMember }) {
   const item = nextItem(plan, done);
   const p = progress(plan, done);
   const wk = weekOf(plan, done, weeks);
+  /* Only when the account covers somebody else. One person does not need a
+     picker telling them they are themselves. */
+  const many = members.length > 1;
+  const who = members.find((m) => m.id === viewing) || members[0];
 
   return (
     <div className="jcard">
       <div className="hd">
-        <b>{title}</b>
-        <button className="chatpill" onClick={onChat}><Icon name="chat" size={11} /> Chat with Doctor</button>
+        <b>{many ? (theirs ? title : 'Valeo Protocols') : title}</b>
+        {/* Top right, because it answers "who is this card about" before
+            anything the card says can be read correctly. */}
+        {many && (
+          <label className="whoswitch">
+            <Icon name="users" size={11} />
+            <select value={viewing} onChange={(e) => onMember && onMember(e.target.value)}>
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>{m.short} · {m.relation}</option>
+              ))}
+            </select>
+            <Icon name="chev" size={11} className="wsx" />
+          </label>
+        )}
+        <button className={`chatpill ${many ? 'tight' : ''}`} onClick={onChat}>
+          <Icon name="chat" size={11} />{many ? '' : ' Chat with Doctor'}
+        </button>
       </div>
 
-      {item ? (
+      {/* A protocol belongs to one person. Selecting anybody else has to show
+          nothing rather than show them somebody else's plan. */}
+      {!theirs && (
+        <div className="mod">
+          <div className="lbl">No protocol yet</div>
+          <div className="big">{who.short} has nothing running.</div>
+          <div className="sm" style={{ marginTop: 3 }}>
+            This account&rsquo;s protocol is for somebody else. Switch back above, or start
+            one for {who.short}.
+          </div>
+          <button className="btn-gold" style={{ marginTop: 11 }} onClick={onOpen}>
+            Explore protocols <Icon name="chev" size={12} />
+          </button>
+        </div>
+      )}
+
+      {theirs && (item ? (
         <div className="mod">
           {/* action_needed outranks everything else, per the module table */}
           {/* Emphasis follows whose move it is, not a flag that claimed to gate
@@ -54,16 +91,18 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12 }) 
             Continue or switch <Icon name="chev" size={12} />
           </button>
         </div>
-      )}
+      ))}
 
       {/* progress: purchased means there is a week to show */}
-      <div className="mod">
-        <div className="rowline" style={{ marginBottom: 5 }}>
-          <div className="sm" style={{ flex: 1 }}>Week <b style={{ fontSize: 14 }}>{wk}</b> of {weeks}</div>
-          <div className="sm">{p.done} of {p.total} steps</div>
+      {theirs && (
+        <div className="mod">
+          <div className="rowline" style={{ marginBottom: 5 }}>
+            <div className="sm" style={{ flex: 1 }}>Week <b style={{ fontSize: 14 }}>{wk}</b> of {weeks}</div>
+            <div className="sm">{p.done} of {p.total} steps</div>
+          </div>
+          <div className="pbar"><i style={{ width: `${p.pct}%` }} /></div>
         </div>
-        <div className="pbar"><i style={{ width: `${p.pct}%` }} /></div>
-      </div>
+      )}
 
       <div className="dots"><i className="on" /><i /></div>
     </div>
@@ -129,7 +168,7 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12 }) 
  * So the logbook is full on day zero and Week 12 has something to read against.
  */
 export function JourneyDetail({ plan, done, checkins, logs, target, booked, title,
-                               medicines, serviceFor, weeks = 12, paused, onBack, onOpen, onLog, onChat, onProduct }) {
+                               medicines, serviceFor, weeks = 12, paused, onBack, onOpen, onLog, onChat, onProduct, region = 'uae' }) {
   const front = nextItem(plan, done);
   const p = progress(plan, done);
   const wk = weekOf(plan, done, weeks);
@@ -379,7 +418,9 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
                       {m.status === 'ongoing' ? 'You are on this'
                         : m.status === 'coming' ? 'Ships with your protocol'
                           : 'Suggested by your doctor'}
-                      {svc.price > 0 ? ` · AED ${svc.price.toLocaleString()}` : ''}
+                      {/* Only priced if the patient would be paying for it. */}
+                      {!svc.inProtocol && priceOf(svc, region) > 0
+                        ? ` · ${money(priceOf(svc, region), region)}` : ''}
                     </span>
                   </div>
                   <Icon name="chev" size={13} />
