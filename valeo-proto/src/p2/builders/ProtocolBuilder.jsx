@@ -1,9 +1,95 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
+import { go } from '../lib/router';
 import { Field, Chip, Note, IconBtn } from '../ui/kit';
 import { useStudio } from '../lib/store';
-import { serviceGroupsFor, findService, priceOf } from '../lib/seed';
+import { serviceGroupsFor, findService } from '../lib/seed';
 import { actorOf, whenLabel, weekNo } from '../../p1/lib/journey';
+import { publishedFor, chatsForGoal, chatVersions, goalOf } from '../../shared/bus';
+
+/* ── WHERE THE STEPS BEGIN ──
+   A protocol does not start at step one. It starts at the onboarding chat,
+   which every goal shares and no category manager owns, and then the goal chat
+   this protocol is pinned to. Showing both above the steps is what makes the
+   funnel one thing on one screen instead of three screens somebody has to hold
+   in their head.
+
+   The onboarding chat is fixed and viewable. The goal chat is a choice, and it
+   is a choice of VERSION — so publishing a newer chat cannot change what a
+   live protocol asks. */
+function FunnelHead({ protocol, state, patchProtocol, readOnly }) {
+  const onb = publishedFor(state, 'shared', 'onboarding');
+  const chats = chatsForGoal(state, protocol.goal);
+  const linked = protocol.chat || {};
+  const vs = chatVersions(state, linked.id || chats[0]?.id);
+  const chat = chats.find((c) => c.id === linked.id) || null;
+  const set = (fn) => { if (!readOnly) patchProtocol(protocol.id, fn); };
+
+  return (
+    <div className="funnel">
+      <div className="fn-step fixed">
+        <span className="fn-n">Before</span>
+        <div className="grow">
+          <b>Onboarding chat</b>
+          <span>
+            {onb ? `v${onb.version} live · ${(onb.data?.questions || []).length} questions`
+                 : 'not published'} · shared by every goal
+          </span>
+        </div>
+        <button className="btn btn-ghost btn-sm" onClick={() => go('/chats/onboarding')}>
+          View <Icon name="chev" size={11} />
+        </button>
+      </div>
+
+      <div className="fn-arrow"><Icon name="chev" size={12} /></div>
+
+      <div className={`fn-step ${linked.id ? '' : 'warn'}`}>
+        <span className="fn-n">Then</span>
+        <div className="grow">
+          <b>{chat ? chat.name : 'No goal chat linked'}</b>
+          <span>
+            {chat
+              ? `asked after the goal is chosen, before the price`
+              : `${goalOf(protocol.goal)?.t || protocol.goal} patients would go straight to the price`}
+          </span>
+        </div>
+        {chats.length > 0 && (
+          <div className="fn-pick">
+            <select value={linked.id || ''} disabled={readOnly}
+              onChange={(e) => {
+                const id = e.target.value;
+                const v = chatVersions(state, id)[0]?.version || 1;
+                set((p) => { p.chat = id ? { id, version: v } : undefined; });
+              }}>
+              <option value="">Not linked</option>
+              {chats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            {linked.id && (
+              <select value={String(linked.version || '')} disabled={readOnly}
+                onChange={(e) => set((p) => { p.chat = { ...p.chat, version: Number(e.target.value) }; })}>
+                {vs.map((v) => (
+                  <option key={v.version} value={String(v.version)}>
+                    v{v.version} · {new Date(v.at).toLocaleDateString('en-GB',
+                      { day: 'numeric', month: 'short', year: '2-digit' })}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="fn-arrow"><Icon name="chev" size={12} /></div>
+      <div className="fn-step now">
+        <span className="fn-n">Now</span>
+        <div className="grow">
+          <b>The steps below</b>
+          <span>What happens after they pay</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /*
  * THE PROTOCOL BUILDER — the after-purchase journey.
@@ -36,7 +122,7 @@ import { actorOf, whenLabel, weekNo } from '../../p1/lib/journey';
  * fact to be wrong.
  */
 export default function ProtocolBuilder({ scope, protocol, readOnly = false }) {
-  const { state, update } = useStudio();
+  const { state, update, patchProtocol } = useStudio();
   const draft = state.drafts?.[scope];
   const [refused, setRefused] = useState(null);
   const [editing, setEditing] = useState(null);   /* id of the row open for editing */
@@ -75,7 +161,7 @@ export default function ProtocolBuilder({ scope, protocol, readOnly = false }) {
     <div className={readOnly ? 'ro' : ''}>
       <div className="row" style={{ marginBottom: 14 }}>
         <div className="grow">
-          <h2>Protocol template</h2>
+          <h2>Step Builder</h2>
           <p className="sub">
             An ordered list of items with due offsets. Purchase copies this onto the
             patient as their own schedule, and the app shows whichever item is due.
@@ -83,6 +169,9 @@ export default function ProtocolBuilder({ scope, protocol, readOnly = false }) {
           </p>
         </div>
       </div>
+
+      <FunnelHead protocol={protocol} state={state} patchProtocol={patchProtocol}
+        readOnly={readOnly} />
 
       <>
           <div className="row" style={{ marginBottom: 8, gap: 8 }}>

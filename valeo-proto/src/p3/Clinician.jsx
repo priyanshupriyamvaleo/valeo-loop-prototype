@@ -864,7 +864,8 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
      one. */
   const begin = (kind) => {
     const spec = ADDABLE[kind];
-    const svc = SERVICES[spec.group].items.find((x) => !blockedFor(x));
+    /* Never open on something the pharmacy cannot ship. */
+    const svc = SERVICES[spec.group].items.find((x) => !blockedFor(x) && !x.oos);
     if (!svc) return;
     /* Lands in the week the patient is actually in, not week one. */
     setDraft({ kind, serviceId: svc.id, blocker: false,
@@ -1033,7 +1034,9 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                     <div className="chg-f">
                       <Field label="Product" type="select" value={current?.id || ''}
                         options={(group?.items || []).map((x) => x.id)}
-                        display={(group?.items || []).reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
+                        display={(group?.items || []).reduce((a, x) => (
+                          { ...a, [x.id]: x.oos ? `${x.t} — out of stock` : x.t }), {})}
+                        disabledOptions={(group?.items || []).filter((x) => x.oos).map((x) => x.id)}
                         onChange={(v) => {
                           /* Reaching for a gated product asks the question here
                              rather than refusing silently. */
@@ -1092,7 +1095,9 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                   <Field label={ADDABLE[draft.kind].t} type="select" value={draft.serviceId}
                     options={SERVICES[ADDABLE[draft.kind].group].items.map((x) => x.id)}
                     display={SERVICES[ADDABLE[draft.kind].group].items
-                      .reduce((a, x) => ({ ...a, [x.id]: x.t }), {})}
+                      .reduce((a, x) => ({ ...a, [x.id]: x.oos ? `${x.t} — out of stock` : x.t }), {})}
+                    disabledOptions={SERVICES[ADDABLE[draft.kind].group].items
+                      .filter((x) => x.oos).map((x) => x.id)}
                     onChange={(v) => {
                       const svc = findService(v);
                       if (blockedFor(svc)) { setGateAsked(v); return; }

@@ -28,7 +28,7 @@
    is swept on load: drafts reseed, published clears, and nobody is left reading
    a snapshot of copy that no longer exists. Bump this whenever the seed changes
    in a way a patient or a category manager would notice. */
-const SEED_VERSION = 11;
+const SEED_VERSION = 12;
 
 export const STUDIO_KEY = `valeo.studio.v${SEED_VERSION}`;   /* the Studio writes, the app reads */
 export const PATIENT_KEY = `valeo.patient.v${SEED_VERSION}`; /* the app writes, the Studio ignores */
@@ -153,6 +153,26 @@ export function protocolFor(studio, goal, region = 'uae') {
   return list[0] || protocolsOf(studio).find((p) => p.goal === goal) || null;
 }
 export const scopeFor = (studio, goal, region) => protocolFor(studio, goal, region)?.id || null;
+
+/* ── THE TRIAGE A PROTOCOL ACTUALLY ASKS ──
+   Not "the latest version of that goal's chat". The version the protocol was
+   linked to, resolved out of the kept history — so publishing a new chat
+   version changes nothing until a category manager points a protocol at it.
+   Falls back to whatever is currently published if the pinned version has been
+   removed, and to nothing if the protocol was never linked. */
+export function triageFor(studio, proto) {
+  const link = proto && proto.chat;
+  if (!link || !link.id) return null;
+  const hist = (studio?.chatHistory && studio.chatHistory[link.id]) || [];
+  const pinned = hist.find((v) => v.version === link.version);
+  return pinned || publishedFor(studio, link.id, 'triage') || null;
+}
+
+/* Every published version of one chat, newest first, for the version picker. */
+export const chatVersions = (studio, chatId) =>
+  [...((studio?.chatHistory && studio.chatHistory[chatId]) || [])].reverse();
+export const chatsOf = (studio) => (studio && studio.chats) || [];
+export const chatsForGoal = (studio, goal) => chatsOf(studio).filter((c) => c.goal === goal);
 
 /* ── WHO AN ACCOUNT COVERS ──
    One account, one or more people. The onboarding chat asks which, and if the

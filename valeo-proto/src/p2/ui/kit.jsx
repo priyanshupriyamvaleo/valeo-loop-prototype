@@ -1,7 +1,8 @@
 import Icon from './Icon';
 
 export function Field({ label, value, onChange, type = 'text', rows = 3, hint,
-                        disabled, lockWhy, options, placeholder, display, groups }) {
+                        disabled, lockWhy, options, placeholder, display, groups,
+                        disabledOptions = [] }) {
   return (
     <div className="field">
       <label>
@@ -22,12 +23,16 @@ export function Field({ label, value, onChange, type = 'text', rows = 3, hint,
             ? groups.map((g) => (
                 g.items.length === 0 ? null : (
                   <optgroup key={g.label} label={g.label}>
-                    {g.items.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    {g.items.map((o) => (
+                      <option key={o.value} value={o.value} disabled={o.disabled}>{o.label}</option>
+                    ))}
                   </optgroup>
                 )
               ))
             : (options || []).map((o) => (
-                <option key={o} value={o}>{display ? (display[o] || o) : o}</option>
+                <option key={o} value={o} disabled={disabledOptions.includes(o)}>
+                  {display ? (display[o] || o) : o}
+                </option>
               ))}
         </select>
       ) : (

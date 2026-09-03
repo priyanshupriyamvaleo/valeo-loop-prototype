@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Icon from '../ui/Icon';
 import { Field, Chip, Note, IconBtn } from '../ui/kit';
 import { useStudio } from '../lib/store';
-import { serviceGroupsFor, findService, invoiceOf } from '../lib/seed';
+import { invoiceOf } from '../lib/seed';
 import { money, ccyOf, regionOf } from '../../shared/bus';
 
 /*
@@ -24,25 +24,21 @@ import { money, ccyOf, regionOf } from '../../shared/bus';
  * so the builder treats it as structural rather than as copy.
  */
 /* ── WHAT IS IN THE PACKAGE, AND WHAT IT COSTS ──
-   This used to be eight sentences somebody typed, which meant the package had a
-   price nobody could check: the number in the cart was an assertion.
+   Nothing here is typed. Every line is read off the plan: a step that links to
+   a service puts that service in the package, and the quantity is how many
+   steps carry it. Change the steps and this changes with them.
+   
+   That is the whole point. A hand-kept list beside a plan is a second
+   description of one protocol, and the two drift — the old list carried two
+   nurse visits that no step actually booked, which nobody could see because the
+   two screens never had to agree.
 
-   Now it is an invoice. Each line points at a service this region actually
-   sells, at that region's price, with a quantity and a cut. A second cut comes
-   off the subtotal. The number that falls out IS the price on the cart — there
-   is no field to type it into, because two places to set one price is how a
-   cart and a package description start disagreeing.
-
-   ── DISCOUNTS ARE NOT PROMO CODES ──
-   A promo code is a patient stacking a saving on top of a bundle, and that is
-   still refused on the cart. This is how the bundle's own price is arrived at.
-   The difference between what the parts cost separately and what the protocol
-   costs is the whole argument for buying it as one thing, and it is now a
-   number in front of the person setting it rather than a claim in a deck. */
-function Included({ pp, region, patch }) {
-  const inv = invoiceOf(pp, region);
+   The one lever left is a discount on the whole package. Per-line cuts were a
+   second way to move the same number, and with them you could not say what the
+   package as a whole was discounted by. */
+function Included({ pp, plan, region, patch, readOnly }) {
+  const inv = invoiceOf(pp, region, plan);
   const ccy = ccyOf(region);
-  const set = (i, key, value) => patch((p) => { p.pdp.included[i][key] = value; });
   const pct = (v) => Math.min(100, Math.max(0, Number(v) || 0));
 
   return (
@@ -51,103 +47,86 @@ function Included({ pp, region, patch }) {
         <div className="grow">
           <label className="lbl-inline">What is included</label>
           <span className="hint">
-            Every line is a real service at {regionOf(region).short} prices, so the package
-            adds up instead of being asserted.
+            Read off the {plan.length} steps in the Step Builder, at{' '}
+            {regionOf(region).short} prices. To change what is in the package, change
+            the steps.
           </span>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={() => patch((p) => {
-          p.pdp.included.push({ serviceId: 'consult_gp', qty: 1, discount: 0, note: '' });
-        })}>
-          <Icon name="plus" size={12} /> Add a line
-        </button>
       </div>
 
-      <table className="invoice">
-        <thead>
-          <tr><th>Service</th><th className="n">Qty</th><th className="n">Unit</th>
-            <th className="n">Off</th><th className="n">Total</th><th /></tr>
-        </thead>
-        <tbody>
-          {inv.rows.map((r, i) => (
-            <tr key={`${r.serviceId}-${i}`} className={r.sold ? '' : 'gone'}>
-              <td>
-                <Field type="select" value={r.serviceId}
-                  groups={serviceGroupsFor(region)}
-                  onChange={(v) => set(i, 'serviceId', v)} />
-                <input className="inv-note" value={r.note || ''} placeholder={r.svc.note}
-                  onChange={(e) => set(i, 'note', e.target.value)} />
-                {!r.sold && (
-                  <span className="hint">
-                    Not sold in {regionOf(region).short}. It prices at zero here.
-                  </span>
-                )}
-              </td>
-              <td className="n">
-                <input className="inv-qty" type="number" min="1" value={r.qty}
-                  onChange={(e) => set(i, 'qty', Math.max(1, Number(e.target.value) || 1))} />
-              </td>
-              <td className="n mono">{r.unit.toLocaleString()}</td>
-              <td className="n">
-                <div className="inv-pct">
-                  <input type="number" min="0" max="100" value={r.disc || ''} placeholder="0"
-                    onChange={(e) => set(i, 'discount', pct(e.target.value))} />
-                  <i>%</i>
+      {inv.rows.length === 0 ? (
+        <Note tone="gold" label="No step links to a service">
+          <p style={{ margin: 0 }}>
+            The package is empty because nothing in the plan points at something Valeo
+            sells. Link services to the steps and they appear here.
+          </p>
+        </Note>
+      ) : (
+        <table className="invoice">
+          <thead>
+            <tr><th>Service</th><th>From which steps</th><th className="n">Qty</th>
+              <th className="n">Unit</th><th className="n">Total</th></tr>
+          </thead>
+          <tbody>
+            {inv.rows.map((r) => (
+              <tr key={r.serviceId} className={r.sold ? '' : 'gone'}>
+                <td><b>{r.svc.t}</b>
+                  {!r.sold && (
+                    <span className="hint">
+                      Not sold in {regionOf(region).short}. It prices at zero here.
+                    </span>
+                  )}
+                </td>
+                <td className="inv-from">{r.note}</td>
+                <td className="n mono">{r.qty}</td>
+                <td className="n mono">{r.unit.toLocaleString()}</td>
+                <td className="n mono">{r.gross.toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr><td colSpan={4}>Components at their own list price</td>
+              <td className="n mono">{inv.list.toLocaleString()}</td></tr>
+            <tr>
+              <td colSpan={4}>
+                <div className="inv-total-row">
+                  <span>Discount on the whole package</span>
+                  <div className="inv-pct">
+                    <input type="number" min="0" max="100" value={pp.pdp.discount || ''}
+                      placeholder="0" disabled={readOnly}
+                      onChange={(e) => patch((p) => { p.pdp.discount = pct(e.target.value); })} />
+                    <i>%</i>
+                  </div>
                 </div>
               </td>
-              <td className="n mono">
-                {r.disc > 0 && <s>{r.gross.toLocaleString()}</s>}
-                {r.net.toLocaleString()}
-              </td>
-              <td className="n">
-                <IconBtn name="trash" danger title="Remove line"
-                  onClick={() => patch((p) => { p.pdp.included.splice(i, 1); })} />
-              </td>
+              <td className="n mono">{inv.saved ? `−${inv.saved.toLocaleString()}` : '—'}</td>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr><td colSpan={4}>Components at their own list price</td>
-            <td className="n mono">{inv.list.toLocaleString()}</td><td /></tr>
-          {inv.lineSaved > 0 && (
-            <tr><td colSpan={4}>Less the cuts on individual lines</td>
-              <td className="n mono">−{inv.lineSaved.toLocaleString()}</td><td /></tr>
-          )}
-          <tr>
-            <td colSpan={4}>
-              <div className="inv-total-row">
-                <span>Less a cut on the whole package</span>
-                <div className="inv-pct">
-                  <input type="number" min="0" max="100" value={pp.pdp.discount || ''} placeholder="0"
-                    onChange={(e) => patch((p) => { p.pdp.discount = pct(e.target.value); })} />
-                  <i>%</i>
-                </div>
-              </div>
-            </td>
-            <td className="n mono">{inv.pkgSaved ? `−${inv.pkgSaved.toLocaleString()}` : '—'}</td><td />
-          </tr>
-          <tr className="grand">
-            <td colSpan={4}>The price on the cart</td>
-            <td className="n mono">{ccy} {inv.total.toLocaleString()}</td><td />
-          </tr>
-        </tfoot>
-      </table>
+            <tr className="grand">
+              <td colSpan={4}>The price on the cart</td>
+              <td className="n mono">{ccy} {inv.total.toLocaleString()}</td>
+            </tr>
+          </tfoot>
+        </table>
+      )}
 
       {/* The bundle argument, in the one form anybody can check. */}
-      <div className={`bundle ${inv.total <= 0 ? 'bad' : ''}`}>
-        {inv.total <= 0 ? (
-          <b>The package prices at zero. Publishing is refused until it does not.</b>
-        ) : (
-          <>
-            <b>Bought separately, these come to {money(inv.list, region)}.</b>
-            <span>
-              The protocol is {money(inv.total, region)}, so a patient keeps{' '}
-              {money(inv.saved, region)} — {Math.round((inv.saved / inv.list) * 100)}% —
-              by taking it as one thing. That is the whole argument for the bundle, and
-              it is a number rather than a claim.
-            </span>
-          </>
-        )}
-      </div>
+      {inv.rows.length > 0 && (
+        <div className={`bundle ${inv.total <= 0 ? 'bad' : ''}`}>
+          {inv.total <= 0 ? (
+            <b>The package prices at zero. Publishing is refused until it does not.</b>
+          ) : (
+            <>
+              <b>Bought separately, these come to {money(inv.list, region)}.</b>
+              <span>
+                The protocol is {money(inv.total, region)}, so a patient keeps{' '}
+                {money(inv.saved, region)} — {Math.round((inv.saved / inv.list) * 100)}% —
+                by taking it as one thing. That is the whole argument for the bundle, and
+                it is a number rather than a claim.
+              </span>
+            </>
+          )}
+        </div>
+      )}
 
       <span className="hint">
         Catalogue prices are placeholders pending sign-off, so the total is only as good
@@ -168,7 +147,8 @@ export default function PrePurchase({ scope, protocol, readOnly = false }) {
 
   const region = protocol?.region || 'uae';
   const pp = draft.prepurchase;
-  const inv = invoiceOf(pp, region);
+  const plan = draft.plan || [];
+  const inv = invoiceOf(pp, region, plan);
   /* The one guard that matters. A locked protocol's draft cannot be written,
      whatever a control on screen looks like it would do. */
   const patch = readOnly ? () => {} : (fn) => update((d) => { fn(d.drafts[scope].prepurchase); });
@@ -177,11 +157,11 @@ export default function PrePurchase({ scope, protocol, readOnly = false }) {
     <div className={readOnly ? 'ro' : ''}>
       <div className="row" style={{ marginBottom: 14 }}>
         <div className="grow">
-          <h2>The package</h2>
+          <h2>Package Builder</h2>
           <p className="sub">
-            The three screens between triage and a paid protocol, at{' '}
-            {regionOf(region).t} prices. The patient app renders exactly what is here,
-            in this order.
+            The three screens between the goal chat and a paid protocol, at{' '}
+            {regionOf(region).t} prices. What is included, and therefore the price, is
+            read off the steps — the only thing set here is the discount.
           </p>
         </div>
         <div className="tabs">
@@ -231,7 +211,7 @@ export default function PrePurchase({ scope, protocol, readOnly = false }) {
               value={(pp.pdp.symptoms || []).join('\n')}
               onChange={(v) => patch((p) => { p.pdp.symptoms = v.split('\n').filter((s) => s.trim()); })}
               hint="One per line. This is also what the goal picker matches against." />
-            <Included pp={pp} region={region} patch={patch} />
+            <Included pp={pp} plan={plan} region={region} patch={patch} readOnly={readOnly} />
             <Field label="Service provider line" value={pp.pdp.provider}
               onChange={(v) => patch((p) => { p.pdp.provider = v; })}
               hint="Never name a doctor or the pharmacy. Copy rule." />

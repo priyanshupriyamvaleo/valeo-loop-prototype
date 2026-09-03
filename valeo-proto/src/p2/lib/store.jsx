@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { readStudio, writeStudio, subscribe, resetAll, SHARED } from '../../shared/bus';
-import { emptyDraft, PROTOCOL_SEED, newProtocolDraft, packagePrice, findService } from './seed';
+import { emptyDraft, PROTOCOL_SEED, CHAT_SEED, newProtocolDraft, newChatDraft,
+         packagePrice, findService } from './seed';
 
 /*
  * THE STUDIO STORE.
@@ -28,13 +29,14 @@ const asPublished = (drafts, proto) => {
   const put = (part, extra) => {
     if (!drafts[proto.id]?.[part]) return;
     out[part] = {
-      version: 1, at: '2026-02-02T09:00:00.000Z',
+      version: 1, at: proto.publishedAt || '2026-02-02T09:00:00.000Z',
       data: structuredClone(drafts[proto.id][part]),
       region: proto.region, ...(extra || {}),
     };
   };
-  put('triage');
-  put('prepurchase', { price: packagePrice(drafts[proto.id]?.prepurchase, proto.region) });
+  put('prepurchase', {
+    price: packagePrice(drafts[proto.id]?.prepurchase, proto.region, drafts[proto.id]?.plan),
+  });
   put('plan', { weeks: proto.weeks });
   return out;
 };
@@ -42,17 +44,31 @@ const asPublished = (drafts, proto) => {
 const blank = () => {
   const drafts = emptyDraft();
   const protocols = structuredClone(PROTOCOL_SEED);
+  const chats = structuredClone(CHAT_SEED);
   return {
   /* The list itself, in the order they were made. Everything else is keyed by
      the ids in here. */
   protocols,
   drafts,
   /* SHARED holds the onboarding chat, which belongs to no protocol. */
+  /* The goal chats, beside protocols rather than inside one. */
+  chats,
   published: {
     [SHARED]: { onboarding: { version: 1, at: '2026-02-02T09:00:00.000Z',
                               data: structuredClone(drafts[SHARED].onboarding) } },
     ...Object.fromEntries(protocols.map((p) => [p.id, asPublished(drafts, p)])),
+    ...Object.fromEntries(chats.map((c) => [c.id, { triage: {
+      version: 1, at: '2026-01-20T09:00:00.000Z',
+      data: structuredClone(drafts[c.id].triage) } }])),
   },
+  /* ── EVERY PUBLISHED VERSION OF A CHAT, KEPT ──
+     A protocol links to a chat VERSION, so publishing a new one has to leave
+     the old one intact. Overwriting it would silently change what a live
+     protocol asks its patients. */
+  chatHistory: Object.fromEntries(chats.map((c) => [c.id, [{
+    version: 1, at: '2026-01-20T09:00:00.000Z',
+    data: structuredClone(drafts[c.id].triage),
+  }]])),
   /* ONE CONSULT RECORD PER PATIENT.
      This used to be a single global object with no patient id on it, so every
      patient's form initialised from the same record: opening Leila showed
@@ -106,10 +122,34 @@ export function StudioProvider({ children }) {
         ...(part === 'plan' ? { weeks: proto?.weeks || 12 } : {}),
         /* The price is the invoice. Stamping it means the phone never has to
            recompute a discount to know what it is being charged. */
+        /* The price is the invoice, and the invoice is read off the plan. */
         ...(part === 'prepurchase'
-          ? { price: packagePrice(draft.prepurchase, proto?.region) } : {}),
+          ? { price: packagePrice(draft.prepurchase, proto?.region, draft.plan) } : {}),
       };
+      /* A published chat version is kept, not replaced, because protocols point
+         at versions. */
+      if (part === 'triage') {
+        if (!d.chatHistory) d.chatHistory = {};
+        if (!d.chatHistory[scope]) d.chatHistory[scope] = [];
+        d.chatHistory[scope].push(structuredClone(d.published[scope][part]));
+      }
     });
+  }, [update]);
+
+  const createChat = useCallback((meta) => {
+    const base = `chat-${meta.goal}`;
+    let made = base;
+    update((d) => {
+      if (!d.chats) d.chats = [];
+      let n = 2;
+      while (d.chats.some((c) => c.id === made)) { made = `${base}-${n}`; n += 1; }
+      d.chats.push({ ...meta, id: made });
+      d.drafts[made] = newChatDraft();
+      d.published[made] = {};
+      if (!d.chatHistory) d.chatHistory = {};
+      d.chatHistory[made] = [];
+    });
+    return made;
   }, [update]);
 
   /* ── CREATING ONE ──
@@ -181,9 +221,9 @@ export function StudioProvider({ children }) {
 
   const value = useMemo(
     () => ({ state, update, publish, reset, createProtocol, duplicateProtocol,
-             patchProtocol, removeProtocol }),
+             patchProtocol, removeProtocol, createChat }),
     [state, update, publish, reset, createProtocol, duplicateProtocol,
-     patchProtocol, removeProtocol]);
+     patchProtocol, removeProtocol, createChat]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
@@ -232,6 +272,8 @@ export function pubState(state, scope, part) {
 export function publishBlockers(state, scope, part) {
   const d = state.drafts?.[scope]?.[part];
   const region = (state.protocols || []).find((p) => p.id === scope)?.region || 'uae';
+  /* The package is priced from the plan, so its refusals have to read it. */
+  const plan = state.drafts?.[scope]?.plan || [];
   if (!d) return [{ what: 'Nothing to publish', why: 'This surface has no draft yet.' }];
   const out = [];
   const empty = (v) => !v || !String(v).trim();
@@ -284,14 +326,9 @@ export function publishBlockers(state, scope, part) {
     if (empty(d.pdp?.title)) out.push({ what: 'The PDP has no title', why: 'The patient app renders the title as the page heading.' });
     /* The price is the invoice, so "not set" means the package is made of
        nothing, or everything in it has been discounted to zero. */
-    if (!(packagePrice(d, region) > 0)) out.push({
+    if (!(packagePrice(d, region, plan) > 0)) out.push({
       what: 'The package prices at zero',
-      why: 'Nothing is included, or the discounts have taken the whole of it. A protocol cannot go on sale at zero.',
-    });
-    const gone = (d.pdp?.included || []).filter((l) => !findService(l.serviceId));
-    if (gone.length) out.push({
-      what: `${gone.length} included line${gone.length > 1 ? 's point' : ' points'} at nothing`,
-      why: 'A line whose service has been withdrawn prices at zero and shows the patient a blank row.',
+      why: 'No step links to a service, or the discount has taken the whole of it. A protocol cannot go on sale at zero.',
     });
     if (empty(d.confirmation?.action)) out.push({
       what: 'The confirmation has no action',

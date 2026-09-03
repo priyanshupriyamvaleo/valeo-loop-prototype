@@ -6,7 +6,8 @@ import { Gate, Onboarding, Triage, PDP, Cart, Confirm } from './screens/Flow';
 import { Schedule, Status, CheckIn, Report, Join, ProductPage } from './screens/Actions';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor,
-         GATES, SHARED, scopeFor, membersOf, memberOf } from '../shared/bus';
+         GATES, SHARED, protocolFor, triageFor, membersOf, regionOf } from '../shared/bus';
+import { priceOf } from '../p2/lib/seed';
 import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy } from './lib/journey';
 
 
@@ -30,6 +31,10 @@ const INIT = {
   stage: 'home',
   goal: null,          /* chosen at the end of the onboarding chat, not before it */
   region: 'uae',       /* the account's country. Not asked: it is already known */
+  city: 'Dubai',       /* where the protocol is delivered. Fixed at purchase:
+                          the nurse rota, the lab courier and the cold chain are
+                          all built against one city, so it cannot be moved */
+  paidExtras: [],      /* ids of doctor-added steps the patient has paid for */
   member: 'self',      /* whose journey the home card is showing */
   intake: null,        /* the onboarding answers and the details the doctor needs */
   answers: null,       /* the goal's own triage answers */
@@ -107,9 +112,11 @@ export default function App() {
      Not the goal. The protocol authored for this goal in this account's
      country, because the catalogue behind a goal differs by region and there
      can be one protocol per region. */
-  const scope = scopeFor(studio, goalId, pt.region || 'uae');
+  const proto = protocolFor(studio, goalId, pt.region || 'uae');
+  const scope = proto?.id || null;
   const onbCfg = publishedFor(studio, SHARED, 'onboarding');
-  const triageCfg = publishedFor(studio, scope, 'triage');
+  /* The chat version this protocol was linked to, not the newest one. */
+  const triageCfg = triageFor(studio, proto);
   const ppCfg = publishedFor(studio, scope, 'prepurchase');
   /* ── WHOSE JOURNEY ──
      A protocol was bought for one person. If that person is a family member,
@@ -345,6 +352,14 @@ export default function App() {
     view = (
       <JourneyDetail title={goal.t} plan={plan} done={pt.done} weeks={weeks} paused={paused}
         region={pt.region || 'uae'}
+        place={`${pt.city || 'Dubai'}, ${regionOf(pt.region || 'uae').t}`}
+        /* Anything the doctor added is on top of the protocol, so it is owed
+           until it is paid for. */
+        owedFor={(it) => (it?.doctorAdded && !(pt.paidExtras || []).includes(it.id)
+          ? priceOf(serviceForStep(studio, it, pt), pt.region || 'uae') : 0)}
+        onPay={(it) => set((prev) => ({
+          ...prev, paidExtras: [...(prev.paidExtras || []), it.id],
+        }))}
         medicines={medicines}
         serviceFor={(it) => serviceForStep(studio, it, pt)}
         onProduct={(m) => set({ product: m, stage: 'product' })}

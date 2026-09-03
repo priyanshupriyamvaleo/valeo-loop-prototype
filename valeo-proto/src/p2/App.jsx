@@ -3,12 +3,13 @@ import './theme.css';
 import Icon from './ui/Icon';
 import { Chip, Note, Field } from './ui/kit';
 import { StudioProvider, useStudio, pubState, publishBlockers, landingTab } from './lib/store';
-import { REGIONS, regionOf, goalOf, SHARED } from '../shared/bus';
+import { REGIONS, regionOf, goalOf, SHARED, chatsOf } from '../shared/bus';
 import { useRoute, go } from './lib/router';
 import ChatBuilder from './builders/ChatBuilder';
 import PrePurchase from './builders/PrePurchase';
 import ProtocolBuilder from './builders/ProtocolBuilder';
 import Protocols from './builders/Protocols';
+import Chats from './builders/Chats';
 
 /*
  * THE ADMIN PANEL — where a protocol is authored.
@@ -58,22 +59,22 @@ const ADMIN = [
  * protocol already.
  */
 export const ENTRIES = [
-  /* The chat comes first because the patient meets it first: it is the
-     conversation that decides which goal, and therefore which protocol, they
-     are even in. */
-  { k: 'onboarding', t: 'Onboarding Chat Builder', route: '/onboarding' },
-  { k: 'protocols',  t: 'Protocols',               route: '/protocols' },
+  /* The chat comes first because the patient meets it first, and because it is
+     owned by a different team: the product team writes the conversations, the
+     category manager builds the protocol they lead into. */
+  { k: 'chats',     t: 'Chat Builder',     route: '/chats' },
+  { k: 'protocols', t: 'Protocol Builder', route: '/protocols' },
 ];
 
-/* Inside one protocol, in the order the PATIENT meets them. The triage runs
-   before the price is ever shown, so it is step one and it sits on the left. */
+/* Inside one protocol, in the order it is AUTHORED. The steps come first
+   because the package prices itself off them: build the plan, and what is in
+   the package and what it costs follow. Doing it the other way round meant
+   pricing a package before knowing what was in it. */
 export const TABS = [
-  { k: 'triage',  t: 'Triage chat', part: 'triage', n: 1,
-    short: 'the questions asked before the price' },
-  { k: 'package', t: 'Package',     part: 'prepurchase', n: 2,
+  { k: 'steps',   t: 'Step Builder',    part: 'plan', n: 1,
+    short: 'the plan, step by step' },
+  { k: 'package', t: 'Package Builder', part: 'prepurchase', n: 2,
     short: 'the package, its price and the cart' },
-  { k: 'plan',    t: 'Protocol',    part: 'plan', n: 3,
-    short: 'the after-purchase plan' },
 ];
 
 class Boundary extends Component {
@@ -96,14 +97,22 @@ class Boundary extends Component {
      /protocols[/new] · /onboarding · /clinician[/order[/journey]] · /user
      /p/<protocolId>/<package|plan|triage>
 */
-function readRoute(parts, protocols) {
+function readRoute(parts, protocols, chats) {
   if (parts[0] === 'p' && parts[1]) {
     const proto = protocols.find((x) => x.id === parts[1]) || null;
     const tab = TABS.find((t) => t.k === parts[2]) || TABS[0];
     return { view: 'protocol', proto, tab, scope: proto?.id || null, part: tab.part };
   }
-  const k = ENTRIES.find((e) => e.k === parts[0])?.k || 'protocols';
-  if (k === 'onboarding') return { view: 'onboarding', scope: SHARED, part: 'onboarding' };
+  if (parts[0] === 'chats') {
+    if (parts[1] === 'onboarding') {
+      return { view: 'onboarding', scope: SHARED, part: 'onboarding' };
+    }
+    if (parts[1] === 'g' && parts[2]) {
+      const chat = chats.find((c) => c.id === parts[2]) || null;
+      return { view: 'chat', chat, scope: chat?.id || null, part: 'triage' };
+    }
+    return { view: 'chats', scope: null, part: null };
+  }
   return { view: 'protocols', scope: null, part: null };
 }
 
@@ -111,11 +120,12 @@ function Shell() {
   const parts = useRoute();
   const { state, publish, reset, patchProtocol, duplicateProtocol } = useStudio();
   const protocols = state.protocols || [];
-  const r = readRoute(parts, protocols);
+  const chats = chatsOf(state);
+  const r = readRoute(parts, protocols, chats);
 
-  /* Which sidebar entry is lit. A protocol is reached through the list, so being
-     inside one still lights Protocols. */
-  const entryKey = r.view === 'protocol' ? 'protocols' : r.view === 'protocols' ? 'protocols' : r.view;
+  /* Which sidebar entry is lit. Everything reached through a list still lights
+     the list it came from. */
+  const entryKey = ['protocol', 'protocols'].includes(r.view) ? 'protocols' : 'chats';
 
   /* ── WHAT, IF ANYTHING, THIS SCREEN PUBLISHES ──
      The list, the creation form and the two consoles author nothing, so the bar
@@ -123,7 +133,7 @@ function Shell() {
   /* A locked protocol is already selling and is read only, so nothing about it
      publishes. Duplicate it and the copy does. */
   const publishes = (r.view === 'protocol' && r.proto && !r.proto.locked)
-    || r.view === 'onboarding';
+    || r.view === 'onboarding' || (r.view === 'chat' && r.chat);
   const ps = publishes ? pubState(state, r.scope, r.part)
     : { live: false, dirty: false, version: 0 };
   const blockers = publishes ? publishBlockers(state, r.scope, r.part) : [];
@@ -146,8 +156,8 @@ function Shell() {
     const locked = !!p.locked;
     return (
       <div className="phead">
-        <button className="crumb" onClick={() => go('/protocols')}>
-          <Icon name="back" size={12} /> Protocols
+        <button className="crumb" onClick={() => go(`/protocols/${p.goal}`)}>
+          <Icon name="back" size={12} /> {goalOf(p.goal)?.t || 'Protocols'}
         </button>
         <div className="row" style={{ margin: '10px 0 0', alignItems: 'flex-start' }}>
           <div className="grow">
@@ -228,13 +238,17 @@ function Shell() {
 
   let body = null;
   if (r.view === 'protocols') body = <Protocols parts={parts} />;
+  else if (r.view === 'chats') body = <Chats parts={parts} />;
   else if (r.view === 'onboarding') body = <ChatBuilder scope={SHARED} tab="onboarding" />;
-  else if (r.view === 'protocol') {
+  else if (r.view === 'chat') {
+    body = r.chat
+      ? <ChatBuilder scope={r.scope} tab="triage" />
+      : <div className="card card-pad empty">That chat no longer exists.</div>;
+  } else if (r.view === 'protocol') {
     const ro = !!r.proto?.locked;
     if (!r.proto) body = <div className="card card-pad empty">That protocol no longer exists.</div>;
     else if (r.tab.k === 'package') body = <PrePurchase scope={r.scope} protocol={r.proto} readOnly={ro} />;
-    else if (r.tab.k === 'plan') body = <ProtocolBuilder scope={r.scope} protocol={r.proto} readOnly={ro} />;
-    else body = <ChatBuilder scope={r.scope} tab="triage" protocol={r.proto} readOnly={ro} />;
+    else body = <ProtocolBuilder scope={r.scope} protocol={r.proto} readOnly={ro} />;
   }
 
   return (
@@ -259,16 +273,27 @@ function Shell() {
                     <div key={e.k}>
                       <button className={`nav-child ${entryKey === e.k ? 'on' : ''}`}
                         onClick={() => go(e.route)}>{e.t}</button>
-                      {/* The protocols themselves, one level down, because a
-                          list you have to open to see what exists is a list
-                          nobody navigates by. */}
+                      {/* One level down, because a list you have to open to see
+                          what exists is a list nobody navigates by. */}
+                      {e.k === 'chats' && (
+                        <div style={{ margin: '2px 0 6px' }}>
+                          <button className={`nav-grand ${r.view === 'onboarding' ? 'on' : ''}`}
+                            onClick={() => go('/chats/onboarding')}>Onboarding Chat Builder</button>
+                          {chats.map((c) => (
+                            <button key={c.id}
+                              className={`nav-grand ${r.chat?.id === c.id ? 'on' : ''}`}
+                              onClick={() => go(`/chats/g/${c.id}`)}>{c.name}</button>
+                          ))}
+                        </div>
+                      )}
                       {e.k === 'protocols' && (
                         <div style={{ margin: '2px 0 6px' }}>
-                          {protocols.map((p) => (
-                            <button key={p.id}
-                              className={`nav-grand ${r.proto?.id === p.id ? 'on' : ''}`}
-                              onClick={() => go(`/p/${p.id}/${landingTab(state, p.id)}`)}>
-                              {p.name} <em>{regionOf(p.region).short}</em>
+                          {[...new Set(protocols.map((p) => p.goal))].map((gid) => (
+                            <button key={gid}
+                              className={`nav-grand ${r.proto?.goal === gid || parts[1] === gid ? 'on' : ''}`}
+                              onClick={() => go(`/protocols/${gid}`)}>
+                              {goalOf(gid)?.t || gid}
+                              <em>{protocols.filter((p) => p.goal === gid).length}</em>
                             </button>
                           ))}
                         </div>
@@ -290,10 +315,14 @@ function Shell() {
         <div className="topbar">
           <div className="tbar-crumb">
             <Icon name="clipboard" size={13} />
-            <span>Protocols</span>
+            <span>{entryKey === 'chats' ? 'Chat Builder' : 'Protocol Builder'}</span>
             <Icon name="chev" size={10} />
             <b>{r.view === 'protocol' ? r.proto?.name || 'Unknown'
-              : ENTRIES.find((e) => e.k === entryKey)?.t}</b>
+              : r.view === 'chat' ? r.chat?.name || 'Unknown'
+              : r.view === 'onboarding' ? 'Onboarding chat'
+              : (r.view === 'protocols' && parts[1] && goalOf(parts[1]))
+                ? goalOf(parts[1]).t
+                : ENTRIES.find((e) => e.k === entryKey)?.t}</b>
           </div>
           <div className="grow" />
           {publishes && (
@@ -310,10 +339,26 @@ function Shell() {
           {r.view === 'protocol' && <ProtocolHead />}
           {r.view === 'onboarding' && (
             <div style={{ marginBottom: 18 }}>
-              <h1>Onboarding chat</h1>
+              <button className="crumb" onClick={() => go('/chats')}>
+                <Icon name="back" size={12} /> Chat Builder
+              </button>
+              <h1 style={{ marginTop: 10 }}>Onboarding chat</h1>
               <p className="sub">
                 Shared by every protocol. It is the conversation that decides which goal
                 somebody is in, so it is edited once for the whole product.
+              </p>
+            </div>
+          )}
+          {r.view === 'chat' && r.chat && (
+            <div style={{ marginBottom: 18 }}>
+              <button className="crumb" onClick={() => go('/chats')}>
+                <Icon name="back" size={12} /> Chat Builder
+              </button>
+              <h1 style={{ marginTop: 10 }}>{r.chat.name}</h1>
+              <p className="sub">
+                {goalOf(r.chat.goal)?.t} · asked after the goal is chosen and before any
+                price. Publishing keeps the old version, because protocols are pinned to
+                one.
               </p>
             </div>
           )}
@@ -357,7 +402,9 @@ function Shell() {
                   }
                 }}>
                 <Icon name="send" size={14} /> Publish{' '}
-                {r.view === 'onboarding' ? 'the onboarding chat' : r.tab.short}
+                {r.view === 'onboarding' ? 'the onboarding chat'
+                  : r.view === 'chat' ? 'this version of the chat'
+                  : r.tab.short}
               </button>
             )}
           </div>

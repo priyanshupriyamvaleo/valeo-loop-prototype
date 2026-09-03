@@ -168,11 +168,16 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12,
  * So the logbook is full on day zero and Week 12 has something to read against.
  */
 export function JourneyDetail({ plan, done, checkins, logs, target, booked, title,
-                               medicines, serviceFor, weeks = 12, paused, onBack, onOpen, onLog, onChat, onProduct, region = 'uae' }) {
+                               medicines, serviceFor, weeks = 12, paused, onBack, onOpen, onLog, onChat, onProduct, region = 'uae', place, owedFor, onPay }) {
   const front = nextItem(plan, done);
   const p = progress(plan, done);
   const wk = weekOf(plan, done, weeks);
   const mine = isPatientMove(front);
+  /* What this step costs the patient, if anything. Zero for every step the
+     protocol shipped with. */
+  const owed = (front && owedFor) ? owedFor(front) : 0;
+  /* Which step booked the slot this card is showing. */
+  const slotOwner = plan.find((x) => x.id === (stateOf(front, booked)?.slotFrom || front?.id));
   const latest = checkins[checkins.length - 1];
   const score = recoveryScore(latest);
   const tiles = captures(done, logs);
@@ -243,6 +248,36 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
           <div className="strip"><Icon name="chat" size={12} />{state.strip}</div>
         )}
 
+        {/* ── WHERE IT IS COMING TO ──
+            The address is set when the protocol is bought and cannot be moved:
+            the nurse rota, the lab courier and the cold chain are all built
+            against one city, and a patient in Bahrain for a fortnight is not a
+            delivery Valeo can make. So the honest control is not "change my
+            address", it is "I am not there that day" — which moves the date, a
+            thing operations can actually do. */}
+        {/* Any card carrying a date, not just a booked consultation: the nurse
+            card borrows its slot from the step that booked it, and that is
+            exactly the appointment a traveller needs to move. */}
+        {state.when && place && (
+          <div className="place">
+            <span className="place-l">
+              <Icon name="lock" size={11} />
+              {place}
+            </span>
+            <span className="place-n">
+              Set when you bought the protocol. Your nurse, lab and pharmacy are all
+              booked against this city, so it cannot be moved.
+            </span>
+            {/* Reschedule reopens whichever step OWNS the slot, which is not
+                always the step on screen. */}
+            <button className="place-b"
+              onClick={() => onOpen(slotOwner || front, 'book')}>
+              I will not be there that day — pick another time
+              <Icon name="chev" size={12} />
+            </button>
+          </div>
+        )}
+
         {/* The report comes before the booking: reading it is what makes the
             consultation worth booking. */}
         {state.secondary && (
@@ -255,7 +290,27 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
             Tracking a delivery is the patient's to do even though the parcel is
             the pharmacy's, so a step with an action keeps its button either
             way, and the line naming who holds it sits underneath. */}
-        {state.k === 'scheduled' ? (
+        {/* ── SOMETHING THE PROTOCOL DID NOT INCLUDE ──
+            A step the doctor added at the consultation is not part of what was
+            bought, so it carries its own price and nothing happens until it is
+            paid. Showing the price on the card rather than at a checkout is
+            what keeps that honest: the patient learns the cost at the moment
+            they learn the step exists. */}
+        {owed > 0 ? (
+          <div className="owed">
+            <div className="owed-r">
+              <span>Added by your doctor, on top of your protocol</span>
+              <b>{money(owed, region)}</b>
+            </div>
+            <button className="cta" onClick={() => onPay && onPay(front, owed)}>
+              Pay {money(owed, region)} to book this <Icon name="chev" size={15} />
+            </button>
+            <span className="owed-n">
+              Your protocol covers everything else in the plan. This one was added
+              after it started.
+            </span>
+          </div>
+        ) : state.k === 'scheduled' ? (
           <button className="cta" onClick={() => onOpen(front, 'join')}>
             {state.cta} <Icon name="chev" size={15} />
           </button>

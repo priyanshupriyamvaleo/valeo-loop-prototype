@@ -41,7 +41,7 @@ export const SERVICES = {
     { id: 'test_b12', t: 'Vitamin B12', note: 'Single marker', price: { uae: 90, ksa: 95 } },
     { id: 'test_vitd', t: 'Vitamin D', note: 'Single marker', price: { uae: 110, ksa: 115 } },
     { id: 'test_iron', t: 'Iron studies', note: 'Ferritin, transferrin, saturation', price: { uae: 180, ksa: 190 } },
-    { id: 'test_hba1c', t: 'HbA1c', note: 'Single marker', price: { uae: 95, ksa: 100 } },
+    { oos: true, id: 'test_hba1c', t: 'HbA1c', note: 'Single marker', price: { uae: 95, ksa: 100 } },
     { id: 'test_crp', t: 'hs-CRP', note: 'Single marker, inflammation', price: { uae: 85, ksa: 90 } },
   ] },
   consult: { t: 'Consultation', items: [
@@ -71,16 +71,16 @@ export const SERVICES = {
       gate: 'competes' },
     { id: 'med_bpc_tb', t: 'BPC-157 with TB-500, one month', note: 'Cold chain', price: { uae: 5999, ksa: 6250 },
       gate: 'competes' },
-    { id: 'med_ghk', t: 'GHK-Cu, one month', note: 'Where clinically indicated', price: { uae: 1200 } },
+    { oos: true, id: 'med_ghk', t: 'GHK-Cu, one month', note: 'Where clinically indicated', price: { uae: 1200 } },
     { id: 'med_semaglutide', t: 'Semaglutide, one month', note: 'Cold chain', price: { uae: 1745, ksa: 1810 } },
   ] },
   supplement: { t: 'Supplement', items: [
     { id: 'sup_voucher', t: 'Supplement voucher', note: 'Spend against any stack', price: { uae: 150, ksa: 155 } },
     { id: 'sup_joint', t: 'Joint and tendon stack', note: 'Collagen, Vitamin C, Boswellia', price: { uae: 220, ksa: 230 } },
-    { id: 'sup_d3k2', t: 'Vitamin D3 with K2', note: '90 days', price: { uae: 95, ksa: 99 } },
+    { oos: true, id: 'sup_d3k2', t: 'Vitamin D3 with K2', note: '90 days', price: { uae: 95, ksa: 99 } },
     { id: 'sup_magnesium', t: 'Magnesium glycinate', note: '90 days', price: { uae: 85, ksa: 89 } },
     { id: 'sup_omega', t: 'Omega-3', note: '90 days', price: { uae: 130, ksa: 135 } },
-    { id: 'sup_creatine', t: 'Creatine monohydrate', note: '90 days', price: { uae: 90, ksa: 95 } },
+    { oos: true, id: 'sup_creatine', t: 'Creatine monohydrate', note: '90 days', price: { uae: 90, ksa: 95 } },
   ] },
 };
 
@@ -123,33 +123,64 @@ export const priceOf = (svc, region = 'uae') =>
    The bundle argument reads straight off it: a patient buying these separately
    pays `list`; the protocol is `total`; the difference is what the bundle is
    worth. That is a claim anybody in the room can check. */
-export function invoiceOf(pp, region = 'uae') {
-  const rows = (pp?.pdp?.included || [])
+/* ── WHAT THE PACKAGE IS MADE OF, READ OFF THE PLAN ──
+   Not a list somebody maintains beside the plan. Every step that links to a
+   service puts that service in the package, and the quantity is simply how many
+   steps carry it. Two lists describing one protocol is how a cart and a plan
+   start disagreeing about what was bought; there is now one list and it is the
+   plan.
+
+   The note on a line is the steps it came from, so a category manager can see
+   why a consultation is in there four times without opening the builder. */
+export function includedFromPlan(plan) {
+  const by = new Map();
+  (plan || []).forEach((it) => {
+    if (!it.serviceId) return;
+    const cur = by.get(it.serviceId) || { serviceId: it.serviceId, qty: 0, steps: [] };
+    cur.qty += 1;
+    cur.steps.push(it.t);
+    by.set(it.serviceId, cur);
+  });
+  return [...by.values()].map((l) => ({
+    ...l,
+    note: l.steps.length > 2
+      ? `${l.steps.slice(0, 2).join(', ')} and ${l.steps.length - 2} more`
+      : l.steps.join(', '),
+  }));
+}
+
+export function invoiceOf(pp, region = 'uae', plan = null) {
+  const rows = (plan ? includedFromPlan(plan) : (pp?.pdp?.included || []))
     .map((l) => ({ ...l, svc: findService(l.serviceId) }))
     .filter((r) => r.svc)
     .map((r) => {
       const unit = priceOf(r.svc, region);
       const qty = r.qty || 1;
-      const disc = Math.min(100, Math.max(0, r.discount || 0));
-      const gross = unit * qty;
-      return { ...r, unit, qty, disc, gross, net: Math.round(gross * (1 - disc / 100)),
-               sold: inRegion(r.svc, region) };
+      return { ...r, unit, qty, gross: unit * qty, sold: inRegion(r.svc, region) };
     });
+  /* One discount, on the whole package. Per-line cuts were a second lever on
+     the same number and nobody could say what the package as a whole was
+     discounted by. */
   const list = rows.reduce((n, r) => n + r.gross, 0);
-  const afterLines = rows.reduce((n, r) => n + r.net, 0);
   const pkgDisc = Math.min(100, Math.max(0, pp?.pdp?.discount || 0));
-  const total = Math.round(afterLines * (1 - pkgDisc / 100));
-  return { rows, list, afterLines, lineSaved: list - afterLines,
-           pkgDisc, pkgSaved: afterLines - total, total, saved: list - total,
+  const total = Math.round(list * (1 - pkgDisc / 100));
+  return { rows, list, pkgDisc, saved: list - total, total,
            /* A line pointing at something this region does not sell. */
            unsold: rows.filter((r) => !r.sold) };
 }
-export const packagePrice = (pp, region = 'uae') => invoiceOf(pp, region).total;
+export const packagePrice = (pp, region = 'uae', plan = null) =>
+  invoiceOf(pp, region, plan).total;
 
 export const serviceGroupsFor = (region = 'uae') =>
   Object.entries(SERVICES).map(([type, g]) => ({
     label: g.t,
-    items: g.items.filter((x) => inRegion(x, region)).map((x) => ({ value: x.id, label: x.t })),
+    /* Out of stock is a property of the product, so it travels with the option
+       rather than being remembered by whoever opens the dropdown. A coach who
+       prescribes something the pharmacy cannot ship has made a promise the
+       patient reads on their phone. */
+    items: g.items.filter((x) => inRegion(x, region)).map((x) => ({
+      value: x.id, label: x.oos ? `${x.t} — out of stock` : x.t, disabled: !!x.oos,
+    })),
     type,
   })).filter((g) => g.items.length);
 
@@ -351,23 +382,11 @@ export const RR_PREPURCHASE = {
     ],
     symptoms: ['Joint or tendon pain', 'Slow recovery', 'An unresolved old injury',
                'Lingering soreness', 'Gut discomfort', 'Reduced capacity', 'Morning stiffness'],
-    /* ── WHAT THE PACKAGE IS MADE OF ──
-       Not a list of sentences somebody typed. Each line points at a service in
-       the catalogue and says how many of it the protocol includes, so the
-       package has a cost that can be added up rather than asserted. */
-    included: [
-      { serviceId: 'panel_recovery', qty: 2, note: 'Baseline and Week 12' },
-      { serviceId: 'home_draw', qty: 2, note: 'A nurse comes to you, both times' },
-      { serviceId: 'consult_peptide', qty: 2, note: 'First consultation and the Week 12 reassessment' },
-      { serviceId: 'consult_review', qty: 1, note: 'Week 6 mid-point review' },
-      { serviceId: 'consult_gp', qty: 4, note: 'Concierge calls, Week 2, Week 4 and monthly' },
-      /* The peptide is the line the bundle exists to carry, so it is the line
-         that takes the biggest cut. */
-      { serviceId: 'med_bpc', qty: 3, discount: 50, note: 'Dispatched monthly, cold chain' },
-      { serviceId: 'sup_voucher', qty: 1, note: 'Issued after your doctor consultation' },
-    ],
-    /* Off the subtotal, after the per-line cuts. Either, both or neither. */
-    discount: 34,
+    /* No `included` list here. It is read off the plan — see includedFromPlan —
+       so the package cannot describe a protocol the plan does not deliver. */
+    /* The one lever a category manager has on price: a cut on the whole
+       package. Everything else about the price comes from the plan. */
+    discount: 49,
     provider: 'Prepared by a fully licensed UAE compounding pharmacy regulated by MOH and EDE.',
   },
   cart: {
@@ -578,21 +597,39 @@ export const orderFor = (patientId) =>
    you duplicate it, change the copy, and publish the copy. So they open
    read-only with one action on them — Duplicate — and everything editable in
    this Studio is something somebody made themselves. */
+/* ── GOAL CHATS ARE NOT PART OF A PROTOCOL ──
+   The onboarding chat and the goal chats belong to the product team: they run
+   before anybody has been sold anything, and one goal chat serves every
+   protocol built for that goal. So they live beside protocols, not inside one,
+   and a protocol LINKS to a published version of one.
+
+   Linking to a version rather than to the chat is what makes the link safe.
+   Publish a new version of the Recover and Rebuild chat and nothing live
+   changes until somebody points a protocol at it. */
+export const CHAT_SEED = [
+  { id: 'chat-rr', goal: 'recover-rebuild', name: 'Recover and Rebuild triage' },
+  { id: 'chat-sh', goal: 'skin-hair',       name: 'Skin and Hair triage' },
+];
+
 export const PROTOCOL_SEED = [
   { id: 'rr-uae', name: 'Recovery & Repair', goal: 'recover-rebuild',
-    region: 'uae', weeks: 12, createdAt: '14 July 2025', locked: true },
+    region: 'uae', weeks: 12, createdAt: '14 July 2025', locked: true,
+    publishedAt: '2025-07-14T09:00:00.000Z',
+    chat: { id: 'chat-rr', version: 1 } },
   { id: 'rr-ksa', name: 'Recovery & Repair', goal: 'recover-rebuild',
-    region: 'ksa', weeks: 12, createdAt: '2 February 2026', locked: true },
+    region: 'ksa', weeks: 12, createdAt: '2 February 2026', locked: true,
+    publishedAt: '2026-02-02T09:00:00.000Z',
+    chat: { id: 'chat-rr', version: 1 } },
 ];
 
 /* A new protocol starts from the seeded one rather than from nothing, because
    the clinical spine is the same programme every time and retyping fourteen
    steps is not authoring. */
 export const newProtocolDraft = () => ({
-  triage: structuredClone(RR_TRIAGE),
   prepurchase: structuredClone(RR_PREPURCHASE),
   plan: structuredClone(RR_PLAN),
 });
+export const newChatDraft = () => ({ triage: structuredClone(RR_TRIAGE) });
 
 export const emptyDraft = () => ({
   /* No protocol owns the onboarding chat, so it sits under a pseudo-scope and
@@ -601,4 +638,5 @@ export const emptyDraft = () => ({
     onboarding: structuredClone(ONBOARDING),
   },
   ...Object.fromEntries(PROTOCOL_SEED.map((p) => [p.id, newProtocolDraft()])),
+  ...Object.fromEntries(CHAT_SEED.map((c) => [c.id, newChatDraft()])),
 });

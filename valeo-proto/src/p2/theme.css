@@ -591,3 +591,81 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
                   font-weight:800; }
 .whoami b { display:block; font-size:12.5px; }
 .whoami i { display:block; font-style:normal; font-size:10.5px; color:var(--ink-3); }
+
+/* ══ CHAT BUILDER ═════════════════════════════════════════════════════════ */
+.chat-head { display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+             padding:14px 16px; background:none; }
+.chat-head:hover { background:var(--surface-2); }
+.vlist { border-top:1px solid var(--line); padding:4px 16px 12px 16px; }
+/* Versions read down a date rail, because "which one is this" is a question
+   about time before it is a question about content. */
+.vrow { display:flex; align-items:center; gap:14px; padding:9px 0; }
+.vrow-when { flex:0 0 92px; font-family:var(--f-mono); font-size:10.5px; color:var(--ink-3); }
+.vrow-dot { flex:none; width:8px; height:8px; border-radius:50%; background:var(--line-2);
+            box-shadow:0 0 0 3px var(--surface); }
+.vrow-main { flex:1; min-width:0; }
+.vrow-main b { display:block; font-size:12.5px; font-weight:600; }
+.vrow-main i { display:block; font-style:normal; font-size:11px; color:var(--ink-3);
+               margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* ══ PROTOCOL BUILDER · the goals ═════════════════════════════════════════ */
+.grow-row { display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+            padding:15px 16px; border:1px solid var(--line); border-radius:12px;
+            background:var(--surface); }
+.grow-row:hover:not(.off) { border-color:var(--gold); background:var(--gold-soft); }
+.grow-row.off { opacity:.55; cursor:default; }
+.grow-row .prow-main b { font-size:14.5px; }
+
+/* ══ PROTOCOL BUILDER · the version timeline ══════════════════════════════
+   The date is the axis. Where a version has never been published it says so
+   rather than borrowing a date it does not have. */
+.tline { display:grid; gap:0; }
+.tl { display:grid; grid-template-columns:78px 22px 1fr auto; align-items:stretch; }
+.tl-when { text-align:right; padding:16px 0 16px; }
+.tl-when b { display:block; font-family:var(--f-mono); font-size:12px; font-weight:600; }
+.tl-when i { display:block; font-style:normal; font-family:var(--f-mono); font-size:10px;
+             color:var(--ink-3); margin-top:1px; }
+.tl-when b.dim { font-size:10px; color:var(--ink-3); font-weight:500; }
+.tl-rail { position:relative; display:flex; justify-content:center; }
+.tl-rail::before { content:''; position:absolute; top:0; bottom:0; width:1px;
+                   background:var(--line); }
+.tl-rail span { position:relative; margin-top:22px; width:9px; height:9px; border-radius:50%;
+                background:var(--surface); border:2px solid var(--line-2); }
+.tl:first-child .tl-rail::before { top:22px; }
+.tl:last-child .tl-rail::before { bottom:calc(100% - 26px); }
+.tl.on .tl-rail span { border-color:var(--gold); background:var(--gold); }
+.tl-body { text-align:left; padding:14px 14px 14px 4px; background:none; flex:1; }
+.tl-body:hover { background:var(--surface-2); border-radius:9px; }
+.tl-body b { font-family:var(--f-head); font-size:14px; font-weight:600; }
+.tl-meta { display:block; font-size:11.5px; color:var(--ink-3); margin-top:3px;
+           font-family:var(--f-mono); }
+.tl-serving { display:inline-flex; align-items:center; gap:5px; margin-top:8px;
+              font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+              color:var(--amber); }
+.tl-act { align-self:center; margin-left:8px; }
+.tl.ro .tl-body b { color:var(--ink-2); }
+
+/* ══ THE FUNNEL ABOVE THE STEPS ═══════════════════════════════════════════
+   Onboarding chat, then this protocol's goal chat, then the steps. Three
+   things a category manager otherwise has to hold in their head. */
+.funnel { display:grid; gap:0; margin-bottom:22px; }
+.fn-step { display:flex; align-items:center; gap:13px; padding:12px 15px;
+           border:1px solid var(--line); border-radius:11px; background:var(--surface); }
+.fn-step.fixed { background:var(--surface-2); }
+.fn-step.now { border-color:var(--gold); background:var(--gold-soft); }
+.fn-step.warn { border-color:var(--amber); background:var(--gold-soft); }
+.fn-n { flex:none; width:52px; font-family:var(--f-mono); font-size:9.5px; font-weight:700;
+        letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+.fn-step.now .fn-n, .fn-step.warn .fn-n { color:var(--amber); }
+.fn-step b { display:block; font-size:13px; font-weight:600; font-family:var(--f-head); }
+.fn-step > .grow > span { display:block; font-size:11.5px; color:var(--ink-3); margin-top:2px; }
+.fn-arrow { display:flex; justify-content:center; color:var(--line-2); padding:3px 0;
+            transform:rotate(90deg); }
+.fn-pick { display:flex; gap:6px; flex-wrap:wrap; }
+.fn-pick select { appearance:none; background:var(--surface); border:1px solid var(--line);
+                  border-radius:8px; padding:6px 10px; font-size:12px; color:var(--ink);
+                  max-width:190px; }
+.fn-pick select:disabled { background:var(--surface-2); color:var(--ink-2); }
+
+/* the derived package's provenance column */
+.inv-from { font-size:11.5px; color:var(--ink-3); max-width:260px; }
