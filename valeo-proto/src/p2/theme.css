@@ -101,6 +101,10 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
 .item { display:flex; gap:12px; align-items:flex-start; padding:11px 13px; border:1px solid var(--line);
         border-radius:9px; background:var(--surface); margin-bottom:7px; }
 .item.locked { background:var(--surface-2); }
+/* A task the coach took off this patient. Dashed, and the title struck
+   through, so a decision reads differently from a gap. */
+.item.quiet { background:var(--surface-2); border-style:dashed; }
+.item.quiet .body b { text-decoration:line-through; color:var(--ink-2); }
 .item .when { font-family:var(--f-mono); font-size:10.5px; color:var(--amber); flex:0 0 78px; padding-top:3px; }
 .item .body { flex:1; min-width:0; }
 .item .body b { font-family:var(--f-head); font-size:13.5px; font-weight:600; display:block; }
@@ -216,6 +220,10 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
 .pairs dt { margin:0; font-size:12px; color:var(--ink-3); }
 .pairs dd { margin:0; font-size:12.5px; color:var(--ink); }
 .empty-line { margin:0; font-size:12.5px; color:var(--ink-3); }
+/* A band label inside a card. It was already used on "Also on their medicines
+   list" and had no rule here, so it rendered as body text. */
+.lbl-sm { font-family:var(--f-mono); font-size:9px; letter-spacing:.12em;
+          text-transform:uppercase; color:var(--ink-3); margin-bottom:7px; }
 .bar { height:6px; border-radius:4px; background:var(--surface-2); overflow:hidden; margin-bottom:10px; }
 .bar i { display:block; height:100%; background:var(--gold); border-radius:4px; }
 .prev { display:flex; gap:12px; padding:7px 0; }
@@ -428,7 +436,10 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
 
 /* One row per capture. The state is the point: a tile that has gone quiet reads
    differently from one the plan has not reached yet. */
-.logs-caps { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:6px 16px 14px; }
+/* AUTO-FILL, not four fixed columns: the tasks are authored in the catalogue
+   now, so there may be three of them or eight. */
+.logs-caps { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+             gap:8px; padding:6px 16px 14px; }
 .cap { border:1px solid var(--line); border-radius:10px; padding:10px 11px; background:var(--surface); }
 .cap-h { display:flex; align-items:center; gap:6px; color:var(--ink-2); }
 .cap-h b { font-size:12px; font-weight:600; color:var(--ink); }
@@ -438,8 +449,13 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
 .cap-on .cap-n { color:var(--green); }
 .cap-quiet, .cap-never { border-color:var(--gold); background:var(--gold-soft); }
 .cap-quiet .cap-n, .cap-never .cap-n { color:var(--amber); }
-.cap-later, .cap-none { background:var(--surface-2); }
-.cap-later .cap-n, .cap-none .cap-n { color:var(--ink-3); }
+.cap-later, .cap-none, .cap-blocked, .cap-over { background:var(--surface-2); }
+.cap-later .cap-n, .cap-none .cap-n, .cap-blocked .cap-n, .cap-over .cap-n { color:var(--ink-3); }
+/* Switched off by the coach. Struck through, because it is not a gap in the
+   patient's effort — somebody decided it. */
+.cap-off { background:var(--surface-3); border-style:dashed; }
+.cap-off .cap-h b { text-decoration:line-through; color:var(--ink-2); }
+.cap-off .cap-n { color:var(--ink-3); }
 
 @media (max-width: 1100px) {
   .ofilters { grid-template-columns:repeat(2,1fr); }

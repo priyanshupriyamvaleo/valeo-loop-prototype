@@ -3,8 +3,8 @@ import Icon from '../p2/ui/Icon';
 import { Field, Chip, Note } from '../p2/ui/kit';
 import { useStudio } from '../p2/lib/store';
 import { PATIENTS, SERVICES, findService, ORDERS, ORDER_CATEGORIES, COACHES,
-         orderFor, RR_PLAN, serviceGroupsFor, priceOf } from '../p2/lib/seed';
-import { planFor, nextItem, consultFor, captures, recoveryScore, weekOfDay, weeksOf }
+         orderFor, RR_PLAN, serviceGroupsFor, priceOf, TASK_LIBRARY } from '../p2/lib/seed';
+import { planFor, nextItem, consultFor, resolveTasks, taskState, listOf, recoveryScore, weekOfDay, weeksOf }
   from '../p1/lib/journey';
 import { PANEL } from '../p1/screens/Actions';
 import { goalOf, readPatient, subscribe, scopeFor, regionOf, money } from '../shared/bus';
@@ -30,6 +30,10 @@ import { go } from '../p2/lib/router';
  * rather than a line in a brief.
  */
 const OUTCOMES = ['Continue as planned', 'Not suitable', 'Modify'];
+
+/* Whose panel this is. It is the name on the sidebar, and it is what a
+   patient reads under a task their coach added. */
+const COACH = COACHES[1];
 
 /* ── WHAT A COACH CAN ADD, AND WHAT IT BECOMES ──
    Three kinds, and each lands in the plan as a different sort of step. The
@@ -242,6 +246,16 @@ function liveRecord(pt, studio, scope) {
       ...(c.prescribed || []).map((r) => ({
         kind: r.status, what: findService(r.id)?.t || r.id,
         why: 'On their medicines list.',
+      })),
+      /* The daily tasks she decided. A switch-off carries the reason she typed,
+         because that is the whole point of asking for one. */
+      ...(c.tasksAdded || []).map((a) => ({
+        kind: 'task added', what: TASK_LIBRARY.find((t) => t.key === a.taskKey)?.t || a.taskKey,
+        why: a.why || 'On their daily list.',
+      })),
+      ...Object.entries(c.tasksOff || {}).map(([key, off]) => ({
+        kind: 'switched off', what: TASK_LIBRARY.find((t) => t.key === key)?.t || key,
+        why: off.why,
       })),
       ...(c.outcome === 'Not suitable'
         ? [{ kind: 'stopped', what: 'Protocol paused', why: 'The doctor found it not suitable.' }] : []),
@@ -565,8 +579,6 @@ function OrderDetail({ order, patient, pt, record, scope, region = 'uae' }) {
    because a clinician must not read "no heart scans" as non-adherence when the
    camera build does not exist. */
 
-const CAP_LABEL = { symptoms: 'Symptoms', doses: 'Doses', meals: 'Meals', scan: 'Heart scan' };
-
 /* One patient's logbook, from whichever side it lives on. */
 function logbookFor(patient, pt) {
   if (patient.live) {
@@ -600,7 +612,7 @@ const Track = ({ label, from, to, max, invert, only }) => {
   );
 };
 
-function PatientLogs({ patient, pt, weeks = 12 }) {
+function PatientLogs({ patient, pt, state, scope, weeks = 12 }) {
   const lb = logbookFor(patient, pt);
   const { checkins } = lb;
   const first = checkins[0];
@@ -618,19 +630,20 @@ function PatientLogs({ patient, pt, weeks = 12 }) {
     week: i + 1, v: byWeek.get(i + 1) ?? null, now: i + 1 === nowWeek,
   }));
 
-  /* Due-ness comes from the plan, so a capture the protocol has not reached yet
-     reads as "not due" rather than as a patient who is not bothering. */
-  const caps = captures(lb.done, lb.logs).map((c) => {
-    const at = lb.logAt[c.k];
-    const silentFor = at == null ? null : nowWeek - weekOfDay(at);
-    const state = c.k === 'scan' ? 'none'
-      : !c.due ? 'later'
-      : !c.count ? 'never'
-      : silentFor >= 2 ? 'quiet'
-      : 'on';
-    return { ...c, at, silentFor, state };
-  });
+  /* THE AUTHORED BOARD, not four hardcoded rows. Due-ness comes from the gate,
+     so a task the protocol has not reached yet reads as "not due" rather than
+     as a patient who is not bothering — and a task the product team adds in the
+     catalogue appears here with no code written.
+
+     A fixture patient works with no special case: `logbookFor` synthesises
+     `done` from the plan, which is exactly what the gates read. */
+  const caps = resolveTasks(state, scope, lb, patient.id)
+    .map((c) => ({ ...c, state: taskState(c) }));
+
+  /* A switched-off task has not gone quiet. She turned it off, and counting it
+     as silence would ask her about a decision she made herself. */
   const quiet = caps.filter((c) => c.state === 'quiet' || c.state === 'never').length;
+  const switchedOff = caps.filter((c) => c.state === 'off');
 
   return (
     <div className="card logs" style={{ marginBottom: 14 }}>
@@ -702,17 +715,19 @@ function PatientLogs({ patient, pt, weeks = 12 }) {
       {/* ── what is being kept, and what has gone quiet ── */}
       <div className="logs-caps">
         {caps.map((c) => (
-          <div className={`cap cap-${c.state}`} key={c.k}>
+          <div className={`cap cap-${c.state}`} key={c.key}>
             <div className="cap-h">
               <Icon name={c.ic} size={13} />
-              <b>{CAP_LABEL[c.k]}</b>
+              <b>{c.t}</b>
             </div>
             <span className="cap-n">
-              {c.state === 'none' ? '–' : c.count ? `${c.count}×` : '0'}
+              {c.state === 'blocked' || c.state === 'off' ? '–' : c.count ? `${c.count}×` : '0'}
             </span>
             <span className="cap-s">
-              {c.state === 'none' ? 'Needs the camera build'
-                : c.state === 'later' ? c.note
+              {c.state === 'blocked' ? c.blockedWhy
+                : c.state === 'off' ? c.offWhy
+                : c.state === 'over' ? c.hiddenWhy
+                : c.state === 'later' ? (c.gateNote || 'Not due yet')
                 : c.state === 'never' ? 'Never logged'
                 : c.state === 'quiet' ? `Nothing for ${c.silentFor} weeks`
                 : `Last week ${weekOfDay(c.at)}`}
@@ -725,13 +740,24 @@ function PatientLogs({ patient, pt, weeks = 12 }) {
         <div className="card-pad" style={{ paddingTop: 0 }}>
           <Note tone="gold" label="Worth asking about on the call">
             <p style={{ margin: 0 }}>
-              {caps.filter((c) => c.state === 'quiet' || c.state === 'never')
-                   .map((c) => CAP_LABEL[c.k]).join(' and ')}
+              {listOf(caps.filter((c) => c.state === 'quiet' || c.state === 'never')
+                   .map((c) => c.t))}
               {' '}
               {quiet === 1 ? 'has' : 'have'} gone quiet. The plan cannot tell you that; only
               this can.
             </p>
           </Note>
+        </div>
+      )}
+
+      {switchedOff.length > 0 && (
+        <div className="card-pad" style={{ paddingTop: quiet > 0 ? 0 : undefined }}>
+          <p className="hint" style={{ margin: 0 }}>
+            {listOf(switchedOff.map((c) => c.t))}
+            {' '}
+            {switchedOff.length === 1 ? 'is' : 'are'} off this patient&rsquo;s list, so
+            {' '}{switchedOff.length === 1 ? 'it has' : 'they have'} no readings by design.
+          </p>
         </div>
       )}
     </div>
@@ -840,6 +866,33 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
   const [overrides, setOverrides] = useState(consult.overrides || {});
   /* The step the coach is defining right now, before it joins the plan. */
   const [draft, setDraft] = useState(null);
+  /* ── THE DAILY TASKS, FOR THIS PATIENT ──
+     Two things, and they are not the same shape. `tasksAdded` is a LIST because
+     the coach's own order matters on the patient's screen. `tasksOff` is a MAP
+     keyed by task, because switching the same one off twice must not make two
+     rows of it. Both are seeded from the record above, which is what makes them
+     survive a save — see the note on `save()`. */
+  const [tasksAdded, setTasksAdded] = useState(consult.tasksAdded || []);
+  const [tasksOff, setTasksOff] = useState(consult.tasksOff || {});
+  /* Which protocol task she has reached for, and the reason not yet typed. A
+     switch-off without a reason is a task that stops with nobody able to say
+     why, so the toggle does not flip until the box has something in it. */
+  const [offAsked, setOffAsked] = useState(null);
+  const [offWhy, setOffWhy] = useState('');
+  const [taskPick, setTaskPick] = useState('');
+
+  /* ── THE PROTOCOL'S OWN TASKS, AS THEY STAND RIGHT NOW ──
+     Resolved from the saved record, then her UNSAVED switch-offs laid over the
+     top. Reading the saved record alone meant the row she had just switched off
+     still said "showing" until she pressed Save, which reads as a control that
+     did nothing. */
+  const caps = resolveTasks(state, scope, logbookFor(patient, pt), patient.id)
+    .filter((c) => c.band === 'product')
+    .map((c) => {
+      const shut = tasksOff[c.key];
+      const next = { ...c, off: !!shut, offWhy: shut ? shut.why : null };
+      return { ...next, state: taskState(next) };
+    });
 
   /* The steps the builder marked as the doctor's to decide. Read from the plan
      rather than listed here, so marking a new one in the Protocol Builder makes
@@ -906,8 +959,13 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
 
   const save = () => update((d) => {
     if (!d.consults) d.consults = {};
+    /* EVERY KEY ON THIS RECORD MUST BE LISTED HERE. This is a whole-record
+       replace, not a merge, so a key left out is dropped by the next save —
+       including a save by a coach who never opened the tasks card. The
+       matching `useState(consult.<key>)` above is what round-trips it. */
     d.consults[patient.id] = {
       note, outcome, doses, competes, addedItems: added, prescribed: rx, overrides,
+      tasksAdded, tasksOff,
       at: new Date().toISOString(),
       version: ((d.consults[patient.id] && d.consults[patient.id].version) || 0) + 1,
     };
@@ -931,7 +989,8 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
 
       {/* Between the record and the decision, because it is evidence a doctor
           reads BEFORE choosing, not a report she is shown afterwards. */}
-      <PatientLogs patient={patient} pt={pt} weeks={weeksOf(state, scope)} />
+      <PatientLogs patient={patient} pt={pt} state={state} scope={scope}
+        weeks={weeksOf(state, scope)} />
 
       {!patient.live && (
         <div style={{ marginBottom: 14 }}>
@@ -1056,7 +1115,172 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
             })}
           </div>
 
-          {/* ── 3. ADD SOMETHING NEW ── */}
+          {/* ── 3. THEIR DAILY TASKS ──
+              Two bands, because two different people decide them. What the coach
+              adds sits above the protocol's own on the patient's screen; what the
+              protocol gives is read-only here, because changing it would change
+              it for nobody else and the product team authored it on purpose.
+
+              The one thing she CAN do to a protocol task is take it off this
+              patient — with a reason, because a task that stops for no recorded
+              reason is a question nobody can answer later. */}
+          <div className="card card-pad">
+            <h3 style={{ marginBottom: 4 }}>Their daily tasks</h3>
+            <p className="sub" style={{ marginBottom: 10 }}>
+              What {patient.name.split(' ')[0]} is asked to do every day, under Today on
+              their phone. Anything you add sits above the protocol&rsquo;s own, saying it
+              came from you.
+            </p>
+
+            <div className="lbl-sm">From you · always at the top of their list</div>
+            {tasksAdded.length === 0 && (
+              <p className="empty-line">Nothing yet. Only tasks the product team opened to a
+                coach are offered below.</p>
+            )}
+            {tasksAdded.map((a) => {
+              const def = TASK_LIBRARY.find((t) => t.key === a.taskKey);
+              return (
+                <div className="item" key={a.taskKey}>
+                  <span className="when">yours</span>
+                  <div className="body">
+                    <b>{def?.t || a.taskKey}</b>
+                    <span>{a.why || def?.sub}{a.until ? ` · until ${a.until}` : ' · open-ended'}</span>
+                  </div>
+                  <div className="acts">
+                    <button className="btn btn-ghost btn-sm"
+                      onClick={() => setTasksAdded((xs) => xs.filter((x) => x.taskKey !== a.taskKey))}>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Only what the catalogue opened to a coach, and only what is not
+                already on this patient's list. */}
+            {(() => {
+              const onBoard = new Set([
+                ...tasksAdded.map((a) => a.taskKey),
+                ...caps.map((c) => c.key),
+              ]);
+              const offer = TASK_LIBRARY
+                .filter((t) => t.isActive && t.coachMayRecommend && !onBoard.has(t.key));
+              if (!offer.length) {
+                return (
+                  <p className="hint" style={{ marginTop: 10 }}>
+                    Every task open to a coach is already on their list.
+                  </p>
+                );
+              }
+              return (
+                <div className="row" style={{ gap: 8, marginTop: 10, alignItems: 'flex-end' }}>
+                  <div style={{ flex: 1, minWidth: 180 }}>
+                    <Field label="Add a task" type="select" value={taskPick}
+                      options={['', ...offer.map((t) => t.key)]}
+                      display={{ '': 'Pick one…',
+                        ...offer.reduce((a, t) => ({ ...a, [t.key]: t.t }), {}) }}
+                      onChange={setTaskPick}
+                      hint="The product team decides which tasks a coach may add." />
+                  </div>
+                  <button className="btn btn-primary btn-sm" disabled={!taskPick}
+                    onClick={() => {
+                      const def = TASK_LIBRARY.find((t) => t.key === taskPick);
+                      if (!def) return;
+                      setTasksAdded((xs) => [...xs, {
+                        taskKey: taskPick, why: def.sub,
+                        /* A date IS allowed here. The ban on time applies to a
+                           template, whose author has never met this patient. */
+                        until: null,
+                        /* The coach's NAME, because this is what the patient
+                           reads on their phone: "From Durga Coach". "you" is
+                           this panel's word for its own user. */
+                        by: COACH, at: new Date().toISOString(),
+                      }]);
+                      setTaskPick('');
+                    }}>
+                    <Icon name="plus" size={12} /> Add
+                  </button>
+                </div>
+              );
+            })()}
+
+            <div className="lbl-sm" style={{ marginTop: 16 }}>
+              From the protocol · you cannot change what these say
+            </div>
+            {caps.length === 0 && (
+              <p className="empty-line">This protocol has no daily tasks authored.</p>
+            )}
+            {caps.map((c) => (
+              <div className={`item ${c.state === 'off' ? 'quiet' : ''}${c.state === 'over' ? ' locked' : ''}`}
+                key={c.key}>
+                <span className="when">
+                  {c.state === 'off' ? 'off'
+                    : c.state === 'over' ? 'done with'
+                    : c.state === 'later' ? 'not yet'
+                    : c.state === 'blocked' ? 'blocked' : 'showing'}
+                </span>
+                <div className="body">
+                  <b>{c.t}</b>
+                  <span>
+                    {c.state === 'off' ? c.offWhy
+                      : c.state === 'blocked' ? c.blockedWhy
+                      : (c.state === 'over' || c.state === 'later') ? c.hiddenWhy
+                      : c.count ? `${c.count} log${c.count === 1 ? '' : 's'} so far`
+                      : 'Showing, nothing logged yet'}
+                  </span>
+                </div>
+                <div className="acts">
+                  <Chip tone="lock">authored</Chip>
+                  {c.state === 'off' ? (
+                    <button className="btn btn-ghost btn-sm"
+                      onClick={() => setTasksOff((o) => {
+                        const next = { ...o }; delete next[c.key]; return next;
+                      })}>
+                      Put it back
+                    </button>
+                  ) : (c.state === 'blocked' || c.state === 'over') ? null : (
+                    /* Nothing to take off a task the protocol has already
+                       finished with, or one no build can deliver. */
+                    <button className="btn btn-ghost btn-sm"
+                      onClick={() => { setOffAsked(c.key); setOffWhy(''); }}>
+                      Not for this patient
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Asked WHERE IT IS NEEDED, the same way the competition question
+                is: the moment she reaches for it, not sitting unanswered at the
+                top of the page. */}
+            {offAsked && (
+              <div style={{ marginTop: 10 }}>
+                <Note tone="gold" label={`Why is this off ${patient.name.split(' ')[0]}'s list?`}>
+                  <p style={{ margin: '0 0 8px' }}>
+                    It goes from their phone and it stays on their record, so the next
+                    person reading their logs knows the readings are missing by design.
+                  </p>
+                  <Field type="textarea" rows={2} value={offWhy} onChange={setOffWhy}
+                    placeholder="Cannot weight-bear yet. Revisit at the mid-point review." />
+                  <div className="row" style={{ gap: 8, marginTop: 10 }}>
+                    <button className="btn btn-sm btn-primary" disabled={!offWhy.trim()}
+                      onClick={() => {
+                        setTasksOff((o) => ({ ...o, [offAsked]: {
+                          why: offWhy.trim(), at: new Date().toISOString(), by: COACH,
+                        } }));
+                        setOffAsked(null); setOffWhy('');
+                      }}>
+                      Take it off their list
+                    </button>
+                    <button className="btn btn-sm btn-ghost"
+                      onClick={() => { setOffAsked(null); setOffWhy(''); }}>Cancel</button>
+                  </div>
+                </Note>
+              </div>
+            )}
+          </div>
+
+          {/* ── 4. ADD SOMETHING NEW ── */}
           <div className="card card-pad">
             <h3 style={{ marginBottom: 4 }}>Add to this patient's plan</h3>
             <p className="sub" style={{ marginBottom: 10 }}>
@@ -1170,6 +1394,33 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
             <p style={{ margin: 0 }}>
               {added.map((a) => a.t).join(' · ')}. These land on the patient's plan the
               moment you save, and the app resolves them into the journey like any other item.
+            </p>
+          </Note>
+        </div>
+      )}
+
+      {/* What the tasks card will do, said before she saves rather than after.
+          A switch-off is named with its reason, because that is what goes on
+          the record and what the next person reading the logs will see. */}
+      {(tasksAdded.length > 0 || Object.keys(tasksOff).length > 0) && (
+        <div style={{ marginTop: 14 }}>
+          <Note tone="green" label="Their daily list will change">
+            <p style={{ margin: 0 }}>
+              {tasksAdded.length > 0 && (
+                <>Added: {tasksAdded.map((a) =>
+                  TASK_LIBRARY.find((t) => t.key === a.taskKey)?.t || a.taskKey).join(' · ')}.{' '}</>
+              )}
+              {Object.entries(tasksOff).map(([key, off]) => (
+                <span key={key}>
+                  {TASK_LIBRARY.find((t) => t.key === key)?.t || key} switched off
+                  {/* The reason is a sentence somebody typed, so it may already
+                      end in a full stop. Two of them reads as a typo. */}
+                  {' — '}{off.why.replace(/\.+$/, '')}.{' '}
+                </span>
+              ))}
+              {patient.live
+                ? 'This reaches their phone the moment you save.'
+                : `${patient.name.split(' ')[0]} is a fixture, so this changes their record and no phone.`}
             </p>
           </Note>
         </div>

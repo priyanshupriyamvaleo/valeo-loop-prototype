@@ -1,5 +1,5 @@
 import { publishedFor, GATES } from '../../shared/bus';
-import { findService, priceOf } from '../../p2/lib/seed';
+import { findService, priceOf, RR_TASKS, taskDefOf } from '../../p2/lib/seed';
 
 /* THE ONE PATIENT THIS APP IS.
    Consult records are keyed by patient in the Studio. The phone is Ahmad, so it
@@ -236,22 +236,194 @@ export const archetypeOf = (item) =>
 export const recoveryScore = (c) =>
   (!c ? null : Math.round((((10 - c.pain) + c.capacity) / 20) * 100));
 
-/* The four things a Recover and Rebuild patient can log, and whether the plan
-   has reached the point where each one means anything yet. Doses before the
-   medicine has shipped is a tile asking for a number that cannot exist. */
-export function captures(done, logs = {}) {
-  const shipped = done.includes('p6');
-  const started = done.includes('p2');
-  return [
-    { k: 'symptoms', t: 'Symptoms', ic: 'activity', due: true,
-      note: 'Pain and capacity' },
-    { k: 'doses', t: 'Doses', ic: 'plus', due: shipped,
-      note: shipped ? 'BPC-157, daily' : 'From Month 1' },
-    { k: 'meals', t: 'Meals', ic: 'flask', due: started,
-      note: started ? 'Roughly what it was' : 'After your first visit' },
-    { k: 'scan', t: 'Heart scan', ic: 'chat', due: false,
-      note: 'Needs the camera build' },
-  ].map((c) => ({ ...c, count: logs[c.k] || 0 }));
+/* ── TODAY'S HEALTH TASKS ──
+   The small repeated acts on the patient's home screen. This replaced
+   `captures()`, which hardcoded four rows and hardcoded `done.includes('p6')`
+   as the rule that revealed one of them.
+
+   A TASK IS NOT A STEP. A step moves the patient forward and drives the card
+   at the top of the screen; a task only records something. So nothing here
+   writes `done`, and `nextItem(plan, done)` reads `done` alone — a forgotten
+   tick cannot block care, structurally rather than by promise.
+
+   THE BOARD IS AUTHORED, NOT WRITTEN HERE. It comes from the catalogue CMS,
+   compiled so that every gate names the STEP that satisfies it. This app then
+   asks one question per gate: is that step in `done`? That is what
+   `captures()` already did with one hardcoded id, and it is now the rule for
+   every task on any protocol. */
+
+/* The published board if a builder ever writes one, else the compiled seed.
+   Read through a fallback on purpose: the studio blob is versioned with no
+   migration, so adding a new published part would be invisible to anybody
+   whose store already exists. */
+export function taskBoardFor(studio, scope) {
+  const pub = publishedFor(studio, scope, 'tasks');
+  return (pub && pub.data) || RR_TASKS;
+}
+
+/* Is a gate satisfied? A gate is a step id, or the end of the protocol, or
+   nothing at all. There are no dates in here. */
+function gateMet(gate, done, finished) {
+  if (!gate) return false;
+  if (gate === 'protocol_ends') return finished;
+  return done.includes(gate.stepId);
+}
+
+/* Has this task been done in the window it is asked for?
+   `logAt` holds the simulated DAY a task was last logged, which is all that is
+   needed: "daily" is today, "weekly" is this week, "once" is ever. Without
+   this the count line would read "4 of 4 completed" for ever from day two. */
+function doneInWindow(def, logs, logAt, day) {
+  const key = def.logKey || def.key;
+  if (!(logs[key] > 0)) return false;
+  const at = logAt[key];
+  if (def.resets === 'never') return true;
+  if (at == null) return false;
+  if (def.resets === 'weekly') return weekOfDay(at) === weekOfDay(day);
+  return at === (day || 0);
+}
+
+/**
+ * THE ONE RESOLVER. Both the phone and the coach panel call it.
+ *
+ * THE SORT RULE, in full:
+ *   1. the coach's own additions, above everything. A coach chose them for
+ *      this patient, so they outrank the template.
+ *   2. then the board, by its authored order.
+ *   3. COMPLETION NEVER REORDERS. A ticked task stays exactly where it was,
+ *      with a tick. Nothing vanishes under the patient's finger.
+ *
+ * `showing` is false only when a task is not yet due, has been hidden by its
+ * own gate, or the coach switched it off. The phone renders the showing rows;
+ * the coach panel renders every row and says why each hidden one is hidden.
+ *
+ * `patientId` names whose consult record to read. It defaults to the live
+ * patient, which is the only one the phone can be.
+ */
+export function resolveTasks(studio, scope, pt, patientId) {
+  const done = (pt && pt.done) || [];
+  const logs = (pt && pt.logs) || {};
+  const logAt = (pt && pt.logAt) || {};
+  const day = (pt && pt.day) || 0;
+
+  const finished = !nextItem(planFor(studio, scope, pt || {}), done);
+  /* THE CONSULT OF THE PATIENT BEING RESOLVED, not always the live one.
+     Consult records are keyed by patient. Defaulting here meant the coach
+     panel showed Ahmad's added tasks and his switch-off reason on Leila's
+     record — one patient's clinical decision on another patient's screen.
+     The phone passes nothing, because the phone is only ever Ahmad. */
+  const consult = consultFor(studio, patientId);
+  /* A coach's decisions only exist for a patient who has HAD the consultation,
+     the same test `planFor` and `medicinesFor` already apply. Otherwise a
+     day-zero patient loses tasks to a consult that has not happened. */
+  const consulted = done.includes('p4');
+  const off = (consulted && consult && consult.tasksOff) || {};
+  const added = (consulted && consult && consult.tasksAdded) || [];
+
+  const row = (def, band, sortOrder, extra) => {
+    const key = def.logKey || def.key;
+    const shut = off[def.key];
+    return {
+      key: def.key, logKey: key, t: def.t, sub: def.sub, ic: def.ic,
+      capture: def.capture, unit: def.unit, min: def.min, max: def.max,
+      resets: def.resets, signalKey: def.signalKey,
+      band, sortOrder,
+      count: logs[key] || 0,
+      at: logAt[key] == null ? null : logAt[key],
+      silentFor: logAt[key] == null ? null : weekOfDay(day) - weekOfDay(logAt[key]),
+      doneNow: doneInWindow(def, logs, logAt, day),
+      blockedWhy: def.blockedWhy || null,
+      off: !!shut, offWhy: shut ? shut.why : null,
+      ...extra,
+    };
+  };
+
+  const out = [];
+
+  /* ── the coach's band ── */
+  added.forEach((a, i) => {
+    const def = taskDefOf(a.taskKey);
+    /* A key the library does not hold has no title and no icon, so there is
+       nothing to draw. Skip it rather than inventing a name from the key. */
+    if (!def) return;
+    out.push(row(def, 'coach', i, {
+      sub: a.why || def.sub,
+      from: a.by || 'your coach',
+      until: a.until || null,
+      due: true,
+      showing: !def.blockedWhy,
+      gateNote: null,
+    }));
+  });
+
+  /* ── the protocol's band ── */
+  taskBoardFor(studio, scope).forEach((r) => {
+    const def = taskDefOf(r.taskKey);
+    if (!def) return;
+    /* Two rows on one task share one counter, so the first wins. */
+    if (out.some((x) => x.logKey === (def.logKey || def.key))) return;
+
+    const opened = !r.showsAfter || gateMet(r.showsAfter, done, finished);
+    const shut = gateMet(r.hidesAfter, done, finished);
+    const gone = !!off[def.key];
+
+    out.push(row(def, 'product', r.sortOrder, {
+      sub: r.noteEn || def.sub,
+      due: opened && !def.blockedWhy,
+      showing: opened && !shut && !gone,
+      /* Why it is not on the card yet, in the words of the step itself. */
+      gateNote: opened ? null
+        : `From ${r.showsAfter.titleEn}`,
+      hiddenWhy: gone ? 'Your coach took it off your list'
+        : shut ? `Done with, after ${r.hidesAfter === 'protocol_ends'
+            ? 'the protocol' : r.hidesAfter.titleEn}`
+        : opened ? null : `Waiting on ${r.showsAfter.titleEn}`,
+    }));
+  });
+
+  return out.sort((a, b) => (a.band === b.band
+    ? a.sortOrder - b.sortOrder
+    : (a.band === 'coach' ? -1 : 1)));
+}
+
+/* Which state a task is in, for the coach's read of the logs. The ladder was
+   inside the console; it is here so both surfaces agree on the words. */
+export function taskState(r) {
+  if (r.blockedWhy) return 'blocked';
+  if (r.off) return 'off';
+  if (!r.due) return 'later';
+  /* IT OPENED AND ITS OWN GATE HAS SHUT IT. "Fast for 10 hours" is finished
+     with once the blood is drawn, and it is not a patient who stopped
+     bothering. Reading it as silence asked the coach about adherence to a task
+     nobody is asking for any more. */
+  if (!r.showing) return 'over';
+  if (!r.count) return 'never';
+  if (r.silentFor >= 2) return 'quiet';
+  return 'on';
+}
+
+/* "A, B and C". Joining with ' and ' throughout gave "A and B and C and D". */
+export const listOf = (names) => (names.length < 2 ? (names[0] || '')
+  : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
+
+/* A gate naming a step this plan does not hold. It is the one thing a pasted
+   board can get wrong, and a wrong id would otherwise read as a task that
+   simply never appears. */
+export function taskGateGaps(studio, scope) {
+  const ids = planFor(studio, scope, {}).map((x) => x.id);
+  /* NO PLAN IS NOT A BAD GATE. Before the Studio publishes one, every step id
+     is "missing", and reporting six of them says nothing about the board. */
+  if (!ids.length) return [];
+  const out = [];
+  taskBoardFor(studio, scope).forEach((r) => {
+    const def = taskDefOf(r.taskKey);
+    if (!def) { out.push(`No task called ${r.taskKey}`); return; }
+    [['shows', r.showsAfter], ['hides', r.hidesAfter]].forEach(([end, g]) => {
+      if (!g || g === 'protocol_ends') return;
+      if (!ids.includes(g.stepId)) out.push(`${def.t}: ${end} on ${g.stepId}, which is not in the plan`);
+    });
+  });
+  return out;
 }
 
 /* ── WHICH STATE A STEP IS IN ──

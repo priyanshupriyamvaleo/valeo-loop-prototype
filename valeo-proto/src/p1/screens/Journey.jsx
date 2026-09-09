@@ -1,5 +1,5 @@
 import Icon from '../ui/Icon';
-import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, captures, stateOf, actorOf, actorInitial, whenLabel } from '../lib/journey';
+import { nextItem, progress, weekOf, isPatientMove, soon, recoveryScore, stateOf, actorOf, actorInitial, whenLabel } from '../lib/journey';
 import { findService, priceOf } from '../../p2/lib/seed';
 import { money } from '../../shared/bus';
 
@@ -153,7 +153,8 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12,
  * is that a patient can glance at it and know what to do.
  *
  *   NEXT          what happens now, whether it is theirs or ours
- *   YOUR LOGBOOK  where they are in the twelve weeks, the score, the four tiles
+ *   YOUR LOGBOOK  where they are in the twelve weeks, and the score
+ *   TODAY'S TASKS the small repeated acts, authored in the catalogue
  *   WHAT FOLLOWS  the next couple of steps, so nothing arrives as a surprise
  *   HELP          the coach and the care team, always in the same place
  *
@@ -167,7 +168,7 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12,
  * the body will do, and the patient can report both the minute they have paid.
  * So the logbook is full on day zero and Week 12 has something to read against.
  */
-export function JourneyDetail({ plan, done, checkins, logs, target, booked, title,
+export function JourneyDetail({ plan, done, checkins, tasks = [], target, booked, title,
                                medicines, serviceFor, weeks = 12, paused, onBack, onOpen, onLog, onChat, onProduct, region = 'uae', place, owedFor, onPay }) {
   const front = nextItem(plan, done);
   const p = progress(plan, done);
@@ -180,7 +181,6 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
   const slotOwner = plan.find((x) => x.id === (stateOf(front, booked)?.slotFrom || front?.id));
   const latest = checkins[checkins.length - 1];
   const score = recoveryScore(latest);
-  const tiles = captures(done, logs);
   /* Everything already named above is left out below, so the lower sections add
      information rather than repeating it. */
   const follows = soon(plan, done, front ? [front.id] : [], 4, 3);
@@ -373,21 +373,62 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
           )}
         </button>
       </div>
+    </div>
+  );
 
-      <div className="tiles">
-        {tiles.map((c) => (
-          <button key={c.k} className={`tile ${c.count ? 'done' : c.due ? 'due' : 'off'}`}
-            disabled={!c.due} onClick={() => onLog(c.k)}>
-            <div className="tile-h">
-              <Icon name={c.ic} size={15} />
-              {c.count > 0 && <span className="tick sm"><Icon name="check" size={9} /></span>}
-              {c.due && !c.count && <i className="pip" />}
-            </div>
-            <b>{c.t}</b>
-            <span>{c.count ? `Logged ${c.count}x` : c.note}</span>
-          </button>
-        ))}
+  /* ── 3. today's health tasks ──
+     One card, one row per task, in the order the catalogue authored — with
+     anything a coach added for this patient above all of it.
+
+     A TICKED TASK STAYS, with a tick. Only its own gate or the end of the
+     protocol takes it off, so nothing disappears under the patient's finger
+     and the list does not rearrange itself as they work down it.
+
+     A task that is not due yet is not on the card at all. It says so in the
+     coach's console instead: a disabled row narrating a step the patient has
+     not reached is a row that only makes the screen longer. */
+  const shown = tasks.filter((t) => t.showing);
+  const actionable = shown.filter((t) => t.due && !t.blockedWhy);
+  const ticked = actionable.filter((t) => t.doneNow).length;
+
+  const todayTasks = (
+    <div className="sect">
+      <div className="sect-h">
+        <span>Today&rsquo;s Health Tasks</span>
+        {actionable.length > 0 && (
+          <em className="chip-in">{ticked} of {actionable.length} completed</em>
+        )}
       </div>
+
+      {shown.length === 0 ? (
+        <div className="tasks-empty">
+          Nothing to log yet. Your first task arrives once your plan is under way.
+        </div>
+      ) : (
+        <div className="tasks">
+          {shown.map((c) => (
+            <button key={c.key}
+              className={`task ${c.doneNow ? 'done' : ''} ${c.blockedWhy ? 'off' : ''}`}
+              disabled={!c.due || !!c.blockedWhy}
+              onClick={() => onLog(c.logKey)}>
+              <span className={`task-tick ${c.doneNow ? 'on' : ''}`}>
+                {c.doneNow && <Icon name="check" size={11} />}
+              </span>
+              <span className="task-ic"><Icon name={c.ic} size={16} /></span>
+              <span className="task-bd">
+                <b>{c.t}</b>
+                <span>
+                  {c.blockedWhy ? c.blockedWhy
+                    : c.band === 'coach' ? <em className="from-coach">From {c.from}{c.sub ? ` · ${c.sub}` : ''}</em>
+                    : c.doneNow ? `Logged${c.count > 1 ? `, ${c.count} times so far` : ''}`
+                    : c.sub}
+                </span>
+              </span>
+              <Icon name="chev" size={13} className="task-chev" />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 
@@ -441,10 +482,12 @@ export function JourneyDetail({ plan, done, checkins, logs, target, booked, titl
               </div>
             </div>
             {logbook}
+            {todayTasks}
           </>
-        ) : front ? <>{next}{logbook}</> : (
+        ) : front ? <>{next}{logbook}{todayTasks}</> : (
           <>
             {logbook}
+            {todayTasks}
             <div className="sect">
               <div className="sect-h"><span>What is left</span></div>
               <div className="move quiet">

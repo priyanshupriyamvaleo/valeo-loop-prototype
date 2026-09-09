@@ -8,7 +8,7 @@ import { ProtocolCard, JourneyDetail } from './screens/Journey';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor,
          GATES, SHARED, protocolFor, triageFor, membersOf, regionOf } from '../shared/bus';
 import { priceOf } from '../p2/lib/seed';
-import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy } from './lib/journey';
+import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy, resolveTasks, taskGateGaps } from './lib/journey';
 
 
 /*
@@ -129,6 +129,10 @@ export default function App() {
   const theirs = viewing === forMember;
   const plan = theirs ? planFor(studio, scope, pt) : [];
   const medicines = theirs ? medicinesFor(studio, scope, pt) : [];
+  /* Today's tasks, resolved from the authored board and this patient's own
+     progress. The screen below is handed the answer and stays dumb, the way
+     it is handed `plan` and `medicines`. */
+  const tasks = theirs ? resolveTasks(studio, scope, pt) : [];
   const weeks = weeksOf(studio, scope);
   const paused = !!pausedBy(studio, pt);
   const item = nextItem(plan, pt.done);
@@ -158,6 +162,11 @@ export default function App() {
     ['plan', 'Protocol plan', !!publishedFor(studio, scope, 'plan')],
     ['consult', 'Consult outcome', !!consultFor(studio)],
   ];
+
+  /* The task board is pasted in from the catalogue CMS, so the one thing it can
+     get wrong is a step id this plan does not hold. Said out loud, because a
+     wrong id would otherwise read as a task that simply never appears. */
+  const taskGaps = taskGateGaps(studio, scope);
 
   const rail = (
     <div className="rail">
@@ -196,6 +205,21 @@ export default function App() {
             <span className={`pill ${on ? 'on' : 'off'}`}>{on ? 'live' : 'waiting'}</span>
           </div>
         ))}
+        <div className="gate">
+          <span className="nm">Today&rsquo;s tasks</span>
+          <span className={`pill ${taskGaps.length ? 'off' : 'on'}`}>
+            {taskGaps.length
+              ? `${taskGaps.length} bad gate${taskGaps.length === 1 ? '' : 's'}`
+              /* What is on their card right now, not how many exist: the
+                 resolved list holds the gated ones too, and the coach's. */
+              : `${tasks.filter((t) => t.showing).length} on their card`}
+          </span>
+        </div>
+        {taskGaps.length > 0 && (
+          <div style={{ fontSize: 10.5, color: '#E5A0A0', marginTop: 6, lineHeight: 1.5 }}>
+            {taskGaps.join(' · ')}
+          </div>
+        )}
         <div style={{ fontSize: 11, color: '#8CA0B4', marginTop: 10, lineHeight: 1.5 }}>
           Open the Studio in another tab. Publishing there updates this one live.
         </div>
@@ -364,7 +388,7 @@ export default function App() {
         serviceFor={(it) => serviceForStep(studio, it, pt)}
         onProduct={(m) => set({ product: m, stage: 'product' })}
         checkins={pt.checkins || []} booked={pt.booked || {}}
-        logs={pt.logs || {}} target={pt.target}
+        tasks={tasks} target={pt.target}
         onBack={() => setScreen('home')}
         onChat={() => {}}
         onOpen={(it, mode) => set({ acting: it.id, actMode: mode || null, stage: 'act' })}
