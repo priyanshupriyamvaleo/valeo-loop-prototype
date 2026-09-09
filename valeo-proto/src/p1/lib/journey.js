@@ -340,11 +340,17 @@ export function resolveTasks(studio, scope, pt, patientId) {
 
   const out = [];
 
-  /* ── the coach's band ── */
+  /* ── the coach's band ──
+     A coach may WRITE a task as well as pick one, so an entry carries its own
+     words. Where it only names one of the protocol's own, the definition is
+     read off the board. Either way there is always something to draw, and a
+     name is never invented from a key. */
   added.forEach((a, i) => {
-    const def = taskDefOf(a.taskKey);
-    /* A key the library does not hold has no title and no icon, so there is
-       nothing to draw. Skip it rather than inventing a name from the key. */
+    const def = a.t
+      ? { key: a.taskKey, logKey: a.logKey || a.taskKey, t: a.t, sub: a.sub, ic: a.ic || 'note',
+          capture: a.capture || 'tick', unit: a.unit, min: a.min, max: a.max,
+          resets: a.resets || 'daily' }
+      : taskDefOf(a.taskKey);
     if (!def) return;
     out.push(row(def, 'coach', i, {
       sub: a.why || def.sub,
@@ -356,19 +362,21 @@ export function resolveTasks(studio, scope, pt, patientId) {
     }));
   });
 
-  /* ── the protocol's band ── */
-  taskBoardFor(studio, scope).forEach((r) => {
-    const def = taskDefOf(r.taskKey);
-    if (!def) return;
+  /* ── the protocol's band ──
+     The board rows ARE the definitions: a task is authored on its protocol, so
+     there is nothing to look up. */
+  taskBoardFor(studio, scope).forEach((def) => {
+    if (def.isActive === false) return;
     /* Two rows on one task share one counter, so the first wins. */
     if (out.some((x) => x.logKey === (def.logKey || def.key))) return;
 
+    const r = def;
     const opened = !r.showsAfter || gateMet(r.showsAfter, done, finished);
     const shut = gateMet(r.hidesAfter, done, finished);
     const gone = !!off[def.key];
 
     out.push(row(def, 'product', r.sortOrder, {
-      sub: r.noteEn || def.sub,
+      sub: def.sub,
       due: opened && !def.blockedWhy,
       showing: opened && !shut && !gone,
       /* Why it is not on the card yet, in the words of the step itself. */
@@ -415,12 +423,11 @@ export function taskGateGaps(studio, scope) {
      is "missing", and reporting six of them says nothing about the board. */
   if (!ids.length) return [];
   const out = [];
-  taskBoardFor(studio, scope).forEach((r) => {
-    const def = taskDefOf(r.taskKey);
-    if (!def) { out.push(`No task called ${r.taskKey}`); return; }
-    [['shows', r.showsAfter], ['hides', r.hidesAfter]].forEach(([end, g]) => {
+  taskBoardFor(studio, scope).forEach((t) => {
+    if (!t.t) { out.push(`The task ${t.key} has no title`); return; }
+    [['shows', t.showsAfter], ['hides', t.hidesAfter]].forEach(([end, g]) => {
       if (!g || g === 'protocol_ends') return;
-      if (!ids.includes(g.stepId)) out.push(`${def.t}: ${end} on ${g.stepId}, which is not in the plan`);
+      if (!ids.includes(g.stepId)) out.push(`${t.t}: ${end} on ${g.stepId}, which is not in the plan`);
     });
   });
   return out;

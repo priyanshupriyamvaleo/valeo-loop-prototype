@@ -3,7 +3,8 @@ import Icon from '../p2/ui/Icon';
 import { Field, Chip, Note } from '../p2/ui/kit';
 import { useStudio } from '../p2/lib/store';
 import { PATIENTS, SERVICES, findService, ORDERS, ORDER_CATEGORIES, COACHES,
-         orderFor, RR_PLAN, serviceGroupsFor, priceOf, TASK_LIBRARY } from '../p2/lib/seed';
+         orderFor, RR_PLAN, serviceGroupsFor, priceOf, RR_TASKS, taskDefOf,
+         TASK_CAPTURES, TASK_RESETS, TASK_ICONS } from '../p2/lib/seed';
 import { planFor, nextItem, consultFor, resolveTasks, taskState, listOf, recoveryScore, weekOfDay, weeksOf }
   from '../p1/lib/journey';
 import { PANEL } from '../p1/screens/Actions';
@@ -34,6 +35,16 @@ const OUTCOMES = ['Continue as planned', 'Not suitable', 'Modify'];
 /* Whose panel this is. It is the name on the sidebar, and it is what a
    patient reads under a task their coach added. */
 const COACH = COACHES[1];
+
+/* A task key is what the app stores every reading against. Lower case with
+   underscores, the same rule the catalogue applies. */
+const toKey = (v) => v.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+
+/* A blank task for a coach to write. It opens on a tick every day, which is
+   what nearly every coach instruction turns out to be. */
+const emptyCoachTask = () => ({
+  key: '', t: '', sub: '', ic: 'route', capture: 'tick', resets: 'daily', unit: '',
+});
 
 /* ── WHAT A COACH CAN ADD, AND WHAT IT BECOMES ──
    Three kinds, and each lands in the plan as a different sort of step. The
@@ -250,11 +261,14 @@ function liveRecord(pt, studio, scope) {
       /* The daily tasks she decided. A switch-off carries the reason she typed,
          because that is the whole point of asking for one. */
       ...(c.tasksAdded || []).map((a) => ({
-        kind: 'task added', what: TASK_LIBRARY.find((t) => t.key === a.taskKey)?.t || a.taskKey,
+        /* A coach may have WRITTEN this one, in which case its title is on the
+           entry itself and no board holds it. */
+        kind: a.t ? 'task written' : 'task added',
+        what: a.t || taskDefOf(a.taskKey)?.t || a.taskKey,
         why: a.why || 'On their daily list.',
       })),
       ...Object.entries(c.tasksOff || {}).map(([key, off]) => ({
-        kind: 'switched off', what: TASK_LIBRARY.find((t) => t.key === key)?.t || key,
+        kind: 'switched off', what: taskDefOf(key)?.t || key,
         why: off.why,
       })),
       ...(c.outcome === 'Not suitable'
@@ -880,6 +894,10 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
   const [offAsked, setOffAsked] = useState(null);
   const [offWhy, setOffWhy] = useState('');
   const [taskPick, setTaskPick] = useState('');
+  /* A task the coach is WRITING, before it joins this patient's list. Null
+     while she is only picking one the protocol already offers. */
+  const [newTask, setNewTask] = useState(null);
+  const [taskUntil, setTaskUntil] = useState('');
 
   /* ── THE PROTOCOL'S OWN TASKS, AS THEY STAND RIGHT NOW ──
      Resolved from the saved record, then her UNSAVED switch-offs laid over the
@@ -1134,17 +1152,27 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
 
             <div className="lbl-sm">From you · always at the top of their list</div>
             {tasksAdded.length === 0 && (
-              <p className="empty-line">Nothing yet. Only tasks the product team opened to a
-                coach are offered below.</p>
+              <p className="empty-line">Nothing yet. Pick one the protocol opens to you, or write
+                one of your own.</p>
             )}
             {tasksAdded.map((a) => {
-              const def = TASK_LIBRARY.find((t) => t.key === a.taskKey);
+              const def = a.t ? a : taskDefOf(a.taskKey);
               return (
-                <div className="item" key={a.taskKey}>
-                  <span className="when">yours</span>
+                <div className={`item ${def ? '' : 'quiet'}`} key={a.taskKey}>
+                  <span className="when">
+                    {!def ? 'gone' : a.t ? 'written' : 'yours'}
+                  </span>
                   <div className="body">
-                    <b>{def?.t || a.taskKey}</b>
-                    <span>{a.why || def?.sub}{a.until ? ` · until ${a.until}` : ' · open-ended'}</span>
+                    {/* NEVER A KEY AS A NAME. A task the protocol no longer
+                        offers has no words and no icon, so there is nothing to
+                        draw and nothing reaches the patient. Say so, and let
+                        her take it off. */}
+                    <b>{def ? def.t : 'A task this protocol no longer offers'}</b>
+                    <span>
+                      {def
+                        ? `${a.why || def.sub || ''}${a.until ? ` \u00b7 until ${a.until}` : ' \u00b7 open-ended'}`
+                        : `Stored as ${a.taskKey}. It is not on the patient's phone.`}
+                    </span>
                   </div>
                   <div className="acts">
                     <button className="btn btn-ghost btn-sm"
@@ -1156,51 +1184,129 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
               );
             })}
 
-            {/* Only what the catalogue opened to a coach, and only what is not
-                already on this patient's list. */}
+            {/* ── PICK ONE, OR WRITE ONE ──
+                A coach can put one of the protocol's coach-allowed tasks on
+                this patient, or author a new one outright — the same three
+                things the catalogue asks for: what it is called, how it is
+                finished, and how often it comes back.
+
+                It writes to THIS PATIENT and never to the protocol. One person
+                who needs to walk is not a reason for every patient to. */}
             {(() => {
-              const onBoard = new Set([
+              const onList = new Set([
                 ...tasksAdded.map((a) => a.taskKey),
                 ...caps.map((c) => c.key),
               ]);
-              const offer = TASK_LIBRARY
-                .filter((t) => t.isActive && t.coachMayRecommend && !onBoard.has(t.key));
-              if (!offer.length) {
-                return (
-                  <p className="hint" style={{ marginTop: 10 }}>
-                    Every task open to a coach is already on their list.
-                  </p>
-                );
-              }
+              const offer = RR_TASKS
+                .filter((t) => t.isActive !== false && t.coachMayRecommend && !onList.has(t.key));
+
+              const commitTask = (fields) => {
+                setTasksAdded((xs) => [...xs, {
+                  ...fields,
+                  /* A date IS allowed here. The ban on time applies to a
+                     template, whose author has never met this patient. */
+                  until: taskUntil.trim() || null,
+                  /* The coach's NAME, because this is what the patient reads on
+                     their phone: "From Durga Coach". "you" is this panel's word
+                     for its own user. */
+                  by: COACH, at: new Date().toISOString(),
+                }]);
+                setTaskPick(''); setNewTask(null); setTaskUntil('');
+              };
+
               return (
-                <div className="row" style={{ gap: 8, marginTop: 10, alignItems: 'flex-end' }}>
-                  <div style={{ flex: 1, minWidth: 180 }}>
-                    <Field label="Add a task" type="select" value={taskPick}
-                      options={['', ...offer.map((t) => t.key)]}
-                      display={{ '': 'Pick one…',
-                        ...offer.reduce((a, t) => ({ ...a, [t.key]: t.t }), {}) }}
-                      onChange={setTaskPick}
-                      hint="The product team decides which tasks a coach may add." />
+                <>
+                  <div className="row" style={{ gap: 8, marginTop: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 180 }}>
+                      <Field label="Add a task" type="select" value={newTask ? '__new' : taskPick}
+                        options={['', ...offer.map((t) => t.key), '__new']}
+                        display={{
+                          '': offer.length ? 'Pick one…' : '— this protocol offers none —',
+                          ...offer.reduce((a, t) => ({ ...a, [t.key]: t.t }), {}),
+                          __new: 'Write a new one…',
+                        }}
+                        onChange={(v) => {
+                          if (v === '__new') { setTaskPick(''); setNewTask(emptyCoachTask()); return; }
+                          setNewTask(null); setTaskPick(v);
+                        }}
+                        hint={offer.length
+                          ? 'The protocol opens some of its own tasks to you. Or write one that is not on it.'
+                          : 'This protocol opens none of its tasks to a coach. You can still write one.'} />
+                    </div>
+                    {!newTask && (
+                      <>
+                        <div style={{ width: 150 }}>
+                          <Field label="Until" value={taskUntil} placeholder="30 Sep 2026"
+                            onChange={setTaskUntil} />
+                        </div>
+                        <button className="btn btn-primary btn-sm" disabled={!taskPick}
+                          onClick={() => {
+                            const def = taskDefOf(taskPick);
+                            if (!def) return;
+                            commitTask({ taskKey: def.key, why: def.sub });
+                          }}>
+                          <Icon name="plus" size={12} /> Add
+                        </button>
+                      </>
+                    )}
                   </div>
-                  <button className="btn btn-primary btn-sm" disabled={!taskPick}
-                    onClick={() => {
-                      const def = TASK_LIBRARY.find((t) => t.key === taskPick);
-                      if (!def) return;
-                      setTasksAdded((xs) => [...xs, {
-                        taskKey: taskPick, why: def.sub,
-                        /* A date IS allowed here. The ban on time applies to a
-                           template, whose author has never met this patient. */
-                        until: null,
-                        /* The coach's NAME, because this is what the patient
-                           reads on their phone: "From Durga Coach". "you" is
-                           this panel's word for its own user. */
-                        by: COACH, at: new Date().toISOString(),
-                      }]);
-                      setTaskPick('');
-                    }}>
-                    <Icon name="plus" size={12} /> Add
-                  </button>
-                </div>
+
+                  {newTask && (
+                    <div className="item-edit split" style={{ marginTop: 10 }}>
+                      <div className="col">
+                        <div className="col-h">What {patient.name.split(' ')[0]} reads</div>
+                        <Field label="Title" value={newTask.t}
+                          placeholder="Take a 20 minute walk"
+                          onChange={(v) => setNewTask({ ...newTask, t: v, key: toKey(v) })} />
+                        <Field label="The line under it" value={newTask.sub}
+                          placeholder="20 minutes, after your evening meal"
+                          onChange={(v) => setNewTask({ ...newTask, sub: v })}
+                          hint="Say what to do. Never how it will feel." />
+                        <Field label="Icon" type="select" value={newTask.ic}
+                          options={TASK_ICONS}
+                          onChange={(v) => setNewTask({ ...newTask, ic: v })} />
+                      </div>
+
+                      <div className="col">
+                        <div className="col-h">How it is finished</div>
+                        <Field label="What they do" type="select" value={newTask.capture}
+                          options={TASK_CAPTURES.map((c) => c.id)}
+                          display={TASK_CAPTURES.reduce((a, c) => ({ ...a, [c.id]: c.label }), {})}
+                          onChange={(v) => setNewTask({ ...newTask, capture: v })} />
+                        {(newTask.capture === 'number' || newTask.capture === 'scale') && (
+                          <Field label="Unit" value={newTask.unit || ''} placeholder="kg"
+                            onChange={(v) => setNewTask({ ...newTask, unit: v })} />
+                        )}
+                        <Field label="Comes back" type="select" value={newTask.resets}
+                          options={TASK_RESETS.map((r) => r.id)}
+                          display={TASK_RESETS.reduce((a, r) => ({ ...a, [r.id]: r.label }), {})}
+                          onChange={(v) => setNewTask({ ...newTask, resets: v })} />
+                        <Field label="Until" value={taskUntil} placeholder="30 Sep 2026"
+                          onChange={setTaskUntil}
+                          hint="A date is fine here. You know this patient; a protocol never does." />
+                      </div>
+
+                      <div className="row" style={{ gridColumn: '1 / -1', gap: 8, flexWrap: 'wrap' }}>
+                        <button className="btn btn-primary" disabled={!newTask.t.trim()}
+                          onClick={() => commitTask({
+                            taskKey: newTask.key || toKey(newTask.t),
+                            t: newTask.t.trim(), sub: newTask.sub.trim(), ic: newTask.ic,
+                            capture: newTask.capture, resets: newTask.resets,
+                            ...(newTask.unit ? { unit: newTask.unit } : {}),
+                            why: newTask.sub.trim(),
+                          })}>
+                          <Icon name="plus" size={13} /> Add to their list
+                        </button>
+                        <button className="btn btn-ghost"
+                          onClick={() => { setNewTask(null); setTaskUntil(''); }}>Cancel</button>
+                        <span className="hint">
+                          It goes on {patient.name.split(' ')[0]}&rsquo;s list only. The protocol is
+                          not touched.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </>
               );
             })()}
 
@@ -1408,11 +1514,11 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
             <p style={{ margin: 0 }}>
               {tasksAdded.length > 0 && (
                 <>Added: {tasksAdded.map((a) =>
-                  TASK_LIBRARY.find((t) => t.key === a.taskKey)?.t || a.taskKey).join(' · ')}.{' '}</>
+                  a.t || taskDefOf(a.taskKey)?.t || a.taskKey).join(' \u00b7 ')}.{' '}</>
               )}
               {Object.entries(tasksOff).map(([key, off]) => (
                 <span key={key}>
-                  {TASK_LIBRARY.find((t) => t.key === key)?.t || key} switched off
+                  {taskDefOf(key)?.t || key} switched off
                   {/* The reason is a sentence somebody typed, so it may already
                       end in a full stop. Two of them reads as a typo. */}
                   {' — '}{off.why.replace(/\.+$/, '')}.{' '}

@@ -287,11 +287,13 @@ export const RR_PLAN = [
    forward and drives the big card at the top; a task only records something,
    so nothing here can unlock a step and a forgotten tick never blocks care.
 
-   AUTHORED IN THE CATALOGUE CMS, at /catalogue/protocols/tasks and
-   /catalogue/protocols/<id>/plan/tasks. This is the COMPILED copy of that
-   board, pasted in with the "Copy the compiled board" button. The two apps are
-   separate, with separate stores, holding different protocols, so there is no
-   id correspondence to automate and no pipe to pretend to.
+   AUTHORED IN THE CATALOGUE CMS, on the protocol itself, at
+   /catalogue/protocols/<id>/plan/tasks. Each task carries its own words there
+   too — there is no shared library, because a protocol's daily asks are part
+   of that protocol. This is the COMPILED copy, pasted in with the "Copy the
+   compiled board" button. The two apps are separate, with separate stores,
+   holding different protocols, so there is no id correspondence to automate
+   and no pipe to pretend to.
 
    WHAT THE COMPILE DOES: the CMS authors a gate as an OUTPUT some step
    produces — "a delivery from a medication step" — and it has to resolve that
@@ -304,74 +306,65 @@ export const RR_PLAN = [
    always used — symptoms, doses, meals, scan — so `pt.logs` and `pt.logAt`
    keep working, `onLog` needs no edit, and nobody's history is orphaned. */
 
-export const TASK_LIBRARY = [
-  { key: 'log_symptoms', logKey: 'symptoms', t: 'Log how you feel',
-    sub: 'Pain and capacity, 0 to 10', ic: 'activity',
+export const RR_TASKS = [
+  { key: 'log_symptoms', logKey: 'symptoms', sortOrder: 0,
+    t: 'Log how you feel', sub: 'Pain and capacity, 0 to 10', ic: 'activity',
     capture: 'scale', unit: 'score', min: 0, max: 10, resets: 'daily',
     signalKey: 'pain_score', coachMayRecommend: true, isActive: true },
 
-  { key: 'take_medication', logKey: 'doses', t: 'Take your medication',
-    sub: 'Tick it once you have taken today\u2019s dose', ic: 'plus',
+  { key: 'take_medication', logKey: 'doses', sortOrder: 1,
+    t: 'Take your medication', sub: 'Tick it once you have taken today\u2019s dose', ic: 'plus',
     capture: 'tick', resets: 'daily',
-    signalKey: 'medication_taken', coachMayRecommend: false, isActive: true },
+    signalKey: 'medication_taken', coachMayRecommend: false, isActive: true,
+    showsAfter: { stepId: 'p6', titleEn: 'Month 1 dispatched' },
+    hidesAfter: 'protocol_ends' },
 
-  { key: 'log_meals', logKey: 'meals', t: 'Log your meals',
-    sub: 'Roughly what it was', ic: 'flask',
+  { key: 'log_meals', logKey: 'meals', sortOrder: 2,
+    t: 'Log your meals', sub: 'Roughly what it was', ic: 'flask',
     capture: 'entry', resets: 'daily',
-    signalKey: 'meals_logged', coachMayRecommend: false, isActive: true },
+    signalKey: 'meals_logged', coachMayRecommend: false, isActive: true,
+    showsAfter: { stepId: 'p2', titleEn: 'Blood sample collected' } },
 
-  { key: 'record_weight', t: 'Record your weight',
-    sub: 'A quick update goes a long way', ic: 'scale',
+  { key: 'record_weight', sortOrder: 3,
+    t: 'Record your weight', sub: 'A quick update goes a long way', ic: 'scale',
     capture: 'number', unit: 'kg', min: 30, max: 300, resets: 'daily',
     signalKey: 'weight_kg', coachMayRecommend: false, isActive: true },
 
-  { key: 'fast_before_draw', t: 'Fast for 10 hours',
-    sub: 'Water is fine. No food before the draw.', ic: 'lock',
-    capture: 'tick', resets: 'never',
-    coachMayRecommend: false, isActive: true },
+  /* The only task that goes away, and the case a list of permanent tasks never
+     exercises: it opens on the booking and shuts once the blood is drawn. */
+  { key: 'fast_before_draw', sortOrder: 4,
+    t: 'Fast for 10 hours', sub: 'Water is fine. No food before the draw.', ic: 'lock',
+    capture: 'tick', resets: 'never', coachMayRecommend: false, isActive: true,
+    showsAfter: { stepId: 'p1', titleEn: 'Book nurse visit' },
+    hidesAfter: { stepId: 'p2', titleEn: 'Blood sample collected' } },
 
   /* The one task the build cannot deliver. It says so rather than pretending,
      and `blockedWhy` is why it renders disabled instead of being left out: an
      absent row reads as a missing feature. */
-  { key: 'heart_scan', logKey: 'scan', t: 'Heart scan',
-    sub: 'A camera reading of your pulse', ic: 'heart',
+  { key: 'heart_scan', logKey: 'scan', sortOrder: 5,
+    t: 'Heart scan', sub: 'A camera reading of your pulse', ic: 'heart',
     capture: 'entry', resets: 'daily',
     blockedWhy: 'Needs the camera build',
     coachMayRecommend: false, isActive: true },
-
-  /* Coach-only. Neither is on any board, so a patient sees one only when a
-     coach puts it there. */
-  { key: 'walk_20min', t: 'Take a 20 minute walk',
-    sub: 'Stay active, feel better', ic: 'route',
-    capture: 'tick', resets: 'daily',
-    coachMayRecommend: true, isActive: true },
-
-  { key: 'water_2l', t: 'Drink 2 litres of water',
-    sub: 'Little and often is easier', ic: 'flask',
-    capture: 'number', unit: 'L', min: 0, max: 6, resets: 'daily',
-    signalKey: 'water_l', coachMayRecommend: true, isActive: true },
 ];
 
-/* Recover and Rebuild's board, compiled against RR_PLAN's own step ids.
-   `showsAfter` and `hidesAfter` each name the step that satisfies the gate, or
-   'protocol_ends', or nothing at all. */
-export const RR_TASKS = [
-  { taskKey: 'log_symptoms', sortOrder: 0 },
-  { taskKey: 'take_medication', sortOrder: 1,
-    showsAfter: { stepId: 'p6', titleEn: 'Month 1 dispatched' },
-    hidesAfter: 'protocol_ends' },
-  { taskKey: 'log_meals', sortOrder: 2,
-    showsAfter: { stepId: 'p2', titleEn: 'Blood sample collected' } },
-  { taskKey: 'record_weight', sortOrder: 3 },
-  /* The only task that goes away, and the case a list of permanent tasks never
-     exercises: it opens on the booking and shuts once the blood is drawn. */
-  { taskKey: 'fast_before_draw', sortOrder: 4,
-    showsAfter: { stepId: 'p1', titleEn: 'Book nurse visit' },
-    hidesAfter: { stepId: 'p2', titleEn: 'Blood sample collected' } },
-  { taskKey: 'heart_scan', sortOrder: 5 },
-];
+export const taskDefOf = (key) => RR_TASKS.find((t) => t.key === key) || null;
 
-export const taskDefOf = (key) => TASK_LIBRARY.find((t) => t.key === key) || null;
+/* The words a coach picks from when authoring a task for one patient. Kept
+   beside the board so the panel and the catalogue agree on the vocabulary. */
+export const TASK_CAPTURES = [
+  { id: 'tick', label: 'Ticks it off' },
+  { id: 'number', label: 'Records a number' },
+  { id: 'entry', label: 'Adds entries' },
+  { id: 'scale', label: 'Scores it' },
+];
+export const TASK_RESETS = [
+  { id: 'daily', label: 'Every day' },
+  { id: 'weekly', label: 'Every week' },
+  { id: 'never', label: 'Once' },
+];
+export const TASK_ICONS = ['activity', 'plus', 'flask', 'scale', 'heart', 'route', 'lock', 'box'];
+
 
 /* ── the triage chat ──
    Starts as a DRAFT with two questions so the builder is not an empty page.
