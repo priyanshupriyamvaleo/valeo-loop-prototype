@@ -176,7 +176,7 @@ export function ProtocolCard({ plan, done, onOpen, onChat, onTimeline, title, we
  * the body will do, and the patient can report both the minute they have paid.
  * So the logbook is full on day zero and Week 12 has something to read against.
  */
-export function JourneyDetail({ plan, done, checkins, tasks = [], target, booked, title,
+export function JourneyDetail({ plan, done, checkins, tasks = [], metrics = [], target, booked, title,
                                medicines, serviceFor, weeks = 12, paused, onBack, onOpen, onLog, onChat, onProduct, region = 'uae', place, owedFor, onPay }) {
   const front = nextItem(plan, done);
   const p = progress(plan, done);
@@ -399,6 +399,26 @@ export function JourneyDetail({ plan, done, checkins, tasks = [], target, booked
   const actionable = shown.filter((t) => t.due && !t.blockedWhy);
   const ticked = actionable.filter((t) => t.doneNow).length;
 
+  /* ── THE METRIC ROW ──
+     Three tiles, authored in the catalogue and filled from this patient. It
+     sits directly above the tasks because that is where the design has it, and
+     because the figures are the reason the tasks are worth doing. */
+  const metricRow = metrics.length > 0 && (
+    <div className="mrow">
+      {metrics.map((m) => (
+        <div className="mtile" key={m.source}>
+          <span className="mk">{m.label}</span>
+          <span className="mv">
+            <Icon name={m.ic} size={13} />
+            <b className={m.link ? 'link' : ''}>{m.v}</b>
+            {m.link && <Icon name="chev" size={11} />}
+          </span>
+          <span className="ms">{m.sub}</span>
+        </div>
+      ))}
+    </div>
+  );
+
   const todayTasks = (
     <div className="sect">
       <div className="sect-h">
@@ -490,11 +510,13 @@ export function JourneyDetail({ plan, done, checkins, tasks = [], target, booked
               </div>
             </div>
             {logbook}
+            {metricRow}
             {todayTasks}
           </>
-        ) : front ? <>{next}{logbook}{todayTasks}</> : (
+        ) : front ? <>{next}{logbook}{metricRow}{todayTasks}</> : (
           <>
             {logbook}
+            {metricRow}
             {todayTasks}
             <div className="sect">
               <div className="sect-h"><span>What is left</span></div>

@@ -9,7 +9,7 @@ import Weekly from './screens/Weekly';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor,
          GATES, SHARED, protocolFor, triageFor, membersOf, regionOf } from '../shared/bus';
 import { priceOf } from '../p2/lib/seed';
-import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy, resolveTasks, taskGateGaps, journeyFor, weekOf, progress } from './lib/journey';
+import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy, resolveTasks, taskGateGaps, journeyFor, weekOf, progress, resolveMetrics } from './lib/journey';
 
 
 /*
@@ -42,6 +42,10 @@ const INIT = {
   done: [],
   checkins: [],        /* pain and capacity, self-reported */
   target: null,        /* where the patient says they want to be by Week 12 */
+  /* A FIXTURE. The app counts a number task but does not yet capture the
+     figure, so the weight tile reads a seeded value the way `checkins` and
+     the fixture logbooks do. A real reading needs the ops backend. */
+  weightKg: 78, weightStartKg: 84.5, weightSince: 'Since 1 Mar 2026',
   logs: {},            /* how many times each tile has been logged */
   logAt: {},           /* and the day each was last logged, which is what tells
                           a clinician that somebody has gone quiet */
@@ -137,6 +141,9 @@ export default function App() {
   /* The weekly journey, authored in the catalogue in three phases. Which one
      a patient reads is decided by the week and by nothing else. */
   const journey = journeyFor(studio, scope);
+  /* The row of tiles above the tasks. The catalogue decides which and what
+     they are called; every value is read from this patient. */
+  const metrics = theirs ? resolveMetrics(studio, scope, pt, plan) : [];
   const weeks = weeksOf(studio, scope);
   const paused = !!pausedBy(studio, pt);
   const item = nextItem(plan, pt.done);
@@ -403,7 +410,7 @@ export default function App() {
         serviceFor={(it) => serviceForStep(studio, it, pt)}
         onProduct={(m) => set({ product: m, stage: 'product' })}
         checkins={pt.checkins || []} booked={pt.booked || {}}
-        tasks={tasks} target={pt.target}
+        tasks={tasks} metrics={metrics} target={pt.target}
         onBack={() => setScreen('home')}
         onChat={() => {}}
         onOpen={(it, mode) => set({ acting: it.id, actMode: mode || null, stage: 'act' })}

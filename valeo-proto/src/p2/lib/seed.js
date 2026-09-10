@@ -365,6 +365,21 @@ export const TASK_RESETS = [
 ];
 export const TASK_ICONS = ['activity', 'plus', 'flask', 'scale', 'heart', 'route', 'lock', 'box'];
 
+/* ── THE METRIC ROW ──
+   The three tiles above the task list. Authored in the catalogue per protocol:
+   WHICH tiles, in what order, and what they are called.
+
+   THE VALUE IS NEVER AUTHORED. "78 kg" is a reading and "25%" is counted off
+   the steps, so the source names a place this app already knows how to read.
+   That is also why the list is closed: a tile whose source nothing fills would
+   be a tile with nothing behind it. */
+
+export const RR_METRICS = [
+  { source: 'weight', sortOrder: 0, label: 'Weight' },
+  { source: 'protocol_progress', sortOrder: 1, label: 'Protocols progress' },
+  { source: 'latest_reports', sortOrder: 2, label: 'Latest Reports' },
+];
+
 /* ── THE WEEKLY JOURNEY ──
    What a patient opens from Today, week after week. NOT the plan page: that
    one sells the protocol before anybody buys, and this one tells somebody

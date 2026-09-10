@@ -1,5 +1,5 @@
 import { publishedFor, GATES } from '../../shared/bus';
-import { findService, priceOf, RR_TASKS, taskDefOf, RR_JOURNEY } from '../../p2/lib/seed';
+import { findService, priceOf, RR_TASKS, taskDefOf, RR_JOURNEY, RR_METRICS } from '../../p2/lib/seed';
 
 /* THE ONE PATIENT THIS APP IS.
    Consult records are keyed by patient in the Studio. The phone is Ahmad, so it
@@ -413,6 +413,82 @@ export function taskState(r) {
 /* "A, B and C". Joining with ' and ' throughout gave "A and B and C and D". */
 export const listOf = (names) => (names.length < 2 ? (names[0] || '')
   : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
+
+/* ── THE METRIC ROW ──
+   Three tiles above the task list, authored in the catalogue. The catalogue
+   sets WHICH and WHAT THEY ARE CALLED; every value is read from this patient.
+
+   A SOURCE THIS BUILD CANNOT FILL SAYS SO. It returns a dash and a reason
+   rather than a number, for the same reason the heart-scan task does: a tile
+   that invented a figure would be worse than one that admits it has none. */
+
+export function metricsFor(studio, scope) {
+  const pub = publishedFor(studio, scope, 'metrics');
+  return (pub && pub.data) || RR_METRICS;
+}
+
+export function resolveMetrics(studio, scope, pt, plan) {
+  const done = (pt && pt.done) || [];
+  const logs = (pt && pt.logs) || {};
+  const logAt = (pt && pt.logAt) || {};
+  const day = (pt && pt.day) || 0;
+  const p = progress(plan, done);
+  const weeks = (RR_JOURNEY && RR_JOURNEY.weeks) || 12;
+
+  const value = (source) => {
+    if (source === 'weight') {
+      /* A FIXTURE, and labelled one in INIT. The patient app counts a number
+         task but does not yet capture the figure, so the reading is seeded the
+         way `checkins` and the fixture logbooks are. */
+      const kg = pt && pt.weightKg;
+      return kg
+        ? { v: `${kg}Kg`, sub: (pt && pt.weightSince) || 'Since you started', ic: 'scale' }
+        : { v: '\u2014', sub: 'Not logged yet', ic: 'scale' };
+    }
+    if (source === 'weight_change') {
+      const from = pt && pt.weightStartKg;
+      const now = pt && pt.weightKg;
+      if (!from || !now) return { v: '\u2014', sub: 'Needs two readings', ic: 'scale' };
+      const d = Math.round((now - from) * 10) / 10;
+      return { v: `${d > 0 ? '+' : ''}${d}Kg`, sub: 'Since you started', ic: 'scale' };
+    }
+    if (source === 'protocol_progress') {
+      return { v: `${p.pct}%`, sub: `Week ${weekOf(plan, done, weeks)} of ${weeks}`, ic: 'activity' };
+    }
+    if (source === 'latest_reports') {
+      const ready = done.includes('p3');
+      return ready
+        ? { v: 'View', sub: 'Ready to read', ic: 'clipboard', link: true }
+        : { v: '\u2014', sub: 'After your blood test', ic: 'clipboard' };
+    }
+    if (source === 'next_visit') {
+      const next = nextItem(plan, done);
+      const slot = next && pt && pt.booked && pt.booked[next.id];
+      return slot
+        ? { v: slot, sub: next.t, ic: 'clipboard' }
+        : { v: '\u2014', sub: next ? next.t : 'Nothing booked', ic: 'clipboard' };
+    }
+    if (source === 'medication_taken') {
+      const n = logs.doses || 0;
+      return { v: String(n), sub: n ? 'Doses ticked' : 'None yet', ic: 'plus' };
+    }
+    if (source === 'days_logged') {
+      const days = new Set(Object.values(logAt).filter((x) => x != null));
+      return { v: String(days.size), sub: `Out of ${day + 1}`, ic: 'check' };
+    }
+    if (source === 'task_streak') {
+      /* A real streak needs a log PER DAY, and `logAt` keeps only the last one.
+         Saying so beats a number nothing supports. */
+      return { v: '\u2014', sub: 'Needs per-day logs', ic: 'bolt' };
+    }
+    return { v: '\u2014', sub: '', ic: 'box' };
+  };
+
+  return metricsFor(studio, scope)
+    .slice()
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((m) => ({ source: m.source, label: m.label, ...value(m.source) }));
+}
 
 /* ── THE WEEKLY JOURNEY ──
    Three phases, authored in the catalogue per protocol and compiled here. The

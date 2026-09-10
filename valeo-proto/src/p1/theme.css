@@ -588,3 +588,19 @@ button { font:inherit; color:inherit; cursor:pointer; border:none; background:no
 .row2 .grow { flex:1; }
 .btn-ghost2 { flex:none; border:1.5px solid var(--line-2); border-radius:12px; padding:0 16px;
               font-size:13px; font-weight:700; color:var(--ink); background:#fff; }
+
+/* ── THE METRIC ROW ──
+   Three tiles on one cream card, as the design has it: the label, the figure,
+   and the line that gives the figure its meaning. */
+.mrow { display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin-top:12px;
+        background:var(--gold-soft); border:1px solid var(--line); border-radius:15px;
+        padding:13px 4px; }
+.mtile { padding:0 11px; border-left:1px solid rgba(138,100,0,.16); min-width:0; }
+.mtile:first-child { border-left:none; }
+.mk { display:block; font-size:10.5px; font-weight:800; color:var(--gold-deep);
+      letter-spacing:.01em; }
+.mv { display:flex; align-items:center; gap:4px; margin-top:5px; color:var(--gold-deep); }
+.mv b { font-family:var(--f-head); font-size:17px; font-weight:800; color:var(--ink);
+        letter-spacing:-.02em; }
+.mv b.link { color:#2C4A6E; }
+.ms { display:block; font-size:10px; color:var(--ink-3); margin-top:3px; line-height:1.35; }
