@@ -1,5 +1,5 @@
 import { publishedFor, GATES } from '../../shared/bus';
-import { findService, priceOf, RR_TASKS, taskDefOf } from '../../p2/lib/seed';
+import { findService, priceOf, RR_TASKS, taskDefOf, RR_JOURNEY } from '../../p2/lib/seed';
 
 /* THE ONE PATIENT THIS APP IS.
    Consult records are keyed by patient in the Studio. The phone is Ahmad, so it
@@ -413,6 +413,23 @@ export function taskState(r) {
 /* "A, B and C". Joining with ' and ' throughout gave "A and B and C and D". */
 export const listOf = (names) => (names.length < 2 ? (names[0] || '')
   : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
+
+/* ── THE WEEKLY JOURNEY ──
+   Three phases, authored in the catalogue per protocol and compiled here. The
+   only thing it is keyed to is HOW LONG AGO SOMEBODY BOUGHT, which is known
+   exactly. It never claims a step happens in a week. */
+
+export function journeyFor(studio, scope) {
+  const pub = publishedFor(studio, scope, 'journey');
+  return (pub && pub.data) || RR_JOURNEY;
+}
+
+/* Which phase a patient in this week reads. Past the end they stay on the last
+   one, because a finished patient still opens the page. */
+export function phaseForWeek(journey, week) {
+  const found = journey.phases.find((p) => week >= p.from && week <= p.to);
+  return found || journey.phases[journey.phases.length - 1];
+}
 
 /* A gate naming a step this plan does not hold. It is the one thing a pasted
    board can get wrong, and a wrong id would otherwise read as a task that

@@ -365,6 +365,152 @@ export const TASK_RESETS = [
 ];
 export const TASK_ICONS = ['activity', 'plus', 'flask', 'scale', 'heart', 'route', 'lock', 'box'];
 
+/* ── THE WEEKLY JOURNEY ──
+   What a patient opens from Today, week after week. NOT the plan page: that
+   one sells the protocol before anybody buys, and this one tells somebody
+   already on it what their body is doing.
+
+   AUTHORED IN THE CATALOGUE CMS, per protocol, at
+   /catalogue/protocols/<id>/plan/pages. Three phases with the same five
+   sections and different words. This is the compiled copy.
+
+   THE WEEKS ARE REAL HERE and nowhere near a step. A step's timing is decided
+   by a lab or a courier, so it names no week. How long ago somebody bought is
+   known exactly, and that is the only thing this page is keyed to. */
+
+const notice = (icon, title, text) => ({ icon, title, text });
+const ahead = (title, text) => ({ title, text });
+
+export const RR_JOURNEY = {
+  weeks: 12,
+  breaks: [4, 8],
+  phases: [
+    {
+      phase: 1, from: 1, to: 4, label: 'Week 1-4',
+      blocks: [
+        { type: 'PHASE_HERO', rank: 0,
+          heading: 'Your journey begins.',
+          blurb: 'During these first few weeks, your body is adjusting to the medication and new '
+            + "habits. Changes may feel gradual \u2014 and that's completely normal. You're laying "
+            + 'the foundation for long-term success.' },
+        { type: 'YOU_MAY_NOTICE', rank: 1,
+          heading: 'You may notice',
+          blurb: 'These are common in the early stages and usually settle as your body adapts.',
+          items: [
+            notice('appetite', 'Changes in appetite', 'You may feel less hungry or fuller sooner.'),
+            notice('fatigue', 'Mild fatigue', 'Your body is adjusting. Rest helps.'),
+            notice('scale', 'Weight may vary', "It's normal for your weight to go up or down initially."),
+            notice('digestion', 'Digestive changes', 'You may experience constipation or mild nausea.'),
+          ] },
+        { type: 'FOCUS_THIS_WEEK', rank: 2,
+          heading: 'Focus this week',
+          blurb: 'These small steps help you build consistency and set yourself up for success.',
+          items: [
+            { text: 'Take your medication as prescribed' },
+            { text: 'Stay hydrated (2\u20133L water)' },
+            { text: 'Log your meals in the app' },
+            { text: 'Complete your daily walk' },
+            { text: 'Get good sleep' },
+          ] },
+        { type: 'COMING_NEXT', rank: 3,
+          heading: 'Coming next',
+          blurb: "Here's what to expect in the next few weeks.",
+          items: [
+            ahead('Continue adaptation', 'Your body keeps adjusting to the medication.'),
+            ahead('First review', "We'll check in on your progress and how you're feeling."),
+            ahead('Building momentum', 'Most patients start seeing more consistent changes from week 5 onwards.'),
+          ] },
+        { type: 'CARE_TEAM', rank: 4,
+          heading: 'Message your care team',
+          blurb: 'Have questions or need support? Our team is here for you.',
+          ctaLabel: 'Message Now' },
+      ],
+    },
+    {
+      phase: 2, from: 5, to: 8, label: 'Week 5-8',
+      blocks: [
+        { type: 'PHASE_HERO', rank: 0,
+          heading: 'Your habits are making a difference.',
+          blurb: 'In this phase, your body is becoming more responsive to the medication and '
+            + 'lifestyle changes. You may start to notice more consistent progress. Keep going '
+            + "\u2014 you're right on track." },
+        { type: 'YOU_MAY_NOTICE', rank: 1,
+          heading: 'You may notice',
+          blurb: 'These are common in the early stages and usually settle as your body adapts.',
+          items: [
+            notice('appetite', 'Changes in appetite', 'You may feel less hungry or fuller sooner.'),
+            notice('fatigue', 'Mild fatigue', 'Your body is adjusting. Rest helps.'),
+            notice('scale', 'Weight may vary', "It's normal for your weight to go up or down initially."),
+            notice('digestion', 'Digestive changes', 'You may experience constipation or mild nausea.'),
+          ] },
+        { type: 'FOCUS_THIS_WEEK', rank: 2,
+          heading: 'Focus this week',
+          blurb: 'These small steps help you build consistency and set yourself up for success.',
+          items: [
+            { text: 'Keep taking your medication on time' },
+            { text: 'Stay hydrated (2\u20133L water)' },
+            { text: 'Keep logging your meals' },
+            { text: 'Add a little more to your daily walk' },
+            { text: 'Protect your sleep' },
+          ] },
+        { type: 'COMING_NEXT', rank: 3,
+          heading: 'Coming next',
+          blurb: "Here's what to expect in the next few weeks.",
+          items: [
+            ahead('Mid-point review', 'A doctor reads your progress and adjusts if it is needed.'),
+            ahead('Steadier weeks', 'Side effects usually settle further from here.'),
+            ahead('Consolidation', 'The final phase is about making the change stick.'),
+          ] },
+        { type: 'CARE_TEAM', rank: 4,
+          heading: 'Message your care team',
+          blurb: 'Have questions or need support? Our team is here for you.',
+          ctaLabel: 'Message Now' },
+      ],
+    },
+    {
+      phase: 3, from: 9, to: 12, label: 'Week 9-12',
+      blocks: [
+        { type: 'PHASE_HERO', rank: 0,
+          heading: "You've made incredible progress.",
+          blurb: 'In this final phase, we focus on maintaining your results, strengthening healthy '
+            + 'habits and setting you up for long-term success. Your body is now more responsive, '
+            + "and the changes you've made are becoming your new normal." },
+        { type: 'YOU_MAY_NOTICE', rank: 1,
+          heading: 'You may notice',
+          blurb: 'In this stage, many people experience continued improvements and greater stability.',
+          items: [
+            notice('energy', 'Consistent energy', 'You may feel energetic throughout the day.'),
+            notice('appetite', 'Improved appetite', 'Hunger and cravings often more manageable.'),
+            notice('scale', 'Steady weight loss', 'Most patients see continued, steady progress in this phase.'),
+            notice('wellbeing', 'Better wellbeing', 'Improved sleep, mood and confidence.'),
+          ] },
+        { type: 'FOCUS_THIS_WEEK', rank: 2,
+          heading: 'Focus this week',
+          blurb: 'These small steps help you build consistency and set yourself up for success.',
+          items: [
+            { text: 'Keep your medication routine' },
+            { text: 'Hold your hydration' },
+            { text: 'Keep logging your meals' },
+            { text: 'Build on your daily walk' },
+            { text: 'Plan how you will keep this going' },
+          ] },
+        { type: 'COMING_NEXT', rank: 3,
+          heading: 'Coming next',
+          blurb: "Here's what to expect in the next few weeks.",
+          items: [
+            ahead('Repeat blood panel', 'The same panel as your baseline, read against it.'),
+            ahead('Physician reassessment', 'Your doctor writes the maintenance plan.'),
+            ahead('What happens after', 'You decide with your care team whether to continue.'),
+          ] },
+        { type: 'CARE_TEAM', rank: 4,
+          heading: 'Message your care team',
+          blurb: 'Have questions or need support? Our team is here for you.',
+          ctaLabel: 'Message Now' },
+      ],
+    },
+  ],
+};
+
 
 /* ── the triage chat ──
    Starts as a DRAFT with two questions so the builder is not an empty page.

@@ -502,3 +502,89 @@ button { font:inherit; color:inherit; cursor:pointer; border:none; background:no
 .owed-r b { font-family:var(--f-head); font-size:19px; font-weight:700; }
 .owed .cta { width:100%; }
 .owed-n { display:block; margin-top:8px; font-size:10.5px; color:var(--ink-3); line-height:1.5; }
+
+/* ── THE WEEKLY JOURNEY ──
+   Its own palette, and deliberately so. The Today screen is cream and gold
+   because it is the shop front; this is white with green and blue panels
+   because it is clinical reading — what the body is doing, what to concentrate
+   on, what is coming. Somebody flicking between them should never be unsure
+   which one they are on. */
+.wj-bar { display:flex; align-items:center; gap:12px; padding:14px 16px;
+          background:#fff; border-bottom:1px solid #EEF1F4; flex:none; }
+.wj-bar b { font-family:var(--f-head); font-size:16px; font-weight:700; letter-spacing:-.01em; }
+.wj-back { display:grid; place-items:center; width:26px; height:26px; color:var(--ink); }
+.wj-scroll { flex:1; overflow-y:auto; background:#F7F9FA; padding:12px 13px 26px; }
+.wj-scroll::-webkit-scrollbar { display:none; }
+
+.wj-prog { display:flex; align-items:center; gap:9px; background:#fff; border:1px solid #EDF0F3;
+           border-radius:12px; padding:11px 13px; margin-bottom:12px; }
+.wj-prog b { font-family:var(--f-head); font-size:11.5px; font-weight:700; white-space:nowrap; }
+.wj-prog em { font-style:normal; font-size:11px; font-weight:700; color:var(--ink-2);
+              margin-left:auto; white-space:nowrap; }
+.wj-track { display:flex; gap:3px; flex:1; min-width:0; }
+.wj-track i { flex:1; height:7px; border-radius:4px; background:#E8ECEF; }
+.wj-track i.on { background:var(--gold); }
+
+/* the phase card */
+.wj-hero { position:relative; overflow:hidden; border-radius:16px; padding:15px 16px 18px;
+           background:linear-gradient(135deg,#E8F5E4,#F2FAF0 62%,#FFFFFF); margin-bottom:-14px; }
+.wj-chip { display:inline-flex; align-items:center; gap:5px; background:#fff; border-radius:999px;
+           padding:4px 10px; font-size:11px; font-weight:700; color:#1F7A4D; margin-bottom:9px; }
+.wj-hero h3 { font-family:var(--f-head); font-size:17px; font-weight:700; color:#22A05B;
+              letter-spacing:-.015em; }
+.wj-hero p { font-size:11.5px; line-height:1.55; color:var(--ink-2); margin-top:6px;
+             max-width:74%; }
+.wj-leaf { position:absolute; right:-6px; bottom:-4px; width:96px; height:96px;
+           background:radial-gradient(circle at 35% 35%, #8FD69F, #4FAF75 55%, transparent 70%);
+           opacity:.5; border-radius:50%; }
+
+/* the white card under it */
+.wj-card { background:#fff; border:1px solid #EDF0F3; border-radius:16px; padding:16px;
+           position:relative; }
+.wj-card h4, .wj-pane h4 { font-family:var(--f-head); font-size:15.5px; font-weight:700;
+                            color:#13293F; letter-spacing:-.012em; }
+.wj-sub { font-size:11.5px; line-height:1.5; color:var(--ink-2); margin-top:4px; }
+.wj-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px 11px; margin-top:13px; }
+.wj-note { display:flex; gap:8px; align-items:flex-start; }
+.wj-note b { display:block; font-size:12px; font-weight:700; color:#13293F; line-height:1.3; }
+.wj-note span { display:block; font-size:10.5px; line-height:1.4; color:var(--ink-2); margin-top:2px; }
+.wj-ic { flex:none; width:26px; height:26px; border-radius:8px; display:grid; place-items:center; }
+.wj-ic.green { background:#E7F6EC; color:#1F8A4D; }
+.wj-ic.violet { background:#EFEBFB; color:#6B4FD8; }
+.wj-ic.blue { background:#E8F1FC; color:#2C6FBF; }
+.wj-ic.red { background:#FCECE9; color:#C0483A; }
+.wj-ic.gold { background:#FFF3D0; color:#8A6400; }
+
+/* focus and coming next, side by side as designed */
+.wj-pair { display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-top:12px; align-items:start; }
+@media (max-width: 380px) { .wj-pair { grid-template-columns:1fr; } }
+.wj-pane { border-radius:16px; padding:15px; }
+.wj-pane.green { background:#EFF8F0; }
+.wj-pane.blue { background:#EDF3FB; }
+.wj-ticks { list-style:none; padding:0; margin:12px 0 0; display:grid; gap:9px; }
+.wj-ticks li { display:flex; gap:8px; align-items:flex-start; font-size:11.5px; font-weight:700;
+               color:#13293F; line-height:1.35; }
+.wj-tick { flex:none; width:16px; height:16px; border-radius:50%; background:#22A05B; color:#fff;
+           display:grid; place-items:center; margin-top:1px; }
+.wj-steps { list-style:none; padding:0; margin:12px 0 0; display:grid; gap:11px; }
+.wj-steps li { display:flex; gap:8px; align-items:flex-start; }
+.wj-n { flex:none; width:18px; height:18px; border-radius:50%; background:#2C6FBF; color:#fff;
+        display:grid; place-items:center; font-size:10px; font-weight:800; margin-top:1px; }
+.wj-steps b { display:block; font-size:11.5px; font-weight:700; color:#13293F; line-height:1.3; }
+.wj-steps span { display:block; font-size:10.5px; line-height:1.4; color:var(--ink-2); margin-top:2px; }
+
+.wj-care { display:flex; align-items:center; gap:11px; background:#fff; border:1px solid #EDF0F3;
+           border-radius:16px; padding:13px 14px; margin-top:12px; }
+.wj-av { flex:none; width:38px; height:38px; border-radius:50%;
+         background:linear-gradient(160deg,#D9E3EE,#B9C8D8); }
+.wj-care-b { flex:1; min-width:0; }
+.wj-care-b b { display:block; font-family:var(--f-head); font-size:13px; font-weight:700; }
+.wj-care-b span { display:block; font-size:10.5px; line-height:1.4; color:var(--ink-2); margin-top:2px; }
+.wj-btn { flex:none; border:1.5px solid #2C4A6E; border-radius:10px; padding:9px 13px;
+          font-size:11.5px; font-weight:700; color:#2C4A6E; background:#fff; }
+
+/* Timeline beside the action on the protocol card. */
+.row2 { display:flex; gap:8px; align-items:stretch; }
+.row2 .grow { flex:1; }
+.btn-ghost2 { flex:none; border:1.5px solid var(--line-2); border-radius:12px; padding:0 16px;
+              font-size:13px; font-weight:700; color:var(--ink); background:#fff; }

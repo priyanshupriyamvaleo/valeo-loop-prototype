@@ -5,10 +5,11 @@ import Home from './screens/Home';
 import { Gate, Onboarding, Triage, PDP, Cart, Confirm } from './screens/Flow';
 import { Schedule, Status, CheckIn, Report, Join, ProductPage } from './screens/Actions';
 import { ProtocolCard, JourneyDetail } from './screens/Journey';
+import Weekly from './screens/Weekly';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor,
          GATES, SHARED, protocolFor, triageFor, membersOf, regionOf } from '../shared/bus';
 import { priceOf } from '../p2/lib/seed';
-import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy, resolveTasks, taskGateGaps } from './lib/journey';
+import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy, resolveTasks, taskGateGaps, journeyFor, weekOf, progress } from './lib/journey';
 
 
 /*
@@ -133,6 +134,9 @@ export default function App() {
      progress. The screen below is handed the answer and stays dumb, the way
      it is handed `plan` and `medicines`. */
   const tasks = theirs ? resolveTasks(studio, scope, pt) : [];
+  /* The weekly journey, authored in the catalogue in three phases. Which one
+     a patient reads is decided by the week and by nothing else. */
+  const journey = journeyFor(studio, scope);
   const weeks = weeksOf(studio, scope);
   const paused = !!pausedBy(studio, pt);
   const item = nextItem(plan, pt.done);
@@ -259,7 +263,8 @@ export default function App() {
                only when somebody said this was for a family member. */
             members={members} viewing={viewing} theirs={theirs}
             onMember={(id) => set({ member: id })}
-            onChat={() => {}} onOpen={() => setScreen('detail')} />
+            onChat={() => {}} onOpen={() => setScreen('detail')}
+            onTimeline={() => setScreen('weekly')} />
         }
       />
     );
@@ -371,6 +376,16 @@ export default function App() {
           logAt: { ...prev.logAt, symptoms: prev.day || 0 },
           stage: 'detail',
         }))} />
+    );
+  } else if (screen === 'weekly') {
+    /* THE WEEKLY JOURNEY. Reached from Timeline on the card and from the
+       progress row, which is where the design puts it. */
+    view = (
+      <Weekly journey={journey} weeks={journey.weeks}
+        week={weekOf(plan, pt.done, journey.weeks)}
+        done={progress(plan, pt.done).done} total={progress(plan, pt.done).total}
+        onBack={() => setScreen('home')}
+        onChat={() => {}} />
     );
   } else if (screen === 'detail') {
     view = (

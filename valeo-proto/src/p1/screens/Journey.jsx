@@ -13,7 +13,7 @@ import { money } from '../../shared/bus';
  * demonstrate.
  */
 
-export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12,
+export function ProtocolCard({ plan, done, onOpen, onChat, onTimeline, title, weeks = 12,
                                members = [], viewing = 'self', theirs = true, onMember }) {
   const item = nextItem(plan, done);
   const p = progress(plan, done);
@@ -72,16 +72,24 @@ export function ProtocolCard({ plan, done, onOpen, onChat, title, weeks = 12,
           </div>
           <div className="big">{item.card || item.t}</div>
           <div className="sm" style={{ marginTop: 3 }}>{item.sub}</div>
-          {item.action && (
-            <button className="btn-dark" style={{ marginTop: 11 }} onClick={onOpen}>
-              {item.action.label} <Icon name="chev" size={12} />
-            </button>
-          )}
-          {!item.action && (
-            <button className="btn-gold" style={{ marginTop: 11 }} onClick={onOpen}>
-              View details <Icon name="chev" size={12} />
-            </button>
-          )}
+          {/* TIMELINE SITS BESIDE THE ACTION, as the design has it. The action
+              is the one thing to do now; Timeline is the whole month explained,
+              and a patient reaches for it when they want the context rather
+              than the next tap. */}
+          <div className="row2" style={{ marginTop: 11 }}>
+            {onTimeline && (
+              <button className="btn-ghost2" onClick={onTimeline}>Timeline</button>
+            )}
+            {item.action ? (
+              <button className="btn-dark grow" onClick={onOpen}>
+                {item.action.label} <Icon name="chev" size={12} />
+              </button>
+            ) : (
+              <button className="btn-gold grow" onClick={onOpen}>
+                View details <Icon name="chev" size={12} />
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="mod">
