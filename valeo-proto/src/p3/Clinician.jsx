@@ -851,6 +851,21 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
   const consult = state.consults?.[patient.id] || {};
   const [note, setNote] = useState(consult.note || '');
   const [outcome, setOutcome] = useState(consult.outcome || OUTCOMES[0]);
+  /* ── THE THREE THINGS AN ORDER NEEDS FROM A CONSULTATION ──
+     Nothing in the live system records any of them. A consultation order can
+     say a call was booked and that it closed, and never that it happened or
+     what came out of it, so these three are the coach's own report and each
+     one is a status on the order.
+
+       done         CONSULTATION_DONE  the session took place
+       coachNotes   NOTES_UPLOADED     what the patient reads afterwards
+       submittedAt  NOTES_UPLOADED     the moment it reached them
+
+     The note above is a DIFFERENT field and stays one: it is for the care
+     team, and a coach writing for a colleague does not write for a patient. */
+  const [done, setDone] = useState(!!consult.done);
+  const [coachNotes, setCoachNotes] = useState(consult.coachNotes || '');
+  const [submittedAt, setSubmittedAt] = useState(consult.submittedAt || '');
   /* A dose belongs to a product, not to a consultation. One global dose field
      meant a doctor changing two medicines had one box to say it in. */
   const [doses, setDoses] = useState(consult.doses || {});
@@ -975,7 +990,7 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
   };
 
 
-  const save = () => update((d) => {
+  const save = (extra = {}) => update((d) => {
     if (!d.consults) d.consults = {};
     /* EVERY KEY ON THIS RECORD MUST BE LISTED HERE. This is a whole-record
        replace, not a merge, so a key left out is dropped by the next save —
@@ -983,11 +998,20 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
        matching `useState(consult.<key>)` above is what round-trips it. */
     d.consults[patient.id] = {
       note, outcome, doses, competes, addedItems: added, prescribed: rx, overrides,
-      tasksAdded, tasksOff,
+      tasksAdded, tasksOff, done, coachNotes, submittedAt,
+      /* Last, so a submit cannot be overwritten by the stale value in state. */
+      ...extra,
       at: new Date().toISOString(),
       version: ((d.consults[patient.id] && d.consults[patient.id].version) || 0) + 1,
     };
   });
+
+  /* One press, because two would let a coach submit notes they never saved. */
+  const submit = () => {
+    const now = new Date().toISOString();
+    setSubmittedAt(now);
+    save({ submittedAt: now });
+  };
 
   return (
     <>
@@ -1020,6 +1044,56 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
           </Note>
         </div>
       )}
+
+      {/* ── 0. DID IT HAPPEN, AND WHAT CAME OUT OF IT ──
+          Before the decision, because a decision recorded against a call that
+          never took place is the one thing the order cannot tell anybody
+          afterwards. Each row here is a STATUS on the consultation order, and
+          the code is shown because none of the three exist yet — they are what
+          the order service has to be given. */}
+      <h3 style={{ marginBottom: 4 }}>The consultation</h3>
+      <p className="sub" style={{ marginBottom: 10 }}>
+        Three things only this coach can report. The order knows a call was booked
+        and that it closed, and nothing in between.
+      </p>
+      <div className="card card-pad" style={{ marginBottom: 14 }}>
+        <div className="row" style={{ gap: 10, alignItems: 'center' }}>
+          <button className={`btn btn-sm ${done ? 'btn-primary' : 'btn-ghost'}`}
+            onClick={() => setDone(!done)}>
+            <Icon name="check" size={14} /> {done ? 'Consultation done' : 'Mark consultation done'}
+          </button>
+          <code className="sub" style={{ fontSize: 11 }}>CONSULTATION_DONE</code>
+          {!done && (
+            <span className="hint">Nothing else here means anything until this is ticked.</span>
+          )}
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          <Field label="Coach notes" type="textarea" rows={3} value={coachNotes}
+            onChange={setCoachNotes} disabled={!done}
+            placeholder="What you told them, and what happens next. The patient reads this." />
+          <p className="sub" style={{ marginTop: -4 }}>
+            The patient reads this one. The note further down is for the care team.
+          </p>
+        </div>
+
+        <div className="row" style={{ gap: 10, alignItems: 'center', marginTop: 12 }}>
+          <button className="btn btn-primary" onClick={submit}
+            disabled={!done || !coachNotes.trim()}>
+            <Icon name="send" size={14} /> Submit to client
+          </button>
+          <code className="sub" style={{ fontSize: 11 }}>NOTES_UPLOADED</code>
+          {submittedAt ? (
+            <Chip tone="live">sent {new Date(submittedAt).toLocaleDateString()}</Chip>
+          ) : (
+            <span className="hint">
+              {done && coachNotes.trim()
+                ? 'This is what completes the consultation order.'
+                : 'Tick the consultation and write the notes first.'}
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* ── 1. THE DECISION ──
           First, because it is the only thing that must be answered. Everything
