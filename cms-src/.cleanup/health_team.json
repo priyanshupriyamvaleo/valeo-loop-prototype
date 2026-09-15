@@ -1,0 +1,147 @@
+[
+ {
+  "key": "adelmustafamomani",
+  "name": "Dr. Adel Mustafa Momani",
+  "kind": "doctor",
+  "packages": [
+   "Dr. Adel Mustafa Momani"
+  ]
+ },
+ {
+  "key": "amnaahmad",
+  "name": "Dr. Amna Ahmad",
+  "kind": "doctor",
+  "packages": [
+   "Dr. Amna Ahmad"
+  ]
+ },
+ {
+  "key": "aparna",
+  "name": "Aparna",
+  "kind": "dietitian",
+  "packages": [
+   "Aparna: Online Dietitian Consultation",
+   "Aparna: Online Dietitian Consultation (KSA)"
+  ]
+ },
+ {
+  "key": "fatimamjaberelameen",
+  "name": "Dr. Fatima M. Jaber Elameen",
+  "kind": "doctor",
+  "packages": [
+   "Dr. Fatima M. Jaber Elameen"
+  ]
+ },
+ {
+  "key": "jamierichards",
+  "name": "Coach Jamie Richards",
+  "kind": "health_coach",
+  "packages": [
+   "Coach Jamie Richards",
+   "Coach Jamie Richards"
+  ]
+ },
+ {
+  "key": "mahmoudaldarabie",
+  "name": "Dr. Mahmoud Al Darabie",
+  "kind": "doctor",
+  "packages": [
+   "Dr. Mahmoud Al Darabie",
+   "Dr. Mahmoud Al Darabie"
+  ]
+ },
+ {
+  "key": "mahmoudmusa",
+  "name": "Dr. Mahmoud Mousa",
+  "kind": "doctor",
+  "packages": [
+   "Dr Mahmoud Musa",
+   "Dr. Mahmoud Mousa: GP Consultation",
+   "Dr. Mahmoud Mousa: GP Consultation",
+   "Dr Mahmoud follow-up peptide consultation"
+  ]
+ },
+ {
+  "key": "maryamalbarguthi",
+  "name": "Dr. Maryam Al Barguthi",
+  "kind": "doctor",
+  "packages": [
+   "Dr. Maryam Al Barguthi"
+  ]
+ },
+ {
+  "key": "maychalhoub",
+  "name": "Coach May Chalhoub",
+  "kind": "dietitian",
+  "packages": [
+   "Coach May Chalhoub",
+   "Coach May Chalhoub"
+  ]
+ },
+ {
+  "key": "rayan",
+  "name": "Dr. Rayan Mohammed",
+  "kind": "doctor",
+  "packages": [
+   "Dr Rayan",
+   "Dr Rayan Blood Test Review",
+   "Dr Rayan - Follow-up Peptide consultation",
+   "Dr.Rayan Mohammed",
+   "Dr Rayan Blood test review (p)"
+  ]
+ },
+ {
+  "key": "ritazakour",
+  "name": "Dr. Rita Zakour",
+  "kind": "doctor",
+  "packages": [
+   "Dr. Rita Zakour"
+  ]
+ },
+ {
+  "key": "shaymaabadreddine",
+  "name": "Coach Shaymaa Badreddine",
+  "kind": "health_coach",
+  "packages": [
+   "Coach Shaymaa Badreddine",
+   "Coach Shaymaa Badreddine"
+  ]
+ },
+ {
+  "key": "shazyalakadawala",
+  "name": "Dr. Shazya Lakadawala",
+  "kind": "doctor",
+  "packages": [
+   "Dr Shazya Lakadawala DEWA",
+   "Dr. Shazya Lakadawala"
+  ]
+ },
+ {
+  "key": "sidra",
+  "name": "Dr. Sidra",
+  "kind": "doctor",
+  "packages": [
+   "Dr Sidra - Follow-up peptide consultation",
+   "Dr Sidra - Follow-up peptide consultation",
+   "Dr Sidra - Follow-up peptide consultation",
+   "Dr Sidra : Free Consultation"
+  ]
+ },
+ {
+  "key": "thereseward",
+  "name": "Dr. Therese Ward",
+  "kind": "doctor",
+  "packages": [
+   "Dr. Therese Ward DEWA",
+   "Dr. Therese Ward"
+  ]
+ },
+ {
+  "key": "wafafarid",
+  "name": "Dr. Wafa Farid",
+  "kind": "doctor",
+  "packages": [
+   "Dr. Wafa Farid"
+  ]
+ }
+]

@@ -1,0 +1,147 @@
+[
+ [
+  "Page Type",
+  "Split",
+  "Platforms",
+  "Progress",
+  "Review Date",
+  "Closure Date"
+ ],
+ [
+  "Design System (Atomic Level)",
+  "",
+  "App + Web",
+  "In Progress"
+ ],
+ [
+  "Departments",
+  "Diagnostics & Testing",
+  "Web"
+ ],
+ [
+  "",
+  "Treatments & Therapies",
+  "Web"
+ ],
+ [
+  "",
+  "Consultations & Coaching",
+  "Web"
+ ],
+ [
+  "",
+  "Home & Personal Care",
+  "Web"
+ ],
+ [
+  "",
+  "Products & Devices",
+  "Web"
+ ],
+ [],
+ [
+  "Sub Departments"
+ ],
+ [],
+ [
+  "Products PDP",
+  "Supplements",
+  "App + Web",
+  "Closed"
+ ],
+ [
+  "",
+  "Wearables",
+  "App + Web",
+  "Closed"
+ ],
+ [
+  "",
+  "Medicines",
+  "App + Web",
+  "Closed"
+ ],
+ [
+  "",
+  "Gift Cards",
+  "App + Web",
+  "Closed"
+ ],
+ [],
+ [
+  "Daignostics PDP",
+  "Blood Test",
+  "App + Web"
+ ],
+ [
+  "",
+  "Non Blood Test",
+  "App + Web"
+ ],
+ [
+  "",
+  "Functional Test Kits",
+  "App + Web"
+ ],
+ [
+  "",
+  "Genome Test",
+  "App + Web"
+ ],
+ [],
+ [
+  "Treatments PDP",
+  "IV",
+  "App + Web",
+  "In Progress"
+ ],
+ [
+  "",
+  "Injections & Vaccines",
+  "App + Web"
+ ],
+ [
+  "",
+  "Physio & Rehab",
+  "App + Web"
+ ],
+ [],
+ [
+  "Home & Personal Care",
+  "Babysitting",
+  "App + Web"
+ ],
+ [
+  "",
+  "Elderly Care",
+  "App + Web"
+ ],
+ [
+  "",
+  "Nurse on Call",
+  "App + Web"
+ ],
+ [],
+ [
+  "Consultation PDP",
+  "Doctor Consultation",
+  "App + Web"
+ ],
+ [
+  "",
+  "Coach Consultation",
+  "App + Web"
+ ],
+ [],
+ [
+  "Category",
+  "",
+  "App + Web"
+ ],
+ [],
+ [
+  "Sub Category",
+  "",
+  "App + Web"
+ ]
+]

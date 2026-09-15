@@ -1,0 +1,113 @@
+# ── Auto-deploy on merge to main ──────────────────────────────
+# The Vercel project is not connected to this repository — the Vercel GitHub App
+# is not authorised for the owning account, and `vercel git connect` fails
+# because the repo is private and owned by a different account than the Vercel
+# team. So the deploy is driven from here instead.
+#
+# ONE SECRET IS REQUIRED before this runs: VERCEL_TOKEN.
+#   Vercel → Account Settings → Tokens → Create, scoped to the team.
+#   GitHub → repo Settings → Secrets and variables → Actions → New secret.
+# The project and org ids below are identifiers, not secrets.
+#
+# ⚠️ AFTER A REPOSITORY TRANSFER, THIS WORKFLOW IS DEAD UNTIL THE SECRET IS
+# RE-ADDED. Repository secrets do NOT move with a transfer, and Actions may
+# also be disabled on the destination. That is exactly what happened when this
+# repo moved to the FeelValeo org: seven merges to main shipped nothing, and
+# because a workflow that never runs produces no failure notification, the only
+# symptom was production quietly going stale for eleven hours — including a
+# data-loss fix.
+#
+# So the job below FAILS LOUDLY on a missing token rather than skipping, and the
+# summary says what to do. If you have just transferred this repo:
+#   1. Settings → Actions → General → allow Actions to run
+#   2. Settings → Secrets and variables → Actions → add VERCEL_TOKEN
+#   3. Actions → "Deploy to production" → Run workflow (no commit needed)
+#
+# If the Vercel GitHub App is ever authorised for this repo, delete this file
+# and use the native integration — it gives per-PR preview deploys and comments,
+# which this cannot.
+
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]
+  # Lets you re-run a deploy without an empty commit.
+  workflow_dispatch:
+
+# A newer merge should win. Cancelling an in-flight deploy is right here:
+# whatever it was shipping is already superseded.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+# --scope is passed explicitly on every command. VERCEL_ORG_ID alone was not
+# enough: vercel pull failed with "Could not retrieve Project Settings",
+# because a token scoped to a team still resolves the project against the
+# personal account unless the scope is named.
+env:
+  VERCEL_ORG_ID: team_o8r0BElW0jyK53JG4alemWFv
+  VERCEL_PROJECT_ID: prj_eQPNcloiG8sh4JsJS63qC13BsGzE
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Skip cleanly rather than fail red when the token has not been added yet.
+    if: github.repository == 'ritwik-product/valeo-catalogue-prototype'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Check the token is configured
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::VERCEL_TOKEN is not set. Add it in Settings → Secrets and variables → Actions."
+            {
+              echo "### Deploy did not run"
+              echo ""
+              echo "\`VERCEL_TOKEN\` is missing, so nothing was deployed and **production is now behind main**."
+              echo ""
+              echo "Repository secrets do not survive a transfer between owners. To restore:"
+              echo "1. Vercel → Account Settings → Tokens → create one scoped to the team"
+              echo "2. Settings → Secrets and variables → Actions → add it as \`VERCEL_TOKEN\`"
+              echo "3. Re-run this workflow — no commit needed"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      # Pulls the project's production environment, so the build sees the same
+      # CONTENT_API_* and auth variables the dashboard holds. Without this the
+      # build would compile but the deployed app would have no configuration.
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --scope=ritwik-28s-projects --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # Build here rather than on Vercel: a type error or a failed build fails
+      # the check on the merge commit, where someone will see it.
+      - name: Build
+        run: vercel build --prod --scope=ritwik-28s-projects --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --scope=ritwik-28s-projects --token="${{ secrets.VERCEL_TOKEN }}")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed: $url"
+
+      - name: Summary
+        run: |
+          {
+            echo "### Deployed to production"
+            echo ""
+            echo "- **URL:** ${{ steps.deploy.outputs.url }}"
+            echo "- **Alias:** https://headless-cms-frontend-omega.vercel.app"
+            echo "- **Commit:** \`${{ github.sha }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

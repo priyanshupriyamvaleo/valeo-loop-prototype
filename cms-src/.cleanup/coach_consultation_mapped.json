@@ -1,0 +1,1752 @@
+[
+ {
+  "id": "1",
+  "name": "Dr. Therese Ward DEWA",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). B2B — mark partner-exclusive (hidden from master search). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "2",
+  "name": "Kim Ward DEWA",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). B2B — mark partner-exclusive (hidden from master search).",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "3",
+  "name": "Hajra Hussein DEWA",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). B2B — mark partner-exclusive (hidden from master search).",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "4",
+  "name": "Dr Shazya Lakadawala DEWA",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). B2B — mark partner-exclusive (hidden from master search). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "5",
+  "name": "Jamie Richards",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "6",
+  "name": "Dr Mahmoud Musa",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "7",
+  "name": "May Chalhoub",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "8",
+  "name": "Skinare Analysis",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "9",
+  "name": "Dr. Therese Ward",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "10",
+  "name": "Kim Ward",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank).",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "11",
+  "name": "Hajra Hussein",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank).",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "12",
+  "name": "Dr. Shazya Lakadawala",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "13",
+  "name": "SKIN ANALYSIS.AI",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank).",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "14",
+  "name": "SKIN ANALYSIS.AI",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "15",
+  "name": "May Chalhoub: Online Dietitian Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "16",
+  "name": "Online Weight Loss Consultation with Dr. Fizza (for New Users only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "True"
+ },
+ {
+  "id": "17",
+  "name": "Jamie Richards: Wellness Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "18",
+  "name": "May Chalhoub: Dietitian Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=(blank).",
+  "ctype": "",
+  "active": "True"
+ },
+ {
+  "id": "19",
+  "name": "Follow-up Weight Loss Consultation with Dr. Mahmoud",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "20",
+  "name": "Dr. Mahmoud Mousa: GP Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "21",
+  "name": "Follow-up Weight Loss Consultation with Dr Khansa",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "22",
+  "name": "Shaymaa Badreddine: Online Dietitian Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "23",
+  "name": "Dr. Adel Mustafa Momani",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "24",
+  "name": "Dr. Fatima M. Jaber Elameen",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "25",
+  "name": "Dr. Rita Zakour",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "26",
+  "name": "Dr. Amna Ahmad",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "27",
+  "name": "Dr. Wafa Farid",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "28",
+  "name": "Dr. Maryam Al Barguthi",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank). Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "29",
+  "name": "Doctor on Phone Call",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Doctor Visits",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — visit pattern in 'Doctor on Phone Call'.",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "30",
+  "name": "Online Weight Loss Consultation with Dr. Khadiga (for New Users Only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "True"
+ },
+ {
+  "id": "31",
+  "name": "Doctor on Phone Call",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Doctor Visits",
+  "action": "keep",
+  "note": "PROPOSED — visit pattern in 'Doctor on Phone Call'.",
+  "ctype": "",
+  "active": "True"
+ },
+ {
+  "id": "32",
+  "name": "cfx",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "33",
+  "name": "Online Weight Loss Consultation with Dr. Khansa (for New Users only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "34",
+  "name": "Coach Jamie Richards",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "35",
+  "name": "Coach Shaymaa Badreddine",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "36",
+  "name": "Coach May Chalhoub",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "37",
+  "name": "Dr. Mahmoud Al Darabie",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "38",
+  "name": "The Metabolic Boost Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "39",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "40",
+  "name": "The Postpartum Wellness Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "41",
+  "name": "The Chronic Health Management Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "42",
+  "name": "Online Weight Loss Consultation with Dr. Mahmoud (for New Users only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "43",
+  "name": "May Chalhoub: Dietitian Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "44",
+  "name": "Dr. Mahmoud Mousa: GP Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "45",
+  "name": "Mahmoud Musa - 4 Sessions",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "46",
+  "name": "The Metabolic Boost Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "47",
+  "name": "Shaymaa Badreddine: Dietitian Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "48",
+  "name": "Shaymaa - 4 Sessions",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=(blank).",
+  "ctype": "",
+  "active": "True"
+ },
+ {
+  "id": "49",
+  "name": "Doctor Consultation for HPV Vaccine",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "50",
+  "name": "Follow-up Weight Loss Consultation with Dr. Khadiga",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "51",
+  "name": "Nutrition Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=(blank).",
+  "ctype": "",
+  "active": "True"
+ },
+ {
+  "id": "52",
+  "name": "Online Weight Loss Doctor Consultation (N)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "53",
+  "name": "Online Weight loss Doctor Consultation (UC)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "54",
+  "name": "Mounjar0 Prescription through Online Doctor Consult",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "55",
+  "name": "Follow-up Weight Loss Consultation with Dr. Siham",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "56",
+  "name": "Online Dietitian Consultation for GLP-1 Users (Ms. May)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "57",
+  "name": "Online Dietitian Consultation for GLP-1 Users (with Ms. Shaymaa)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "58",
+  "name": "Free Online Weight Loss Consultation with Dr. Mahmoud (for New Users Only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "59",
+  "name": "Follow-up Weight Loss Consultation with Dr. Mahmoud",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "60",
+  "name": "Weg0vy Prescription through Online Doctor Consult",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "61",
+  "name": "Follow up Weight Loss Consultation with Dr. Fizza",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "62",
+  "name": "Online Consultation-Hair Growth Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Doctor Visits",
+  "action": "keep",
+  "note": "PROPOSED — internal_category='Doctor on Call' (overrides consultation_type=PROGRAM).",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "63",
+  "name": "Online Weight Loss Consultation with Dr. Sheikheldin (for New Users Only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "False"
+ },
+ {
+  "id": "64",
+  "name": "Follow-up Weight Loss Consultation with Dr. Sheikheldin",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "65",
+  "name": "Online Weight loss Doctor Consultation | Valeo Health",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "66",
+  "name": "Bioresonance Coaching Plan",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "67",
+  "name": "Online Weight Loss Consultation with Dr. Hala (for New Users Only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank).",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "68",
+  "name": "Follow-up Weight Loss Consultation with Dr. Hala",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=(blank).",
+  "ctype": "",
+  "active": "False"
+ },
+ {
+  "id": "69",
+  "name": "Online Weight loss Doctor Consultation (C)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "70",
+  "name": "Free Consultation with Dr. Sheikheldin - Blood Test Results",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "71",
+  "name": "Online Weight Loss Consultation with Dr. Siham (for New Users only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "True"
+ },
+ {
+  "id": "72",
+  "name": "New Coach Consultation Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "73",
+  "name": "New Coach Consultation(Test)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "74",
+  "name": "New Coach Consultation WeightLoss",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "False"
+ },
+ {
+  "id": "75",
+  "name": "Joint Consulttaion Placeholder Package",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "76",
+  "name": "Online Weight Loss Consultation with Dr. Abrar (for New Users Only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "True"
+ },
+ {
+  "id": "77",
+  "name": "Online Weight Loss Consultation (for New Users Only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "False"
+ },
+ {
+  "id": "78",
+  "name": "The Postpartum Wellness Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "79",
+  "name": "The Postpartum Wellness Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "80",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "81",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "82",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "83",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "84",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "85",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "86",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "87",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "88",
+  "name": "Online Weight Loss Consultation with Dr. Reem for Teens (12-17 Years)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "89",
+  "name": "The Chronic Health Management Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "90",
+  "name": "Free Doctor Consultation Peptide",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "91",
+  "name": "Follow-up Weight Loss Consultation with Dr.Abrar",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "True"
+ },
+ {
+  "id": "92",
+  "name": "Free Consultation with Weight Loss Advisor",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "93",
+  "name": "Aparna: Online Dietitian Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "WEIGHTLOSS",
+  "active": "False"
+ },
+ {
+  "id": "94",
+  "name": "Aparna: Online Dietitian Consultation (KSA)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "WEIGHTLOSS",
+  "active": "True"
+ },
+ {
+  "id": "95",
+  "name": "Tiru(Testing coach) consulation FREE",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "96",
+  "name": "Consultation BookMyDoc",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "97",
+  "name": "Online Weight Loss Consultation with Dr. Rymaz (for New Users Only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "True"
+ },
+ {
+  "id": "98",
+  "name": "Free Peptide Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "99",
+  "name": "Dr Rayan",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "100",
+  "name": "IV Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "101",
+  "name": "Online Weight Loss Consultation with Dr. Nayla (for New Users Only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "True"
+ },
+ {
+  "id": "102",
+  "name": "Stress Reset Peptide Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "103",
+  "name": "Free IV Therapy Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "104",
+  "name": "Repeat Peptide Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "105",
+  "name": "Online Weight Loss Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "106",
+  "name": "Online Weight Loss Consultation with Dr Nasr",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "107",
+  "name": "Dr Rayan Blood Test Review",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "108",
+  "name": "The Functional Medicine Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "109",
+  "name": "Online Consultation-Hair Growth Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "110",
+  "name": "Dr Mahmoud follow-up peptide consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "111",
+  "name": "Dr Rayan - Follow-up Peptide consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "112",
+  "name": "Coach Jamie Richards",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "113",
+  "name": "Coach Shaymaa Badreddine",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "114",
+  "name": "Coach May Chalhoub",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "115",
+  "name": "Dr. Mahmoud Al Darabie",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "116",
+  "name": "Dr.Rayan Mohammed",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "117",
+  "name": "test",
+  "dept": "",
+  "sub": "",
+  "action": "drop — test/dummy data",
+  "note": "PROPOSED — name 'test' is test data.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "118",
+  "name": "At-clinic consultation – Wellbeing Support Hub (Red Sea Site)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Doctor Visits",
+  "action": "keep",
+  "note": "PROPOSED — visit pattern in 'At-clinic consultation – Wellbeing S' (overrides consultation_type=PROGRAM).",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "119",
+  "name": "At-clinic consultation – Wellbeing Support Hub (Amaala Site)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Doctor Visits",
+  "action": "keep",
+  "note": "PROPOSED — visit pattern in 'At-clinic consultation – Wellbeing S' (overrides consultation_type=PROGRAM).",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "120",
+  "name": "Free Weight Loss Consultation - Repeat user",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "121",
+  "name": "Sick Leave Certificate through Online Doctor Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "122",
+  "name": "Specialist Pediatrician Consultation (Dr Reem)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "123",
+  "name": "Blood Test Review - Free Coach Consultation  (Dr Reem)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "124",
+  "name": "Follow up consultation with Weight loss doctors",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "125",
+  "name": "Blood test review - custom tests (Dr Reem)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "126",
+  "name": "Free Coach Consultation (Dr Reem Mahmoud)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "127",
+  "name": "Free Coach Consultation - Dr Reem Mahmoud",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "128",
+  "name": "Dr Sidra - Follow-up peptide consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "129",
+  "name": "Dr Sidra - Follow-up peptide consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "130",
+  "name": "Dr Sidra - Follow-up peptide consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "131",
+  "name": "Follow up consultation with Dr Abdalla",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "132",
+  "name": "Online Weight Loss Consultation with Dr. Abdalla (for New Users Only)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "133",
+  "name": "Functional Test consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "False"
+ },
+ {
+  "id": "134",
+  "name": "Online Dietitian Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "135",
+  "name": "The Peak Fitness Performance Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "136",
+  "name": "The Functional Medicine Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "137",
+  "name": "The Chronic Health Management Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "138",
+  "name": "The Postpartum Wellness Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "139",
+  "name": "Online Test Results Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "140",
+  "name": "Online Test Results Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "141",
+  "name": "The Longevity Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "142",
+  "name": "Healing",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "143",
+  "name": "Weight Loss Follow-up Consultation (Dr.Reem)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "144",
+  "name": "Weight Loss Follow-up Consultation (Dr.Reem)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "145",
+  "name": "Weight Loss Follow-up Consultation (Dr. Reem)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "146",
+  "name": "The Advanced Recovery Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "147",
+  "name": "Aparna round robin test",
+  "dept": "",
+  "sub": "",
+  "action": "drop — test/dummy data",
+  "note": "PROPOSED — name 'Aparna round robin test' is test data.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "148",
+  "name": "Create Your Own IV Drip",
+  "dept": "Treatments",
+  "sub": "IV Therapy",
+  "action": "keep",
+  "note": "PROPOSED — MISFILED — 'Create Your Own IV Drip' is not a consultation; belongs in Treatments ▸ IV Therapy. Confirm before moving.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "149",
+  "name": "The Skin & Hair Program - Peptide",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "150",
+  "name": "The Sleep Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "151",
+  "name": "The Wolverine Program - Peptide",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "152",
+  "name": "The Glow Program - Peptide",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "153",
+  "name": "The Stress & Calm Program",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "154",
+  "name": "coach test package",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "155",
+  "name": "Free Peptides Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM.",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "156",
+  "name": "Shaymaa Free Consult - 30mins",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "157",
+  "name": "Dr Rayan Blood test review (p)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "158",
+  "name": "Online Weight loss Consultation (Google)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "159",
+  "name": "YPO Longevity Yearly Program Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Programs",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=PROGRAM. B2B — mark partner-exclusive (hidden from master search).",
+  "ctype": "PROGRAM",
+  "active": "True"
+ },
+ {
+  "id": "160",
+  "name": "Online Dietitian Consultation for GLP-1 Users (Ms. May)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "161",
+  "name": "Online Dietitian Consultation for GLP-1 Users (Ms. Shaymaa)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "162",
+  "name": "Personalized Weight-Loss Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=WEIGHTLOSS.",
+  "ctype": "WEIGHTLOSS",
+  "active": "False"
+ },
+ {
+  "id": "163",
+  "name": "Blood Test Guidance Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "164",
+  "name": "Coach Qatar",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "165",
+  "name": "Coach Qatar Test",
+  "dept": "",
+  "sub": "",
+  "action": "drop — test/dummy data",
+  "note": "PROPOSED — name 'Coach Qatar Test' is test data.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "166",
+  "name": "Coach Kuwait",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "167",
+  "name": "Coach Kuwait Test",
+  "dept": "",
+  "sub": "",
+  "action": "drop — test/dummy data",
+  "note": "PROPOSED — name 'Coach Kuwait Test' is test data.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "168",
+  "name": "Coach other",
+  "dept": "",
+  "sub": "",
+  "action": "drop — test/dummy data",
+  "note": "PROPOSED — name 'Coach other' is test data.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "169",
+  "name": "Health Consultation : Dr Fizza ,Dr Sidra or Coach May Chalhoub",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. B2B — mark partner-exclusive (hidden from master search).",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "170",
+  "name": "Dr Sidra : Free Consultation",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep (inactive)",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. Practitioner-named package — candidate for a practitioner directory entry rather than a catalogue listing.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "False"
+ },
+ {
+  "id": "171",
+  "name": "Blood Test Review Consultation : Dr Sidra",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "172",
+  "name": "Weight Loss Consultation (Averra Health)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. B2B — mark partner-exclusive (hidden from master search).",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "173",
+  "name": "Peptide Consultation (Averra Health)",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION. B2B — mark partner-exclusive (hidden from master search).",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "174",
+  "name": "Free consultation with Dr Sumaiya",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ },
+ {
+  "id": "175",
+  "name": "Free consultation with Dr Sumaiya",
+  "dept": "Doctors & Health Coaches",
+  "sub": "Consultations",
+  "action": "keep",
+  "note": "PROPOSED — consultation_type=COACH_CONSULTATION.",
+  "ctype": "COACH_CONSULTATION",
+  "active": "True"
+ }
+]

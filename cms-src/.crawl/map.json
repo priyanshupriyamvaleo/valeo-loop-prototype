@@ -1,0 +1,1129 @@
+{
+ "routes": [
+  {
+   "path": "/dashboard/home",
+   "component": "pages/Home"
+  },
+  {
+   "path": "/dashboard/security/acl/roles-and-access-rights",
+   "component": "pages/ACL/RolesAndAccessRights"
+  },
+  {
+   "path": "/dashboard/security/acl/page-and-page-categories",
+   "component": "pages/ACL/PageCategories"
+  },
+  {
+   "path": "/dashboard/security/acl/user-page-permissions",
+   "component": "pages/ACL/UserPagePermissions"
+  },
+  {
+   "path": "/dashboard/users/clients",
+   "component": "pages/Users/Clients"
+  },
+  {
+   "path": "/dashboard/b2b-partner-clients",
+   "component": "pages/Partners/B2BPartnerClients"
+  },
+  {
+   "path": "/dashboard/users/adminusers",
+   "component": "pages/Users/AdminUser"
+  },
+  {
+   "path": "/dashboard/users/nutritionists/details/:profileId",
+   "component": "pages/Users/Details (NutritionistDetails)"
+  },
+  {
+   "path": "/dashboard/users/nutritionists/details",
+   "component": "pages/Users/Details (NutritionistDetails)"
+  },
+  {
+   "path": "/dashboard/users/lab",
+   "component": "pages/Users/Lab"
+  },
+  {
+   "path": "/dashboard/users/author",
+   "component": "pages/Users/AuthorsAndEligibleAuthors"
+  },
+  {
+   "path": "/dashboard/users/homecares",
+   "component": "pages/Users/HomecareUsers"
+  },
+  {
+   "path": "/dashboard/users/tags",
+   "component": "pages/Users/Tags"
+  },
+  {
+   "path": "/dashboard/users/interested",
+   "component": "pages/Users/InterestedPeople"
+  },
+  {
+   "path": "/dashboard/users/contactus",
+   "component": "pages/Users/ContactUs"
+  },
+  {
+   "path": "/dashboard/orders/list-view",
+   "component": "pages/Orders/OrdersListView"
+  },
+  {
+   "path": "/dashboard/orders/all/:orderId",
+   "component": "pages/Orders/OrdersDashboardDetails"
+  },
+  {
+   "path": "/dashboard/orders/newOrder/:orderId",
+   "component": "pages/Orders/OrdersDashboardDetails"
+  },
+  {
+   "path": "/dashboard/orders/supplement/:orderId",
+   "component": "pages/Orders/OrdersDashboardDetails"
+  },
+  {
+   "path": "/dashboard/orders/medicine/:orderId",
+   "component": "pages/Orders/OrdersDashboardDetails"
+  },
+  {
+   "path": "/dashboard/orders/active",
+   "component": "pages/Orders/ActiveOrders (roles: crm, lab only)"
+  },
+  {
+   "path": "/dashboard/orders/new-active",
+   "component": "pages/Orders/NewActiveOrders (role: lab only)"
+  },
+  {
+   "path": "/dashboard/orders/past",
+   "component": "pages/Orders/PastOrders (nutritionist/crm/lab/externalNutritionist)"
+  },
+  {
+   "path": "/dashboard/orders/OrdersCalendarView",
+   "component": "pages/Orders/OrdersCalendarView"
+  },
+  {
+   "path": "/dashboard/home/view/:orderId",
+   "component": "pages/CoachManagment/DashboardDetail"
+  },
+  {
+   "path": "/dashboard/orders/active/results/:order/:gender",
+   "component": "pages/Orders/TestResults"
+  },
+  {
+   "path": "/dashboard/orders/past/results/:order/:gender",
+   "component": "pages/Orders/TestResults"
+  },
+  {
+   "path": "/dashboard/subscriptions/nutritionist",
+   "component": "pages/Subscriptions/NutritionistSubscriptions"
+  },
+  {
+   "path": "/dashboard/client-upload-results",
+   "component": "pages/Orders/ClientUploadResults/ClientUploadResults"
+  },
+  {
+   "path": "/dashboard/nurse-tracking-orders",
+   "component": "pages/NurseTrackingOrders/NurseTrackingOrders"
+  },
+  {
+   "path": "/dashboard/ticketing-management",
+   "component": "pages/TicketingManagement/ViewAllMyTickets"
+  },
+  {
+   "path": "/dashboard/skincare/survey",
+   "component": "pages/Orders/SkincareSurvey (role: nutritionist)"
+  },
+  {
+   "path": "/dashboard/Tags",
+   "component": "pages/Users/Tags (role: nutritionist)"
+  },
+  {
+   "path": "/dashboard/health-profile/categories",
+   "component": "pages/HealthProfile/Categories"
+  },
+  {
+   "path": "/dashboard/health-profile/surveys/general",
+   "component": "pages/HealthProfile/GeneralSurvey"
+  },
+  {
+   "path": "/dashboard/health-profile/surveys/results/general/:survey/:userId/:surveyId/:orderId/:type",
+   "component": "pages/HealthProfile/GeneralSurveyResults"
+  },
+  {
+   "path": "/dashboard/health-profile/surveys/custom/surveys",
+   "component": "pages/HealthProfile/CustomSurvey"
+  },
+  {
+   "path": "/dashboard/health-profile/surveys/custom/surveys/questions/:survey",
+   "component": "pages/HealthProfile/CustomQuestions"
+  },
+  {
+   "path": "/dashboard/medical-profile/survey/questions",
+   "component": "pages/MedicalProfile/MedicalSurvey"
+  },
+  {
+   "path": "/dashboard/medical-profile/survey/results/:userId",
+   "component": "pages/MedicalProfile/MedicalSurveyResults"
+  },
+  {
+   "path": "/dashboard/medical-profile/survey/options/:question/:type",
+   "component": "pages/MedicalProfile/SurveyOptions"
+  },
+  {
+   "path": "/dashboard/lifestyle-profile/survey/questions",
+   "component": "pages/LifestyleProfile/LifestyleSurvey"
+  },
+  {
+   "path": "/dashboard/lifestyle-profile/survey/results/:userId",
+   "component": "pages/LifestyleProfile/LifestyleSurveyResults"
+  },
+  {
+   "path": "/dashboard/lifestyle-profile/survey/options/:question/:type",
+   "component": "pages/MedicalProfile/SurveyOptions"
+  },
+  {
+   "path": "/dashboard/surveys-results/all/",
+   "component": "pages/OrderSurveyResults/OrderSurveyResults"
+  },
+  {
+   "path": "/dashboard/surveys-results/all/:userId/:questionnaireId/:questionaireType/:lastUpdated",
+   "component": "pages/OrderSurveyResults/SurveyResultDetails"
+  },
+  {
+   "path": "/dashboard/client-notes/:userId/:orderId",
+   "component": "pages/CoachManagment/ClientNotesTable"
+  },
+  {
+   "path": "/dashboard/client-notes/:userId/:orderId/:dependentId",
+   "component": "pages/CoachManagment/ClientNotesTable"
+  },
+  {
+   "path": "/dashboard/services/service-category",
+   "component": "pages/Services/ServiceCategories"
+  },
+  {
+   "path": "/dashboard/services/conditions",
+   "component": "pages/Services/ConditionCategories"
+  },
+  {
+   "path": "/dashboard/services/questionnaires",
+   "component": "pages/Services/Questionnaires"
+  },
+  {
+   "path": "/dashboard/services/bundles",
+   "component": "pages/Services/Bundles"
+  },
+  {
+   "path": "/dashboard/services/questionnaire-bundle-mapping",
+   "component": "pages/BundleMapping/BundleMapping"
+  },
+  {
+   "path": "/dashboard/services/supplements",
+   "component": "pages/Services/SupplementCategories"
+  },
+  {
+   "path": "/dashboard/services/other-items",
+   "component": "pages/Services/OtherItems"
+  },
+  {
+   "path": "/dashboard/PackageCreation/MinyPackageCityUpdate",
+   "component": "pages/PackageCreation/MiniPackageCityUpdates"
+  },
+  {
+   "path": "/dashboard/PackageCreation/MiniPackageUpdate",
+   "component": "pages/PackageCreation/MiniPackages"
+  },
+  {
+   "path": "/dashboard/PackageCreation/MiniPackageCategory",
+   "component": "pages/PackageCreation/MiniPackageCategory"
+  },
+  {
+   "path": "/dashboard/PackageCreation/ProductCategory",
+   "component": "pages/PackageCreation/ProductCategory"
+  },
+  {
+   "path": "/dashboard/CustomPackageCreation/Packages",
+   "component": "pages/CustomPackageCreation/Packages"
+  },
+  {
+   "path": "/dashboard/CustomTest-Add-ons",
+   "component": "pages/CustomTestAddOns/CustomTestAddonsIndex"
+  },
+  {
+   "path": "/dashboard/CoachConsultationpackage",
+   "component": "pages/CoachConsultationPackage/CoachConsultationPackage"
+  },
+  {
+   "path": "/dashboard/PackageCreation/BloodBiomarkerPackages",
+   "component": "pages/Packages/BloodBiomarkerPackages"
+  },
+  {
+   "path": "/dashboard/PackageCreation/HealthCoachPackages",
+   "component": "pages/Packages/HealthCoachPackages"
+  },
+  {
+   "path": "/dashboard/tests-and-packages/test-categories",
+   "component": "pages/Packages/ManageTestCategories"
+  },
+  {
+   "path": "/dashboard/tests-and-packages/tests",
+   "component": "pages/Packages/ManageTests"
+  },
+  {
+   "path": "/dashboard/tests-and-packages/tests/biomarkers",
+   "component": "pages/Packages/ManageBioMarkers (hidden, display:false)"
+  },
+  {
+   "path": "/dashboard/non-blood-biomarkers/tests",
+   "component": "pages/Packages/ManageNonBloodTests"
+  },
+  {
+   "path": "/dashboard/ocr-management",
+   "component": "pages/Packages/OCRManagement"
+  },
+  {
+   "path": "/dashboard/tests-and-packages/tests/food-intolerance",
+   "component": "pages/Packages/FoodIntolerance (hidden, display:false)"
+  },
+  {
+   "path": "/dashboard/list-of-food",
+   "component": "pages/FoodIntolerance/ListOfFood"
+  },
+  {
+   "path": "/dashboard/food-categories",
+   "component": "pages/FoodIntolerance/FoodCategories"
+  },
+  {
+   "path": "/dashboard/sample-details",
+   "component": "pages/Packages/SampleDetails"
+  },
+  {
+   "path": "/dashboard/service-provider",
+   "component": "pages/Packages/ServiceProvider (eager import)"
+  },
+  {
+   "path": "/dashboard/orders/time-slots",
+   "component": "pages/Orders/TimeSlots"
+  },
+  {
+   "path": "/dashboard/LabManagment/RegionManagment",
+   "component": "pages/LabManagment/RegionManagment"
+  },
+  {
+   "path": "/dashboard/LabManagment/LabProfile",
+   "component": "pages/LabManagment/index (Labslots)"
+  },
+  {
+   "path": "/dashboard/LabManagment/HomecareServices",
+   "component": "pages/LabManagment/HomeCareServicesIndex"
+  },
+  {
+   "path": "/dashboard/LabManagment/homecare-costs",
+   "component": "pages/HomecareCosts/HomecareCosts"
+  },
+  {
+   "path": "/dashboard/LabManagment/LabSlots",
+   "component": "pages/LabManagment/LabSlots (EditLabSlots)"
+  },
+  {
+   "path": "/dashboard/LabManagment/LabDashboard",
+   "component": "pages/LabManagment/LabDashboard"
+  },
+  {
+   "path": "/dashboard/LabCosts",
+   "component": "pages/LabCosts/LabCosts"
+  },
+  {
+   "path": "/dashboard/LabManagement/LabCostingNew",
+   "component": "pages/LabCostingNew/LabCostingNew"
+  },
+  {
+   "path": "/dashboard/NurseManagement",
+   "component": "pages/NurseManagement/NurseManagement"
+  },
+  {
+   "path": "/dashboard/LabManagement/PackageLabSlots",
+   "component": "pages/LabManagment/LabSlotsPackages"
+  },
+  {
+   "path": "/dashboard/LabManagement/HomecareCostingNew",
+   "component": "pages/HomecareCostingNew/HomecareCostingNew"
+  },
+  {
+   "path": "/dashboard/LabManagement/NewSlotService",
+   "component": "pages/BabySitterSlotService/BabySitterSlotService"
+  },
+  {
+   "path": "/dashboard/LabManagement/NewRealTimeSlots",
+   "component": "pages/BabySitterSlotService/NewRealTimeSlotService"
+  },
+  {
+   "path": "/dashboard/users/nutritionists",
+   "component": "pages/Users/Nutritionist"
+  },
+  {
+   "path": "/dashboard/CoachManagment/CoachSlots",
+   "component": "pages/CoachManagment/CoachSlots"
+  },
+  {
+   "path": "/dashboard/physiotherapist",
+   "component": "pages/PhysioManagement/Physiotherapist"
+  },
+  {
+   "path": "/dashboard/cms/master-website-categories",
+   "component": "pages/CMS/MasterWebsiteCategories"
+  },
+  {
+   "path": "/dashboard/cms/website-categories",
+   "component": "pages/CMS/WebsiteCategories"
+  },
+  {
+   "path": "/dashboard/cms/packages",
+   "component": "pages/CMS/PackagesCMS"
+  },
+  {
+   "path": "/dashboard/cms/landing-page",
+   "component": "pages/CMS/LandingPage"
+  },
+  {
+   "path": "/dashboard/cms/article-categories",
+   "component": "pages/HealthHub/ArticleCategories"
+  },
+  {
+   "path": "/dashboard/cms/articles",
+   "component": "pages/HealthHub/Articles"
+  },
+  {
+   "path": "/dashboard/cms/Banners",
+   "component": "pages/WebisteBanners/Banners"
+  },
+  {
+   "path": "/dashboard/search-keywords",
+   "component": "pages/SearchKeywords/SearchKeywords"
+  },
+  {
+   "path": "/dashboard/cms/navigation-menu",
+   "component": "pages/CMS/CMSNavigationMenu"
+  },
+  {
+   "path": "/dashboard/cms-advance-landing-pages/all/:pageId/:countryId",
+   "component": "pages/AdvanceLandingPages/WidgetsList (hidden; parent list route commented out)"
+  },
+  {
+   "path": "/dashboard/weightloss-journey/all/:pageId/:countryId/:pageType?",
+   "component": "pages/WeightLossJourney/WeightLossWidgetList"
+  },
+  {
+   "path": "/dashboard/cms/seo-folders",
+   "component": "pages/CMS/SeoFolders"
+  },
+  {
+   "path": "/dashboard/seo/staticPages",
+   "component": "pages/CMS/StaticSeoPages"
+  },
+  {
+   "path": "/dashboard/seo/prefered-search-outputs",
+   "component": "pages/CMS/PreferedSearchOutputs"
+  },
+  {
+   "path": "/dashboard/cms/website-footer",
+   "component": "pages/CMS/WebsiteFooterIndex"
+  },
+  {
+   "path": "/dashboard/cms/sitemap-automation",
+   "component": "pages/CMS/SiteMapAutomation (eager import)"
+  },
+  {
+   "path": "/dashboard/weightloss-journey",
+   "component": "pages/WeightLossJourney/WeightLossJourneyPage"
+  },
+  {
+   "path": "/dashboard/weightloss-retention",
+   "component": "pages/WeightLossRetentionJourney/RetentionJourney"
+  },
+  {
+   "path": "/dashboard/CoachManagment/CoachslotDetails",
+   "component": "pages/CoachManagment/CoachslotDetails (role: nutritionist)"
+  },
+  {
+   "path": "/dashboard/faq",
+   "component": "pages/FAQ"
+  },
+  {
+   "path": "/dashboard/FAQ-details",
+   "component": "pages/FAQDetails"
+  },
+  {
+   "path": "/dashboard/ratings",
+   "component": "pages/RatingsPanel"
+  },
+  {
+   "path": "/dashboard/How-do-hear-about-us",
+   "component": "pages/HowDoYouHear/HowDoYouHear"
+  },
+  {
+   "path": "/dashboard/reviews",
+   "component": "pages/Reviews/Reviews"
+  },
+  {
+   "path": "/dashboard/chat",
+   "component": "pages/Chat (role: nutritionist)"
+  },
+  {
+   "path": "/dashboard/customer-longevity-score",
+   "component": "pages/CoachManagment/CustomersLongevityScore"
+  },
+  {
+   "path": "/dashboard/customer-longevity-score/:customerId/:countryId/:longevityCategoryId",
+   "component": "pages/CoachManagment/CustomersLongevityScoreDetail"
+  },
+  {
+   "path": "/dashboard/dependent-longevity-score/:customerId/:countryId/:longevityCategoryId/:dependentId",
+   "component": "pages/CoachManagment/CustomersLongevityScoreDetail"
+  },
+  {
+   "path": "/dashboard/additional-resources",
+   "component": "pages/CoachManagment/AdditionalResources"
+  },
+  {
+   "path": "/dashboard/wearables-tracker",
+   "component": "pages/CoachManagment/WearablesTracker (eager import)"
+  },
+  {
+   "path": "/dashboard/wearables-tracker/details",
+   "component": "pages/CoachManagment/WearablesTrackerDetail (eager import)"
+  },
+  {
+   "path": "/dashboard/coupon-codes/generator",
+   "component": "pages/CouponCode/CouponCodeGenerator (hidden, display:false)"
+  },
+  {
+   "path": "/dashboard/coupon-codes/coupon-code-list",
+   "component": "pages/CouponCode/CouponCodeIndex"
+  },
+  {
+   "path": "/dashboard/corporate-partners/ambassadors",
+   "component": "pages/Partners/ValeoAmbassadors"
+  },
+  {
+   "path": "/dashboard/Valeo-partners",
+   "component": "pages/Partners/ValeoPartners"
+  },
+  {
+   "path": "/dashboard/Dewa-Dashboard",
+   "component": "pages/Partners/DewaPartnerPackages"
+  },
+  {
+   "path": "/dashboard/Valeo-Corporates",
+   "component": "pages/Partners/ValeoCorporates"
+  },
+  {
+   "path": "/dashboard/external-partners",
+   "component": "pages/Partners/ExternalPartners"
+  },
+  {
+   "path": "/dashboard/B2BPartners",
+   "component": "pages/InternalPartners/B2BPartners (roles: admin, b2bPartner)"
+  },
+  {
+   "path": "/dashboard/longevity-score",
+   "component": "pages/LongevityScore/LongevityScore"
+  },
+  {
+   "path": "/dashboard/fitness-plan",
+   "component": "pages/FitnessPlan/FitnessPlan"
+  },
+  {
+   "path": "/dashboard/longevity-parameters/all/:categoryId/:countryId",
+   "component": "pages/LongevityScore/LongevityParameters (hidden detail route)"
+  },
+  {
+   "path": "/dashboard/referral-codes",
+   "component": "pages/ReferralCodes/ReferralCode"
+  },
+  {
+   "path": "/dashboard/application-settings/force-recommend-update",
+   "component": "pages/ForceUpdate/ForceUpdate"
+  },
+  {
+   "path": "/dashboard/application-settings/mobile-promotions",
+   "component": "pages/MobilePromotions/MobilePromotions"
+  },
+  {
+   "path": "/dashboard/application-settings/app-banners",
+   "component": "pages/MobileHomePageBanners/HomePageAppBanners"
+  },
+  {
+   "path": "/dashboard/application-settings/home-page-rankings",
+   "component": "pages/MobileHomePageBanners/HomePageBannersRankings"
+  },
+  {
+   "path": "/dashboard/application-settings/product-deeplinks",
+   "component": "pages/ProductDeepLinks/ProductDeepLinks"
+  },
+  {
+   "path": "/dashboard/application-settings/banner-strip",
+   "component": "pages/StripBanner"
+  },
+  {
+   "path": "/dashboard/money-exchange-rates",
+   "component": "pages/ExchangeRates/ExchangeRates"
+  },
+  {
+   "path": "/dashboard/home-care/upcoming-orders",
+   "component": "pages/HomeCarePortal/UpcomingOrders (role: homecare)"
+  },
+  {
+   "path": "/dashboard/home-care/bookings",
+   "component": "pages/HomeCarePortal/Bookings (role: homecare)"
+  },
+  {
+   "path": "/dashboard/home-care/professional-management",
+   "component": "pages/HomeCarePortal/ProfessionalManagement (role: homecare)"
+  },
+  {
+   "path": "/dashboard/home-care/total-orders",
+   "component": "pages/HomecareCostingNew/HomecareCostingNew (role: homecare)"
+  },
+  {
+   "path": "/dashboard/home-care/create-ticket",
+   "component": "pages/HomeCarePortal/CreateTicket (role: homecare)"
+  },
+  {
+   "path": "/dashboard/home-care/ticket-management",
+   "component": "pages/HomeCarePortal/ViewMyTickets (role: homecare)"
+  },
+  {
+   "path": "/dashboard/home",
+   "component": "pages/HomecareMwebPortal/index (role: homeCareProfessional; collides with /dashboard/home for other roles)"
+  },
+  {
+   "path": "/dashboard/homecare/completed-orders",
+   "component": "pages/HomecareMwebPortal/index (role: homeCareProfessional)"
+  },
+  {
+   "path": "/dashboard/nurse-notifications/:orderId",
+   "component": "pages/Notifications/Notifications"
+  },
+  {
+   "path": "/dashboard/notifications",
+   "component": "pages/HomecareMwebPortal/NursePanelNotifications"
+  },
+  {
+   "path": "/dashboard/nurse/past-orders",
+   "component": "pages/HomecareMwebPortal/NursePastOrders/NursePastOrders"
+  },
+  {
+   "path": "/dashboard/nurse/client-lab-details/:nurseUserId/:orderId",
+   "component": "pages/HomecareMwebPortal/ClientLabDetails"
+  },
+  {
+   "path": "/dashboard/nurse/upload-sample-details/:orderId",
+   "component": "pages/HomecareMwebPortal/UploadSampleDetails"
+  },
+  {
+   "path": "/dashboard/nurse/report-issue/:orderId",
+   "component": "pages/HomecareMwebPortal/ReportIssue/ReportIssue"
+  },
+  {
+   "path": "/dashboard/nurse/change-member/:userId/:orderId",
+   "component": "pages/HomecareMwebPortal/ChangeMemberDetails"
+  },
+  {
+   "path": "/dashboard/homecare-mobile-portal",
+   "component": "pages/HomecareMwebPanelNew/index (role: homecare)"
+  },
+  {
+   "path": "/dashboard/homecare-mobile-portal/ticket-management",
+   "component": "pages/HomeCarePortal/HomecareTicketManagement (role: homecare)"
+  },
+  {
+   "path": "/dashboard/homecare-mobile-portal/ticket-management/:ticketId",
+   "component": "pages/HomeCarePortal/HomecareTicketView (role: homecare)"
+  },
+  {
+   "path": "/dashboard/home-care/reopen-ticket/:ticketId",
+   "component": "pages/HomeCarePortal/ReopenTicket (role: homecare)"
+  },
+  {
+   "path": "/dashboard/homecare-mobile-portal/total-orders",
+   "component": "pages/HomeCarePortal/HomecareCostingTotalOrders (role: homecare)"
+  },
+  {
+   "path": "/login (App.js, outside routes.js)",
+   "component": "pages/Login"
+  },
+  {
+   "path": "/forgot-password (App.js, outside routes.js)",
+   "component": "pages/ForgotPassword"
+  }
+ ],
+ "navSections": [
+  {
+   "section": "Home (all roles)",
+   "entries": [
+    "Home dashboard"
+   ]
+  },
+  {
+   "section": "Access Control [admin]",
+   "entries": [
+    "Roles & Access Rights",
+    "Page & Page Categories",
+    "User Page Permissions"
+   ]
+  },
+  {
+   "section": "Clients [nutritionist, crm] (top-level link)",
+   "entries": [
+    "Clients"
+   ]
+  },
+  {
+   "section": "User Management [admin, b2bPartner]",
+   "entries": [
+    "Clients",
+    "B2B Partner Clients",
+    "Admin Users",
+    "Lab Users",
+    "Author Users",
+    "Homecare Users",
+    "Tags",
+    "Interested People",
+    "Contacted Us"
+   ]
+  },
+  {
+   "section": "Order Management [admin, nutritionist, crm, lab, externalNutritionist, b2bPartner]",
+   "entries": [
+    "Orders (list view) [admin, b2bPartner]",
+    "Active Orders [crm, lab]",
+    "New Active Orders [lab]",
+    "Past Orders [nutritionist, crm, lab, externalNutritionist]",
+    "Orders Calendar View [admin]",
+    "Wellbeing Coach Subscriptions [admin]",
+    "Client Upload Results [admin]",
+    "Nurse Tracking Orders [admin]"
+   ]
+  },
+  {
+   "section": "Ticketing Management [admin]",
+   "entries": [
+    "View Tickets"
+   ]
+  },
+  {
+   "section": "Skincare Survey [nutritionist] (top-level link)",
+   "entries": [
+    "Skincare Survey"
+   ]
+  },
+  {
+   "section": "Tags [nutritionist] (top-level link)",
+   "entries": [
+    "Tags"
+   ]
+  },
+  {
+   "section": "Surveys [admin, nutritionist]",
+   "entries": [
+    "Health Assessment Category",
+    "Health Assessment Questions",
+    "Health Assessments Results",
+    "Customized Health Assessments [nutritionist]",
+    "Health Profile Questions",
+    "Health Profile Results",
+    "Lifestyle Profile Questions",
+    "Lifestyle Profile Results",
+    "Survey Results"
+   ]
+  },
+  {
+   "section": "Services [admin]",
+   "entries": [
+    "Service Category",
+    "Conditions/Treatment Plans",
+    "Questionnaires",
+    "Bundles",
+    "Questionnaire Bundle Mapping",
+    "Supplements",
+    "Other Items"
+   ]
+  },
+  {
+   "section": "Package Management [admin]",
+   "entries": [
+    "Mini Package City Update",
+    "Mini Package Update",
+    "Mini Package Category",
+    "Product Categories",
+    "Custom Packages",
+    "Custom Test Add-ons",
+    "Coach Consultation Package",
+    "Blood Biomarker Packages",
+    "Health Coach Packages",
+    "Biomarker Categories",
+    "Blood Biomarker List",
+    "Non Blood Biomarker List",
+    "OCR Management",
+    "List Of Food",
+    "Food Categories",
+    "Sample Details",
+    "Service Provider"
+   ]
+  },
+  {
+   "section": "Lab Management [admin]",
+   "entries": [
+    "Time Slots",
+    "Regions",
+    "Labs",
+    "Homecare Services",
+    "Homecare Costs",
+    "Lab Availability Slots",
+    "Lab Availability Dashboard",
+    "Lab Costs",
+    "Lab Costing New",
+    "Homecare Professionals",
+    "Package LabSlots",
+    "Homecare Costing New",
+    "New Slot Service",
+    "New Real Time Slots"
+   ]
+  },
+  {
+   "section": "Coach Management [admin]",
+   "entries": [
+    "Wellbeing coaches",
+    "Coach Availability Slots"
+   ]
+  },
+  {
+   "section": "Physio Management [admin]",
+   "entries": [
+    "Physiotherapist"
+   ]
+  },
+  {
+   "section": "Website CMS [admin]",
+   "entries": [
+    "Master Website Categories",
+    "Website Categories",
+    "Packages CMS",
+    "Landing Page",
+    "Article Categories",
+    "Articles",
+    "Banners",
+    "Search Keywords",
+    "Navigation Menu",
+    "SEO Folders",
+    "Static Page Seo",
+    "Prefered Search Outputs",
+    "Website Footer",
+    "Sitemap Automation"
+   ]
+  },
+  {
+   "section": "Journeys [admin]",
+   "entries": [
+    "Landing Pages (weight-loss journey)",
+    "WeightLoss Retention"
+   ]
+  },
+  {
+   "section": "Availibilty Slots [nutritionist] (top-level link)",
+   "entries": [
+    "Coach slot details"
+   ]
+  },
+  {
+   "section": "FAQ [admin]",
+   "entries": [
+    "FAQ Details"
+   ]
+  },
+  {
+   "section": "Ratings [admin]",
+   "entries": [
+    "How Do you Hear About Us"
+   ]
+  },
+  {
+   "section": "Reviews [admin] (top-level link)",
+   "entries": [
+    "Reviews"
+   ]
+  },
+  {
+   "section": "Messages [nutritionist] (top-level link)",
+   "entries": [
+    "Chat"
+   ]
+  },
+  {
+   "section": "Customer Longevity Score [nutritionist, externalNutritionist] (top-level link)",
+   "entries": [
+    "Customer Longevity Score"
+   ]
+  },
+  {
+   "section": "Additional Resources [nutritionist, externalNutritionist] (top-level link)",
+   "entries": [
+    "Additional Resources"
+   ]
+  },
+  {
+   "section": "Wearables Tracker [nutritionist] (top-level link)",
+   "entries": [
+    "Wearables Tracker"
+   ]
+  },
+  {
+   "section": "Coupon Codes [admin]",
+   "entries": [
+    "Coupon Codes (list; Generator route hidden display:false)"
+   ]
+  },
+  {
+   "section": "Corporate Partners [admin, b2bPartner]",
+   "entries": [
+    "Valeo Ambassadors",
+    "Valeo Partners",
+    "Dewa",
+    "Valeo Corporates",
+    "External Partners",
+    "B2B Partners [admin, b2bPartner]"
+   ]
+  },
+  {
+   "section": "Longevity Score [admin]",
+   "entries": [
+    "Longevity Score",
+    "Fitness Plan"
+   ]
+  },
+  {
+   "section": "Referral Codes [admin]",
+   "entries": [
+    "Referral Codes"
+   ]
+  },
+  {
+   "section": "Application Settings [admin]",
+   "entries": [
+    "Force/Recommend update version",
+    "Mobile Promotions",
+    "App Banners",
+    "Home Page Rankings",
+    "Product DeepLinks",
+    "Banner Strip"
+   ]
+  },
+  {
+   "section": "Exchange Rates [admin]",
+   "entries": [
+    "Exchange Rates"
+   ]
+  },
+  {
+   "section": "Home Care Portal [homecare]",
+   "entries": [
+    "Upcoming Orders",
+    "Bookings",
+    "Professional Management",
+    "Total Orders (hidden by Sidebar.jsx:336 unless isHomecareCostingView flag)"
+   ]
+  },
+  {
+   "section": "Ticketing Management [homecare]",
+   "entries": [
+    "Create New Ticket",
+    "View Tickets"
+   ]
+  },
+  {
+   "section": "Nurse Portal [homeCareProfessional]",
+   "entries": [
+    "New Orders",
+    "Completed Orders (plus hidden: Notifications, Past Orders, Client Lab Details, Upload Sample Details, Report Issue, Change Member)"
+   ]
+  },
+  {
+   "section": "HomeCare Mobile Portal [homecare] (top-level link)",
+   "entries": [
+    "Homecare mobile panel (HomecareMwebPanelNew)"
+   ]
+  },
+  {
+   "section": "Ticket Management Mobile Portal [homecare] (top-level links)",
+   "entries": [
+    "Ticket list",
+    "Ticket view (:ticketId)",
+    "Reopen ticket (:ticketId)"
+   ]
+  },
+  {
+   "section": "Total Orders Mobile Portal [homecare] (top-level link)",
+   "entries": [
+    "Homecare costing total orders"
+   ]
+  }
+ ],
+ "unrouted": [
+  "pages/Orders/OrdersDashboard.jsx \u2014 'Cart Orders' route commented out in routes.js (~line 428); superseded by OrdersListView",
+  "pages/NewOrdersRevamp/NewOrdersRevamp.jsx \u2014 'New Cart Orders' route commented out (~line 444); eager import still present",
+  "pages/Orders/SupplementOrdersDashboard.jsx \u2014 'Supplement Orders' list route commented out (~line 476); only the :orderId detail route survives",
+  "pages/Orders/MedicineOrderDashboard.jsx \u2014 'Medicine Orders' list route commented out (~line 484); only the :orderId detail route survives",
+  "pages/Orders/PaymentPendingOrders/PaymentPendingOrders.jsx + components/DraftOrderDashboardDetails.jsx \u2014 'Payment Pending Orders' + draft detail routes commented out (~line 529)",
+  "pages/Orders/SubscriptionOrders/subscriptionOrders.jsx \u2014 'Subscription Orders' route commented out (~line 590)",
+  "pages/Orders/ClientPasswordReset.jsx \u2014 'Special Condition' (client password reset) route commented out (~line 606)",
+  "pages/Orders/TemporaryOrders.jsx + TemporaryOrderDashboardDetails.jsx \u2014 'Temporary Orders' routes commented out (~line 623); eager imports remain",
+  "pages/Subscriptions/PackageSubscriptions.jsx \u2014 'Package Subscriptions' route commented out inside dead 'Subscriptions' section (~line 680)",
+  "pages/Services/Medicines.jsx \u2014 'Medicines' service route commented out (~line 863)",
+  "pages/Services/Supplements.jsx \u2014 imported but never routed; nav 'Supplements' points at SupplementCategories instead",
+  "pages/Packages/ManagePackages.jsx \u2014 only referenced in the fully commented-out 'Tests & Packages' section (~line 994)",
+  "pages/LandingPage/ (Slider.jsx, HowItWorks.jsx, WhatWeFocus.jsx) \u2014 old landing-page CMS; both route blocks commented out (~lines 1354 and 1712)",
+  "pages/AdvanceLandingPages/AdvanceLandingPageHome.jsx \u2014 'Advance Landing Pages' list route commented out (~line 1464); child WidgetsList route still live but unreachable from nav",
+  "pages/CMS/SeoLandingPage.jsx \u2014 'SEO Landing Pages' route commented out (~line 1448)",
+  "pages/CouponCode/CouponCodes.jsx \u2014 imported in routes.js but no route entry at all (CouponCodeIndex is used instead)",
+  "pages/Reviews/OrderReviews.jsx \u2014 'Reviews / Order Reviews' route blocks commented out (~lines 1584-1622); NutritionistReviews/NutritionistRatings referenced there don't even have imports",
+  "pages/FAQCategories.jsx + FAQCategoriesDropdown.jsx \u2014 no route; consumed as embedded components by FAQDetails/QuestionsandAnswers",
+  "pages/QuestionsandAnswers.jsx \u2014 no route; embedded inside FAQDetails.jsx and CMS/MasterWebsiteCategories.jsx",
+  "pages/Packages/ProblematicQuestions.jsx (+ ProblematicAnswersForm, ProblematicBiomarkerForm) \u2014 no route entry; likely reached as embedded tab, needs feature-crawl confirmation",
+  "pages/PageNotFound.jsx \u2014 unreferenced anywhere (dead file)",
+  "pages/Orders/HomecareInfoResample.jsx, B2BOrderDetails.jsx, SubscriptionOrdersView.jsx etc. \u2014 sub-components of routed order screens, not standalone routes"
+ ],
+ "servicesFiles": [
+  {
+   "file": "src/services/aclService.js",
+   "domain": "ACL: roles, page categories, user-page permission APIs"
+  },
+  {
+   "file": "src/services/AdditionalResourcesService.js",
+   "domain": "Coach 'additional resources' content uploads for clients"
+  },
+  {
+   "file": "src/services/BannerService.js",
+   "domain": "Website/app banner CRUD (banners, strip banners)"
+  },
+  {
+   "file": "src/services/BiomarkServices.js",
+   "domain": "Biomarkers/blood tests: ranges, categories, OCR-related test data"
+  },
+  {
+   "file": "src/services/BundleService.js",
+   "domain": "Treatment bundles and questionnaire-bundle mapping APIs"
+  },
+  {
+   "file": "src/services/CMSNavigationService.js",
+   "domain": "Website CMS navigation menu APIs"
+  },
+  {
+   "file": "src/services/CoachConsultationPackageService.js",
+   "domain": "Coach consultation package CRUD"
+  },
+  {
+   "file": "src/services/EidOcrService.js",
+   "domain": "Emirates ID OCR upload/extraction for customer identity"
+  },
+  {
+   "file": "src/services/ExternalPartnerService.js",
+   "domain": "External partner (third-party reseller) management"
+  },
+  {
+   "file": "src/services/FamilyMembersService.js",
+   "domain": "Client family members / dependents APIs"
+  },
+  {
+   "file": "src/services/FitnessPlansService.jsx",
+   "domain": "Fitness plan content APIs (longevity section)"
+  },
+  {
+   "file": "src/services/FooterService.js",
+   "domain": "Website footer CMS APIs"
+  },
+  {
+   "file": "src/services/HealthHubService.js",
+   "domain": "Health Hub articles and article categories APIs"
+  },
+  {
+   "file": "src/services/InternalPartnersServices.js",
+   "domain": "B2B (internal) partner management APIs"
+  },
+  {
+   "file": "src/services/LongevityService.js",
+   "domain": "Longevity score categories/parameters and customer scores"
+  },
+  {
+   "file": "src/services/MedicineService.js",
+   "domain": "Medicines catalog APIs (treatments)"
+  },
+  {
+   "file": "src/services/MessagingService.js",
+   "domain": "Coach-client chat / messaging (likely Firebase-backed)"
+  },
+  {
+   "file": "src/services/NotificationService.js",
+   "domain": "Push/nurse notification APIs"
+  },
+  {
+   "file": "src/services/OrderService.js",
+   "domain": "Orders: list, detail, status, refunds, cart operations"
+  },
+  {
+   "file": "src/services/OtherItemService.js",
+   "domain": "'Other items' catalog (non-supplement, non-medicine products)"
+  },
+  {
+   "file": "src/services/ProblematicQuestionService.js",
+   "domain": "Problematic questions/biomarker-answer flagging APIs"
+  },
+  {
+   "file": "src/services/ProductDeepLinkService.js",
+   "domain": "Mobile product deep-link generation/management"
+  },
+  {
+   "file": "src/services/productService.js",
+   "domain": "Core product/package catalog APIs (largest shared service)"
+  },
+  {
+   "file": "src/services/RegionService.js",
+   "domain": "Countries/regions/cities for labs and pricing"
+  },
+  {
+   "file": "src/services/SearchKeywordServices.js",
+   "domain": "Website search keyword management"
+  },
+  {
+   "file": "src/services/SeoLandingService.js",
+   "domain": "SEO landing page APIs (route now commented out)"
+  },
+  {
+   "file": "src/services/SeoService.js",
+   "domain": "SEO metadata: static pages, folders, preferred search outputs, sitemap"
+  },
+  {
+   "file": "src/services/ServiceProviderService.js",
+   "domain": "Lab/service provider entity APIs"
+  },
+  {
+   "file": "src/services/SupplementService.js",
+   "domain": "Supplements catalog and supplement category APIs"
+  },
+  {
+   "file": "src/services/TokenService.js",
+   "domain": "Auth token storage/refresh helper"
+  },
+  {
+   "file": "src/services/TrackLocation.js",
+   "domain": "Nurse/homecare live location tracking"
+  },
+  {
+   "file": "src/services/UploadMedia.js",
+   "domain": "Media/file upload helper (images, PDFs to storage)"
+  },
+  {
+   "file": "src/services/UserService.js",
+   "domain": "Users: clients, admins, coaches, auth, tags, permissions"
+  },
+  {
+   "file": "src/services/ValeoPartnersService.js",
+   "domain": "Valeo partners/ambassadors/corporates (Dewa etc.) APIs"
+  }
+ ]
+}

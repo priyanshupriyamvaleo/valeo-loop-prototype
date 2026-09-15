@@ -1,0 +1,114 @@
+# ── Checks and a preview deploy for every pull request ────────
+# The production workflow only runs after a merge, which is too late to learn
+# that a branch does not compile. This runs on the PR itself, and gives a URL to
+# click before approving.
+#
+# Uses the same VERCEL_TOKEN secret as deploy-production.yml.
+
+name: PR checks and preview
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+# One run per PR. Pushing again supersedes the previous run rather than queueing
+# behind it.
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# --scope is passed explicitly on every command. VERCEL_ORG_ID alone was not
+# enough: vercel pull failed with "Could not retrieve Project Settings",
+# because a token scoped to a team still resolves the project against the
+# personal account unless the scope is named.
+env:
+  VERCEL_ORG_ID: team_o8r0BElW0jyK53JG4alemWFv
+  VERCEL_PROJECT_ID: prj_eQPNcloiG8sh4JsJS63qC13BsGzE
+
+jobs:
+  # Typecheck and build run without any secret, so a fork or a PR opened before
+  # the token exists still gets useful feedback.
+  checks:
+    name: Typecheck and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Types are checked explicitly: next.config.js sets
+      # eslint.ignoreDuringBuilds, so a build alone is a weaker signal than it
+      # looks.
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+  preview:
+    name: Preview deploy
+    runs-on: ubuntu-latest
+    needs: checks
+    # Skip on forks: secrets are not available there, and failing red on a
+    # contribution nobody can fix is worse than not deploying it.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Check the token is configured
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::VERCEL_TOKEN is not set. Add it in Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - run: npm install --global vercel@latest
+
+      # Preview environment, not production — a PR must not build against
+      # production configuration.
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=preview --scope=ritwik-28s-projects --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Build
+        run: vercel build --scope=ritwik-28s-projects --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy preview
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --scope=ritwik-28s-projects --token="${{ secrets.VERCEL_TOKEN }}")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      # One comment, edited in place on later pushes, rather than a new comment
+      # per commit.
+      - name: Comment the preview URL
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.url }}'
+            const marker = '<!-- vercel-preview -->'
+            const body = `${marker}\n**Preview deployed** → ${url}\n\nCommit \`${context.sha.slice(0, 7)}\`. The deployment is behind Vercel Deployment Protection, so sign in to Vercel first.`
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: context.issue.number,
+            })
+            const existing = comments.find(c => c.body?.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: context.issue.number, body,
+              })
+            }

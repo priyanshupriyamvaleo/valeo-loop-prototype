@@ -1,0 +1,704 @@
+[
+ {
+  "id": "1",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Non-Blood Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "2",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Functional Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "3",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Genomics",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "4",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Genomics",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "5",
+  "action": "drop",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "6",
+  "action": "keep",
+  "hint": "",
+  "note": "PROPOSED — 1 package(s) in this family."
+ },
+ {
+  "id": "7",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Non-Blood Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "8",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "9",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Non-Blood Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "10",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Functional Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "11",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "12",
+  "action": "drop",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "13",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "14",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "15",
+  "action": "keep",
+  "hint": "",
+  "note": "PROPOSED — 3 package(s) in this family."
+ },
+ {
+  "id": "16",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "17",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "18",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "19",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "20",
+  "action": "drop",
+  "hint": "Treatments ▸ Physio & Rehab",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "21",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "22",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "23",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "24",
+  "action": "drop",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "25",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "26",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "27",
+  "action": "keep",
+  "hint": "",
+  "note": "PROPOSED — 14 package(s) in this family."
+ },
+ {
+  "id": "28",
+  "action": "drop",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "29",
+  "action": "drop",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "30",
+  "action": "keep",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 4 package(s) in this family."
+ },
+ {
+  "id": "31",
+  "action": "keep",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 41 package(s) in this family."
+ },
+ {
+  "id": "32",
+  "action": "keep",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 24 package(s) in this family."
+ },
+ {
+  "id": "33",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "34",
+  "action": "drop",
+  "hint": "Treatments ▸ Physio & Rehab",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "35",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "36",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "37",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "38",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "39",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "40",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "41",
+  "action": "keep",
+  "hint": "",
+  "note": "PROPOSED — 1 package(s) in this family."
+ },
+ {
+  "id": "42",
+  "action": "keep",
+  "hint": "",
+  "note": "PROPOSED — 1 package(s) in this family."
+ },
+ {
+  "id": "43",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Genomics",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "44",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "45",
+  "action": "keep",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 20 package(s) in this family."
+ },
+ {
+  "id": "46",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "47",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "48",
+  "action": "keep",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 6 package(s) in this family."
+ },
+ {
+  "id": "49",
+  "action": "drop",
+  "hint": "Home & Personal Care ▸ Nursing",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "50",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "51",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "52",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "53",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "54",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "55",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "56",
+  "action": "drop",
+  "hint": "Treatments ▸ Physio & Rehab",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "57",
+  "action": "keep",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 19 package(s) in this family."
+ },
+ {
+  "id": "58",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "59",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "60",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "61",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "62",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "63",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "64",
+  "action": "drop",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "65",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "66",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "67",
+  "action": "keep",
+  "hint": "",
+  "note": "PROPOSED — 1 package(s) in this family."
+ },
+ {
+  "id": "68",
+  "action": "drop",
+  "hint": "Home & Personal Care ▸ Childcare",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "69",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "72",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "73",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "74",
+  "action": "drop",
+  "hint": "Home & Personal Care ▸ Childcare",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "75",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "76",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "77",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "78",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "79",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "80",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "81",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "82",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "83",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "84",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "85",
+  "action": "keep",
+  "hint": "",
+  "note": "PROPOSED — 1 package(s) in this family."
+ },
+ {
+  "id": "86",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "87",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "88",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "89",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "90",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Blood Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "91",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "92",
+  "action": "keep",
+  "hint": "",
+  "note": "PROPOSED — 1 package(s) in this family."
+ },
+ {
+  "id": "93",
+  "action": "keep",
+  "hint": "",
+  "note": "PROPOSED — 1 package(s) in this family."
+ },
+ {
+  "id": "94",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Blood Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "95",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "96",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "97",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "98",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "99",
+  "action": "keep",
+  "hint": "Doctors & Health Coaches ▸ Consultations",
+  "note": "PROPOSED — 3 package(s) in this family."
+ },
+ {
+  "id": "100",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "101",
+  "action": "drop",
+  "hint": "Home & Personal Care ▸ Nursing",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "102",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "103",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "104",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "105",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "106",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "107",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "108",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "109",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "110",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "111",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "112",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "113",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "114",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Blood Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "115",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "116",
+  "action": "drop",
+  "hint": "",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "117",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Blood Tests",
+  "note": "PROPOSED — campaign / partner / hidden bucket, not a taxonomy node."
+ },
+ {
+  "id": "118",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Blood Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ },
+ {
+  "id": "119",
+  "action": "drop",
+  "hint": "Diagnostics ▸ Functional Tests",
+  "note": "PROPOSED — 0 coach/consultation packages use it. CHECK OTHER PACKAGE FAMILIES first: product_category is shared."
+ }
+]

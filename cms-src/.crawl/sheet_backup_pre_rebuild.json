@@ -1,0 +1,817 @@
+{
+ "title": "Catalogue Tracker",
+ "tabs": {
+  "Read Me": {
+   "sheetId": 890777167,
+   "values": [
+    [
+     "How to use"
+    ],
+    [
+     "Deliverables",
+     "The master tracker. Every piece of work: owner, status, start/due, dependency. Filter by Workstream or Owner."
+    ],
+    [
+     "Milestones",
+     "The hard dates. Design freeze, sign-off, deployment start."
+    ],
+    [
+     "Owners",
+     "Who owns which department and workstream. Agreed on the whiteboard."
+    ],
+    [
+     "CMS Build Status",
+     "Feature-by-feature state of the CMS prototype vs what the real build still needs."
+    ],
+    [
+     "Content Upload",
+     "The upload workstream: Journeys, Categories & Sub-categories, Blogs."
+    ],
+    [
+     "Risks & Open Items",
+     "Anything unresolved that can slip the dates. Review in every standup."
+    ],
+    [],
+    [
+     "Conventions"
+    ],
+    [
+     "Status values",
+     "Not started \u00b7 In progress \u00b7 In review \u00b7 Blocked \u00b7 Done  (colour-coded automatically)"
+    ],
+    [
+     "Dates",
+     "All dates are 2026. 'Due in (days)' is a live formula against today."
+    ],
+    [
+     "Owner = one name",
+     "Every row has exactly one accountable owner. 'Unassigned' is a flag, not an owner."
+    ]
+   ],
+   "rows_with_data": 12
+  },
+  "Milestones": {
+   "sheetId": 434414931,
+   "values": [
+    [
+     "Milestones"
+    ],
+    [
+     "The hard dates from the planning whiteboard. Everything in Deliverables rolls up to these."
+    ],
+    [],
+    [
+     "Milestone",
+     "Date",
+     "Owner",
+     "Status",
+     "Exit criteria (what 'done' means)",
+     "Due in (days)"
+    ],
+    [
+     "Design System",
+     "03-Aug-2026",
+     "Design",
+     "In progress",
+     "Every department's listing + landing screens signed off in Figma; no open design questions.",
+     "4"
+    ],
+    [
+     "Final sign-off / signatures",
+     "05-Aug-2026",
+     "FE Team",
+     "Not started",
+     "Catalogue model, nomenclature, per-department fields and content approved by all department owners.",
+     "6"
+    ],
+    [
+     "Deployment Strategy",
+     "07-Aug-2026",
+     "Abhishek Jain",
+     "Not started",
+     "Sign-off closed, content uploaded, integrations wired; production rollout begins.",
+     "8"
+    ]
+   ],
+   "rows_with_data": 7
+  },
+  "Owners": {
+   "sheetId": 1337026205,
+   "values": [
+    [
+     "Migration Ownership"
+    ],
+    [
+     "Department owners as agreed on the whiteboard, plus workstream owners."
+    ],
+    [],
+    [
+     "Department (catalogue spine)",
+     "Owner",
+     "Scope of ownership",
+     "Status",
+     "Notes"
+    ],
+    [
+     "Diagnostics & Testing",
+     "Shivangi",
+     "Sub-departments, listings, blood panels content, per-country config, sign-off",
+     "In progress"
+    ],
+    [
+     "Products & Devices",
+     "Shreedhar",
+     "Supplements, medicines, wearables, gift cards; PDP contract fields",
+     "In progress",
+     "Largest catalogue \u2014 356 masters migrated"
+    ],
+    [
+     "Treatments (IV)",
+     "Shreedhar",
+     "IV therapy listings, home-service fulfilment, city coverage",
+     "In progress",
+     "Same owner as Products"
+    ],
+    [
+     "Home & Personal Care",
+     "Yash",
+     "Physio, home nursing, personal care listings",
+     "In progress"
+    ],
+    [
+     "Consultations & Coaching",
+     "Unassigned",
+     "Doctor consults, coach sessions, consultation add-on linking",
+     "Blocked",
+     "NO OWNER on whiteboard \u2014 assign before 5 Aug sign-off"
+    ],
+    [],
+    [
+     "Workstream",
+     "Owner",
+     "Scope",
+     "Status",
+     "Notes"
+    ],
+    [
+     "CMS platform / build",
+     "Akash",
+     "Catalogue CMS: editors, retention, promo banners, audit log, schema map, integrations",
+     "In progress",
+     "Prototype live on -omega"
+    ],
+    [
+     "Design",
+     "Design",
+     "Figma screens for all departments, journey/retention pages, PDP",
+     "In progress",
+     "Due 3 Aug"
+    ],
+    [
+     "Content Migration",
+     "BE Team",
+     "Journeys, Categories & Sub-categories, Blogs",
+     "Not started",
+     "See Content Upload sheet"
+    ],
+    [
+     "Integrations",
+     "Shreedhar",
+     "Zoho Books (org + item ids), Unicommerce SKUs, ERP mapping",
+     "Not started",
+     "Prototype uses mock feeds"
+    ],
+    [
+     "Data / schema",
+     "Shreedhar",
+     "33-table catalogue schema, translations, migration of 356 masters",
+     "In progress"
+    ]
+   ],
+   "rows_with_data": 16
+  },
+  "Deliverables": {
+   "sheetId": 807344079,
+   "values": [
+    [
+     "Deliverables \u2014 master tracker"
+    ],
+    [
+     "Every deliverable with an owner and a date. Filter by Workstream / Owner / Status. Add rows freely."
+    ],
+    [],
+    [
+     "ID",
+     "Workstream",
+     "Deliverable",
+     "Owner",
+     "Status",
+     "Start",
+     "Due",
+     "Due in (days)",
+     "Depends on",
+     "Notes"
+    ],
+    [
+     "1",
+     "Design",
+     "Figma: all department listing + landing screens",
+     "Design",
+     "In progress",
+     "03-Aug",
+     "15-Sep",
+     "47",
+     "",
+     "Whiteboard: Design \u2014 3 Aug"
+    ],
+    [
+     "2",
+     "Design",
+     "Figma: journey page blocks + retention page",
+     "Design",
+     "In progress",
+     "15-Aug",
+     "15-Sep",
+     "47",
+     "",
+     "Block parity with CMS builder"
+    ],
+    [
+     "3",
+     "Design",
+     "Design QA against built CMS screens",
+     "Ritwik",
+     "Not started",
+     "03-Aug",
+     "05-Aug",
+     "6",
+     "1"
+    ],
+    [
+     "4",
+     "Catalogue Migration",
+     "Diagnostics: sub-departments + listings finalised",
+     "Shivangi",
+     "In progress",
+     "21-Jul",
+     "05-Aug",
+     "6",
+     "",
+     "Incl. per-country config & VAT"
+    ],
+    [
+     "5",
+     "Catalogue Migration",
+     "Products & Devices: 356 masters reviewed + PDP fields",
+     "Shreedhar",
+     "In progress",
+     "21-Jul",
+     "05-Aug",
+     "6",
+     "",
+     "FE SUPPLEMENT contract covered in CMS"
+    ],
+    [
+     "6",
+     "Catalogue Migration",
+     "Treatments (IV): listings + city coverage",
+     "Shreedhar",
+     "In progress",
+     "21-Jul",
+     "05-Aug",
+     "6"
+    ],
+    [
+     "7",
+     "Catalogue Migration",
+     "Home & Personal Care: listings finalised",
+     "Yash",
+     "In progress",
+     "21-Jul",
+     "05-Aug",
+     "6"
+    ],
+    [
+     "8",
+     "Catalogue Migration",
+     "Consultations & Coaching: listings finalised",
+     "Unassigned",
+     "Blocked",
+     "",
+     "05-Aug",
+     "6",
+     "",
+     "OWNER NEEDED \u2014 blocking sign-off"
+    ],
+    [
+     "9",
+     "Milestone",
+     "FINAL SIGN-OFF (signatures)",
+     "FE Team",
+     "Not started",
+     "29-Jul",
+     "05-Aug",
+     "6",
+     "4,5,6,7,8",
+     "All department owners sign"
+    ],
+    [
+     "10",
+     "Integrations",
+     "Zoho Books: live org + item id feed (replace mock)",
+     "BE Team",
+     "Not started",
+     "10-Aug",
+     "14-Aug",
+     "15",
+     "",
+     "CMS dropdown ready; needs real API"
+    ],
+    [
+     "11",
+     "Integrations",
+     "Unicommerce: live SKU feed (replace mock)",
+     "BE Team",
+     "Not started",
+     "10-Aug",
+     "14-Aug",
+     "15",
+     "",
+     "CMS dropdown ready; needs real API"
+    ],
+    [
+     "12",
+     "Integrations",
+     "Payment methods per country verified (Paymob/Tabby/Tamara/COD/Card)",
+     "BE Team",
+     "Not started",
+     "03-Aug",
+     "07-Aug",
+     "8",
+     "",
+     "Configured on sub-department"
+    ],
+    [
+     "13",
+     "Data / Schema",
+     "Translations table wiring for all EN/AR fields",
+     "BE Team",
+     "Not started",
+     "03-Aug",
+     "07-Aug",
+     "8",
+     "16"
+    ],
+    [
+     "14",
+     "Data / Schema",
+     "Migration dry-run of 356 masters into new schema",
+     "BE Team",
+     "Not started",
+     "04-Aug",
+     "07-Aug",
+     "8",
+     "16"
+    ],
+    [
+     "15",
+     "CMS Platform",
+     "Rich text (Tiptap) rollout to remaining long-form fields",
+     "Ritwik",
+     "In progress",
+     "27-Jul",
+     "04-Aug",
+     "5",
+     "",
+     "Core fields done"
+    ],
+    [
+     "16",
+     "CMS Platform",
+     "AI go-live audit: wire real model (spelling + SEO)",
+     "Ritwik",
+     "Not started",
+     "04-Aug",
+     "07-Aug",
+     "8",
+     "",
+     "Deterministic mock in place"
+    ],
+    [
+     "17",
+     "CMS Platform",
+     "Single-H1 enforcement across category + PDP pages",
+     "Ritwik",
+     "Not started",
+     "04-Aug",
+     "07-Aug",
+     "8",
+     "21",
+     "Journey pages already gated"
+    ],
+    [
+     "18",
+     "CMS Platform",
+     "Role-based access (who can publish what)",
+     "Ritwik",
+     "Not started",
+     "05-Aug",
+     "07-Aug",
+     "8",
+     "",
+     "Not started \u2014 confirm requirement"
+    ],
+    [
+     "19",
+     "Deployment",
+     "Deployment runbook + rollback plan",
+     "BE Team",
+     "Not started",
+     "05-Aug",
+     "07-Aug",
+     "8",
+     "12"
+    ],
+    [
+     "20",
+     "Deployment",
+     "Production rollout begins",
+     "BE Team",
+     "Not started",
+     "07-Aug",
+     "07-Aug",
+     "8",
+     "12,24",
+     "Whiteboard: Deployment start \u2014 7 Aug"
+    ],
+    [
+     "21",
+     "Deployment",
+     "Post-launch content audit (crawler view)",
+     "Ritwik",
+     "Not started",
+     "07-Aug",
+     "10-Aug",
+     "11",
+     "25"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+     "",
+     "Summary"
+    ],
+    [
+     "",
+     "Total deliverables",
+     "21"
+    ],
+    [
+     "",
+     "Done",
+     "0"
+    ],
+    [
+     "",
+     "In progress",
+     "7"
+    ],
+    [
+     "",
+     "Blocked",
+     "1"
+    ],
+    [
+     "",
+     "Not started",
+     "13"
+    ],
+    [
+     "",
+     "Overdue",
+     "0"
+    ]
+   ],
+   "rows_with_data": 58
+  },
+  "CMS Build Status": {
+   "sheetId": 1667908312,
+   "values": [
+    [
+     "CMS build status"
+    ],
+    [
+     "Feature-by-feature. 'Prototype' = live on the -omega deployment. 'Real build' = what production still needs."
+    ],
+    [],
+    [
+     "Area",
+     "Feature",
+     "Prototype",
+     "Owner",
+     "Real-build work remaining",
+     "Notes"
+    ],
+    [
+     "Spine",
+     "Department \u2192 Sub-department \u2192 Listing model",
+     "Done",
+     "Ritwik",
+     "\u2014",
+     "Two-taxonomy model finalised"
+    ],
+    [
+     "Spine",
+     "Categories & Sub-categories (merchandising)",
+     "Done",
+     "Ritwik",
+     "\u2014"
+    ],
+    [
+     "Listing",
+     "Per-department listing editor (grouped sections)",
+     "Done",
+     "Ritwik",
+     "Wire to real API",
+     "13+ sections"
+    ],
+    [
+     "Listing",
+     "FE SUPPLEMENT PDP contract fields",
+     "Done",
+     "Shreedhar",
+     "FE consumption + QA",
+     "Products & Devices"
+    ],
+    [
+     "Listing",
+     "Incremental save + activation gate",
+     "Done",
+     "Ritwik",
+     "Real persistence",
+     "Mandatory fields before Active"
+    ],
+    [
+     "Listing",
+     "Per-warehouse stock; master = sum",
+     "Done",
+     "Ritwik",
+     "Feed from Unicommerce"
+    ],
+    [
+     "Sub-dept",
+     "VAT per country + per city",
+     "Done",
+     "Shivangi",
+     "Confirm rates per market",
+     "City overrides inherit country"
+    ],
+    [
+     "Sub-dept",
+     "Zoho organisation id per country",
+     "Done",
+     "BE Team",
+     "Live Zoho org feed"
+    ],
+    [
+     "Sub-dept",
+     "Payment methods per country",
+     "Done",
+     "BE Team",
+     "Verify gateway availability",
+     "Paymob/Card/COD/Tabby/Tamara/Apple Pay"
+    ],
+    [
+     "Variant",
+     "Zoho item id + SKU dropdowns",
+     "Done",
+     "BE Team",
+     "Replace mock with live APIs",
+     "Zoho Books + Unicommerce"
+    ],
+    [
+     "Journeys",
+     "Block page builder (12 block types)",
+     "Done",
+     "Ritwik",
+     "FE renderer parity",
+     "HERO mandatory/single"
+    ],
+    [
+     "Journeys",
+     "EN/AR + mobile/desktop preview",
+     "Done",
+     "Ritwik",
+     "\u2014"
+    ],
+    [
+     "Retention",
+     "Central retention builder + attach per country",
+     "Done",
+     "Ritwik",
+     "App consumption",
+     "19 seeded sections"
+    ],
+    [
+     "Retention",
+     "Weekly Doctor Messages (16-week schedule)",
+     "Done",
+     "Shivangi",
+     "Clinical copy review",
+     "Bilingual, draft/published"
+    ],
+    [
+     "Partners",
+     "Per-partner pricing (variant/city/country), image override, exclusivity",
+     "Done",
+     "Ritwik",
+     "B2B contract validation",
+     "Across listing/category/journey"
+    ],
+    [
+     "Promo",
+     "Promo banner entity + coupon attachment",
+     "Done",
+     "Ritwik",
+     "Coupon engine wiring",
+     "Selectable on listing/category"
+    ],
+    [
+     "Governance",
+     "Compliance audit log with before\u2192after diffs",
+     "Done",
+     "Ritwik",
+     "Persist to audit_log table",
+     "audit_log exists in schema"
+    ],
+    [
+     "Governance",
+     "No entity delete (active/inactive only)",
+     "Done",
+     "Ritwik",
+     "Enforce in API"
+    ],
+    [
+     "Governance",
+     "Schema map (151 fields \u2192 table.column)",
+     "Done",
+     "BE Team",
+     "Close 59 no-schema gaps",
+     "92 persisted / 59 gaps"
+    ],
+    [
+     "Content",
+     "Rich text editor (Tiptap) on long-form fields",
+     "Partial",
+     "Ritwik",
+     "Extend to remaining fields; sanitise on render",
+     "Stored as HTML"
+    ],
+    [
+     "Content",
+     "AI go-live audit (spelling + SEO, crawler view)",
+     "Partial",
+     "Ritwik",
+     "Wire a real model",
+     "Deterministic mock now"
+    ],
+    [
+     "Content",
+     "Single-H1 enforcement",
+     "Partial",
+     "Ritwik",
+     "Extend beyond journey pages",
+     "Blocks publish when violated"
+    ],
+    [
+     "Platform",
+     "Upload-only media (image + video)",
+     "Done",
+     "Ritwik",
+     "Real asset storage/CDN",
+     "No URL inputs anywhere"
+    ],
+    [
+     "Platform",
+     "App login gate + noindex",
+     "Done",
+     "Ritwik",
+     "Real SSO / RBAC",
+     "Demo gate only"
+    ],
+    [
+     "Platform",
+     "Role-based publish permissions",
+     "Not started",
+     "Ritwik",
+     "Define roles + gate publish",
+     "Confirm requirement"
+    ]
+   ],
+   "rows_with_data": 29
+  },
+  "Content Upload": {
+   "sheetId": 1024317273,
+   "values": [
+    [
+     "Content upload"
+    ],
+    [
+     "The three upload tracks from the whiteboard. One row per item \u2014 duplicate rows as the list grows."
+    ],
+    [],
+    [
+     "#",
+     "Track",
+     "Item",
+     "Owner",
+     "Status",
+     "Target date",
+     "Depends on",
+     "Notes"
+    ],
+    [
+     "1",
+     "Journeys",
+     "Weight Loss journey \u2014 page blocks + retention attached",
+     "",
+     "Not started"
+    ],
+    [
+     "2",
+     "Journeys",
+     "Longevity journey \u2014 page blocks",
+     "",
+     "Not started"
+    ],
+    [
+     "3",
+     "Journeys",
+     "Remaining journeys (list to be confirmed)",
+     "",
+     "Not started"
+    ],
+    [
+     "4",
+     "Categories & Sub-categories",
+     "Category tree finalised (web/app)",
+     "Shreedhar",
+     "Not started"
+    ],
+    [
+     "5",
+     "Categories & Sub-categories",
+     "Sub-categories created + landing content",
+     "Shreedhar",
+     "Not started"
+    ],
+    [
+     "6",
+     "Categories & Sub-categories",
+     "Listings mapped into sub-categories",
+     "Shreedhar",
+     "Not started"
+    ],
+    [
+     "7",
+     "Blogs",
+     "Blog inventory + migration list",
+     "",
+     "Not started"
+    ],
+    [
+     "8",
+     "Blogs",
+     "Blogs migrated with SEO metadata",
+     "",
+     "Not started"
+    ]
+   ],
+   "rows_with_data": 12
+  }
+ }
+}

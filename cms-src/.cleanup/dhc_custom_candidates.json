@@ -1,0 +1,242 @@
+[
+ {
+  "source": "custom",
+  "id": "90",
+  "name": "Doctor Consultation",
+  "country": "KSA",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "1025",
+  "name": "Doctor at Home",
+  "country": "Qatar",
+  "status": "Active",
+  "sub": "Doctor Visits",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "1018",
+  "name": "Doctor on Phone Call",
+  "country": "Qatar",
+  "status": "Inactive",
+  "sub": "Doctor Visits",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "316",
+  "name": "To Delete",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "702",
+  "name": "Doctor at Home",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Doctor Visits",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "713",
+  "name": "Doctor at Hotel",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Doctor Visits",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "25",
+  "name": "Doctor Consultation",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "311",
+  "name": "Emergency Doctor Visit",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Doctor Visits",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "309",
+  "name": "Doctor at Home Visits & Consultations",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Doctor Visits",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "310",
+  "name": "Doctor on Phone Call",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Doctor Visits",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "32",
+  "name": "Health Coach Consultation",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "11",
+  "name": "deprecated_Health Coaching",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "800",
+  "name": "Pediatric Doctor Home Visits & Consultation",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Doctor Visits",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "868",
+  "name": "DOC - Medication Order",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "56",
+  "name": "Doctor consultation - dummy",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "879",
+  "name": "Doctor on Call Additional Services",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Doctor Visits",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "57",
+  "name": "Free Coach Consultation",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "470",
+  "name": "Longevity follow up consultation",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "33",
+  "name": "Medical Consultation",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "801",
+  "name": "Pediatric Doctor Tele-consultation",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep"
+ },
+ {
+  "source": "custom",
+  "id": "979",
+  "name": "Weight Loss Teleconsultation",
+  "country": "UAE",
+  "status": "Active",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "merge into → Wegovy Pill + Free At-Home "
+ },
+ {
+  "source": "custom",
+  "id": "7",
+  "name": "deprecated_Energy Booster",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "9",
+  "name": "deprecated_General Wellbeing",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ },
+ {
+  "source": "custom",
+  "id": "8",
+  "name": "deprecated_Stress Relief",
+  "country": "UAE",
+  "status": "Inactive",
+  "sub": "Consultations",
+  "sheetDept": "Consultations & Coaching",
+  "action": "keep (inactive)"
+ }
+]
