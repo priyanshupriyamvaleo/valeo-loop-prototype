@@ -35,14 +35,17 @@ import type {
  * three sit in one column so the sum can be checked by eye, per city.
  */
 export function PackageSheet({
-    pkg, protocol, listings, cities, country, selected, onSelect, onChange, onBuildFromSteps,
-    overallPercent,
+    pkg, protocol, listings, cities, country, countries, onCountry,
+    selected, onSelect, onChange, onBuildFromSteps, overallPercent,
 }: {
     pkg: Composition
     protocol: Protocol
     listings: Listing[]
     cities: City[]
     country: Country
+    /** Every country the package has a row for, and the tab that changes it. */
+    countries: Country[]
+    onCountry: (c: Country) => void
     /** Which column the invoice below describes. `undefined` = country-wide. */
     selected?: string
     onSelect: (cityId?: string) => void
@@ -164,6 +167,24 @@ export function PackageSheet({
                             </li>
                         ))}
                     </ul>
+                </div>
+            )}
+
+            {/* ONE COUNTRY AT A TIME, chosen here rather than above the card.
+                The tab carries its currency, so no cell in the column repeats
+                it, and the counter says how many of this market's cells are
+                priced — the number that says whether a new city is ready. */}
+            {countries.length > 0 && (
+                <div className="flex overflow-hidden rounded border">
+                    {countries.map(ct => (
+                        <button key={ct} type="button"
+                            className={`px-2.5 py-1 text-[11px] ${ct === country
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:bg-muted"}`}
+                            onClick={() => onCountry(ct)}>
+                            {ct} <span className="font-mono opacity-70">{MONEY[ct].code}</span>
+                        </button>
+                    ))}
                 </div>
             )}
 

@@ -21,9 +21,8 @@ import {
 import { ALL_PATHS, pathsOf, resolveProtocol } from "@/lib/protocol-chain"
 import { DEMO_CITIES, DEMO_LISTINGS } from "@/lib/package-demo-catalogue"
 import { PackageSheet } from "@/components/protocol/plan/PackageSheet"
-import { PackagePrice, PackageInvoice } from "@/components/protocol/plan/PackagePrice"
-import { ScopeMatrix } from "@/components/catalogue/ScopeMatrix"
-import { CountrySwitcher } from "@/components/catalogue/CountrySwitcher"
+import { PackageCountries, PackageCities } from "@/components/protocol/plan/PackageMarkets"
+import { PackageDiscount } from "@/components/protocol/plan/PackageDiscount"
 import type {
     City, Composition, CompositionScope,
     Country, Listing, Protocol, SubDepartment,
@@ -167,11 +166,22 @@ export default function PackageBuilderPage() {
     const clearEdits = (k: string) =>
         setEditsByPath(prev => { const n = { ...prev }; delete n[k]; return n })
 
+    /**
+     * The markets the sheet may show. A country with no row sells nowhere, so
+     * it is not a tab — the tab strip is read from the package, never from the
+     * list of countries the business could theoretically serve.
+     */
+    const soldIn = COUNTRIES.filter(c => pkg?.scopes.some(sc => sc.country === c && !sc.cityId))
+    /* A package that sells only in KSA must not open on an empty UAE. The
+       selected country is honoured while it is a market and falls back to the
+       first one that is. */
+    const shown = soldIn.includes(country) ? country : (soldIn[0] ?? country)
+
     const resolution = useMemo(
         () => (pkg
-            ? resolveComposition(pkg, listings, country, { cityId: cityId || undefined })
+            ? resolveComposition(pkg, listings, shown, { cityId: cityId || undefined })
             : undefined),
-        [pkg, listings, country, cityId])
+        [pkg, listings, shown, cityId])
 
     const gaps = useMemo(
         () => (pkg && resolved
@@ -181,6 +191,7 @@ export default function PackageBuilderPage() {
         [pkg, resolved, listings, subDepartments, cities])
 
     const update = (patch: Partial<Composition>) => setEdits({ ...pkg!, ...patch })
+
 
     /**
      * ONE DISCOUNT FOR THE WHOLE PACKAGE.
@@ -195,7 +206,7 @@ export default function PackageBuilderPage() {
      * Read back from the country row of the market on screen. Any of them
      * would answer the same, because the write keeps them in step.
      */
-    const overallPercent = pkg?.scopes.find(sc => sc.country === country && !sc.cityId)?.percent
+    const overallPercent = pkg?.scopes.find(sc => sc.country === shown && !sc.cityId)?.percent
         ?? pkg?.scopes.find(sc => !sc.cityId)?.percent
 
     const setOverallPercent = (percent?: number) => {
@@ -401,53 +412,32 @@ export default function PackageBuilderPage() {
                 </div>
             )}
 
-            {/* ══ A · COUNTRY AVAILABILITY & CONFIG ══
-                The catalogue's own scope editor, reused rather than rebuilt. It
-                already states the things a bespoke panel here would have got
-                wrong: retiring keeps the row and its baseline; a retired
-                COUNTRY closes its cities; and a retired CITY inherits the
-                country row rather than closing — which is what effectiveScope
-                actually does, and the opposite of what a plain on/off switch
-                would have implied.
+            {/* ══ WHERE IT SELLS, THEN WHAT IT COSTS ══
 
-                Money is hidden inside it. The discount is authored once, below
-                the sheet, so a per-row percent here would be a second place to
-                type the same number. ══ */}
-            <Card className="space-y-4 p-5">
-                <div>
-                    <p className="text-base font-semibold">Country Availability &amp; Config</p>
-                    <p className="mt-0.5 max-w-3xl text-xs text-muted-foreground">
-                        One row per country. A market added here can be switched Inactive to stop
-                        selling — rows are not deleted, so the history of having offered it
-                        survives. The cities switched on here are the columns of the sheet below.
-                    </p>
-                </div>
-                <CountrySwitcher
-                    countries={COUNTRIES}
-                    value={country}
-                    onChange={c => { setCountry(c); setCityId("") }}
-                    counts={Object.fromEntries(COUNTRIES.map(c => [
-                        c,
-                        pkg.scopes.filter(sc => sc.country === c && sc.isActive !== false).length || "",
-                    ]))} />
-                <ScopeMatrix
-                    c={pkg}
-                    country={country}
-                    cities={cities}
-                    listings={listings}
-                    subDepartments={subDepartments}
-                    hideMoney
-                    onChange={(scopes: CompositionScope[]) => update({ scopes })}
-                    onAllocationChange={a => update({ rule: { ...pkg.rule, allocation: a } })} />
-            </Card>
+                Four sections and no more. The screen used to carry an
+                invoicing-entity panel, an audience picker, a live window, a
+                split strategy and a full VAT invoice table as well. Those say
+                how a sale is BOOKED. This screen answers what a package costs
+                and where, and the extra furniture made that question twice as
+                far down the page as it needed to be. ══ */}
 
-            {/* ══ B · PRICING SHEET ══ */}
+            <PackageCountries
+                pkg={pkg}
+                onChange={(scopes: CompositionScope[]) => update({ scopes })} />
+
+            <PackageCities
+                pkg={pkg}
+                cities={cities}
+                onChange={(scopes: CompositionScope[]) => update({ scopes })} />
+
             <PackageSheet
                 pkg={pkg}
                 protocol={resolved!}
                 listings={listings}
                 cities={cities}
-                country={country}
+                country={shown}
+                countries={soldIn}
+                onCountry={c => { setCountry(c); setCityId("") }}
                 selected={cityId || undefined}
                 onSelect={c => setCityId(c ?? "")}
                 onChange={next => setEdits(next)}
@@ -455,27 +445,11 @@ export default function PackageBuilderPage() {
                 overallPercent={overallPercent}
             />
 
-            {/* The window and the invoice split still live here. They are the
-                one market's terms rather than its arithmetic, so they follow
-                the column the sheet has selected. */}
-            <PackagePrice
-                pkg={pkg}
-                country={country}
-                cityId={cityId || undefined}
-                cityName={cities.find(c => c.id === cityId)?.name}
-                resolution={resolution}
-                onScopes={(scopes: CompositionScope[]) => update({ scopes })}
-                onStrategy={a => update({ rule: { ...pkg.rule, allocation: a } })}
-                overallPercent={overallPercent}
-                onOverallPercent={setOverallPercent}
-            />
-
-            <PackageInvoice
-                pkg={pkg}
-                listings={listings}
-                subDepartments={subDepartments}
-                country={country}
-                cityId={cityId || undefined}
+            <PackageDiscount
+                country={shown}
+                where={cities.find(c => c.id === cityId)?.name ?? shown}
+                percent={overallPercent}
+                onPercent={setOverallPercent}
                 resolution={resolution}
             />
         </div>
