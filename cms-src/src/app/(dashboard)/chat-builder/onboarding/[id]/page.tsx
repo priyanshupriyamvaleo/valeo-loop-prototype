@@ -9,8 +9,11 @@
 import Client from "./Client"
 
 export function generateStaticParams() {
+    /* Every seeded chat, plus the blank one. An id the export does not
+       name is a 404 on Pages: there is no server to resolve it. */
     return [
         { id: "new" },
+        { id: "onb-website-protocols" },
     ]
 }
 

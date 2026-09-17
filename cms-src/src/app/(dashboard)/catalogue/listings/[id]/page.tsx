@@ -9,8 +9,19 @@
 import Client from "./Client"
 
 export function generateStaticParams() {
+    /* The blank one, plus every listing the Package Builder links to. The
+       sheet opens a catalogue item per row, and an id the export does not
+       name is a 404 on Pages — there is no server to resolve it. */
     return [
         { id: "new" },
+        { id: "demo-panel-male" },
+        { id: "demo-panel-female" },
+        { id: "demo-med-bpc" },
+        { id: "demo-med-glp1" },
+        { id: "demo-consult-peptide" },
+        { id: "demo-consult-gp" },
+        { id: "demo-followup-review" },
+        { id: "demo-voucher-supp" },
     ]
 }
 
