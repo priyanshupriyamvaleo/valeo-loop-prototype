@@ -29,6 +29,7 @@ import type {
  */
 export function PackagePrice({
     pkg, country, cityId, cityName, resolution, onScopes, onStrategy,
+    overallPercent, onOverallPercent,
 }: {
     pkg: Composition
     country: Country
@@ -37,6 +38,9 @@ export function PackagePrice({
     resolution: CompositionResolution
     onScopes: (scopes: CompositionScope[]) => void
     onStrategy: (s: DiscountStrategy) => void
+    /** ONE number for the whole package, in every market it sells in. */
+    overallPercent?: number
+    onOverallPercent: (percent?: number) => void
 }) {
     const money = MONEY[country]
     const fmt = (n: number) => {
@@ -70,23 +74,33 @@ export function PackagePrice({
         <>
             {/* ══ THE DISCOUNT ══ */}
             <Card className="space-y-4 p-5">
-                <p className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-                    Discount · {where}
-                </p>
+                <div>
+                    <p className="text-base font-semibold">Discount and window</p>
+                    <p className="mt-0.5 max-w-3xl text-xs text-muted-foreground">
+                        The discount is <b className="text-foreground">one number for the whole
+                        package</b> and applies in every market it sells in. The dates and the
+                        split belong to {where}, because a window is a local decision — Kuwait sits
+                        at +03 while the UAE is at +04.
+                    </p>
+                </div>
 
                 <div className="grid gap-4 md:grid-cols-[1fr_320px]">
                     <div className="space-y-3">
                         <div className="flex flex-wrap items-end gap-4">
                             <div className="space-y-1.5">
-                                <Label className="text-xs">Overall discount</Label>
+                                <Label className="text-xs">
+                                    Overall discount
+                                    <span className="ml-1 font-normal text-muted-foreground">
+                                        every market
+                                    </span>
+                                </Label>
                                 <div className="flex items-center gap-2">
                                     <Input type="number" min={0} max={100}
                                         className="h-9 w-20"
                                         placeholder="0"
-                                        value={row?.percent ?? ""}
-                                        onChange={e => setRow({
-                                            percent: e.target.value === "" ? undefined : Number(e.target.value),
-                                        })} />
+                                        value={overallPercent ?? ""}
+                                        onChange={e => onOverallPercent(
+                                            e.target.value === "" ? undefined : Number(e.target.value))} />
                                     <span className="text-sm text-muted-foreground">%</span>
                                 </div>
                             </div>
@@ -155,15 +169,7 @@ export function PackagePrice({
                             <p className="text-xs text-amber-700">
                                 {resolution.blocking.length > 0
                                     ? `${resolution.blocking.length} item${resolution.blocking.length === 1 ? " is" : "s are"} not sold in ${where}.`
-                                    : `Type a discount and ${where} becomes a market for this package.`}
-                            </p>
-                        ) : cityId && !row ? (
-                            /* An empty box beside a real price needs explaining: the
-                               city has no row, so it inherits the country's. Typing
-                               here gives Dubai its own number. */
-                            <p className="text-xs text-muted-foreground">
-                                {where} has no discount of its own and inherits {country}&rsquo;s.
-                                Type one to give it its own.
+                                    : `${where} is not a market for this package yet. Switch it on in Country Availability.`}
                             </p>
                         ) : null}
                     </div>

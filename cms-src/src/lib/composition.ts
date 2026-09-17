@@ -61,6 +61,23 @@ export const MONEY: Record<Country, { code: string; minorUnits: number }> = {
     OTHERS: { code: "—", minorUnits: 2 },
 }
 
+/**
+ * One money formatter. This was copied into four components and a fifth was
+ * about to be written; they agreed on the rule and not on the code, which is
+ * how KWD ends up with two decimals in one of them.
+ *
+ * A whole number prints whole — "890", not "890.00" — because a sheet of
+ * trailing zeroes is harder to read down a column.
+ */
+export function fmtMoney(country: Country, n: number): string {
+    const m = MONEY[country]
+    const whole = Math.abs(n % 1) < 1e-9
+    return n.toLocaleString(undefined, {
+        minimumFractionDigits: whole ? 0 : m.minorUnits,
+        maximumFractionDigits: m.minorUnits,
+    })
+}
+
 export function roundMoney(country: Country, n: number): number {
     const f = 10 ** MONEY[country].minorUnits
     return Math.round(n * f) / f

@@ -20,23 +20,28 @@ import {
 } from "@/lib/protocol-package"
 import { ALL_PATHS, pathsOf, resolveProtocol } from "@/lib/protocol-chain"
 import { DEMO_CITIES, DEMO_LISTINGS } from "@/lib/package-demo-catalogue"
-import { PackageLines } from "@/components/protocol/plan/PackageLines"
+import { PackageSheet } from "@/components/protocol/plan/PackageSheet"
 import { PackagePrice, PackageInvoice } from "@/components/protocol/plan/PackagePrice"
+import { ScopeMatrix } from "@/components/catalogue/ScopeMatrix"
+import { CountrySwitcher } from "@/components/catalogue/CountrySwitcher"
 import type {
-    City, Composition, CompositionMember, CompositionScope,
+    City, Composition, CompositionScope,
     Country, Listing, Protocol, SubDepartment,
 } from "@/types"
 
 /**
- * Every market is shown and one is live.
+ * The markets a package may be sold in.
  *
- * The others are visible rather than hidden, because a list that hides them
- * says the product has one market. They are not selectable yet, and the same
- * is true of every city but Dubai.
+ * "OTHERS" is deliberately absent: MONEY["OTHERS"].code is "—", so a scope row
+ * there would be money with no currency.
+ *
+ * THERE IS NO LIVE_COUNTRY OR LIVE_CITY ANY MORE. The screen used to hardcode
+ * UAE and Dubai and render every other market disabled behind "Not selling here
+ * yet", which made opening a city a code change and made its gaps discoverable
+ * only one cell at a time. Where a package sells is authored now, in the
+ * markets panel, and read down the sheet.
  */
 const COUNTRIES: Country[] = ["UAE", "KSA", "QATAR", "KUWAIT"]
-const LIVE_COUNTRY: Country = "UAE"
-const LIVE_CITY = "city-1"
 
 /**
  * PACKAGE BUILDER — what a patient buys.
@@ -135,11 +140,25 @@ export default function PackageBuilderPage() {
         ?? (protocol ? emptyPackage(protocol, paths.length > 1 ? path?.label : undefined) : undefined)
     /* Memoised: the coercion returns a NEW object, and an unmemoised one would
        make every price recompute on every render. */
-    const pkg = useMemo(
-        () => (raw && raw.rule.kind !== "percent_off_members"
-            ? { ...raw, rule: { ...raw.rule, kind: "percent_off_members" as const } }
-            : raw),
-        [raw])
+    const pkg = useMemo(() => {
+        if (!raw) return raw
+        const kind = "percent_off_members" as const
+        /* A CITY PERCENT IS DEAD DATA NOW.
+           The discount is one number for the whole package, so a stored
+           per-city override has no control anywhere on the screen — and
+           resolveComposition would still read it, quietly discounting Abu
+           Dhabi by an old 10% while the field above says 15. It is stripped
+           on the way in, so what is shown is what is stored on the next Save. */
+        const stale = raw.scopes.some(sc => sc.cityId && sc.percent !== undefined)
+        if (raw.rule.kind === kind && !stale) return raw
+        return {
+            ...raw,
+            rule: { ...raw.rule, kind },
+            scopes: stale
+                ? raw.scopes.map(sc => (sc.cityId ? { ...sc, percent: undefined } : sc))
+                : raw.scopes,
+        }
+    }, [raw])
     const dirty = edits !== null || providerEdit !== null
     const providerLine = providerEdit ?? stored?.providerLine ?? ""
 
@@ -156,11 +175,40 @@ export default function PackageBuilderPage() {
 
     const gaps = useMemo(
         () => (pkg && resolved
-            ? packagePublishGaps(pkg, resolved, listings, subDepartments, COUNTRIES)
+            ? packagePublishGaps(pkg, resolved, listings, subDepartments, COUNTRIES,
+                id => cities.find(c => c.id === id)?.name)
             : []),
-        [pkg, resolved, listings, subDepartments])
+        [pkg, resolved, listings, subDepartments, cities])
 
     const update = (patch: Partial<Composition>) => setEdits({ ...pkg!, ...patch })
+
+    /**
+     * ONE DISCOUNT FOR THE WHOLE PACKAGE.
+     *
+     * The percent is stored per scope row, because that is what
+     * `resolveComposition` reads. So "overall" is written rather than modelled:
+     * the same number goes on EVERY country row, and every city row's own
+     * percent is cleared so none of them can quietly override it. A retired
+     * country keeps the number, so restoring a market does not restore it at
+     * full price.
+     *
+     * Read back from the country row of the market on screen. Any of them
+     * would answer the same, because the write keeps them in step.
+     */
+    const overallPercent = pkg?.scopes.find(sc => sc.country === country && !sc.cityId)?.percent
+        ?? pkg?.scopes.find(sc => !sc.cityId)?.percent
+
+    const setOverallPercent = (percent?: number) => {
+        if (!pkg) return
+        /* A stored 0 reads as falsy in resolveComposition and yields NO PRICE
+           rather than no discount, so zero clears the field instead. */
+        const p = percent !== undefined && percent > 0 ? Math.min(100, percent) : undefined
+        update({
+            scopes: pkg.scopes.map(sc => (sc.cityId
+                ? { ...sc, percent: undefined }
+                : { ...sc, percent: p })),
+        })
+    }
 
     const persist = (next: Composition, provider?: string) => {
         const base = stored ?? emptyPlan()
@@ -337,75 +385,79 @@ export default function PackageBuilderPage() {
             )}
 
             {/* ══ PATH, MARKET, CITY ══ */}
-            <div className="flex flex-wrap items-end gap-5">
-                {paths.length > 1 && (
-                    <div className="space-y-1.5">
-                        <Label className="text-xs">Path</Label>
-                        <div className="inline-flex rounded-md border p-0.5">
-                            {paths.map(pp => (
-                                <Button key={pp.id}
-                                    variant={pp.id === key ? "secondary" : "ghost"}
-                                    size="sm" className="h-7 px-3 text-xs"
-                                    onClick={() => setPathId(pp.id)}>
-                                    {pp.label}
-                                </Button>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
+            {paths.length > 1 && (
                 <div className="space-y-1.5">
-                    <Label className="text-xs">Country</Label>
+                    <Label className="text-xs">Path</Label>
                     <div className="inline-flex rounded-md border p-0.5">
-                        {COUNTRIES.map(c => {
-                            const live = c === LIVE_COUNTRY
-                            return (
-                                <Button key={c} variant={c === country ? "secondary" : "ghost"}
-                                    size="sm" className="h-7 px-3 text-xs"
-                                    disabled={!live}
-                                    title={live ? undefined : "Not selling here yet"}
-                                    onClick={() => { setCountry(c); setCityId("") }}>
-                                    {c}
-                                </Button>
-                            )
-                        })}
+                        {paths.map(pp => (
+                            <Button key={pp.id}
+                                variant={pp.id === key ? "secondary" : "ghost"}
+                                size="sm" className="h-7 px-3 text-xs"
+                                onClick={() => setPathId(pp.id)}>
+                                {pp.label}
+                            </Button>
+                        ))}
                     </div>
                 </div>
+            )}
 
-                <div className="space-y-1.5">
-                    <Label className="text-xs">City</Label>
-                    <div className="inline-flex rounded-md border p-0.5">
-                        <Button variant={!cityId ? "secondary" : "ghost"} size="sm"
-                            className="h-7 px-3 text-xs" onClick={() => setCityId("")}>
-                            Whole country
-                        </Button>
-                        {cities.map(c => {
-                            const live = c.id === LIVE_CITY
-                            return (
-                                <Button key={c.id} variant={c.id === cityId ? "secondary" : "ghost"}
-                                    size="sm" className="h-7 px-3 text-xs"
-                                    disabled={!live}
-                                    title={live ? undefined : "Not selling here yet"}
-                                    onClick={() => setCityId(c.id)}>
-                                    {c.name}
-                                </Button>
-                            )
-                        })}
-                    </div>
+            {/* ══ A · COUNTRY AVAILABILITY & CONFIG ══
+                The catalogue's own scope editor, reused rather than rebuilt. It
+                already states the things a bespoke panel here would have got
+                wrong: retiring keeps the row and its baseline; a retired
+                COUNTRY closes its cities; and a retired CITY inherits the
+                country row rather than closing — which is what effectiveScope
+                actually does, and the opposite of what a plain on/off switch
+                would have implied.
+
+                Money is hidden inside it. The discount is authored once, below
+                the sheet, so a per-row percent here would be a second place to
+                type the same number. ══ */}
+            <Card className="space-y-4 p-5">
+                <div>
+                    <p className="text-base font-semibold">Country Availability &amp; Config</p>
+                    <p className="mt-0.5 max-w-3xl text-xs text-muted-foreground">
+                        One row per country. A market added here can be switched Inactive to stop
+                        selling — rows are not deleted, so the history of having offered it
+                        survives. The cities switched on here are the columns of the sheet below.
+                    </p>
                 </div>
-            </div>
+                <CountrySwitcher
+                    countries={COUNTRIES}
+                    value={country}
+                    onChange={c => { setCountry(c); setCityId("") }}
+                    counts={Object.fromEntries(COUNTRIES.map(c => [
+                        c,
+                        pkg.scopes.filter(sc => sc.country === c && sc.isActive !== false).length || "",
+                    ]))} />
+                <ScopeMatrix
+                    c={pkg}
+                    country={country}
+                    cities={cities}
+                    listings={listings}
+                    subDepartments={subDepartments}
+                    hideMoney
+                    onChange={(scopes: CompositionScope[]) => update({ scopes })}
+                    onAllocationChange={a => update({ rule: { ...pkg.rule, allocation: a } })} />
+            </Card>
 
-            <PackageLines
+            {/* ══ B · PRICING SHEET ══ */}
+            <PackageSheet
                 pkg={pkg}
                 protocol={resolved!}
                 listings={listings}
+                cities={cities}
                 country={country}
-                cityId={cityId || undefined}
-                resolution={resolution}
-                onChange={(members: CompositionMember[]) => update({ members })}
+                selected={cityId || undefined}
+                onSelect={c => setCityId(c ?? "")}
+                onChange={next => setEdits(next)}
                 onBuildFromSteps={buildFromSteps}
+                overallPercent={overallPercent}
             />
 
+            {/* The window and the invoice split still live here. They are the
+                one market's terms rather than its arithmetic, so they follow
+                the column the sheet has selected. */}
             <PackagePrice
                 pkg={pkg}
                 country={country}
@@ -414,6 +466,8 @@ export default function PackageBuilderPage() {
                 resolution={resolution}
                 onScopes={(scopes: CompositionScope[]) => update({ scopes })}
                 onStrategy={a => update({ rule: { ...pkg.rule, allocation: a } })}
+                overallPercent={overallPercent}
+                onOverallPercent={setOverallPercent}
             />
 
             <PackageInvoice

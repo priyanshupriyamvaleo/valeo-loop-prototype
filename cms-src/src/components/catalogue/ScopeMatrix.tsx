@@ -19,6 +19,16 @@ import {
 } from "@/lib/composition"
 
 /**
+ * Scope row ids, minted outside the component.
+ *
+ * `Date.now()` in a component body trips react-hooks/purity — the rule is right
+ * even though these run from handlers, because an id read during render would
+ * change on every pass. A counter is stable and needs no clock.
+ */
+let scopeSeq = 0
+const scopeId = (parts: string[]) => `sc-${parts.join("-")}-${(scopeSeq++).toString(36)}`
+
+/**
  * ONE market at a time, and one row table behind it.
  *
  * The old editor had three controls that each half-answered "where does this sell":
@@ -33,6 +43,7 @@ import {
  */
 export function ScopeMatrix({
     c, country, cities, listings, subDepartments, onChange, onAllocationChange,
+    hideMoney = false,
 }: {
     c: Composition
     country: Country
@@ -41,12 +52,20 @@ export function ScopeMatrix({
     subDepartments: SubDepartment[]
     onChange: (scopes: CompositionScope[]) => void
     onAllocationChange?: (a: "pro_rata_list" | "per_member") => void
+    /**
+     * Drop the price and percent inputs and keep only availability.
+     *
+     * The Package Builder authors ONE overall discount for the whole package,
+     * so a per-row percent here would be a second place to type the same
+     * number — and the two would disagree the moment either is used.
+     */
+    hideMoney?: boolean
 }) {
     const [adding, setAdding] = useState("")
     const rows = c.scopes ?? []
     const countryRow = rows.find(r => r.country === country && !r.cityId)
     const cityRows = rows.filter(r => r.country === country && r.cityId)
-    const reads = RULE_ROW_FIELDS[c.rule.kind]
+    const reads: ("price" | "percent")[] = hideMoney ? [] : RULE_ROW_FIELDS[c.rule.kind]
     const money = MONEY[country]
     const inCountry = cities.filter(x => x.country === country)
 
@@ -67,12 +86,12 @@ export function ScopeMatrix({
         write(rows.map(r => (r.id === id ? { ...r, ...p } : r)))
 
     const addCountry = () => write([...rows, {
-        id: `sc-${c.id}-${country.toLowerCase()}-${Date.now().toString(36)}`,
+        id: scopeId([c.id, country.toLowerCase()]),
         country, isActive: true, coverage: "country",
     }])
 
     const addCity = (cityId: string) => write([...rows, {
-        id: `sc-${c.id}-${cityId}-${Date.now().toString(36)}`,
+        id: scopeId([c.id, cityId]),
         country, cityId, isActive: true,
     }])
 
@@ -143,9 +162,12 @@ export function ScopeMatrix({
                 {reads.includes("percent") && (
                     <div className="space-y-1">
                         <Label className="text-[10px]">Percent off members</Label>
-                        <Input type="number" className="h-8 text-xs" value={countryRow.percent ?? ""}
+                        <Input type="number" min={0} max={100} className="h-8 text-xs"
+                            value={countryRow.percent ?? ""}
                             onChange={e => setRow(countryRow.id, {
-                                percent: e.target.value === "" ? undefined : Number(e.target.value),
+                                /* A stored 0 reads as falsy in resolveComposition and yields
+                                   NO PRICE, not a zero discount. Empty and zero both clear. */
+                                percent: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
                             })} />
                     </div>
                 )}
@@ -368,6 +390,22 @@ export function ScopeMatrix({
                                     value={r.price ?? ""}
                                     onChange={e => setRow(r.id, {
                                         price: e.target.value === "" ? undefined : Number(e.target.value),
+                                    })} />
+                            )}
+                            {reads.includes("percent") && (
+                                /* A percent_off_members composition prices by percent, so a
+                                   city that needs its own number needs this box. Without it
+                                   the row could be created and retired but never say
+                                   anything, which is what a protocol package needs most. */
+                                <Input type="number" min={0} max={100} className="h-7 w-32 text-xs"
+                                    placeholder={`inherits ${countryRow.percent ?? "—"}%`}
+                                    value={r.percent ?? ""}
+                                    onChange={e => setRow(r.id, {
+                                        /* Empty AND zero both mean "inherit". A stored 0 is
+                                           read as falsy by resolveComposition, which yields no
+                                           price at all rather than no discount — a silently
+                                           dead city. */
+                                        percent: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
                                     })} />
                             )}
                             {noop && (

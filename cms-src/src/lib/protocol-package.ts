@@ -386,6 +386,8 @@ export function packagePublishGaps(
     listings: Listing[],
     subDepartments: SubDepartment[],
     countries: Country[],
+    /** Names a city id for the message. Without it a refusal reads "city-3". */
+    cityName?: (id: string) => string | undefined,
 ): PlanGap[] {
     const out: PlanGap[] = []
 
@@ -399,34 +401,71 @@ export function packagePublishGaps(
         return out
     }
 
-    /* Every market with a scope row has to reach a price. A market with no row
-       is not a gap: an empty scope table means it sells nowhere, which is a
-       decision and not an omission. */
-    const scoped = countries.filter(c => pkg.scopes.some(s => s.country === c && !s.cityId))
+    /* Every market with a LIVE scope row has to reach a price. Two rows are not
+       gaps and were both being reported as one:
+         · no row at all — an empty scope table means it sells nowhere, which is
+           a decision and not an omission.
+         · a row switched Inactive — a withdrawn market is the author saying so.
+           Reading it as "KSA has no price" made Inactive unusable: the control
+           that retires a market also refused to let the package be saved. */
+    const live = pkg.scopes.filter(s => !s.cityId && s.isActive !== false)
+    const scoped = countries.filter(c => live.some(s => s.country === c))
     if (!scoped.length) {
         out.push({
             section: "package",
             what: "No market has a price",
-            why: "A package with no scope row sells nowhere. Add a market and price it.",
+            why: "A package with no live scope row sells nowhere. Add a market and price it.",
         })
     }
     scoped.forEach(country => {
-        const res = resolveComposition(pkg, listings, country)
-        if (res.total === undefined) {
+        const row = live.find(s => s.country === country)
+
+        /* EVERY LIVE COLUMN IS ASKED, not just the country.
+           
+           A city the author switched on is a market the package claims to sell
+           in, and an item with no price row there makes that claim false. Asking
+           only the country question is how a city gets opened and its holes are
+           then found one order at a time.
+           
+           And a "cities_only" country does not sell country-wide at all —
+           effectiveScope closes the cityless lookup to say so — so asking it
+           would report a market as priceless when it is merely priced in its
+           cities. Ask what each row actually answers. */
+        const liveCities = pkg.scopes
+            .filter(s => s.country === country && s.cityId && s.isActive !== false)
+            .map(s => s.cityId)
+        const asked: (string | undefined)[] = row?.coverage === "cities_only"
+            ? liveCities
+            : [undefined, ...liveCities]
+
+        if (!asked.length) {
             out.push({
                 section: "package",
-                what: `${country} has no price`,
-                why: res.blocking.length
-                    ? `${res.blocking.length} item${res.blocking.length === 1 ? " is" : "s are"} not sold in ${country}.`
-                    : "Nobody has typed the number this rule needs.",
+                what: `${country} sells in no city`,
+                why: "The market is set to cities only and has no live city. Add one, or let it sell country-wide.",
             })
-        } else if (res.total <= 0) {
-            out.push({
-                section: "package",
-                what: `The package prices at zero in ${country}`,
-                why: "A protocol that costs nothing is a mistake, not an offer.",
-            })
+            return
         }
+
+        asked.forEach(cityId => {
+            const where = cityId ? `${cityName?.(cityId) ?? cityId}` : country
+            const res = resolveComposition(pkg, listings, country, { cityId })
+            if (res.total === undefined) {
+                out.push({
+                    section: "package",
+                    what: `${where} has no price`,
+                    why: res.blocking.length
+                        ? `${res.blocking.length} item${res.blocking.length === 1 ? " is" : "s are"} not sold in ${where}.`
+                        : "Nobody has typed the number this rule needs.",
+                })
+            } else if (res.total <= 0) {
+                out.push({
+                    section: "package",
+                    what: `The package prices at zero in ${where}`,
+                    why: "A protocol that costs nothing is a mistake, not an offer.",
+                })
+            }
+        })
     })
 
     /* The catalogue's own refusals, unedited. */
@@ -443,6 +482,151 @@ export function packagePublishGaps(
     })
 
     return out
+}
+
+/* ── What a market column actually means ──────────────────────
+ *
+ * TWO DIFFERENT EMPTY CELLS, and only one of them is a gap.
+ *
+ * `unitPrice()` takes a cityId, but the three unit kinds do not agree on what
+ * that means. A VARIANT has no fallback — D-C29 makes the sparse (variant,
+ * city) grid itself the availability answer, so no row means NOT SOLD THERE. A
+ * service option and a plan merge their city row over their country row, so a
+ * country price answers the city.
+ *
+ * Read blindly, a package of country-grain supplements renders an empty column
+ * in every city, and an author reads "we do not sell in Abu Dhabi" off a
+ * product that sells there perfectly well. So the sheet has to ask a different
+ * question first: does this unit price BY CITY in this country at all?
+ *
+ *   "country"  it does not. The country price is the answer everywhere, the
+ *              cell shows it, and no city can be blocked over it.
+ *   "city"     it does. A city with no row is a real hole, the cell shows a
+ *              dot, and that city cannot go live.
+ *
+ * `priceScopeOf()` in catalogue.ts answers this for a variant and says why —
+ * "follow the price". This is the same rule over all three kinds.
+ */
+export function priceGrain(
+    ref: PricedUnitRef, listings: Listing[], country: Country,
+): "city" | "country" {
+    const l = listings.find(x => x.id === ref.listingId)
+    if (!l) return "country"
+    if (ref.kind === "variant") {
+        const v = (l.variants ?? []).find(x => x.id === ref.unitId)
+        const r = (v?.regionalData ?? []).find(x => x.country === country)
+        return (r?.cityPrices ?? []).some(c => c.price > 0) ? "city" : "country"
+    }
+    if (ref.kind === "service_option") {
+        const o = (l.diagnostics?.serviceOptions ?? []).find(x => x.id === ref.unitId)
+        return (o?.pricing ?? []).some(p => p.country === country && p.cityId) ? "city" : "country"
+    }
+    const pl = (l.treatments?.plans ?? []).find(x => x.id === ref.unitId)
+    return (pl?.pricing ?? []).some(p => p.country === country && p.cityId) ? "city" : "country"
+}
+
+/** Does this unit carry a price row for THIS city, as opposed to inheriting one? */
+function hasCityRow(
+    ref: PricedUnitRef, listings: Listing[], country: Country, cityId: string,
+): boolean {
+    const l = listings.find(x => x.id === ref.listingId)
+    if (!l) return false
+    if (ref.kind === "variant") {
+        const v = (l.variants ?? []).find(x => x.id === ref.unitId)
+        const r = (v?.regionalData ?? []).find(x => x.country === country)
+        return (r?.cityPrices ?? []).some(c => c.cityId === cityId)
+    }
+    if (ref.kind === "service_option") {
+        const o = (l.diagnostics?.serviceOptions ?? []).find(x => x.id === ref.unitId)
+        return (o?.pricing ?? []).some(p => p.country === country && p.cityId === cityId)
+    }
+    const pl = (l.treatments?.plans ?? []).find(x => x.id === ref.unitId)
+    return (pl?.pricing ?? []).some(p => p.country === country && p.cityId === cityId)
+}
+
+/**
+ * What one member costs in one column, and WHERE that number came from.
+ *
+ * FOUR ANSWERS, because "the cell is empty" and "the cell is inherited" are
+ * different facts and only one of them stops a city selling:
+ *
+ *   city        a real row for this city. The number is this city's own.
+ *   country     the unit is not priced by city here at all, so the country
+ *               price is the answer everywhere. Correct, never a gap.
+ *   inherited   the unit IS priced by city, has no row for THIS one, and the
+ *               lookup fell back to the country price. Only service options and
+ *               plans do this — a variant refuses (D-C29). Shown muted, because
+ *               a country price wearing a city hat should not read as a quote.
+ *   none        priced by city, no row here, and nothing to fall back to. The
+ *               hole. This is the only answer that refuses a market.
+ */
+export type PriceLevel = "city" | "country" | "inherited" | "none"
+
+export interface CellPrice {
+    price?: number
+    level: PriceLevel
+    /** The sticker price, when it is above what the unit charges. */
+    was?: number
+}
+
+export function cellPrice(
+    ref: PricedUnitRef, listings: Listing[], country: Country, cityId?: string,
+): CellPrice {
+    const grain = priceGrain(ref, listings, country)
+
+    /* A country-grain unit is asked the COUNTRY question even in a city column.
+       Passing the cityId would return undefined for a variant and invent a hole
+       in a product that sells everywhere in the market. */
+    if (!cityId || grain === "country") {
+        const price = unitPrice(ref, listings, country)
+        return {
+            price,
+            level: price === undefined ? "none" : cityId ? "country" : "city",
+            was: price === undefined ? undefined : wasPrice(ref, listings, country, undefined, price),
+        }
+    }
+
+    const own = hasCityRow(ref, listings, country, cityId)
+    const price = unitPrice(ref, listings, country, cityId)
+    if (price === undefined) return { level: "none" }
+    return {
+        price,
+        level: own ? "city" : "inherited",
+        was: wasPrice(ref, listings, country, own ? cityId : undefined, price),
+    }
+}
+
+/**
+ * The sticker price of a unit, when it is above what the unit charges.
+ *
+ * Lifted out of PackageLines, where it was a closure over the one market on
+ * screen. The sheet prices many columns at once, so it takes them as arguments.
+ * Variants and service options carry `retailPrice`; a plan carries
+ * `compareAtPrice`. A "was" at or below the charged figure is not a discount.
+ */
+export function wasPrice(
+    ref: PricedUnitRef, listings: Listing[], country: Country,
+    cityId: string | undefined, charged: number,
+): number | undefined {
+    const l = listings.find(x => x.id === ref.listingId)
+    if (!l) return undefined
+    let was: number | undefined
+    if (ref.kind === "variant") {
+        const v = (l.variants ?? []).find(x => x.id === ref.unitId)
+        const r = (v?.regionalData ?? []).find(x => x.country === country)
+        was = cityId
+            ? r?.cityPrices?.find(c => c.cityId === cityId)?.retailPrice ?? r?.retailPrice
+            : r?.retailPrice
+    } else if (ref.kind === "service_option") {
+        const o = (l.diagnostics?.serviceOptions ?? []).find(x => x.id === ref.unitId)
+        was = (o?.pricing ?? []).find(pp => pp.country === country && pp.cityId === cityId)?.retailPrice
+            ?? (o?.pricing ?? []).find(pp => pp.country === country && !pp.cityId)?.retailPrice
+    } else {
+        const pl = (l.treatments?.plans ?? []).find(x => x.id === ref.unitId)
+        was = (pl?.pricing ?? []).find(pp => pp.country === country && pp.cityId === cityId)?.compareAtPrice
+            ?? (pl?.pricing ?? []).find(pp => pp.country === country && !pp.cityId)?.compareAtPrice
+    }
+    return was !== undefined && was > charged ? was : undefined
 }
 
 /** Every stored package of a plan, whichever paths exist. */

@@ -92,6 +92,15 @@ export interface PlanGap {
     why: string
     section: string
     blocksDraft?: boolean
+    /**
+     * Where to send the operator when the fix is NOT on this screen — a missing
+     * city price is authored in the listing, not here.
+     *
+     * The listing editor already learned this on `ActivationRequirement`
+     * (catalogue.ts): without it a refusal can be unmeetable, because its chip
+     * navigates to a section that has no control for the thing it names.
+     */
+    href?: string
 }
 
 /** The rules that apply whatever the status. Only the name is one of them. */
