@@ -603,6 +603,21 @@ export function medicinesFor(studio, scope, journey) {
    the voucher happened to be the front item, so the same step named a different
    product in What follows and in the full plan list. One resolver, used
    everywhere a service is named. */
+/* ── WHAT THE COACH TOLD THEM ──
+   The coach panel has always had a field labelled "the patient reads this", and
+   until now no patient surface read it. A note written for somebody and shown
+   to nobody is worse than no note: the coach believes it was delivered.
+
+   Gated on `submittedAt`, not on the note being non-empty. A coach who saves a
+   draft has not sent anything, and a half-written line appearing on a phone
+   mid-consultation is exactly what the submit button exists to prevent. */
+export function coachSaid(studio, journey, id = LIVE_PATIENT) {
+  const c = consultFor(studio, id);
+  if (!c || !c.submittedAt || !(c.coachNotes || '').trim()) return null;
+  if (!((journey?.done || []).includes('p4'))) return null;
+  return { notes: c.coachNotes.trim(), at: c.submittedAt };
+}
+
 /* The doctor found this protocol unsuitable, so it stops. The patient should
    see that a person decided it, not a next step they should not take. */
 export const pausedBy = (studio, journey) =>

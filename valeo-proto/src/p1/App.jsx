@@ -9,7 +9,7 @@ import Weekly from './screens/Weekly';
 import { readStudio, readPatient, writePatient, subscribe, GOALS, goalOf, publishedFor,
          GATES, SHARED, protocolFor, triageFor, membersOf, regionOf } from '../shared/bus';
 import { priceOf } from '../p2/lib/seed';
-import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy, resolveTasks, taskGateGaps, journeyFor, weekOf, progress, resolveMetrics } from './lib/journey';
+import { planFor, nextItem, gateOpen, archetypeOf, stateOf, bookingCompletes, medicinesFor, serviceForStep, weeksOf, consultFor, dayAfter, pausedBy, coachSaid, resolveTasks, taskGateGaps, journeyFor, weekOf, progress, resolveMetrics } from './lib/journey';
 
 
 /*
@@ -146,6 +146,8 @@ export default function App() {
   const metrics = theirs ? resolveMetrics(studio, scope, pt, plan) : [];
   const weeks = weeksOf(studio, scope);
   const paused = !!pausedBy(studio, pt);
+  /* What the coach wrote and sent. Null until they press Submit to client. */
+  const coachNote = coachSaid(studio, pt);
   const item = nextItem(plan, pt.done);
 
   /* ── the consult gate ──
@@ -397,6 +399,7 @@ export default function App() {
   } else if (screen === 'detail') {
     view = (
       <JourneyDetail title={goal.t} plan={plan} done={pt.done} weeks={weeks} paused={paused}
+        coachNote={coachNote}
         region={pt.region || 'uae'}
         place={`${pt.city || 'Dubai'}, ${regionOf(pt.region || 'uae').t}`}
         /* Anything the doctor added is on top of the protocol, so it is owed

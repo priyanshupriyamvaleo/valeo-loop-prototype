@@ -3,6 +3,7 @@ import Icon from '../ui/Icon';
 import { findService, priceOf } from '../../p2/lib/seed';
 import { money } from '../../shared/bus';
 import { actorOf, actorInitial, whenLabel } from '../lib/journey';
+import { PANEL } from '../lib/labs';
 
 /*
  * THREE ACTION SCREENS, NOT FOURTEEN.
@@ -147,15 +148,14 @@ export function Status({ item, onBack, onDone }) {
 /* ── 4. THE REPORT ──
    What "your results are ready" actually opens. Markers are placeholders
    pending clinical sign-off, and the screen says so rather than presenting
-   invented numbers as findings. */
-export const PANEL = [
-  { t: 'hs-CRP', v: '4.1', u: 'mg/L', ref: 'under 3.0', flag: 'high' },
-  { t: 'ESR', v: '18', u: 'mm/hr', ref: 'under 15', flag: 'high' },
-  { t: 'Vitamin D', v: '41', u: 'nmol/L', ref: '75 to 125', flag: 'low' },
-  { t: 'Ferritin', v: '96', u: 'ug/L', ref: '30 to 400', flag: 'ok' },
-  { t: 'Creatine kinase', v: '210', u: 'U/L', ref: 'under 200', flag: 'high' },
-  { t: 'Magnesium', v: '0.85', u: 'mmol/L', ref: '0.7 to 1.0', flag: 'ok' },
-];
+   invented numbers as findings.
+
+   THE PANEL MOVED. It used to be declared here, inside a phone screen, and the
+   coach panel imported it from here — a number a doctor reads living in a
+   patient component. It is now `p1/lib/labs.js`, which holds two panels so a
+   retest has a baseline to be read against. Re-exported under the old name
+   because two screens import it by that name. */
+export { PANEL };
 
 export function Report({ item, panelName, onBack, onBook }) {
   const off = PANEL.filter((m) => m.flag !== 'ok').length;

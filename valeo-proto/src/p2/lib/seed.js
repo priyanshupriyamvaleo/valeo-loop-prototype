@@ -79,7 +79,11 @@ export const SERVICES = {
     { id: 'sup_joint', t: 'Joint and tendon stack', note: 'Collagen, Vitamin C, Boswellia', price: { uae: 220, ksa: 230 } },
     { oos: true, id: 'sup_d3k2', t: 'Vitamin D3 with K2', note: '90 days', price: { uae: 95, ksa: 99 } },
     { id: 'sup_magnesium', t: 'Magnesium glycinate', note: '90 days', price: { uae: 85, ksa: 89 } },
-    { id: 'sup_omega', t: 'Omega-3', note: '90 days', price: { uae: 130, ksa: 135 } },
+    /* UAE ONLY, ON PURPOSE. A product with no price in a market is NOT SOLD
+       THERE, and the coach panel refuses to add one rather than borrowing the
+       other market's number. With every item priced in both, that rule could
+       never fire and so could never be checked. */
+    { id: 'sup_omega', t: 'Omega-3', note: '90 days', price: { uae: 130 } },
     { oos: true, id: 'sup_creatine', t: 'Creatine monohydrate', note: '90 days', price: { uae: 90, ksa: 95 } },
   ] },
 };
