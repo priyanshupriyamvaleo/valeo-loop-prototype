@@ -352,8 +352,16 @@ export const isSystemAction = (state: string) => SYSTEM_ACTIONS.some(p => p.stat
 
 export const fulfilmentType = (id: TypeId) => TYPES.find(t => t.id === id)!
 
-/** The types an author may put INSIDE a protocol. A bundle cannot hold a bundle. */
-export const CHILD_TYPES = TYPES.filter(t => t.id !== "bundle")
+/**
+ * The types an author may put INSIDE a protocol.
+ *
+ * A bundle cannot hold a bundle. Home service is out too: Valeo sells four
+ * packages — blood, supplement, medicine and the coach consult — and a fifth
+ * on the palette is a journey nobody would ever author steps for. Its states
+ * stay in the model, because an order of that type still exists in the live
+ * system; a protocol just cannot create one.
+ */
+export const CHILD_TYPES = TYPES.filter(t => t.id !== "bundle" && t.id !== "home_service")
 
 /**
  * Available to all six types from any state that has not finished, so they are
@@ -544,18 +552,34 @@ export const stageOf = (type: TypeId, state: string): Stage | undefined =>
     ?? USER_ACTIONS.find(s => s.state === state)
     ?? SYSTEM_ACTIONS.find(s => s.state === state)
 
-/** Every vocabulary, on every step — see USER_ACTIONS and SYSTEM_ACTIONS. */
+/**
+ * What a step may name.
+ *
+ * NO USER ACTIONS. Onboarding complete, Paid and Report viewed are facts about
+ * a PROTOCOL, not about an order, and steps are now authored once per order
+ * type and reused by every protocol. A blood map that said "starts on Paid"
+ * would say it in every protocol, including the ones where blood is third —
+ * and nothing could catch that. They stay in the model, because the fulfilment
+ * spec names them and `findings` still reports a stored step that waits on
+ * one; they are simply no longer offered.
+ *
+ * BACKEND_DRIVEN stays. It belongs to no journey either, but it says "the
+ * protocol service moves this on" — which is true wherever the step is used.
+ */
 export const optionsFor = (type: TypeId): Stage[] =>
-    [...USER_ACTIONS, ...SYSTEM_ACTIONS, ...fulfilmentType(type).stages]
+    [...SYSTEM_ACTIONS, ...fulfilmentType(type).stages]
 
 /**
  * IS IT ONE OF THE THREE PROTOCOL-WIDE PATIENT SIGNALS?
  *
  * NOT the same question as `kindOf(...) === "user"`. A patient signal that
  * belongs to one journey — RX_VIEWED on the warehouse orders — is marked as a
- * user action and is still SPENT PER ORDER, because two medicine orders each
- * put their own prescription in front of the patient. Only the three that
- * belong to no order at all are spent across the protocol.
+ * user action and is spent PER ORDER, because two medicine orders each put
+ * their own prescription in front of the patient.
+ *
+ * Kept for `ordinal`, which must still refuse to place one of the three on a
+ * journey's line, and for `findings`, which still reports a stored step that
+ * waits on one. Nothing offers them any more — see `optionsFor`.
  */
 export const isUserAction = (state: string) => USER_ACTIONS.some(p => p.state === state)
 
@@ -608,10 +632,13 @@ export function reachOf(type: TypeId, c: Condition): number {
  * to name it — and it is the mechanism the whole page runs on. Override that
  * start and it becomes a real choice, and then it spends.
  *
- * A USER ACTION IS SPENT ACROSS THE WHOLE PROTOCOL. It belongs to no order,
- * and a patient pays once, finishes onboarding once and opens a report once.
- * An order status stops at its own order, because a second blood order has its
- * own SAMPLE_COLLECTED.
+ * ONE POOL, AND IT IS THIS ORDER'S. There used to be a second, protocol-wide
+ * pool for the three patient signals that belong to no order — a patient pays
+ * once and finishes onboarding once, so a second step naming one would fire
+ * with the first. Those three are no longer authorable at all (see
+ * `optionsFor`), so the pool that protected them has nothing left to hold.
+ * `blocks` stays in the signature: a caller passes the whole protocol, and a
+ * narrower one would have to be widened again the day a second pool returns.
  */
 export function spentOn(
     blocks: Block[], b: Block, side: "starts" | "completes", stepId: string,
@@ -629,10 +656,8 @@ export function spentOn(
     /* BACKEND_DRIVEN IS NEVER SPENT. Every other signal happens once, so using
        it once takes it off the list. This one is a statement that no outside
        report is needed, and a protocol needs to say that in many places. */
-    return [...new Set([
-        ...of(b.steps).filter(x => !isUserAction(x)),
-        ...blocks.flatMap(x => of(x.steps)).filter(isUserAction),
-    ])].filter(x => !isSystemAction(x))
+    void blocks
+    return [...new Set(of(b.steps))].filter(x => !isSystemAction(x))
 }
 
 /**
@@ -815,7 +840,12 @@ export function findings(blocks: Block[]): Finding[] {
             }
         }
 
-        if (!b.unit) note(`${def.label} has no package`)
+        /* `summarise().unpriced` checks both and this checked one, so an order
+           split per sex — which has `unitByValue` and no `unit` — was reported
+           as having no package while the counter beside it said it had one. */
+        if (!b.unit && !Object.keys(b.unitByValue ?? {}).length) {
+            note(`${def.label} has no package`)
+        }
         if (!b.steps.length) note(`${def.label} has no steps`)
     })
 

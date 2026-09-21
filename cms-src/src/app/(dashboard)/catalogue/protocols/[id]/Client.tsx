@@ -24,6 +24,7 @@ import {
 } from "@/types"
 import { Assembler } from "@/components/protocol/Assembler"
 import { assemblyStore, useAssembly } from "@/lib/protocol-assembly-store"
+import { useStepMap } from "@/lib/step-mapping-store"
 import {
     chainFindings, pathsOf, resolveProtocol,
 } from "@/lib/protocol-chain"
@@ -129,7 +130,21 @@ export default function ProtocolEditorPage() {
      * ONE PROTOCOL, MANY PATHS. A protocol with no axis has exactly one path,
      * so nothing about this screen changes for the ordinary case.
      */
-    const blocks = useAssembly(protocolId)
+    const stored = useAssembly(protocolId)
+    const stepMap = useStepMap()
+    /**
+     * THE JOIN. The protocol owns the order of its packages; Step Mapping owns
+     * the words and the conditions. `steps` is filled in here rather than
+     * stored, so a wording fixed once is fixed in every protocol at once and
+     * no protocol can hold a stale copy of it.
+     *
+     * Everything downstream then works untouched: `startsOf` still reaches
+     * backwards across orders for a derived start, `handoff` still reads the
+     * seam between two packages, `summarise` still counts.
+     */
+    const blocks = useMemo(
+        () => stored.map(b => ({ ...b, steps: stepMap[b.type] ?? [] })),
+        [stored, stepMap])
     const splits = blocks.some(b => b.unitByValue !== undefined)
     /* Derived at render, never written into state by an effect. An effect that
        sets the state it reads is a cascading render, and the axis is not a
@@ -405,7 +420,12 @@ export default function ProtocolEditorPage() {
 
                     <Assembler
                         blocks={blocks}
-                        onChange={next => assemblyStore.save(protocolId, next)}
+                        /* Stored WITHOUT the steps. They belong to the type and
+                           are joined back on read — writing them here would
+                           mint a copy that drifts the first time the type is
+                           reworded. */
+                        onChange={next => assemblyStore.save(
+                            protocolId, next.map(b => ({ ...b, steps: [] })))}
                         listings={listings}
                         paths={SEX_PATHS}
                     />

@@ -143,10 +143,21 @@ const NAV_GROUPS = [
                 icon: MessageSquare,
             },
             {
-                // Clinically-distinct care sequences (ordered steps + gating + clinician authorship)
+                // Clinically-distinct care sequences (ordered packages + gating)
+                //
+                // TWO CHILDREN, because two different things are authored.
+                // Listings is one protocol at a time — which packages, in what
+                // order. Step Mapping is the words and the conditions of an
+                // order type, written once and used by every protocol that
+                // orders one. Exact-matching Listings, or it would light up on
+                // Step Mapping too.
                 title: "Protocols",
                 href: "/catalogue/protocols",
                 icon: ClipboardList,
+                children: [
+                    { title: "Listings", href: "/catalogue/protocols", fallback: true },
+                    { title: "Step Mapping", href: "/catalogue/protocols/step-mapping" },
+                ],
             },
             {
                 title: "Service Providers",
@@ -226,6 +237,89 @@ const NAV_GROUPS = [
     }
 ]
 
+type LucideIcon = React.ComponentType<{ className?: string }>
+
+/**
+ * `fallback` marks the section's DEFAULT child — the one that owns every URL
+ * under the parent that no sibling claims. Editing one protocol at
+ * `/catalogue/protocols/prot-glp1-wl` is being in Listings, and exact-matching
+ * alone would leave the section open with nothing lit.
+ */
+interface NavChild { title: string; href: string; exact?: boolean; fallback?: boolean }
+interface NavEntry {
+    title: string
+    href: string
+    icon: LucideIcon
+    exact?: boolean
+    children?: NavChild[]
+}
+
+/** Exact on `/catalogue` and on any child that asks, `startsWith` otherwise. */
+const isOn = (pathname: string | null, href: string, exact?: boolean) =>
+    (exact || href === "/catalogue") ? pathname === href : !!pathname?.startsWith(href)
+
+/**
+ * ONE NAV ITEM, RENDERED ONCE.
+ *
+ * The mobile sheet and the desktop rail both map NAV_GROUPS, and they used to
+ * carry two near-identical copies of this markup. A third copy for children
+ * is how the two lists drift, so the branch lives here and both callers use
+ * it. `compact` is the only difference between them: the sheet closes on a
+ * press and has no collapsed state.
+ */
+function NavItem({ item, pathname, collapsed, onNavigate }: {
+    item: NavEntry
+    pathname: string | null
+    collapsed?: boolean
+    onNavigate?: () => void
+}) {
+    const active = isOn(pathname, item.href, item.exact)
+    /* A parent is "open" when the section is being used at all, not when the
+       parent's own page is. Two items and no chevron: a section of two does
+       not earn a control to hide one of them. */
+    const inSection = !!pathname?.startsWith(item.href)
+
+    return (
+        <div>
+            <Link
+                href={item.href}
+                onClick={onNavigate}
+                title={collapsed ? item.title : undefined}
+                className={`flex items-center rounded-lg py-2 transition-all hover:text-primary ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${
+                    (item.children ? inSection : active) ? "bg-muted text-primary" : "text-muted-foreground"
+                }`}
+            >
+                <item.icon className="h-4 w-4 shrink-0" />
+                {!collapsed && item.title}
+            </Link>
+
+            {/* Collapsed, the rail is icons only and there is nowhere to put a
+                child's name. The parent icon still highlights, so the section
+                is not lost — only its two doors are. */}
+            {item.children && inSection && !collapsed && (() => {
+                /* The first child that claims the URL wins; the fallback takes
+                   whatever is left inside the section. One at a time, so two
+                   rows can never both look current. */
+                const hit = item.children.find(c => !c.fallback && isOn(pathname, c.href, c.exact))
+                    ?? item.children.find(c => c.fallback)
+                return (
+                    <div className="mt-0.5 ml-[26px] space-y-0.5 border-l pl-3">
+                        {item.children.map(c => (
+                            <Link key={c.href} href={c.href} onClick={onNavigate}
+                                className={`block rounded-md px-2 py-1.5 text-[13px] transition-all hover:text-primary ${
+                                    c === hit
+                                        ? "bg-muted font-medium text-primary" : "text-muted-foreground"
+                                }`}>
+                                {c.title}
+                            </Link>
+                        ))}
+                    </div>
+                )
+            })()}
+        </div>
+    )
+}
+
 export function Shell({ children }: { children: React.ReactNode }) {
     const { user, logout } = useAuth()
     const pathname = usePathname()
@@ -267,18 +361,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
                                         </h4>
                                         <div className="space-y-1">
                                             {group.items.map((item) => (
-                                                <Link
-                                                    key={item.href}
-                                                    href={item.href}
-                                                    onClick={() => setIsSidebarOpen(false)}
-                                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${(item.href === "/catalogue" ? pathname === "/catalogue" : pathname?.startsWith(item.href))
-                                                        ? "bg-muted text-primary"
-                                                        : "text-muted-foreground"
-                                                        }`}
-                                                >
-                                                    <item.icon className="h-4 w-4" />
-                                                    {item.title}
-                                                </Link>
+                                                <NavItem key={item.href} item={item} pathname={pathname}
+                                                    onNavigate={() => setIsSidebarOpen(false)} />
                                             ))}
                                         </div>
                                     </div>
@@ -330,18 +414,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
                                     )}
                                     <div className="space-y-1">
                                         {group.items.map((item) => (
-                                            <Link
-                                                key={item.href}
-                                                href={item.href}
-                                                title={collapsed ? item.title : undefined}
-                                                className={`flex items-center rounded-lg py-2 transition-all hover:text-primary ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${(item.href === "/catalogue" ? pathname === "/catalogue" : pathname?.startsWith(item.href))
-                                                    ? "bg-muted text-primary"
-                                                    : "text-muted-foreground"
-                                                    }`}
-                                            >
-                                                <item.icon className="h-4 w-4 shrink-0" />
-                                                {!collapsed && item.title}
-                                            </Link>
+                                            <NavItem key={item.href} item={item} pathname={pathname}
+                                                collapsed={collapsed} />
                                         ))}
                                     </div>
                                 </div>

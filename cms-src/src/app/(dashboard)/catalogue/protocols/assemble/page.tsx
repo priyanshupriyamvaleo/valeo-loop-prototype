@@ -34,10 +34,11 @@ const block = (type: TypeId, steps: Step[]): Block => ({ ...newBlock(type), step
 
 const seed = (): Block[] => [
     block("blood", [
-        /* Nothing sits above the first step, so it is the one that names what
-           starts the protocol itself. */
-        step("Book your blood test", ["HOMECARE_ASSIGNED", "LAB_ASSIGNED"],
-            ["ONBOARDING_COMPLETE", "PAID"]),
+        /* Nothing sits above the first step. It names nothing of its own —
+           what starts the protocol is the protocol's business, and the three
+           patient signals that used to be written here are no longer
+           authorable on a step at all. */
+        step("Book your blood test", ["HOMECARE_ASSIGNED", "LAB_ASSIGNED"]),
         step("Your nurse visit", ["SAMPLE_COLLECTED"]),
         step("Your results are ready", ["RESULTS_UPLOADED"]),
         step("Your coach reads them", ["COACH_REVIEWED"]),
