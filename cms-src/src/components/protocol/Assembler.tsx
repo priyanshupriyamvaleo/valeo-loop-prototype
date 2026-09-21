@@ -1,19 +1,15 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
+import { ArrowDown, ArrowUp, Plus, X } from "lucide-react"
 import {
-    ArrowDown, ArrowUp, ChevronDown, ChevronRight, CornerDownRight, Flag, Pencil, Plus, X,
-} from "lucide-react"
-import {
-    CHILD_TYPES, fulfilmentType, handoff, kindOf, newBlock, packagesFor,
-    refKey, startsOf, statesOf, summarise, unitOnPath, unmapped,
+    CHILD_TYPES, fulfilmentType, kindOf, newBlock, packagesFor, refKey,
+    statesOf, summarise, unitOnPath,
 } from "@/lib/protocol-assembly"
 import { KindMark } from "@/components/protocol/StepEditor"
 import type { Block } from "@/lib/protocol-assembly"
@@ -32,9 +28,6 @@ export function Assembler({
      */
     paths: { id: string; label: string }[]
 }) {
-    /* Closed, not open, so a protocol of six orders is still one screen. The
-       right column carries every step of every order whatever is closed. */
-    const [closed, setClosed] = useState<string[]>([])
     const setBlocks = (f: Block[] | ((b: Block[]) => Block[])) =>
         onChange(typeof f === "function" ? f(blocks) : f)
     const s = summarise(blocks)
@@ -66,19 +59,17 @@ export function Assembler({
                     {blocks.map((b, i) => {
                         const def = fulfilmentType(b.type)
                         const opts = packagesFor(b.type, listings)
-                        const free = unmapped(b)
-                        const hand = handoff(blocks, i)
-                        const open = !closed.includes(b.id)
                         return (
+                            /* ── ONE ROW, AND IT IS THE PACKAGE ──
+                               Nothing expands any more. The card used to open
+                               on the order's steps, its hand-over and its
+                               unmapped states — all three read-only, none of
+                               them editable here, and together twice the height
+                               of the thing this screen is for. The steps are
+                               authored in Step Mapping and read there; the
+                               right-hand column still lists every one of them. */
                             <Card key={b.id} className="overflow-hidden p-0">
-                                <div className={`flex flex-wrap items-center gap-3 px-4 py-3 ${open ? "border-b" : ""}`}>
-                                    <button
-                                        onClick={() => setClosed(c =>
-                                            c.includes(b.id) ? c.filter(x => x !== b.id) : [...c, b.id])}
-                                        className="-ml-1 shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
-                                        {open ? <ChevronDown className="h-4 w-4" />
-                                            : <ChevronRight className="h-4 w-4" />}
-                                    </button>
+                                <div className="flex flex-wrap items-center gap-3 px-4 py-3">
                                     <span className="shrink-0 font-mono text-sm text-muted-foreground">
                                         {i + 1}
                                     </span>
@@ -189,114 +180,6 @@ export function Assembler({
                                     </span>
                                 </div>
 
-                                {open && (
-                                <>
-                                {/* ── THE STEPS, READ-ONLY ──
-                                    A protocol no longer writes these. They are
-                                    the order type's own, authored once in Step
-                                    Mapping, and shown here so an author can see
-                                    what placing this package actually delivers.
-
-                                    The DERIVED start is still computed against
-                                    this protocol's order, because that is the
-                                    one thing the global screen cannot know:
-                                    what runs before this package, here. */}
-                                <div className="divide-y">
-                                    {b.steps.length === 0 && (
-                                        <p className="px-4 py-5 text-center text-xs text-muted-foreground">
-                                            No steps are mapped for {def.label} yet. They are authored
-                                            once, for the order type, in Step Mapping.
-                                        </p>
-                                    )}
-                                    {b.steps.map((st, si) => {
-                                        const der = startsOf(blocks, i, si).derived
-                                        return (
-                                            <div key={st.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-4 py-2.5">
-                                                <span className="w-4 shrink-0 text-right font-mono text-[11px] text-muted-foreground/60">
-                                                    {si + 1}
-                                                </span>
-                                                <span className="min-w-[180px] text-sm">
-                                                    {st.title || <span className="text-muted-foreground/60">untitled</span>}
-                                                </span>
-                                                <span className="flex flex-wrap items-baseline gap-1.5">
-                                                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                                                        starts
-                                                    </span>
-                                                    {der.length === 0 && statesOf(st.starts).length === 0 ? (
-                                                        <span className="text-[11px] text-muted-foreground">
-                                                            when the protocol starts
-                                                        </span>
-                                                    ) : (
-                                                        [...der.map(d => d.clause.state), ...statesOf(st.starts)]
-                                                            .map(x => (
-                                                                <code key={x} className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                                                                    {x}
-                                                                </code>
-                                                            ))
-                                                    )}
-                                                </span>
-                                                <span className="flex flex-wrap items-baseline gap-1.5">
-                                                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                                                        completes
-                                                    </span>
-                                                    {statesOf(st.completes).length === 0
-                                                        ? <span className="text-[11px] text-amber-600">nothing finishes it</span>
-                                                        : statesOf(st.completes).map(x => (
-                                                            <code key={x} className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                                                                {x}
-                                                            </code>
-                                                        ))}
-                                                </span>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-
-                                {/* WHERE IT HANDS OVER. The question this page
-                                    kept raising — what completes the last step
-                                    of an order — is answered by reading the two
-                                    ends, not by authoring a third thing. */}
-                                {hand && (
-                                    <div className="flex flex-wrap items-center gap-2 border-t bg-muted/20 px-4 py-2">
-                                        {hand.to
-                                            ? <CornerDownRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                                            : <Flag className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
-                                        <span className="text-xs text-muted-foreground">
-                                            {hand.to ? `Starts the ${hand.to} order` : "Ends the protocol"}
-                                        </span>
-                                        {hand.on.length
-                                            ? hand.on.map(x => (
-                                                <code key={x} className="rounded bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                                                    {x}
-                                                </code>
-                                            ))
-                                            : <span className="text-xs text-amber-600">
-                                                once its last step completes on something
-                                            </span>}
-                                    </div>
-                                )}
-
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t px-4 py-2.5">
-                                    <Button variant="ghost" size="sm" className="h-7" asChild>
-                                        <Link href="/catalogue/protocols/step-mapping">
-                                            <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit {def.label} steps
-                                        </Link>
-                                    </Button>
-                                    {free.length > 0 && (
-                                        <>
-                                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                                                unmapped
-                                            </span>
-                                            {free.map(f => (
-                                                <code key={f.state} className="font-mono text-[10px] text-muted-foreground/50">
-                                                    {f.state}
-                                                </code>
-                                            ))}
-                                        </>
-                                    )}
-                                </div>
-                                </>
-                                )}
                             </Card>
                         )
                     })}
