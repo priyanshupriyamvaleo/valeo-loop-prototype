@@ -10,8 +10,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import {
-    ArrowDown, ArrowUp, ChevronDown, ChevronRight, CornerDownRight, Cog, Flag,
-    GitBranch, Lock, Package, Plus, Stethoscope, User, X,
+    ArrowDown, ArrowUp, ChevronDown, ChevronRight, CornerDownRight, Cog, Flag, Lock, Package, Plus, Stethoscope, User, X,
 } from "lucide-react"
 import {
     CHILD_TYPES, expand, fulfilmentType, handoff, kindOf, newBlock,
@@ -24,15 +23,17 @@ import type {
 import type { Listing } from "@/types"
 
 export function Assembler({
-    blocks, onChange, listings, paths, onToggleSplit,
+    blocks, onChange, listings, paths,
 }: {
     blocks: Block[]
     onChange: (next: Block[]) => void
     listings: Listing[]
-    /** The paths this protocol splits into. Empty means it does not split. */
+    /**
+     * The values a step MAY split into. Not a declaration that this protocol
+     * does: each step decides for itself, with the tick beside its picker.
+     * Empty where a surface offers no split at all.
+     */
     paths: { id: string; label: string }[]
-    /** Absent where the axis is authored elsewhere, as it is in the CMS. */
-    onToggleSplit?: () => void
 }) {
     /* Closed, not open, so a protocol of six orders is still one screen. The
        right column carries every step of every order whatever is closed. */
@@ -57,18 +58,6 @@ export function Assembler({
     return (
         <div className="space-y-5">
             <div className="flex flex-wrap items-center gap-2">
-                {onToggleSplit && (
-                    <>
-                        <button onClick={onToggleSplit}
-                            className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm transition ${
-                                paths.length ? "border-primary/40 bg-accent/60"
-                                    : "text-muted-foreground hover:bg-accent/40"
-                            }`}>
-                            <GitBranch className="h-4 w-4" /> This protocol splits by sex
-                        </button>
-                        <span className="mx-1 h-6 w-px bg-border" />
-                    </>
-                )}
                 {CHILD_TYPES.map(t => (
                     <Button key={t.id} variant="outline" className="h-10"
                         onClick={() => setBlocks(bs => [...bs, newBlock(t.id)])}>
@@ -100,11 +89,39 @@ export function Assembler({
                                     </span>
                                     <span className="shrink-0 text-base font-semibold">{def.label}</span>
 
-                                    {/* ONE PICKER, OR ONE PER PATH. A male and a female
-                                        panel are two products with different markers and
-                                        prices, so a split has to reach the package. */}
+                                    {/* ── ONE PICKER, OR ONE PER SEX ──
+                                        A male and a female full body panel are two
+                                        products with different markers and different
+                                        prices; a GLP-1 pen is one product. So the split
+                                        is a property of THIS step, ticked here, and not
+                                        a shape the author had to commit the whole
+                                        protocol to before writing a single step.
+
+                                        The tick IS `unitByValue`. An empty object means
+                                        ticked and nothing chosen yet, which is a real
+                                        state and needs no second field to record. */}
                                     <span className="flex flex-col gap-1.5">
-                                        {(paths.length ? paths : [undefined]).map(path => {
+                                        {paths.length > 0 && (
+                                            <label className="flex w-fit cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+                                                <input type="checkbox"
+                                                    className="h-3.5 w-3.5 accent-primary"
+                                                    checked={b.unitByValue !== undefined}
+                                                    onChange={e => setBlock(b.id, x => (e.target.checked
+                                                        /* Seeded from the single pick, so ticking
+                                                           the box does not throw away the package
+                                                           already chosen — it becomes both paths
+                                                           until one is changed. */
+                                                        ? { ...x, unitByValue: Object.fromEntries(
+                                                            paths.map(pp => [pp.id, x.unit])
+                                                                .filter(([, u]) => u)) as Block["unitByValue"] }
+                                                        /* Untick keeps the first path's pick as the
+                                                           single one, rather than clearing the row. */
+                                                        : { ...x, unit: x.unit ?? x.unitByValue?.[paths[0].id],
+                                                            unitByValue: undefined }))} />
+                                                Different item per sex
+                                            </label>
+                                        )}
+                                        {(b.unitByValue !== undefined ? paths : [undefined]).map(path => {
                                             const value = path?.id
                                             return (
                                             <span key={value ?? "one"} className="flex items-center gap-2">

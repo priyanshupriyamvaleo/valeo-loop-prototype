@@ -58,7 +58,7 @@ const seed = (): Block[] => [
 export default function AssemblePage() {
     const [blocks, setBlocks] = useState<Block[]>(seed)
     const [fetched, setFetched] = useState<Listing[]>([])
-    const [split, setSplit] = useState(false)
+
 
     useEffect(() => {
         /* The catalogue reaches the real content service, which answers 401
@@ -67,7 +67,10 @@ export default function AssemblePage() {
     }, [])
 
     const listings = useMemo(() => [...fetched, ...DEMO_LISTINGS], [fetched])
-    const paths = split ? VARIANT_ATTRIBUTES[0].values : []
+    /* The values a step MAY split into. Every step decides for itself now, with
+       the tick beside its own picker, so the sketch offers both and declares
+       nothing. */
+    const paths = VARIANT_ATTRIBUTES[0].values
 
     return (
         <div className="mx-auto max-w-7xl space-y-5 p-6">
@@ -79,13 +82,13 @@ export default function AssemblePage() {
                     </Link>
                     <h1 className="text-3xl font-semibold tracking-tight">Assemble a protocol</h1>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => { setBlocks(seed()); setSplit(false) }}>
+                <Button variant="ghost" size="sm" onClick={() => setBlocks(seed())}>
                     <RotateCcw className="mr-2 h-3.5 w-3.5" /> Reset
                 </Button>
             </div>
 
             <Assembler blocks={blocks} onChange={setBlocks} listings={listings}
-                paths={paths} onToggleSplit={() => setSplit(v => !v)} />
+                paths={paths} />
         </div>
     )
 }

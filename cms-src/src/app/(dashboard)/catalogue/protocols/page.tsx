@@ -58,7 +58,7 @@ export default function ProtocolsPage() {
 
     const filtered = useMemo(() => protocols.filter(p => {
         if (!query) return true
-        const hay = `${p.code} ${p.nameEn} ${p.nameAr} ${p.clinicianAuthor} ${p.targetCondition ?? ""}`.toLowerCase()
+        const hay = `${p.code} ${p.nameEn} ${p.nameAr} ${p.targetCondition ?? ""}`.toLowerCase()
         return hay.includes(query.toLowerCase())
     }), [protocols, query])
 
@@ -95,7 +95,6 @@ export default function ProtocolsPage() {
                                 <TableRow className="bg-muted/40">
                                     <TableHead className="text-xs">Code</TableHead>
                                     <TableHead className="text-xs">Name</TableHead>
-                                    <TableHead className="text-xs">Clinician</TableHead>
                                     <TableHead className="text-xs">Target condition</TableHead>
                                     <TableHead className="text-xs"># Steps</TableHead>
                                     <TableHead className="text-xs">Patient page</TableHead>
@@ -109,7 +108,7 @@ export default function ProtocolsPage() {
                             </TableHeader>
                             <TableBody>
                                 {filtered.length === 0 ? (
-                                    <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground text-sm italic">No protocols match.</TableCell></TableRow>
+                                    <TableRow><TableCell colSpan={9} className="text-center py-10 text-muted-foreground text-sm italic">No protocols match.</TableCell></TableRow>
                                 ) : filtered.map(p => (
                                     <TableRow key={p.id} className="hover:bg-muted/20">
                                         <TableCell className="py-2.5">
@@ -124,7 +123,6 @@ export default function ProtocolsPage() {
                                                 )}
                                             </Link>
                                         </TableCell>
-                                        <TableCell className="py-2.5 text-xs">{p.clinicianAuthor || "—"}</TableCell>
                                         <TableCell className="py-2.5 text-xs">{p.targetCondition || "—"}</TableCell>
                                         <TableCell className="py-2.5 text-xs">{p.steps.length}</TableCell>
 
