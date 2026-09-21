@@ -8,9 +8,6 @@ import { PATIENTS, SERVICES, findService, ORDERS, ORDER_CATEGORIES, COACHES,
 import { planFor, nextItem, consultFor, resolveTasks, taskState, listOf, recoveryScore, weekOfDay, weeksOf }
   from '../p1/lib/journey';
 import { PANEL, latestPanel, outOfRange } from '../p1/lib/labs';
-import { ADDABLE, NO_BLOOD_TESTS, canRecommend, offersFor, reasonMissing, REASON_HINT }
-  from './lib/addon-rules';
-import WeekRail from './consult/WeekRail';
 import BloodReport from './BloodReport';
 import { goalOf, readPatient, subscribe, scopeFor, regionOf, money } from '../shared/bus';
 import { go } from '../p2/lib/router';
@@ -50,35 +47,28 @@ const emptyCoachTask = () => ({
   key: '', t: '', sub: '', ic: 'route', capture: 'tick', resets: 'daily', unit: '',
 });
 
-/* ── THE CONSULTATION CHECKLIST ──
-   Six things a coach means to cover, ticked as they go. It is local to the
-   consult and it is not a gate: a checklist that blocks Submit becomes a
-   checklist people tick without reading. It is a prompt, and it is stored so
-   the next person can see what was actually covered.
+/* ── WHAT A COACH CAN ADD, AND WHAT IT BECOMES ──
+   Three kinds, and each lands in the plan as a different sort of step. The
+   defaults are filled from the product so the common case is one press, and the
+   coach then edits the step the same way a category manager would.
 
-   Reviewing the labs is one of them, and it is the row that links out to the
-   report — the one place a coach reaches the numbers mid-call. */
-const CHECKLIST = [
-  { k: 'progress', t: 'Review progress since the last consult' },
-  { k: 'adherence', t: 'Discuss what they have and have not been logging' },
-  { k: 'labs', t: 'Go through the blood report', to: 'report' },
-  { k: 'side', t: 'Ask about side effects and concerns' },
-  { k: 'life', t: 'Reinforce lifestyle and nutrition' },
-  { k: 'next', t: 'Agree what happens next' },
-];
-
-/* ── WHAT THE DECISION IS CALLED IN THE FULFILMENT MODEL ──
-   The CMS defines exactly two coach signals, PROTOCOL_APPROVED and
-   PRESCRIPTION_GENERATED, and records both as "NOTHING RECORDS THIS TODAY" —
-   an error on any protocol step that waits for one. This screen IS the thing
-   that would record them, and "Continue as planned" is word for word the label
-   of PROTOCOL_APPROVED. The code is shown beside the choice for the same
-   reason the consultation card shows CONSULTATION_DONE: it is what the order
-   service has to be given. */
-const OUTCOME_STATE = {
-  'Continue as planned': 'PROTOCOL_APPROVED',
-  Modify: 'PROTOCOL_APPROVED',
-  'Not suitable': null,
+   Medicines and supplements do BOTH: a step marks that it happened, and the
+   product joins the standing Medicines list the patient buys from. The step is
+   the news, the list is the shelf. */
+const ADDABLE = {
+  medicine: {
+    t: 'Medicine', group: 'medication', prescribes: true,
+    step: (svc) => ({ t: `Rx added: ${svc.t}`, sub: svc.note, action: undefined }),
+  },
+  supplement: {
+    t: 'Supplement', group: 'supplement', prescribes: true,
+    step: (svc) => ({ t: `Voucher issued: ${svc.t}`, sub: svc.note, action: undefined }),
+  },
+  test: {
+    t: 'Blood test', group: 'lab', prescribes: false,
+    step: (svc) => ({ t: svc.t, sub: svc.note,
+      action: { kind: 'book', label: 'Book your test' } }),
+  },
 };
 
 /* ── THE QUEUE ──
@@ -206,7 +196,27 @@ function Record({ rec }) {
         {c.length ? c.map((x, i) => (
           <div className="prev" key={i}>
             <span className="when">{x.on}</span>
-            <div><b>{x.outcome}</b><p>{x.note}</p></div>
+            <div>
+              <b>{x.outcome}</b>
+              <p>{x.note}</p>
+              {/* WHAT THE PATIENT WAS TOLD, kept apart from the care-team note
+                  and labelled, because a coach reading this has to know which
+                  of the two the patient has already seen. */}
+              {x.sent
+                ? (
+                  <p className="prev-sent">
+                    <i>Sent to the patient</i>
+                    {x.sent}
+                  </p>
+                )
+                : (
+                  <p className="prev-sent none">
+                    <i>Sent to the patient</i>
+                    Nothing was sent. The consultation was recorded and the notes
+                    were not submitted.
+                  </p>
+                )}
+            </div>
           </div>
         )) : <p className="empty-line">This is the first consultation.</p>}
       </Fold>
@@ -252,8 +262,19 @@ function liveRecord(pt, studio, scope) {
       ? { what: pp.pdp?.title || 'Protocol', paid: money(pub?.price || 0, pub?.region), on: 'This session' }
       : null,
     progress: total ? { done, total, next: next ? next.t : null } : null,
+    /* TWO NOTES PER CONSULT, AND THEY ARE NOT THE SAME NOTE.
+       `note` is for the care team. `coachNotes` is what was sent to the
+       patient, and until now it was written and then read by nobody — not
+       here, not on the phone. A coach picking up somebody else's patient
+       could not see what the last coach had told them. */
     consults: c && c.version
-      ? [{ on: 'Earlier today', outcome: c.outcome, note: c.note || 'No note recorded.' }]
+      ? [{
+          on: 'Earlier today',
+          outcome: c.outcome,
+          note: c.note || 'No note recorded.',
+          sent: c.submittedAt ? (c.coachNotes || '').trim() : '',
+          sentAt: c.submittedAt || null,
+        }]
       : [],
     changes: !c ? [] : [
       ...Object.entries(c.overrides || {}).map(([stepId, sid]) => {
@@ -551,7 +572,7 @@ function OrderDetail({ order, patient, pt, record, scope, region = 'uae' }) {
             {resulted && (
               <button className="btn btn-sm btn-ghost"
                 onClick={() => go(`/clinician/${order.id}/report`)}>
-                <Icon name="flask" size={12} /> Full report
+                <Icon name="flask" size={12} /> Blood test report
               </button>
             )}
           </div>
@@ -846,9 +867,13 @@ export default function Clinician({ parts = [] }) {
 
   const record = patient.live ? liveRecord(pt, state, scope) : patient.record;
 
+  /* The full blood report. Its own screen because six markers with their bands
+     and their movement do not fit in a card on a screen that is already long. */
   if (report) {
-    const lb = logbookFor(patient, pt);
-    return <BloodReport order={order} patient={patient} resulted={lb.done.includes('p3')} />;
+    const done = patient.live
+      ? (pt?.done || [])
+      : RR_PLAN.slice(0, patient.record?.progress?.done || 0).map((x) => x.id);
+    return <BloodReport order={order} patient={patient} resulted={done.includes('p3')} />;
   }
 
   if (!journey) {
@@ -873,14 +898,17 @@ export default function Clinician({ parts = [] }) {
   );
 }
 
+/* WHICH ORDER THIS PATIENT IS ON. The panel is order-scoped everywhere else,
+   so a link out of the consult has to name the order it came from. */
+function orderIdOf(patient) {
+  return (ORDERS.find((o) => o.patientId === patient.id) || {}).id;
+}
+
 function Consult({ patient, record, state, update, scope, currentStep, pt, region = 'uae' }) {
   /* This patient's record, not the last one anybody opened. */
   const consult = state.consults?.[patient.id] || {};
   const [note, setNote] = useState(consult.note || '');
   const [outcome, setOutcome] = useState(consult.outcome || OUTCOMES[0]);
-  /* Ticked as the call goes. Stored, so the next coach reads what was covered
-     rather than guessing from the note. */
-  const [checked, setChecked] = useState(consult.checked || {});
   /* ── THE THREE THINGS AN ORDER NEEDS FROM A CONSULTATION ──
      Nothing in the live system records any of them. A consultation order can
      say a call was booked and that it closed, and never that it happened or
@@ -965,11 +993,7 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
 
   /* The whole gate, in one line. Unanswered is not the same as no, and the
      rule lives on the catalogue item so anything WADA-prohibited inherits it
-     rather than one button knowing about one product.
-
-     SWAPPING a step's product still uses this on its own: the protocol already
-     decided that step exists, so the only question is the gate. ADDING goes
-     through `canRecommend`, which asks this and four more. */
+     rather than one button knowing about one product. */
   const blockedFor = (svc) => (svc && svc.gate === 'competes' && competes !== 'no');
 
 
@@ -984,14 +1008,11 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
      one. */
   const begin = (kind) => {
     const spec = ADDABLE[kind];
-    /* Open on something this patient may actually have. The rule module
-       answers that, so the drawer never opens on a product it will refuse. */
-    const svc = offersFor(kind)
-      .find((x) => canRecommend(x, { region, competes, alreadyOn: rx.map((r) => r.id) }).ok)
-      || offersFor(kind)[0];
+    /* Never open on something the pharmacy cannot ship. */
+    const svc = SERVICES[spec.group].items.find((x) => !blockedFor(x) && !x.oos);
     if (!svc) return;
     /* Lands in the week the patient is actually in, not week one. */
-    setDraft({ kind, serviceId: svc.id, blocker: false, reason: '',
+    setDraft({ kind, serviceId: svc.id, blocker: false,
                week: currentStep?.week || 1, ...spec.step(svc) });
   };
 
@@ -1005,20 +1026,14 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
   });
 
   const commit = () => {
-    if (!draft || !draft.t.trim() || reasonMissing(draft.reason)) return;
+    if (!draft || !draft.t.trim()) return;
     const svc = findService(draft.serviceId);
-    /* One gate, asked once. `canRecommend` already covers the doping question,
-       stock, and whether it is sold in this patient's market. */
-    if (!canRecommend(svc, { region, competes, alreadyOn: rx.map((r) => r.id) }).ok) return;
+    if (blockedFor(svc)) return;
     const id = `add_${draft.serviceId}_${draft.kind}`;
     if (!added.some((x) => x.id === id)) {
       setAdded((xs) => [...xs, {
         id, t: draft.t, sub: draft.sub, week: draft.week,
         serviceId: draft.serviceId,
-        /* WHY THIS PATIENT IS GETTING IT. Mandatory, and it is what they read.
-           Nothing enters a plan without a stated job — that is the rule that
-           keeps an upsell from wearing care as a costume. */
-        reason: draft.reason.trim(),
         action: draft.action,
         blocker: draft.blocker || undefined,
         /* Straight after whatever the patient is on right now. */
@@ -1027,8 +1042,7 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
     }
     /* A medicine or a supplement is also something they are now on. */
     if (ADDABLE[draft.kind].prescribes && !rx.some((x) => x.id === draft.serviceId)) {
-      setRx((xs) => [...xs, { id: draft.serviceId, status: 'recommended',
-                              dose: draft.dose || undefined, reason: draft.reason.trim() }]);
+      setRx((xs) => [...xs, { id: draft.serviceId, status: 'recommended', dose: draft.dose || undefined }]);
     }
     setDraft(null);
   };
@@ -1042,17 +1056,18 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
        matching `useState(consult.<key>)` above is what round-trips it. */
     d.consults[patient.id] = {
       note, outcome, doses, competes, addedItems: added, prescribed: rx, overrides,
-      tasksAdded, tasksOff, done, coachNotes, submittedAt, checked,
-      /* The fulfilment state this decision would set. Stored beside the
-         outcome rather than derived on read, because the label may be
-         reworded and the state may not. */
-      outcomeState: OUTCOME_STATE[outcome] || null,
+      tasksAdded, tasksOff, done, coachNotes, submittedAt,
       /* Last, so a submit cannot be overwritten by the stale value in state. */
       ...extra,
       at: new Date().toISOString(),
       version: ((d.consults[patient.id] && d.consults[patient.id].version) || 0) + 1,
     };
   });
+
+  /* The lab, for the card above the logs. Same gate the Tests card uses: the
+     panel holds results only once the sample has been read. */
+  const labResulted = logbookFor(patient, pt).done.includes('p3');
+  const labPanel = latestPanel();
 
   /* One press, because two would let a coach submit notes they never saved. */
   const submit = () => {
@@ -1061,107 +1076,76 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
     save({ submittedAt: now });
   };
 
-  /* The same plan the phone reads, so the rail cannot disagree with it. */
-  const lb = logbookFor(patient, pt);
-  const plan = planFor(state, scope, lb);
-  const resulted = lb.done.includes('p3');
-  const panel = latestPanel();
-
   return (
     <>
-      {/* ══ WHO, WHERE, AND HOW FAR ══════════════════════════════════════
-          Everything that does not change during the call, above everything
-          that does. */}
-      <div className="cw-head">
-        <div className="row" style={{ marginBottom: 10 }}>
-          <div className="grow">
-            <h2>{patient.name}</h2>
-            <p className="sub">
-              {goalOf(patient.goal)?.t} · week {weekOfDay(lb.day)} of {weeksOf(state, scope)}
-              {' · '}{patient.waiting} · waiting since {patient.since}
-            </p>
-          </div>
-          <Chip tone={consult.version ? 'live' : 'draft'}>
-            {consult.version ? `saved v${consult.version}` : 'not saved'}
-          </Chip>
+      <div className="row" style={{ margin: '20px 0 14px' }}>
+        <div className="grow">
+          <h2>{patient.name}</h2>
+          <p className="sub">
+            {goalOf(patient.goal)?.t} · {patient.waiting} · waiting since {patient.since}
+          </p>
         </div>
-        <WeekRail plan={plan} done={lb.done} current={currentStep} />
+        <Chip tone={consult.version ? 'live' : 'draft'}>
+          {consult.version ? `saved v${consult.version}` : 'not saved'}
+        </Chip>
       </div>
 
-      {/* ══ THREE COLUMNS, THREE DIFFERENT QUESTIONS ═══════════════════════
-          Evidence on the left, judgement in the middle, instruction on the
-          right. The screen used to be one column carrying all three, so a
-          coach checking a fact while deciding had to scroll away from the
-          decision and back. A chart mixed into an order set is how an order
-          ends up with nothing to trace it to. */}
-      <div className="cw">
-        <div className="cw-l">
-          <div className="cw-lbl">The evidence</div>
+      <Record rec={record} />
 
-          <Record rec={record} />
-
-          {/* ── THE NUMBERS, IN SUMMARY ──
-              Enough to know whether the report needs opening, and a way in.
-              The full report is its own screen because six markers with their
-              bands and their movement do not fit in a column. */}
-          <div className="card" style={{ marginBottom: 14 }}>
-            <div className="card-pad" style={{ paddingBottom: 10 }}>
-              <div className="row">
-                <h3 className="grow">Blood report</h3>
-                {resulted
-                  ? <Chip tone={outOfRange(panel.rows) ? 'ed' : 'live'}>
-                      {outOfRange(panel.rows)} of {panel.rows.length} out of range
-                    </Chip>
-                  : <Chip tone="draft">not read yet</Chip>}
-              </div>
-              {resulted ? (
-                <>
-                  <p className="sub" style={{ marginTop: 2 }}>
-                    {panel.label} · collected {panel.collectedOn}
-                  </p>
-                  <div className="labstrip">
-                    {panel.rows.filter((r) => r.flag !== 'ok').map((r) => (
-                      <span className={`labchip ${r.flag}`} key={r.t}>
-                        {r.t} <b>{r.v}</b><i>{r.u}</i>
-                      </span>
-                    ))}
-                    {outOfRange(panel.rows) === 0 && (
-                      <span className="labchip ok">Every marker inside its band</span>
-                    )}
-                  </div>
-                  <button className="btn btn-sm btn-ghost" style={{ marginTop: 10 }}
-                    onClick={() => go(`/clinician/${orderIdOf(patient)}/report`)}>
-                    <Icon name="flask" size={12} /> Open the full report
-                  </button>
-                </>
-              ) : (
-                <p className="empty-line" style={{ marginBottom: 0 }}>
-                  The sample has not been collected and read. There is no report to open,
-                  which is worth saying on the call rather than looking for one.
-                </p>
-              )}
-            </div>
+      {/* ── THE NUMBERS ──
+          Between the record and the logs, because a coach reads the lab before
+          the self-report. The markers outside range are named here and the
+          report itself is one press away, rather than being a table nobody
+          scrolls to mid-call. */}
+      <div className="card card-pad" style={{ marginBottom: 14 }}>
+        <div className="row">
+          <div className="grow">
+            <h3 style={{ marginBottom: 2 }}>Blood test report</h3>
+            {labResulted ? (
+              <p className="sub" style={{ margin: 0 }}>
+                {labPanel.label} · collected {labPanel.collectedOn} ·{' '}
+                <b>{outOfRange(labPanel.rows)} of {labPanel.rows.length} outside range</b>
+              </p>
+            ) : (
+              <p className="sub" style={{ margin: 0 }}>
+                The sample has not been collected and read, so there is no report. That
+                is worth saying on the call rather than looking for one.
+              </p>
+            )}
           </div>
-
-          {/* Evidence a doctor reads BEFORE choosing, not a report she is
-              shown afterwards. */}
-          <PatientLogs patient={patient} pt={pt} state={state} scope={scope}
-            weeks={weeksOf(state, scope)} />
-
-          {!patient.live && (
-            <div style={{ marginBottom: 14 }}>
-              <Note label="This one is a fixture">
-                <p style={{ margin: 0 }}>
-                  {patient.name} is here to show what a queue looks like. Only Ahmad is wired
-                  to the patient app, so only his consult outcome changes anything on a phone.
-                </p>
-              </Note>
-            </div>
+          {labResulted && (
+            <button className="btn btn-sm btn-ghost"
+              onClick={() => go(`/clinician/${orderIdOf(patient)}/report`)}>
+              <Icon name="flask" size={12} /> Open it
+            </button>
           )}
         </div>
+        {labResulted && outOfRange(labPanel.rows) > 0 && (
+          <div className="labstrip">
+            {labPanel.rows.filter((r) => r.flag !== 'ok').map((r) => (
+              <span className={`labchip ${r.flag}`} key={r.t}>
+                {r.t} <b>{r.v}</b><i>{r.u}</i>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
-        <div className="cw-c">
-          <div className="cw-lbl">The consultation</div>
+      {/* Between the record and the decision, because it is evidence a doctor
+          reads BEFORE choosing, not a report she is shown afterwards. */}
+      <PatientLogs patient={patient} pt={pt} state={state} scope={scope}
+        weeks={weeksOf(state, scope)} />
+
+      {!patient.live && (
+        <div style={{ marginBottom: 14 }}>
+          <Note label="This one is a fixture">
+            <p style={{ margin: 0 }}>
+              {patient.name} is here to show what a queue looks like. Only Ahmad is wired
+              to the patient app, so only his consult outcome changes anything on a phone.
+            </p>
+          </Note>
+        </div>
+      )}
 
       {/* ── 0. DID IT HAPPEN, AND WHAT CAME OUT OF IT ──
           Before the decision, because a decision recorded against a call that
@@ -1169,10 +1153,11 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
           afterwards. Each row here is a STATUS on the consultation order, and
           the code is shown because none of the three exist yet — they are what
           the order service has to be given. */}
-          <p className="sub" style={{ marginBottom: 10 }}>
-            Three things only this coach can report. The order knows a call was booked
-            and that it closed, and nothing in between.
-          </p>
+      <h3 style={{ marginBottom: 4 }}>The consultation</h3>
+      <p className="sub" style={{ marginBottom: 10 }}>
+        Three things only this coach can report. The order knows a call was booked
+        and that it closed, and nothing in between.
+      </p>
       <div className="card card-pad" style={{ marginBottom: 14 }}>
         <div className="row" style={{ gap: 10, alignItems: 'center' }}>
           <button className={`btn btn-sm ${done ? 'btn-primary' : 'btn-ghost'}`}
@@ -1212,41 +1197,14 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
         </div>
       </div>
 
-      {/* ── THE CALL ITSELF ──
-          A prompt, never a gate. A checklist that blocks Submit is a checklist
-          people tick without reading, and the tick would then mean nothing to
-          the next person. It is stored because what was covered is part of the
-          record. */}
-      <div className="card card-pad" style={{ marginBottom: 14 }}>
-        <div className="row" style={{ marginBottom: 8 }}>
-          <b className="grow" style={{ fontSize: 13 }}>What to cover</b>
-          <span className="hint">
-            {Object.values(checked).filter(Boolean).length} of {CHECKLIST.length}
-          </span>
-        </div>
-        {CHECKLIST.map((c) => (
-          <label className={`ck ${checked[c.k] ? 'on' : ''}`} key={c.k}>
-            <input type="checkbox" checked={!!checked[c.k]}
-              onChange={() => setChecked((x) => ({ ...x, [c.k]: !x[c.k] }))} />
-            <span>{c.t}</span>
-            {c.to === 'report' && resulted && (
-              <button type="button" className="ck-go"
-                onClick={(e) => { e.preventDefault(); go(`/clinician/${orderIdOf(patient)}/report`); }}>
-                open it
-              </button>
-            )}
-          </label>
-        ))}
-      </div>
-
       {/* ── 1. THE DECISION ──
           First, because it is the only thing that must be answered. Everything
           below it is what "modify" means, and a console that shows all of it at
           once makes "continue as planned" look like a choice nobody made. */}
       <h3 style={{ marginBottom: 4 }}>Is this patient approved?</h3>
       <p className="sub" style={{ marginBottom: 10 }}>
-        What is recorded here becomes items on this patient's plan, and the plan is
-        what their next screen shows.
+        A checklist, not a free editor. What is recorded here becomes items on this
+        patient's plan, and the plan is what their next screen shows.
       </p>
       <div className="card card-pad" style={{ marginBottom: 6 }}>
         <div className="decide">
@@ -1254,16 +1212,6 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
             <button key={o} className={`decide-b ${outcome === o ? 'on' : ''} ${o === 'Not suitable' ? 'no' : ''}`}
               onClick={() => setOutcome(o)}>{o}</button>
           ))}
-        </div>
-        {/* THE STATE THIS WOULD SET, shown for the same reason the codes above
-            are shown: the fulfilment model names it and nothing records it. */}
-        <div className="row" style={{ gap: 8, marginTop: 10, alignItems: 'center' }}>
-          {OUTCOME_STATE[outcome]
-            ? <>
-                <code className="sub" style={{ fontSize: 11 }}>{OUTCOME_STATE[outcome]}</code>
-                <span className="hint">The consultation order's own state, once one exists.</span>
-              </>
-            : <span className="hint">No fulfilment state. Stopping a protocol is not a step forward.</span>}
         </div>
         <div style={{ marginTop: 12 }}>
           <Field label="Note for the record" type="textarea" rows={2} value={note} onChange={setNote}
@@ -1302,11 +1250,6 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
           </Note>
         </div>
       )}
-
-        </div>
-
-        <div className="cw-r">
-          <div className="cw-lbl">What this patient gets</div>
 
       {outcome !== 'Not suitable' && (
         <>
@@ -1629,7 +1572,7 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
               supplements also join their medicines list.
             </p>
 
-            <div className="row" style={{ gap: 8, marginBottom: 8 }}>
+            <div className="row" style={{ gap: 8, marginBottom: 12 }}>
               {Object.entries(ADDABLE).map(([k, spec]) => (
                 <button key={k} className={`btn btn-sm ${draft?.kind === k ? 'btn-gold' : 'btn-ghost'}`}
                   onClick={() => begin(k)}>
@@ -1637,10 +1580,6 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                 </button>
               ))}
             </div>
-            {/* AN UNEXPLAINED ABSENCE READS AS A BUG. There used to be a third
-                button here and a coach who remembers it needs to know it was
-                removed on purpose, not lost. */}
-            <p className="hint" style={{ margin: '0 0 12px' }}>{NO_BLOOD_TESTS}</p>
 
             {draft && (
               <div className="item-edit split" style={{ marginTop: 4 }}>
@@ -1651,13 +1590,6 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                   <Field label="The line under it" value={draft.sub || ''}
                     onChange={(v) => setDraft({ ...draft, sub: v })}
                     hint="Say what happens, not how it will feel." />
-                  {/* MANDATORY. Switching a task OFF already demands a reason
-                      here and adding a product did not, which was backwards. */}
-                  <Field label="Why this patient" type="textarea" rows={2}
-                    value={draft.reason || ''}
-                    onChange={(v) => setDraft({ ...draft, reason: v })}
-                    placeholder="Ferritin is low and they train five days a week."
-                    hint={REASON_HINT} />
                   <Field label="Call to action" value={draft.action?.label || ''}
                     onChange={(v) => setDraft({ ...draft,
                       action: v.trim() ? { kind: draft.action?.kind || 'book', label: v } : undefined })}
@@ -1666,43 +1598,18 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
 
                 <div className="col">
                   <div className="col-h">How it is wired</div>
-                  {/* ── THE RULE, SHOWN RATHER THAN APPLIED SILENTLY ──
-                      A refused product stays in the list, greyed, carrying its
-                      reason. Hiding it teaches a coach nothing and reads as a
-                      catalogue that is missing things; a line that says "not
-                      sold in KSA" teaches the rule the first time. */}
-                  {(() => {
-                    const items = offersFor(draft.kind);
-                    const ctx = { region, competes, alreadyOn: rx.map((r) => r.id) };
-                    const verdicts = items.reduce((a, x) =>
-                      ({ ...a, [x.id]: canRecommend(x, ctx) }), {});
-                    const chosen = verdicts[draft.serviceId];
-                    return (
-                      <>
-                        <Field label={ADDABLE[draft.kind].t} type="select" value={draft.serviceId}
-                          options={items.map((x) => x.id)}
-                          display={items.reduce((a, x) => ({ ...a,
-                            [x.id]: verdicts[x.id].ok ? x.t : `${x.t} — ${verdicts[x.id].why}` }), {})}
-                          /* The doping question is answerable on the spot, so it
-                             stays selectable and opens the question. Every other
-                             refusal is a wall. */
-                          disabledOptions={items
-                            .filter((x) => !verdicts[x.id].ok && !verdicts[x.id].ask).map((x) => x.id)}
-                          onChange={(v) => {
-                            const verdict = verdicts[v];
-                            if (verdict.ask === 'competes') { setGateAsked(v); return; }
-                            if (!verdict.ok) return;
-                            repoint(v);
-                          }}
-                          hint={findService(draft.serviceId)?.note} />
-                        {!chosen.ok && (
-                          <p className="hint" style={{ marginTop: -4, color: 'var(--red)' }}>
-                            {chosen.why}
-                          </p>
-                        )}
-                      </>
-                    );
-                  })()}
+                  <Field label={ADDABLE[draft.kind].t} type="select" value={draft.serviceId}
+                    options={SERVICES[ADDABLE[draft.kind].group].items.map((x) => x.id)}
+                    display={SERVICES[ADDABLE[draft.kind].group].items
+                      .reduce((a, x) => ({ ...a, [x.id]: x.oos ? `${x.t} — out of stock` : x.t }), {})}
+                    disabledOptions={SERVICES[ADDABLE[draft.kind].group].items
+                      .filter((x) => x.oos).map((x) => x.id)}
+                    onChange={(v) => {
+                      const svc = findService(v);
+                      if (blockedFor(svc)) { setGateAsked(v); return; }
+                      repoint(v);
+                    }}
+                    hint={findService(draft.serviceId)?.note} />
                   {(findService(draft.serviceId)?.type === 'medication'
                     || findService(draft.serviceId)?.type === 'supplement') && (
                     <Field label="Dose" value={draft.dose || ''} placeholder="250 mcg daily"
@@ -1727,16 +1634,10 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                 </div>
 
                 <div className="row" style={{ gridColumn: '1 / -1', gap: 8 }}>
-                  <button className="btn btn-primary" onClick={commit}
-                    disabled={reasonMissing(draft.reason)
-                      || !canRecommend(findService(draft.serviceId),
-                           { region, competes, alreadyOn: rx.map((r) => r.id) }).ok}>
+                  <button className="btn btn-primary" onClick={commit}>
                     <Icon name="plus" size={13} /> Add this step
                   </button>
                   <button className="btn btn-ghost" onClick={() => setDraft(null)}>Cancel</button>
-                  {reasonMissing(draft.reason) && (
-                    <span className="hint">Say why this patient is getting it first.</span>
-                  )}
                 </div>
               </div>
             )}
@@ -1751,7 +1652,7 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                       <span className="when">{r.status}</span>
                       <div className="body">
                         <b>{svc?.t || r.id}</b>
-                        <span>{r.reason || svc?.note}{r.dose ? ` · ${r.dose}` : ''}
+                        <span>{svc?.note}{r.dose ? ` · ${r.dose}` : ''}
                           {svc && priceOf(svc, region) ? ` · ${money(priceOf(svc, region), region)}` : ''}</span>
                       </div>
                       <div className="acts">
@@ -1807,28 +1708,14 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
         </div>
       )}
 
-        </div>
-      </div>
-
-      {/* ══ THE FOOTER ══════════════════════════════════════════════════════
-          Sticky, because the three columns are long and a Save that scrolls
-          off the bottom is a Save people stop believing in. */}
-      <div className="cw-foot">
-        <span className="grow hint">
-          {consult.version
-            ? `Saved v${consult.version}. This writes to the patient, not to the template.`
-            : 'Nothing saved yet. This writes to the patient, not to the template.'}
-        </span>
+      <div className="row" style={{ marginTop: 16 }}>
         <button className="btn btn-primary" onClick={save}>
           <Icon name="check" size={14} /> Save consult outcome
         </button>
+        <span className="hint">
+          This writes to the patient, not to the template. It is the one surface here that does.
+        </span>
       </div>
     </>
   );
-}
-
-/* WHICH ORDER THIS PATIENT IS ON. The panel is order-scoped everywhere else,
-   so a link out of the consult has to name the order it came from. */
-function orderIdOf(patient) {
-  return (ORDERS.find((o) => o.patientId === patient.id) || {}).id;
 }

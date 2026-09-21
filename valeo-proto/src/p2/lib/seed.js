@@ -79,11 +79,7 @@ export const SERVICES = {
     { id: 'sup_joint', t: 'Joint and tendon stack', note: 'Collagen, Vitamin C, Boswellia', price: { uae: 220, ksa: 230 } },
     { oos: true, id: 'sup_d3k2', t: 'Vitamin D3 with K2', note: '90 days', price: { uae: 95, ksa: 99 } },
     { id: 'sup_magnesium', t: 'Magnesium glycinate', note: '90 days', price: { uae: 85, ksa: 89 } },
-    /* UAE ONLY, ON PURPOSE. A product with no price in a market is NOT SOLD
-       THERE, and the coach panel refuses to add one rather than borrowing the
-       other market's number. With every item priced in both, that rule could
-       never fire and so could never be checked. */
-    { id: 'sup_omega', t: 'Omega-3', note: '90 days', price: { uae: 130 } },
+    { id: 'sup_omega', t: 'Omega-3', note: '90 days', price: { uae: 130, ksa: 135 } },
     { oos: true, id: 'sup_creatine', t: 'Creatine monohydrate', note: '90 days', price: { uae: 90, ksa: 95 } },
   ] },
 };
@@ -683,8 +679,15 @@ export const PATIENTS = [
       purchase: { what: 'Recovery & Repair Peptide Protocol', paid: 'AED 3,799', on: '14 July' },
       progress: { done: 8, total: 14, next: 'Mid-point doctor review' },
       consults: [
+        /* TWO NOTES, AND THEY ARE WRITTEN FOR DIFFERENT READERS. `note` goes on
+           the record for the care team; `sent` is what reached the patient.
+           Both are kept so the next coach can see what this person has already
+           been told, rather than repeating it or contradicting it. */
         { on: '21 July', outcome: 'Continue as planned',
-          note: 'Baseline hs-CRP raised. Start as written, review at Week 6.' },
+          note: 'Baseline hs-CRP raised. Start as written, review at Week 6.',
+          sent: 'Your inflammation markers are a little high, which fits the injury. '
+            + 'Nothing changes for now — keep the peptide going and we will look again at Week 6.',
+          sentAt: '2026-07-21T11:20:00.000Z' },
       ],
       flags: ['Competes in tested sport: no'],
       /* What she has logged in her own app. Six weeks in, still reporting,

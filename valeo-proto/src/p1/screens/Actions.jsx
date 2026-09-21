@@ -148,9 +148,8 @@ export function Status({ item, onBack, onDone }) {
 /* ── 4. THE REPORT ──
    What "your results are ready" actually opens. Markers are placeholders
    pending clinical sign-off, and the screen says so rather than presenting
-   invented numbers as findings.
-
-   THE PANEL MOVED. It used to be declared here, inside a phone screen, and the
+   invented numbers as findings. */
+/* THE PANEL MOVED. It used to be declared here, inside a phone screen, and the
    coach panel imported it from here — a number a doctor reads living in a
    patient component. It is now `p1/lib/labs.js`, which holds two panels so a
    retest has a baseline to be read against. Re-exported under the old name

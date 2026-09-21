@@ -686,92 +686,31 @@ h3 { font-family:var(--f-head); font-size:13.5px; font-weight:600; }
 /* the derived package's provenance column */
 .inv-from { font-size:11.5px; color:var(--ink-3); max-width:260px; }
 
-/* ══ THE CONSULTATION WORKSPACE ═══════════════════════════════════════════
-   Three columns, three different questions: evidence, judgement, instruction.
-   The screen was one column carrying all three, so a coach checking a fact
-   while deciding scrolled away from the decision and back.
+/* ── WHAT THE PATIENT WAS TOLD, in the history ──
+   Set apart from the care-team note above it, because a coach reading the
+   record has to know which of the two the patient has already seen. Writing
+   for a colleague and writing for a patient are different acts and the screen
+   should not let them blur. */
+.prev-sent { margin-top:6px; padding-left:10px; border-left:2px solid var(--violet);
+             font-size:12px; color:var(--ink-2); }
+.prev-sent i { display:block; font-style:normal; font-family:var(--f-mono); font-size:9px;
+               font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+               color:var(--violet); margin-bottom:3px; }
+.prev-sent.none { border-left-color:var(--line-2); color:var(--ink-3); }
+.prev-sent.none i { color:var(--ink-3); }
 
-   Desktop leads here, deliberately. This is a desk tool used with a patient on
-   a call, not a phone screen — so the three-column case is the designed one and
-   the stack below 1180px is the fallback, which is the opposite of the patient
-   app's rule. */
-.page-in.wide { max-width:1560px; }
-
-.cw-head { margin:18px 0 14px; }
-.cw { display:grid; grid-template-columns:366px minmax(0,1fr) 392px; gap:16px;
-      align-items:start; }
-@media (max-width:1180px) { .cw { grid-template-columns:1fr; } }
-
-/* The logs card was built for a full-width band and the evidence column is a
-   third of one. Its own breakpoint is on the PAGE width, which is wide here, so
-   the narrow layouts are re-stated for the column rather than the window. */
-.cw-l .logs-score { grid-template-columns:1fr; gap:10px; }
-.cw-l .logs-caps { grid-template-columns:repeat(2,1fr); }
-.cw-l .logs-tracks { padding:14px 16px 12px; }
-.cw-l .trk { grid-template-columns:58px 1fr 62px; gap:8px; }
-.cw-l .trk-d { display:none; }
-.cw-l .trk-v em { display:none; }
-.cw-l .fold-h span { max-width:120px; overflow:hidden; text-overflow:ellipsis;
-                     white-space:nowrap; }
-
-/* Each column says what it is for. Without the label the middle column reads as
-   "the form" and the right as "more form", which is the arrangement this
-   replaces. */
-.cw-lbl { font-family:var(--f-mono); font-size:9.5px; font-weight:700; letter-spacing:.12em;
-          text-transform:uppercase; color:var(--ink-3); margin-bottom:8px; }
-.cw-c > h3 { margin-bottom:4px; }
-
-/* Room for the sticky footer, so the last card is never under it. */
-.cw-r { padding-bottom:4px; }
-.cw + .cw-foot, .cw-foot { position:sticky; bottom:0; z-index:4; display:flex; gap:10px;
-          align-items:center; margin-top:16px; padding:12px 16px;
-          background:var(--surface); border:1px solid var(--line); border-radius:10px;
-          box-shadow:0 -2px 10px rgba(22,48,75,.06); }
-
-/* ── the protocol rail ──
-   Derived from the published plan, never drawn. Steps sharing a week sit under
-   one heading rather than repeating it. */
-.rail { display:flex; gap:0; overflow-x:auto; padding:10px 0 4px; }
-.rail-w { flex:none; padding-right:18px; border-right:1px dashed var(--line); margin-right:18px; }
-.rail-w:last-child { border-right:0; margin-right:0; padding-right:0; }
-.rail-wk { display:block; font-family:var(--f-mono); font-size:9.5px; font-weight:700;
-           letter-spacing:.12em; color:var(--ink-3); margin-bottom:6px; }
-.rail-steps { display:flex; gap:8px; }
-.rail-s { display:flex; align-items:center; gap:6px; background:none; border:0; cursor:default;
-          padding:0; font-size:11.5px; color:var(--ink-3); white-space:nowrap; }
-.rail-s span { max-width:130px; overflow:hidden; text-overflow:ellipsis; }
-.rail-dot { flex:none; width:16px; height:16px; border-radius:50%; border:1.5px solid var(--line-2);
-            background:var(--surface); display:flex; align-items:center; justify-content:center;
-            color:#fff; }
-.rail-s.done { color:var(--ink-2); }
-.rail-s.done .rail-dot { background:var(--green); border-color:var(--green); }
-.rail-s.now { color:var(--ink); font-weight:600; }
-.rail-s.now .rail-dot { border-color:var(--gold); background:var(--gold); box-shadow:0 0 0 3px var(--gold-soft); }
-
-/* ── the checklist ──
-   A prompt, never a gate. It carries no disabled state anywhere for that
-   reason. */
-.ck { display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px;
-      color:var(--ink-2); cursor:pointer; border-bottom:1px solid var(--surface-2); }
-.ck:last-of-type { border-bottom:0; }
-.ck input { width:15px; height:15px; accent-color:var(--ink); cursor:pointer; }
-.ck.on { color:var(--ink-3); }
-.ck.on > span { text-decoration:line-through; }
-.ck > span { flex:1; }
-.ck-go { background:none; border:0; padding:0; font-size:11px; font-weight:600;
-         color:var(--violet); cursor:pointer; text-decoration:underline; }
-
-/* ── the labs summary, in the evidence column ── */
-.labstrip { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+/* the out-of-range markers named beside the link into the report */
+.labstrip { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
 .labchip { font-size:11px; padding:3px 8px; border-radius:6px; background:var(--red-soft);
            color:var(--red); }
 .labchip.ok { background:var(--green-soft); color:var(--green); }
 .labchip b { margin-left:4px; }
 .labchip i { font-style:normal; opacity:.7; margin-left:2px; }
 
-/* ══ THE BLOOD REPORT ═════════════════════════════════════════════════════
+/* ══ THE BLOOD TEST REPORT ════════════════════════════════════════════════
    A reference printed as a sentence — "under 3.0" beside "4.1" — makes the
    reader do the comparison six times in their head. The bar does it once. */
+.rpt-scroll { overflow-x:auto; border-radius:12px 12px 0 0; }
 .rpt-t { min-width:820px; }
 .rpt-num { text-align:right; }
 .rpt-was { display:block; font-style:normal; font-size:10.5px; }

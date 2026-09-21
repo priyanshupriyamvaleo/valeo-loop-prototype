@@ -108,8 +108,7 @@ function Shell() {
             <span>Order Management</span>
             <Icon name="chev" size={10} />
             <b>{view === 'user' ? 'User Console'
-              : parts[2] === 'journey' ? 'Consultation'
-              : parts[2] === 'report' ? 'Blood report'
+              : parts[2] === 'report' ? 'Blood test report'
               : 'Past Orders'}</b>
           </div>
           <div className="grow" />
@@ -122,10 +121,7 @@ function Shell() {
           </div>
         </div>
 
-        {/* The consultation is three columns and a 1080px page cannot hold
-            them. Only that screen widens — every other one stays the width it
-            was, because a table does not read better for being stretched. */}
-        <div className={`page-in ${parts[2] === 'journey' ? 'wide' : ''}`}>
+        <div className="page-in">
           <Boundary key={parts.join('/')}>
             {view === 'user' ? <UserConsole /> : <Clinician parts={parts} />}
           </Boundary>

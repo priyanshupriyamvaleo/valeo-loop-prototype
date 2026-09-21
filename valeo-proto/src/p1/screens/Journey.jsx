@@ -177,7 +177,7 @@ export function ProtocolCard({ plan, done, onOpen, onChat, onTimeline, title, we
  * So the logbook is full on day zero and Week 12 has something to read against.
  */
 export function JourneyDetail({ plan, done, checkins, tasks = [], metrics = [], target, booked, title,
-                               medicines, serviceFor, weeks = 12, paused, coachNote, onBack, onOpen, onLog, onChat, onProduct, region = 'uae', place, owedFor, onPay }) {
+                               medicines, serviceFor, weeks = 12, paused, onBack, onOpen, onLog, onChat, onProduct, region = 'uae', place, owedFor, onPay }) {
   const front = nextItem(plan, done);
   const p = progress(plan, done);
   const wk = weekOf(plan, done, weeks);
@@ -494,19 +494,6 @@ export function JourneyDetail({ plan, done, checkins, tasks = [], metrics = [], 
       </div>
 
       <div className="scroll pad">
-        {/* ── WHAT THE COACH SENT ──
-            Above everything, including the pause. It is the most recent thing a
-            person said to this patient, and the field it comes from is labelled
-            "the patient reads this" on the coach's own screen. */}
-        {coachNote && (
-          <div className="sect">
-            <div className="sect-h"><span>From your coach</span></div>
-            <div className="move">
-              <b>After your consultation</b>
-              <span>{coachNote.notes}</span>
-            </div>
-          </div>
-        )}
         {paused ? (
           <>
             <div className="sect">

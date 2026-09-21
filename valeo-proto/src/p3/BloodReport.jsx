@@ -139,7 +139,11 @@ export default function BloodReport({ order, patient, resulted }) {
       </div>
 
       <div className="card">
-        <table className="otable otable-in rpt-t">
+        {/* Scrolls INSIDE its own box. The table is wider than the 1080px page
+            and without this it pushed the whole screen sideways, which moves
+            the sidebar and the header off with it. */}
+        <div className="rpt-scroll">
+          <table className="otable otable-in rpt-t">
           <thead>
             <tr>
               <th>Marker</th>
@@ -176,8 +180,9 @@ export default function BloodReport({ order, patient, resulted }) {
                 </tr>
               );
             })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
 
         <div className="card-pad" style={{ borderTop: '1px solid var(--line)' }}>
           <p className="fine" style={{ margin: 0 }}>
