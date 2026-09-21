@@ -358,12 +358,25 @@ export const TASK_CAPTURES = [
   { id: 'entry', label: 'Adds entries' },
   { id: 'scale', label: 'Scores it' },
 ];
+/* ── THE TYPE OF A TASK ──
+   The ids are what p1 stores and reads, so they do not move. Only the words
+   change: "Every day" described the reset, and a coach picking one is choosing
+   what KIND of task this is. Weekly first, because a coach writing a task for
+   one patient is usually writing a weekly one — a daily task is normally the
+   protocol's own. */
 export const TASK_RESETS = [
-  { id: 'daily', label: 'Every day' },
-  { id: 'weekly', label: 'Every week' },
+  { id: 'weekly', label: 'Weekly task' },
+  { id: 'daily', label: 'Daily task' },
   { id: 'never', label: 'Once' },
 ];
-export const TASK_ICONS = ['activity', 'plus', 'flask', 'scale', 'heart', 'route', 'lock', 'box'];
+/* `default` is first and is not a picture: it means "no icon of its own", and
+   the renderer draws the neutral one. A coach writing a task should not have to
+   choose a glyph before they can save it. */
+export const TASK_ICONS = ['default', 'activity', 'plus', 'flask', 'scale', 'heart', 'route', 'lock', 'box'];
+export const TASK_ICON_LABELS = {
+  default: 'Default', activity: 'Activity', plus: 'Plus', flask: 'Flask',
+  scale: 'Scale', heart: 'Heart', route: 'Route', lock: 'Lock', box: 'Box',
+};
 
 /* ── THE METRIC ROW ──
    The three tiles above the task list. Authored in the catalogue per protocol:

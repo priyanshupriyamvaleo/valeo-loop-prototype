@@ -49,6 +49,13 @@ const INIT = {
   logs: {},            /* how many times each tile has been logged */
   logAt: {},           /* and the day each was last logged, which is what tells
                           a clinician that somebody has gone quiet */
+  /* ── EVERY LOG, NOT ONLY THE LAST ──
+     A count and a last-seen day answer "have they gone quiet". They cannot
+     answer "when did they stop", "was it three in one week and none since",
+     or "what did they report each time" — and those are what a coach opening
+     a tile is actually asking. One row per press: { k, day, v? }.
+     Additive, so a record written before this exists simply has none. */
+  logEntries: [],
   booked: {},          /* itemId -> the slot the patient chose */
   acting: null,        /* the plan item whose action screen is open */
   actMode: null,       /* which face of it: report, join, or the default */
@@ -381,6 +388,10 @@ export default function App() {
           target: target != null ? target : prev.target,
           logs: { ...prev.logs, symptoms: (prev.logs?.symptoms || 0) + 1 },
           logAt: { ...prev.logAt, symptoms: prev.day || 0 },
+          /* The check-in is the one capture that records real values, so the
+             entry carries them and the coach's history shows the numbers. */
+          logEntries: [...(prev.logEntries || []),
+            { k: 'symptoms', day: prev.day || 0, v: { pain: v.pain, capacity: v.capacity } }],
           stage: 'detail',
         }))} />
     );
@@ -425,6 +436,10 @@ export default function App() {
             ...prev,
             logs: { ...prev.logs, [k]: (prev.logs?.[k] || 0) + 1 },
             logAt: { ...prev.logAt, [k]: prev.day || 0 },
+            /* No value, because these three record that the day was logged and
+               nothing more. The entry still carries WHEN, which is the half a
+               coach can act on. */
+            logEntries: [...(prev.logEntries || []), { k, day: prev.day || 0 }],
           }));
         }} />
     );

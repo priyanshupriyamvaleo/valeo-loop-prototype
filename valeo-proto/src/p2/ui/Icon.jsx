@@ -1,5 +1,8 @@
 /* Dependency-free glyphs. A dozen strokes, no icon package. */
 const P = {
+  /* The neutral task glyph. A task with no icon of its own gets this rather
+     than nothing, because an empty square in a row of icons reads as broken. */
+  default:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8.5 12.5l2.5 2.5 4.5-5',
   home:'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5', users:'M16 20v-2a4 4 0 0 0-8 0v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8',
   cart:'M3 4h2l2.5 11h10L20 7H6M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2m8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2',
   clipboard:'M9 4h6v3H9zM7 5H5v16h14V5h-2', box:'M3 8l9-4 9 4-9 4zM3 8v8l9 4 9-4V8',

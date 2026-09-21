@@ -4,7 +4,7 @@ import { Field, Chip, Note } from '../p2/ui/kit';
 import { useStudio } from '../p2/lib/store';
 import { PATIENTS, SERVICES, findService, ORDERS, ORDER_CATEGORIES, COACHES,
          orderFor, RR_PLAN, serviceGroupsFor, priceOf, RR_TASKS, taskDefOf,
-         TASK_CAPTURES, TASK_RESETS, TASK_ICONS } from '../p2/lib/seed';
+         TASK_CAPTURES, TASK_RESETS, TASK_ICONS, TASK_ICON_LABELS } from '../p2/lib/seed';
 import { planFor, nextItem, consultFor, resolveTasks, taskState, listOf, recoveryScore, weekOfDay, weeksOf }
   from '../p1/lib/journey';
 import { PANEL, latestPanel, outOfRange } from '../p1/lib/labs';
@@ -37,6 +37,18 @@ const OUTCOMES = ['Continue as planned', 'Not suitable', 'Modify'];
    patient reads under a task their coach added. */
 const COACH = COACHES[1];
 
+/* ── WHEN A COACH'S TASK RUNS, IN WORDS ──
+   Four cases and each reads differently, so one template with an optional date
+   in it would produce "· until" with nothing after it on the commonest one. */
+function taskWindow(a) {
+  const d = (x) => new Date(`${x}T00:00:00`)
+    .toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  if (a.from && a.until) return `${d(a.from)} to ${d(a.until)}`;
+  if (a.from) return `from ${d(a.from)}`;
+  if (a.until) return `until ${d(a.until)}`;
+  return 'open-ended';
+}
+
 /* A task key is what the app stores every reading against. Lower case with
    underscores, the same rule the catalogue applies. */
 const toKey = (v) => v.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
@@ -44,7 +56,7 @@ const toKey = (v) => v.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(
 /* A blank task for a coach to write. It opens on a tick every day, which is
    what nearly every coach instruction turns out to be. */
 const emptyCoachTask = () => ({
-  key: '', t: '', sub: '', ic: 'route', capture: 'tick', resets: 'daily', unit: '',
+  key: '', t: '', sub: '', ic: 'default', capture: 'tick', resets: 'weekly', unit: '',
 });
 
 /* ── WHAT A COACH CAN ADD, AND WHAT IT BECOMES ──
@@ -64,12 +76,18 @@ const ADDABLE = {
     t: 'Supplement', group: 'supplement', prescribes: true,
     step: (svc) => ({ t: `Voucher issued: ${svc.t}`, sub: svc.note, action: undefined }),
   },
-  test: {
-    t: 'Blood test', group: 'lab', prescribes: false,
-    step: (svc) => ({ t: svc.t, sub: svc.note,
-      action: { kind: 'book', label: 'Book your test' } }),
-  },
 };
+
+/* ── WHY THERE IS NO BLOOD TEST HERE ──
+   A blood panel is scheduled BY THE PROTOCOL: the steps after it wait on its
+   result, so one added mid-course would be a panel nothing waits for. Where the
+   builder marked a panel changeable a coach can still swap WHICH panel it is,
+   in the card above. The protocol decides that a panel exists; the coach
+   decides which one. Said on the screen, because an unexplained absence reads
+   as a bug to anybody who remembers the third button. */
+const NO_BLOOD_TESTS =
+  'Blood panels are scheduled by the protocol, so they are not added here. Where a '
+  + 'panel is marked changeable you can swap which one it is, above.';
 
 /* ── THE QUEUE ──
    A doctor does not arrive at one patient, she arrives at a list. Who is
@@ -636,14 +654,30 @@ function OrderDetail({ order, patient, pt, record, scope, region = 'uae' }) {
    camera build does not exist. */
 
 /* One patient's logbook, from whichever side it lives on. */
+/* ── A CHECK-IN IS A SYMPTOM LOG ──
+   Not a synthesis. `checkins` already carries one row per check-in with the
+   day and both numbers on it, and the symptom counter is incremented by the
+   same press. So the history for that one capture can be read off the
+   check-ins for every patient, including the fixtures, without inventing
+   anything. Entries the app recorded directly win, because they are the record;
+   these fill in where an older one has none. */
+function entriesFor(lb) {
+  if ((lb.entries || []).some((e) => e.k === 'symptoms')) return lb.entries;
+  const fromCheckins = (lb.checkins || []).map((c) => ({
+    k: 'symptoms', day: c.day || 0, v: { pain: c.pain, capacity: c.capacity },
+  }));
+  return [...(lb.entries || []), ...fromCheckins];
+}
+
 function logbookFor(patient, pt) {
   if (patient.live) {
     return { day: pt?.day || 0, checkins: pt?.checkins || [], target: pt?.target ?? null,
-             logs: pt?.logs || {}, logAt: pt?.logAt || {}, done: pt?.done || [], real: true };
+             logs: pt?.logs || {}, logAt: pt?.logAt || {}, entries: pt?.logEntries || [],
+             done: pt?.done || [], real: true };
   }
   const r = patient.record || {};
   return { day: r.day || 0, checkins: r.checkins || [], target: r.target ?? null,
-           logs: r.logs || {}, logAt: r.logAt || {},
+           logs: r.logs || {}, logAt: r.logAt || {}, entries: r.logEntries || [],
            done: RR_PLAN.slice(0, r.progress?.done || 0).map((x) => x.id), real: false };
 }
 
@@ -668,7 +702,118 @@ const Track = ({ label, from, to, max, invert, only }) => {
   );
 };
 
+/* ══ ONE CAPTURE, EVERY TIME IT WAS LOGGED ════════════════════════════════
+   The tile says how many and when last. That answers "have they gone quiet"
+   and nothing else. A coach opening it is asking the next question — when did
+   they stop, was it three in one week and none since, what did they report —
+   and none of that can be read off a total.
+
+   THE ENTRIES ARE REAL OR THEY ARE ABSENT. The patient app records one row per
+   press. A record written before it did says so, and the panel falls back to
+   what a count and a last-seen day can honestly support. It never spaces a
+   total evenly across the weeks to make a chart: that would be a picture of an
+   assumption, and a coach would read it as evidence.
+
+   A check-in carries values, so that one history shows the numbers. The other
+   captures record that the day was logged and nothing more, and the rows say
+   so rather than leaving a column blank. */
+function LogHistory({ cap, lb, weeks, onClose }) {
+  /* ⚠️ `logKey`, NOT `key`. A task row carries two: `key` names the task on the
+     board and `logKey` names the counter the app writes against, and the two
+     differ on every seeded row — `log_symptoms` against `symptoms`. Filtering
+     on the board key matched nothing and every history came back empty. */
+  const counter = cap.logKey || cap.key;
+  const rows = (lb.entries || []).filter((e) => e.k === counter);
+  const nowWeek = weekOfDay(lb.day);
+
+  /* Newest first. A coach reads the most recent entry, not the first one. */
+  const recent = [...rows].sort((a, b) => b.day - a.day);
+
+  /* One column per protocol week, so a gap is a week nobody logged rather than
+     bars crushed against the left edge. Only drawn when there are real entries
+     to count — see the note above. */
+  const byWeek = new Map();
+  rows.forEach((e) => {
+    const w = weekOfDay(e.day);
+    byWeek.set(w, (byWeek.get(w) || 0) + 1);
+  });
+  const peak = Math.max(1, ...byWeek.values());
+
+  return (
+    <div className="caphist">
+      <div className="caphist-h">
+        <Icon name={cap.ic} size={14} />
+        <b>{cap.t}</b>
+        <span className="grow">{cap.sub}</span>
+        <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+      </div>
+
+      {/* The state first, because a task that is blocked, off or not due yet has
+          no history to explain and the absence is not the patient's doing. */}
+      {cap.state === 'blocked' || cap.state === 'off' || cap.state === 'later' ? (
+        <p className="empty-line" style={{ margin: '10px 16px 14px' }}>
+          {cap.state === 'blocked' ? cap.blockedWhy
+            : cap.state === 'off' ? `Switched off for this patient — ${cap.offWhy}`
+            : (cap.gateNote || 'The protocol has not reached this yet.')}
+          {' '}There are no readings by design, so nothing here is a patient who stopped.
+        </p>
+      ) : (
+        <>
+          <div className="caphist-sum">
+            <span><b>{cap.count || 0}</b>total</span>
+            <span><b>{cap.at == null ? '—' : `week ${weekOfDay(cap.at)}`}</b>last logged</span>
+            <span><b>{cap.at == null ? '—' : `${Math.max(0, nowWeek - weekOfDay(cap.at))}`}</b>
+              weeks since</span>
+          </div>
+
+          {rows.length > 0 ? (
+            <>
+              <div className="caphist-chart">
+                {Array.from({ length: weeks }, (_, i) => i + 1).map((w) => {
+                  const n = byWeek.get(w) || 0;
+                  return (
+                    <div className={`ch-b ${n ? '' : 'gap'} ${w === nowWeek ? 'now' : ''}`} key={w}
+                      title={`Week ${w} — ${n} log${n === 1 ? '' : 's'}`}>
+                      {n ? <i style={{ height: `${Math.round((n / peak) * 100)}%` }} /> : <u />}
+                      <span>{w}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="caphist-rows">
+                {recent.map((e, i) => (
+                  <div className="ch-r" key={`${e.k}-${e.day}-${i}`}>
+                    <span className="when">Week {weekOfDay(e.day)}</span>
+                    <b>Day {e.day}</b>
+                    <span className="grow">
+                      {e.v
+                        ? `Pain ${e.v.pain} · Capacity ${e.v.capacity}`
+                        : 'Logged. This capture records the day and no value.'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="empty-line" style={{ margin: '10px 16px 14px' }}>
+              {cap.count
+                ? `${cap.count} log${cap.count === 1 ? '' : 's'} are counted, but this record was `
+                  + 'written before the app kept one row per press, so there is no history to '
+                  + 'show. It fills in from the next log onwards.'
+                : 'Never logged. There is nothing to show, and that is the finding.'}
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function PatientLogs({ patient, pt, state, scope, weeks = 12 }) {
+  /* Which tile is open. One at a time: two histories side by side is a
+     comparison nobody asked for and it pushes the decision off the screen. */
+  const [open, setOpen] = useState(null);
   const lb = logbookFor(patient, pt);
   const { checkins } = lb;
   const first = checkins[0];
@@ -700,6 +845,8 @@ function PatientLogs({ patient, pt, state, scope, weeks = 12 }) {
      as silence would ask her about a decision she made herself. */
   const quiet = caps.filter((c) => c.state === 'quiet' || c.state === 'never').length;
   const switchedOff = caps.filter((c) => c.state === 'off');
+  const openCap = caps.find((c) => c.key === open) || null;
+  const history = { ...lb, entries: entriesFor(lb) };
 
   return (
     <div className="card logs" style={{ marginBottom: 14 }}>
@@ -768,13 +915,20 @@ function PatientLogs({ patient, pt, state, scope, weeks = 12 }) {
         </>
       )}
 
-      {/* ── what is being kept, and what has gone quiet ── */}
+      {/* ── what is being kept, and what has gone quiet ──
+          Each tile OPENS. The grid answers "is anybody logging this"; the
+          question straight after it is always "when, and how often", and that
+          needed a screen of its own or it needed to be here. It is here. */}
       <div className="logs-caps">
         {caps.map((c) => (
-          <div className={`cap cap-${c.state}`} key={c.key}>
+          <button type="button" key={c.key}
+            className={`cap cap-${c.state} ${open === c.key ? 'on' : ''}`}
+            aria-expanded={open === c.key}
+            onClick={() => setOpen(open === c.key ? null : c.key)}>
             <div className="cap-h">
               <Icon name={c.ic} size={13} />
               <b>{c.t}</b>
+              <Icon name="chev" size={11} className="cap-chev" />
             </div>
             <span className="cap-n">
               {c.state === 'blocked' || c.state === 'off' ? '–' : c.count ? `${c.count}×` : '0'}
@@ -788,9 +942,13 @@ function PatientLogs({ patient, pt, state, scope, weeks = 12 }) {
                 : c.state === 'quiet' ? `Nothing for ${c.silentFor} weeks`
                 : `Last week ${weekOfDay(c.at)}`}
             </span>
-          </div>
+          </button>
         ))}
       </div>
+
+      {openCap && (
+        <LogHistory cap={openCap} lb={history} weeks={weeks} onClose={() => setOpen(null)} />
+      )}
 
       {quiet > 0 && (
         <div className="card-pad" style={{ paddingTop: 0 }}>
@@ -967,6 +1125,12 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
   const [offAsked, setOffAsked] = useState(null);
   const [offWhy, setOffWhy] = useState('');
   const [taskPick, setTaskPick] = useState('');
+  /* ── WHEN IT RUNS ──
+     Two dates, not one. "Until" alone said when a task stops and never when it
+     starts, so a coach writing "walk daily from Monday" had nowhere to put the
+     Monday and the task began the moment they saved. Both are real date
+     pickers: a typed "30 Sep 2026" is a string nothing can compare. */
+  const [taskFrom, setTaskFrom] = useState('');
   /* A task the coach is WRITING, before it joins this patient's list. Null
      while she is only picking one the protocol already offers. */
   const [newTask, setNewTask] = useState(null);
@@ -1278,7 +1442,10 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                 return (
                   <div className="chg" key={step.id}>
                     <div className="chg-h">
-                      <span className="when">Week {step.week}</span>
+                      {/* NO WEEK. The protocol builder no longer carries one on a
+                          step, so printing one here would be this screen
+                          inventing a number the protocol does not hold. The
+                          order of the cards IS the order of the plan. */}
                       <div className="grow">
                         <b>{step.t}</b>
                         <span>Protocol default: {findService(step.serviceId)?.t || 'none'}</span>
@@ -1346,7 +1513,10 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                     <b>{def ? def.t : 'A task this protocol no longer offers'}</b>
                     <span>
                       {def
-                        ? `${a.why || def.sub || ''}${a.until ? ` \u00b7 until ${a.until}` : ' \u00b7 open-ended'}`
+                        /* A task written with no line under it has nothing
+                           before the separator, and " · open-ended" reads as a
+                           missing word. Joined rather than concatenated. */
+                        ? [a.why || def.sub, taskWindow(a)].filter(Boolean).join(' \u00b7 ')
                         : `Stored as ${a.taskKey}. It is not on the patient's phone.`}
                     </span>
                   </div>
@@ -1379,16 +1549,21 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
               const commitTask = (fields) => {
                 setTasksAdded((xs) => [...xs, {
                   ...fields,
-                  /* A date IS allowed here. The ban on time applies to a
-                     template, whose author has never met this patient. */
-                  until: taskUntil.trim() || null,
+                  /* A DATE IS ALLOWED HERE. The ban on time applies to a
+                     template, whose author has never met this patient. This
+                     coach has. */
+                  from: taskFrom || null,
+                  until: taskUntil || null,
                   /* The coach's NAME, because this is what the patient reads on
                      their phone: "From Durga Coach". "you" is this panel's word
                      for its own user. */
                   by: COACH, at: new Date().toISOString(),
                 }]);
-                setTaskPick(''); setNewTask(null); setTaskUntil('');
+                setTaskPick(''); setNewTask(null); setTaskUntil(''); setTaskFrom('');
               };
+
+              /* A window that ends before it begins is not a window. */
+              const badWindow = !!taskFrom && !!taskUntil && taskUntil < taskFrom;
 
               return (
                 <>
@@ -1411,11 +1586,15 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                     </div>
                     {!newTask && (
                       <>
-                        <div style={{ width: 150 }}>
-                          <Field label="Until" value={taskUntil} placeholder="30 Sep 2026"
+                        <div style={{ width: 160 }}>
+                          <Field label="Start date" type="date" value={taskFrom}
+                            onChange={setTaskFrom} />
+                        </div>
+                        <div style={{ width: 160 }}>
+                          <Field label="End date" type="date" value={taskUntil}
                             onChange={setTaskUntil} />
                         </div>
-                        <button className="btn btn-primary btn-sm" disabled={!taskPick}
+                        <button className="btn btn-primary btn-sm" disabled={!taskPick || badWindow}
                           onClick={() => {
                             const def = taskDefOf(taskPick);
                             if (!def) return;
@@ -1440,7 +1619,9 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                           hint="Say what to do. Never how it will feel." />
                         <Field label="Icon" type="select" value={newTask.ic}
                           options={TASK_ICONS}
-                          onChange={(v) => setNewTask({ ...newTask, ic: v })} />
+                          display={TASK_ICON_LABELS}
+                          onChange={(v) => setNewTask({ ...newTask, ic: v })}
+                          hint="Default is the plain task mark. Pick one only if it says something." />
                       </div>
 
                       <div className="col">
@@ -1453,17 +1634,30 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                           <Field label="Unit" value={newTask.unit || ''} placeholder="kg"
                             onChange={(v) => setNewTask({ ...newTask, unit: v })} />
                         )}
-                        <Field label="Comes back" type="select" value={newTask.resets}
+                        <Field label="Type of task" type="select" value={newTask.resets}
                           options={TASK_RESETS.map((r) => r.id)}
                           display={TASK_RESETS.reduce((a, r) => ({ ...a, [r.id]: r.label }), {})}
                           onChange={(v) => setNewTask({ ...newTask, resets: v })} />
-                        <Field label="Until" value={taskUntil} placeholder="30 Sep 2026"
-                          onChange={setTaskUntil}
-                          hint="A date is fine here. You know this patient; a protocol never does." />
+                        <div className="row" style={{ gap: 8 }}>
+                          <div className="grow">
+                            <Field label="Start date" type="date" value={taskFrom}
+                              onChange={setTaskFrom} />
+                          </div>
+                          <div className="grow">
+                            <Field label="End date" type="date" value={taskUntil}
+                              onChange={setTaskUntil} />
+                          </div>
+                        </div>
+                        <span className="hint">
+                          {badWindow
+                            ? 'The end date is before the start date.'
+                            : 'Dates are fine here. You know this patient; a protocol never does. '
+                              + 'Leave them empty and it runs open-ended.'}
+                        </span>
                       </div>
 
                       <div className="row" style={{ gridColumn: '1 / -1', gap: 8, flexWrap: 'wrap' }}>
-                        <button className="btn btn-primary" disabled={!newTask.t.trim()}
+                        <button className="btn btn-primary" disabled={!newTask.t.trim() || badWindow}
                           onClick={() => commitTask({
                             taskKey: newTask.key || toKey(newTask.t),
                             t: newTask.t.trim(), sub: newTask.sub.trim(), ic: newTask.ic,
@@ -1474,7 +1668,9 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                           <Icon name="plus" size={13} /> Add to their list
                         </button>
                         <button className="btn btn-ghost"
-                          onClick={() => { setNewTask(null); setTaskUntil(''); }}>Cancel</button>
+                          onClick={() => { setNewTask(null); setTaskUntil(''); setTaskFrom(''); }}>
+                          Cancel
+                        </button>
                         <span className="hint">
                           It goes on {patient.name.split(' ')[0]}&rsquo;s list only. The protocol is
                           not touched.
@@ -1572,7 +1768,7 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
               supplements also join their medicines list.
             </p>
 
-            <div className="row" style={{ gap: 8, marginBottom: 12 }}>
+            <div className="row" style={{ gap: 8, marginBottom: 8 }}>
               {Object.entries(ADDABLE).map(([k, spec]) => (
                 <button key={k} className={`btn btn-sm ${draft?.kind === k ? 'btn-gold' : 'btn-ghost'}`}
                   onClick={() => begin(k)}>
@@ -1580,6 +1776,7 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                 </button>
               ))}
             </div>
+            <p className="hint" style={{ margin: '0 0 12px' }}>{NO_BLOOD_TESTS}</p>
 
             {draft && (
               <div className="item-edit split" style={{ marginTop: 4 }}>
@@ -1615,11 +1812,6 @@ function Consult({ patient, record, state, update, scope, currentStep, pt, regio
                     <Field label="Dose" value={draft.dose || ''} placeholder="250 mcg daily"
                       onChange={(v) => setDraft({ ...draft, dose: v })} />
                   )}
-                  <Field label="Week" type="select" value={String(draft.week)}
-                    options={Array.from({ length: 12 }, (_, n) => String(n + 1))}
-                    display={Array.from({ length: 12 }, (_, n) => n + 1)
-                      .reduce((a, w) => ({ ...a, [String(w)]: `Week ${w}` }), {})}
-                    onChange={(v) => setDraft({ ...draft, week: Number(v) })} />
                   <Field label="Blocking" type="select"
                     value={draft.blocker ? 'blocks' : 'free'}
                     options={['free', 'blocks']}
