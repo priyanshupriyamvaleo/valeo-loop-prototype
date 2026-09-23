@@ -2565,10 +2565,11 @@ export interface Protocol extends Entity {
 export type PlanStatus = "draft" | "published"
 
 /**
- * Where the page sits under the site root. It mirrors the "SEO Folder" field
- * of the existing landing-page screen, so the resulting path is the same.
+ * Where the page sits under the site root. A protocol page always sits under
+ * /protocols/, so there is one value. The field stays because the live screen
+ * has it and the resulting path has to match.
  */
-export type PlanSeoFolder = "none" | "programs" | "protocols" | "treatments"
+export type PlanSeoFolder = "protocols"
 
 /** Mirrors "SEO Handling" on the existing screen. Country is the normal case. */
 export type PlanSeoHandling = "country" | "city" | "global"
@@ -2699,18 +2700,12 @@ export interface ProtocolPlan {
     slug?: string
     seoFolder?: PlanSeoFolder
     seoHandling?: PlanSeoHandling
-    breadcrumb?: string
     seoTitleEn?: string
     seoTitleAr?: string
     seoDescriptionEn?: string
     seoDescriptionAr?: string
-    altImageTagEn?: string
-    altImageTagAr?: string
-    keywordsEn?: string
-    keywordsAr?: string
     isIndexable?: boolean
     isFollowable?: boolean
-    seoCanonicalUrl?: string
 
     // ── Widgets ──
     blocks: PageBlock[]

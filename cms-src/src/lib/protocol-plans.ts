@@ -31,12 +31,22 @@ export const SEO_HANDLING: { id: PlanSeoHandling; label: string }[] = [
     { id: "global", label: "Global" },
 ]
 
+/**
+ * ONE FOLDER. Every protocol page sits under /protocols/, so the list holds one
+ * entry and the dropdown offers one choice.
+ */
 export const SEO_FOLDERS: { id: PlanSeoFolder; label: string; path: string }[] = [
-    { id: "none", label: "Site root", path: "" },
-    { id: "programs", label: "programs", path: "programs/" },
     { id: "protocols", label: "protocols", path: "protocols/" },
-    { id: "treatments", label: "treatments", path: "treatments/" },
 ]
+
+/**
+ * The folder a plan resolves to, which falls back to the only entry rather than
+ * to an empty path. A plan saved before this change carries the old value
+ * `"programs"`, which the list no longer holds — without the fallback that plan
+ * would lose its folder from its url, and its dropdown would render blank.
+ */
+export const folderOf = (plan: ProtocolPlan) =>
+    SEO_FOLDERS.find(f => f.id === plan.seoFolder) ?? SEO_FOLDERS[0]
 
 export const SITE_ROOT = "valeo.health/"
 
@@ -51,8 +61,7 @@ export function toSlug(v: string) {
 
 /** The address a patient would type, printed the way the page list prints it. */
 export function planUrl(plan: ProtocolPlan): string {
-    const folder = SEO_FOLDERS.find(f => f.id === (plan.seoFolder ?? "none"))?.path ?? ""
-    return `${SITE_ROOT}${folder}${plan.slug || "…"}`
+    return `${SITE_ROOT}${folderOf(plan).path}${plan.slug || "…"}`
 }
 
 export function emptyPlan(): ProtocolPlan {
@@ -61,14 +70,10 @@ export function emptyPlan(): ProtocolPlan {
         pageName: "",
         watermarkUrl: "",
         slug: "",
-        seoFolder: "none",
+        seoFolder: "protocols",
         seoHandling: "country",
-        breadcrumb: "",
         seoTitleEn: "", seoTitleAr: "",
         seoDescriptionEn: "", seoDescriptionAr: "",
-        altImageTagEn: "", altImageTagAr: "",
-        keywordsEn: "", keywordsAr: "",
-        seoCanonicalUrl: "",
         isIndexable: true,
         isFollowable: true,
         blocks: [],
@@ -448,18 +453,12 @@ const SEED: PlanMap = {
         pageName: "Weight Loss GLP-1 Programme",
         watermarkUrl: "",
         slug: "weight-loss-glp1-programme",
-        seoFolder: "programs",
+        seoFolder: "protocols",
         seoHandling: "country",
         seoTitleEn: "Doctor-led GLP-1 weight loss programme in the UAE | Valeo",
         seoTitleAr: "برنامج خسارة الوزن GLP-1 بإشراف طبي في الإمارات | فاليو",
         seoDescriptionEn: "A clinician builds your titration plan from your own blood work, and a coach follows it with you for twelve weeks.",
         seoDescriptionAr: "يبني الطبيب خطة العلاج من تحاليل دمك، ويتابعها معك المدرب لمدة اثني عشر أسبوعاً.",
-        breadcrumb: "Weight loss",
-        altImageTagEn: "A doctor holding a GLP-1 pen",
-        altImageTagAr: "طبيب يحمل قلم GLP-1",
-        keywordsEn: "glp-1, weight loss, semaglutide, dubai",
-        keywordsAr: "جي إل بي 1, خسارة الوزن, دبي",
-        seoCanonicalUrl: "",
         isIndexable: true,
         isFollowable: true,
         blocks: [

@@ -6,14 +6,21 @@ import { Textarea } from "@/components/ui/textarea"
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { SEO_FOLDERS, SEO_HANDLING, SITE_ROOT, planUrl, toSlug } from "@/lib/protocol-plans"
+import { SEO_FOLDERS, SEO_HANDLING, SITE_ROOT, folderOf, planUrl, toSlug } from "@/lib/protocol-plans"
 import { PlanField, FieldRow } from "./fields"
 import type { PlanSeoFolder, PlanSeoHandling, ProtocolPlan } from "@/types"
 
 /**
- * SEO — the second tab of the drawer, field for field and in the same order as
- * the live screen. English on the left, Arabic on the right. Index and Follow
- * sit at the foot, as two checkboxes.
+ * SEO — the second tab of the drawer. English on the left, Arabic on the right.
+ * Index and Follow sit at the foot, as two checkboxes.
+ *
+ * WHAT IS NOT HERE. The live screen also carries Breadcrumb Text, Alt Image
+ * Tag, Keywords and Canonical Url. A protocol page fills none of them: the
+ * breadcrumb repeats the page name, the artwork comes from the widget that
+ * holds it, keywords are read by no search engine, and a canonical url only has
+ * a use when a second page carries the same content. They were dropped rather
+ * than left empty, because an empty field asks an author a question that has no
+ * answer.
  *
  * The one addition is the resolved url, printed under the slug. A slug, a
  * folder and a site root that never appear together are three fields nobody
@@ -27,14 +34,14 @@ export function SeoTab({
     onChange: (patch: Partial<ProtocolPlan>) => void
 }) {
     const bad = (v?: string) => (showErrors && !v?.trim() ? "border-destructive" : "")
-    const folderPath = SEO_FOLDERS.find(f => f.id === (plan.seoFolder ?? "none"))?.path ?? ""
+    const folder = folderOf(plan)
 
     return (
         <div className="space-y-5">
             <PlanField label="Seo Url" required>
                 <div className="flex items-center gap-0">
                     <span className="rounded-l-md border border-r-0 bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
-                        {SITE_ROOT}{folderPath}
+                        {SITE_ROOT}{folder.path}
                     </span>
                     <Input value={plan.slug ?? ""}
                         placeholder="weight-loss-glp1-programme"
@@ -47,8 +54,11 @@ export function SeoTab({
             </PlanField>
 
             <FieldRow>
+                {/* The folder reads from `folder`, not from `plan.seoFolder`. A plan
+                    saved under the old "programs" value would otherwise show a blank
+                    trigger, because that value is no longer an option. */}
                 <PlanField label="SEO Folder">
-                    <Select value={plan.seoFolder ?? "none"}
+                    <Select value={folder.id}
                         onValueChange={v => onChange({ seoFolder: v as PlanSeoFolder })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -58,10 +68,6 @@ export function SeoTab({
                         </SelectContent>
                     </Select>
                 </PlanField>
-                <div />
-            </FieldRow>
-
-            <FieldRow>
                 <PlanField label="SEO Handling" required
                     hint="Country is the normal case: one page per market.">
                     <Select value={plan.seoHandling ?? "country"}
@@ -73,10 +79,6 @@ export function SeoTab({
                             ))}
                         </SelectContent>
                     </Select>
-                </PlanField>
-                <PlanField label="Breadcrumb Text">
-                    <Input value={plan.breadcrumb ?? ""} placeholder="Weight loss"
-                        onChange={e => onChange({ breadcrumb: e.target.value })} />
                 </PlanField>
             </FieldRow>
 
@@ -109,36 +111,6 @@ export function SeoTab({
                         onChange={e => onChange({ seoDescriptionAr: e.target.value })} />
                 </PlanField>
             </FieldRow>
-
-            <FieldRow>
-                <PlanField label="Alt Image Tag"
-                    hint="What a screen reader says about the page artwork.">
-                    <Input value={plan.altImageTagEn ?? ""}
-                        placeholder="A doctor holding a GLP-1 pen"
-                        onChange={e => onChange({ altImageTagEn: e.target.value })} />
-                </PlanField>
-                <PlanField label="Alt Image Tag Arabic">
-                    <Input dir="rtl" value={plan.altImageTagAr ?? ""}
-                        onChange={e => onChange({ altImageTagAr: e.target.value })} />
-                </PlanField>
-            </FieldRow>
-
-            <FieldRow>
-                <PlanField label="Keywords">
-                    <Input value={plan.keywordsEn ?? ""} placeholder="glp-1, weight loss, dubai"
-                        onChange={e => onChange({ keywordsEn: e.target.value })} />
-                </PlanField>
-                <PlanField label="Keywords Arabic">
-                    <Input dir="rtl" value={plan.keywordsAr ?? ""}
-                        onChange={e => onChange({ keywordsAr: e.target.value })} />
-                </PlanField>
-            </FieldRow>
-
-            <PlanField label="Canonical Url"
-                hint="Leave it empty unless another page is the original.">
-                <Input value={plan.seoCanonicalUrl ?? ""} className="font-mono text-sm"
-                    onChange={e => onChange({ seoCanonicalUrl: e.target.value })} />
-            </PlanField>
 
             <div className="flex flex-wrap gap-x-10 gap-y-3 border-t pt-4">
                 <label className="flex items-center gap-2 text-sm">
